@@ -1,9 +1,4 @@
-<table>
-<tr>
-<td width="35%" valign="middle" align="center">
-
-</td>
-<td width="65%" valign="middle">
+<div align="center">
 
 # ErisPulse Dashboard
 
@@ -11,9 +6,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse-Dashboard?style=flat-square)](https://pypi.org/project/ErisPulse-Dashboard/)
 
-</td>
-</tr>
-</table>
+</div>
 
 ---
 
