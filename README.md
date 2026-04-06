@@ -35,6 +35,16 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse-Dashboard
 
 安装后模块将被 ErisPulse 框架自动发现并加载。
 
+## 访问地址
+
+安装并启动 ErisPulse 框架后，在浏览器中打开：
+
+```
+http://<host>:<port>/Dashboard/
+```
+
+其中 `<host>` 和 `<port>` 为 ErisPulse 框架的监听地址与端口。
+
 ## 认证
 
 模块首次加载时会自动生成一个访问 Token，并输出到框架日志中：
