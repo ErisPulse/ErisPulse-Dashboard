@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>ErisPulse Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/Dashboard/static/dash.css">
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <button class="btn-hamburger" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+                <h1 id="appTitle">ErisPulse Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="ws-badge" id="wsBadge"><span class="dot"></span><span id="wsText">Offline</span></div>
+                <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="display:none">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                </button>
+                <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+            </div>
+        </header>
+        <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+        <div class="main">
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-nav">
+                    <a class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        </svg>
+                        <span data-i18n="dashboard"></span>
+                    </a>
+                    <a class="nav-item" data-page="bots" onclick="go('bots',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="8" width="14" height="10" rx="2" />
+                            <circle cx="9" cy="13" r="1" fill="currentColor" />
+                            <circle cx="15" cy="13" r="1" fill="currentColor" />
+                            <line x1="12" y1="4" x2="12" y2="8" />
+                            <circle cx="9" cy="4" r="1.5" fill="currentColor" />
+                            <circle cx="15" cy="4" r="1.5" fill="currentColor" />
+                        </svg>
+                        <span data-i18n="bots"></span>
+                    </a>
+                    <a class="nav-item" data-page="events" onclick="go('events',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 01-3.46 0" />
+                        </svg>
+                        <span data-i18n="events"></span>
+                    </a>
+                    <a class="nav-item" data-page="modules" onclick="go('modules',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        <span data-i18n="modules"></span>
+                    </a>
+                    <a class="nav-item" data-page="store" onclick="go('store',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <path d="M16 10a4 4 0 01-8 0" />
+                        </svg>
+                        <span data-i18n="store"></span>
+                    </a>
+                    <a class="nav-item" data-page="config" onclick="go('config',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z" />
+                        </svg>
+                        <span data-i18n="config"></span>
+                    </a>
+                </div>
+                <div class="sidebar-footer"><span class="fw-ver" id="fwInfo">Loading...</span><button
+                        class="restart-btn" onclick="restartFramework()" title="Restart"><svg viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10" />
+                            <polyline points="1 20 1 14 7 14" />
+                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                        </svg><span data-i18n="restart"></span></button></div>
+            </nav>
+            <div class="content">
+                <div class="page active" id="p-dashboard">
+                    <h1 class="page-title" data-i18n="dashboard"></h1>
+                    <p class="page-desc" id="fwDesc"></p>
+                    <div class="grid-4" style="margin-bottom:20px" id="statGrid"></div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path
+                                        d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                </svg><span data-i18n="adapters"></span></div>
+                            <div class="card-body" id="dashAdapters"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                                </svg><span data-i18n="modules_label"></span></div>
+                            <div class="card-body" id="dashModules"></div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                            </svg><span data-i18n="live_events"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="clearEvents()"
+                                    title="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="dashEvents" style="max-height:280px;overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-bots">
+                    <h1 class="page-title" data-i18n="bots"></h1>
+                    <p class="page-desc" data-i18n="bots_desc"></p>
+                    <div class="grid-3" style="margin-top:16px" id="botGrid"></div>
+                </div>
+                <div class="page" id="p-events">
+                    <h1 class="page-title" data-i18n="events"></h1>
+                    <p class="page-desc" data-i18n="events_desc"></p>
+                    <div class="filter-bar">
+                        <select id="eTypeFilter" onchange="loadEvents()">
+                            <option value="">--</option>
+                            <option value="message">Message</option>
+                            <option value="notice">Notice</option>
+                            <option value="request">Request</option>
+                            <option value="meta">Meta</option>
+                        </select>
+                        <select id="ePlatFilter" onchange="loadEvents()">
+                            <option value="">--</option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadEvents()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                            </svg></button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearEvents()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg></button>
+                    </div>
+                    <div class="card">
+                        <div id="eventList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-modules">
+                    <h1 class="page-title" data-i18n="modules"></h1>
+                    <p class="page-desc" data-i18n="modules_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="2" y1="12" x2="22" y2="12" />
+                                <path
+                                    d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                            </svg><span data-i18n="adapters"></span><span class="chip chip-pr" id="adapterCount"
+                                style="margin-left:6px"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="adapterList"></div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                <line x1="12" y1="22.08" x2="12" y2="12" />
+                            </svg><span data-i18n="modules_label"></span><span class="chip chip-sc" id="moduleCount"
+                                style="margin-left:6px"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="moduleList"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-store">
+                    <h1 class="page-title" data-i18n="store"></h1>
+                    <p class="page-desc" data-i18n="store_desc"></p>
+                    <div class="filter-bar" style="margin-top:16px">
+                        <input type="text" id="storeSearch" data-i18n-placeholder="search_packages"
+                            oninput="debounceStore()">
+                        <button class="btn btn-secondary btn-sm" onclick="loadStore()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                            </svg></button>
+                    </div>
+                    <div class="card" style="margin-top:12px;margin-bottom:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width:16px;height:16px">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg><span data-i18n="upload_title"></span></div>
+                        <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
+                            <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
+                            <div style="flex:1"></div>
+                            <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none"
+                                onchange="uploadModule(this)">
+                            <button class="btn btn-primary btn-sm"
+                                onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg><span data-i18n="upload_btn"></span></button>
+                        </div>
+                    </div>
+                    <div class="grid-3" id="storeGrid"></div>
+                </div>
+                <div class="page" id="p-config">
+                    <h1 class="page-title" data-i18n="config"></h1>
+                    <p class="page-desc" data-i18n="config_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z" />
+                            </svg><span data-i18n="configuration"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="loadConfig()"
+                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="configBody" style="max-height:420px;overflow-y:auto"></div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                            </svg><span data-i18n="storage"></span><span class="chip chip-pr" id="storageCount"
+                                style="margin-left:8px"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="loadConfig()"
+                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="storageBody" style="max-height:420px;overflow-y:auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOv">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-text" id="modalText"></div>
+            <div class="modal-actions" id="modalActions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay output-modal" id="outputOv">
+        <div class="modal-box">
+            <div class="modal-title" id="outputTitle"></div>
+            <pre class="output-pre" id="outputPre"></pre>
+            <div class="modal-actions" id="outputActions"></div>
+        </div>
+    </div>
+
+    <div class="login-overlay" id="loginOv">
+        <div class="login-card">
+            <h2 data-i18n="auth_title"></h2>
+            <p data-i18n="auth_desc_text"></p>
+            <div class="form-group">
+                <label data-i18n="auth_label"></label>
+                <input id="loginInput" type="password" data-i18n-placeholder="auth_placeholder"
+                    onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <div class="login-hint" id="authHint"></div>
+            <div class="login-actions">
+                <button class="btn btn-secondary" onclick="closeLogin()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" onclick="doLogin()" data-i18n="login"></button>
+            </div>
+        </div>
+    </div>
+    <script src="/Dashboard/static/dash.js"></script>
+</body>
+
+</html>
