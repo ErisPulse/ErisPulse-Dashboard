@@ -80,6 +80,13 @@
                         </svg>
                         <span data-i18n="events"></span>
                     </a>
+                    <a class="nav-item" data-page="event-builder" onclick="go('event-builder',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                        </svg>
+                        <span>事件构建器</span>
+                    </a>
                     <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -198,6 +205,172 @@
                         <div id="eventList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
                     </div>
                 </div>
+                <div class="page" id="p-event-builder">
+                    <h1 class="page-title" data-i18n="event_builder"></h1>
+                    <p class="page-desc" data-i18n="event_builder_desc"></p>
+                    
+                    <div class="builder-toolbar">
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="previewEvent()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span data-i18n="preview"></span>
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="submitEvent()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                            <span data-i18n="submit_event"></span>
+                        </button>
+                    </div>
+                    
+                    <div class="builder-layout">
+                        <div class="builder-form">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="event_type"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="event-type-selector">
+                                        <button class="type-btn active" data-type="message" onclick="selectEventType('message')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                                <path d="M8 10h.01" />
+                                                <path d="M12 10h.01" />
+                                                <path d="M16 10h.01" />
+                                            </svg>
+                                            <span data-i18n="message"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="notice" onclick="selectEventType('notice')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                                            </svg>
+                                            <span data-i18n="notice"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="request" onclick="selectEventType('request')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                                <path d="M7 15h0M2 9.5h20" />
+                                            </svg>
+                                            <span data-i18n="request"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="meta" onclick="selectEventType('meta')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="3" />
+                                                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                                            </svg>
+                                            <span data-i18n="meta"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="detail_type"></span>
+                                </div>
+                                <div class="card-body">
+                                    <select id="detailType" class="form-select" onchange="onDetailTypeChange()">
+                                        <option value="" data-i18n="select_detail_type">请选择详情类型...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="platform_info"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label data-i18n="platform"></label>
+                                        <select id="platformSelect" class="form-select" onchange="onPlatformChange()">
+                                            <option value="" data-i18n="loading">加载中...</option>
+                                        </select>
+                                        <button class="btn-link" onclick="toggleCustomPlatform()" style="margin-left:8px" data-i18n="custom"></button>
+                                    </div>
+                                    <div class="form-group" id="customPlatformGroup" style="display:none">
+                                        <input type="text" id="platformCustom" class="form-input" placeholder="输入自定义平台名称">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>Bot</label>
+                                        <select id="botSelect" class="form-select" onchange="onBotChange()">
+                                            <option value="" data-i18n="select_bot">请先选择平台...</option>
+                                        </select>
+                                        <button class="btn-link" onclick="toggleCustomBot()" style="margin-left:8px" data-i18n="custom"></button>
+                                    </div>
+                                    <div class="form-group" id="customBotGroup" style="display:none">
+                                        <input type="text" id="botCustom" class="form-input" placeholder="输入自定义 Bot ID">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label data-i18n="session_type"></label>
+                                        <select id="sessionType" class="form-select">
+                                            <option value="private">私聊</option>
+                                            <option value="group">群聊</option>
+                                            <option value="channel">频道</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label data-i18n="session_id"></label>
+                                        <input type="text" id="sessionId" class="form-input" placeholder="群号/频道号/用户 ID">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card" id="messageBuilderCard">
+                                <div class="card-header">
+                                    <span data-i18n="message_content"></span>
+                                    <button class="btn-icon" onclick="addMessageSegment()" title="添加消息段">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="messageSegments"></div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="optional_fields"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="optionalFields"></div>
+                                    <button class="btn btn-secondary btn-sm" onclick="addOptionalField()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-right:4px">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg>
+                                        <span data-i18n="add_field"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="builder-preview">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="json_preview"></span>
+                                    <button class="btn-icon" onclick="copyEventJson()" title="复制">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="eventJsonPreview" class="code-preview"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="page" id="p-modules">
                     <h1 class="page-title" data-i18n="modules"></h1>
                     <p class="page-desc" data-i18n="modules_desc"></p>
@@ -282,21 +455,51 @@
                     <h1 class="page-title" data-i18n="config"></h1>
                     <p class="page-desc" data-i18n="config_desc"></p>
                     <div class="card" style="margin-top:16px">
-                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="3" />
                                 <path
                                     d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z" />
                             </svg><span data-i18n="configuration"></span>
-                            <div class="header-actions"><button class="btn-icon" onclick="loadConfig()"
-                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            <div class="header-actions">
+                                <div class="view-toggle">
+                                    <button class="view-btn active" data-view="tree" onclick="switchConfigView('tree',this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                                        </svg>
+                                        <span>树形</span>
+                                    </button>
+                                    <button class="view-btn" data-view="source" onclick="switchConfigView('source',this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                            <polyline points="16 18 22 12 16 6" />
+                                            <polyline points="8 6 2 12 8 18" />
+                                        </svg>
+                                        <span>源码</span>
+                                    </button>
+                                </div>
+                                <button class="btn-icon" onclick="loadConfig()" title="Refresh"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
                                         style="width:16px;height:16px">
                                         <polyline points="23 4 23 10 17 10" />
                                         <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                                    </svg></button></div>
+                                    </svg></button>
+                            </div>
                         </div>
-                        <div id="configBody" style="max-height:420px;overflow-y:auto"></div>
+                        <div id="configBodyTree" style="max-height:420px;overflow-y:auto"></div>
+                        <div id="configBodySource" style="display:none;max-height:420px;overflow-y:auto">
+                            <div style="padding:12px 16px">
+                                <textarea id="configSourceEditor" class="code-editor" spellcheck="false"></textarea>
+                                <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+                                    <button class="btn btn-secondary btn-sm" onclick="loadConfigSource()">重新加载</button>
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfigSource()">保存</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="card" style="margin-top:16px">
                         <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"

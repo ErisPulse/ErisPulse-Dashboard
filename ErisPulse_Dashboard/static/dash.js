@@ -29,6 +29,19 @@ const I18N = {
         all_types: '所有类型', all_platforms: '所有平台',
         no_packages: '没有匹配的包', failed_registry: '加载注册表失败',
         event_cleared: '事件已清除', empty_storage: '存储为空',
+         
+        event_builder: '事件构建器', event_builder_desc: '构建自定义事件用于调试和测试',
+        select_platform: '选择平台', select_bot: '选择 Bot', custom: '自定义',
+        session_type: '会话类型', session_id: '会话 ID', message_content: '消息内容',
+        optional_fields: '附加字段', json_preview: 'JSON 预览',
+        preview: '预览', submit_event: '提交事件',
+        add_segment: '添加消息段', add_field: '添加字段', copy_json: '复制 JSON',
+        validate_error: '验证错误', submit_success: '事件已提交', submit_failed: '提交失败',
+        view_tree: '树形', view_source: '源码', reload_config: '重新加载', save_config: '保存配置',
+        config_saved: '配置已保存', config_load_failed: '加载配置源码失败',
+        read_only: '只读 (根配置)',
+        event_type: '事件类型', detail_type: '详情类型', platform_info: '平台信息',
+        message_content: '消息内容', select_detail_type: '请选择详情类型...', loading: '加载中...',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -57,6 +70,13 @@ const I18N = {
         all_types: 'All Types', all_platforms: 'All Platforms',
         no_packages: 'No matching packages', failed_registry: 'Failed to load registry',
         event_cleared: 'Events cleared', empty_storage: 'Storage is empty',
+         
+        validate_error: 'Validation error', submit_success: 'Event submitted', submit_failed: 'Submit failed',
+        view_tree: 'Tree', view_source: 'Source', reload_config: 'Reload', save_config: 'Save',
+        config_saved: 'Configuration saved', config_load_failed: 'Failed to load config source',
+        read_only: 'Read-only (root config)',
+        event_type: 'Event Type', detail_type: 'Detail Type', platform_info: 'Platform Info',
+        message_content: 'Message Content', select_detail_type: 'Select detail type...', loading: 'Loading...',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -115,6 +135,9 @@ function go(name, el) {
     if (name === 'bots') loadBots();
     if (name === 'modules') loadModules();
     if (name === 'store') loadStore();
+    if (name === 'event-builder') {
+        initEventBuilder();
+    }
 }
 
 function showModal(title, text, actions) {
@@ -339,21 +362,98 @@ async function restartFramework() {
 
 async function loadConfig() {
     const c = await api('/api/config');
-    if (c && c.config) { window._kvData = c.config; document.getElementById('configBody').innerHTML = kvTree(c.config, 'config', '') };
+    if (c && c.config) { 
+        window._kvData = c.config; 
+        document.getElementById('configBodyTree').innerHTML = kvTree(c.config, 'config', ''); 
+    }
     const s = await api('/api/storage');
     if (s) {
         document.getElementById('storageCount').textContent = (s.total || 0) + ' ' + t('total_events').replace('事件', '');
         const k = s.keys || [];
         document.getElementById('storageBody').innerHTML = k.length ? k.slice(0, 200).map(x => kvRow(esc(x), s.data[x], 'storage', x)).join('') : '<div class="empty-state"><p>' + t('empty_storage') + '</p></div>';
     }
+    
+     
+    if (document.getElementById('configBodySource').style.display !== 'none') {
+        await loadConfigSource();
+    }
+}
+
+async function loadConfigSource() {
+    const d = await api('/api/config/source');
+    if (d && d.content) {
+        const editor = document.getElementById('configSourceEditor');
+        if (editor) {
+            editor.value = d.content;
+        }
+    } else {
+        toast('加载配置源码失败', 'er');
+    }
+}
+
+async function saveConfigSource() {
+    const editor = document.getElementById('configSourceEditor');
+    if (!editor) return;
+    
+    const content = editor.value;
+    
+    const d = await api('/api/config/source', {
+        method: 'POST',
+        body: JSON.stringify({ content })
+    });
+    
+    if (d && d.success) {
+        toast('配置已保存', 'ok');
+         
+        loadConfig();
+    } else {
+        toast('保存失败: ' + (d?.error || '未知错误'), 'er');
+    }
+}
+
+function switchConfigView(view, btn) {
+     
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+     
+    const treeView = document.getElementById('configBodyTree');
+    const sourceView = document.getElementById('configBodySource');
+    
+    if (view === 'tree') {
+        treeView.style.display = 'block';
+        sourceView.style.display = 'none';
+    } else {
+        treeView.style.display = 'none';
+        sourceView.style.display = 'block';
+         
+        loadConfigSource();
+    }
 }
 
 function kvRow(k, v, mode, fk) {
     const tp = v === null ? 'null' : typeof v;
     const ds = tp === 'object' ? JSON.stringify(v) : String(v);
+    const isMultiline = ds.includes('\n') || ds.length > 100;
     const saveFn = mode === 'config' ? 'saveConfig(this)' : 'saveStorage(this)';
-    const delBtn = mode === 'storage' ? '<button class="kv-btn kv-btn-del" onclick="delStorage(\'' + esc(fk) + '\',this)" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' : '';
-    return '<div class="kv-row"><div class="kv-key">' + esc(k) + '</div><div class="kv-actions"><input class="kv-input" type="text" value="' + esc(ds) + '" data-key="' + esc(fk) + '" data-type="' + tp + '" onfocus="this.select()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();' + saveFn + '}"><button class="kv-btn kv-btn-save" onclick="' + saveFn + '" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>' + delBtn + '</div></div>';
+    
+     
+    const isRootLevel = fk && !fk.includes('.');
+    const canEdit = mode === 'config' ? !isRootLevel : true;
+    
+    const inputHtml = isMultiline 
+        ? `<textarea class="kv-input kv-textarea" data-key="${esc(fk)}" data-type="${tp}" 
+                 rows="3" onfocus="this.select()" 
+                 onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();${saveFn}}">${esc(ds)}</textarea>`
+        : `<input class="kv-input" type="text" value="${esc(ds)}" data-key="${esc(fk)}" data-type="${tp}" 
+                 ${canEdit ? '' : 'readonly'} onfocus="this.select()" 
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();${saveFn}}">`;
+    
+    const delBtn = mode === 'storage' ? `<button class="kv-btn kv-btn-del" onclick="delStorage('${esc(fk)}',this)" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : '';
+    
+    const readOnlyIndicator = !canEdit ? '<span style="font-size:11px;color:var(--wr-c);margin-left:8px">只读 (根配置)</span>' : '';
+    
+    return `<div class="kv-row"><div class="kv-key">${esc(k)}</div><div class="kv-actions">${inputHtml}<button class="kv-btn kv-btn-save" onclick="${saveFn}" title="Save" ${!canEdit ? 'style="display:none"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>${delBtn}${readOnlyIndicator}</div></div>`;
 }
 
 function kvTree(obj, mode, pfx, dep) {
@@ -445,6 +545,474 @@ function wsConnect() {
 }
 
 function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore() }
+
+ 
+
+let builderState = {
+    eventType: 'message',
+    detailType: '',
+    platform: '',
+    botId: '',
+    customPlatform: false,
+    customBot: false,
+    messageSegments: [],
+    optionalFields: []
+};
+
+const EVENT_TYPES = {
+    message: {
+        detail_types: ['private', 'group', 'channel', 'guild', 'thread', 'user'],
+        required_fields: ['message', 'alt_message', 'user_id'],
+        optional_fields: ['group_id', 'channel_id', 'guild_id', 'user_nickname', 'message_id']
+    },
+    notice: {
+        detail_types: ['friend_increase', 'friend_decrease', 'group_member_increase', 'group_member_decrease'],
+        required_fields: ['user_id'],
+        optional_fields: ['user_nickname', 'group_id', 'operator_id', 'operator_nickname']
+    },
+    request: {
+        detail_types: ['friend', 'group'],
+        required_fields: ['user_id', 'comment'],
+        optional_fields: ['user_nickname', 'group_id']
+    },
+    meta: {
+        detail_types: ['connect', 'disconnect', 'heartbeat'],
+        required_fields: [],
+        optional_fields: []
+    }
+};
+
+async function initEventBuilder() {
+     
+    await loadPlatforms();
+     
+    updateDetailTypeOptions();
+     
+    updateEventPreview();
+     
+    await loadMessageSegmentTypes();
+}
+
+async function loadPlatforms() {
+    const d = await api('/api/adapters');
+    if (!d) return;
+    
+    const platforms = d.adapters || [];
+    const select = document.getElementById('platformSelect');
+    select.innerHTML = '<option value="">选择平台...</option>';
+    
+    platforms.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.platform;
+        opt.textContent = p.platform;
+        select.appendChild(opt);
+    });
+}
+
+async function loadBotsForPlatform(platform) {
+    const select = document.getElementById('botSelect');
+    select.innerHTML = '<option value="">选择 Bot...</option>';
+    
+    if (!platform) return;
+    
+     
+    const bots = await api('/api/bots');
+    if (bots && bots.bots) {
+        const platformBots = bots.bots.filter(b => b.platform === platform);
+        platformBots.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.bot_id;
+            opt.textContent = b.bot_id + (b.info?.user_name ? ` (${b.info.user_name})` : '') + ' (在线)';
+            select.appendChild(opt);
+        });
+    }
+}
+
+function selectEventType(type) {
+    builderState.eventType = type;
+    
+     
+    document.querySelectorAll('.type-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.type === type) btn.classList.add('active');
+    });
+    
+     
+    updateDetailTypeOptions();
+    
+     
+    updateRequiredFields();
+    
+     
+    const msgCard = document.getElementById('messageBuilderCard');
+    if (msgCard) {
+        msgCard.style.display = type === 'message' ? 'block' : 'none';
+    }
+    
+    updateEventPreview();
+}
+
+function updateDetailTypeOptions() {
+    const select = document.getElementById('detailType');
+    const types = EVENT_TYPES[builderState.eventType]?.detail_types || [];
+    
+    select.innerHTML = '<option value="">请选择详情类型...</option>';
+    types.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+    });
+}
+
+function onDetailTypeChange() {
+    builderState.detailType = document.getElementById('detailType').value;
+    updateEventPreview();
+}
+
+function onPlatformChange() {
+    const select = document.getElementById('platformSelect');
+    builderState.platform = select.value;
+    builderState.customPlatform = false;
+    loadBotsForPlatform(builderState.platform);
+    updateEventPreview();
+}
+
+function onBotChange() {
+    const select = document.getElementById('botSelect');
+    builderState.botId = select.value;
+    builderState.customBot = false;
+    updateEventPreview();
+}
+
+function toggleCustomPlatform() {
+    const group = document.getElementById('customPlatformGroup');
+    const select = document.getElementById('platformSelect');
+    
+    builderState.customPlatform = !builderState.customPlatform;
+    group.style.display = builderState.customPlatform ? 'block' : 'none';
+    select.disabled = builderState.customPlatform;
+    
+    if (builderState.customPlatform) {
+        builderState.platform = '';
+    }
+    
+    updateEventPreview();
+}
+
+function toggleCustomBot() {
+    const group = document.getElementById('customBotGroup');
+    const select = document.getElementById('botSelect');
+    
+    builderState.customBot = !builderState.customBot;
+    group.style.display = builderState.customBot ? 'block' : 'none';
+    select.disabled = builderState.customBot;
+    
+    if (builderState.customBot) {
+        builderState.botId = '';
+    }
+    
+    updateEventPreview();
+}
+
+function updateRequiredFields() {
+     
+    const container = document.getElementById('optionalFields');
+    container.innerHTML = '';
+    
+    if (builderState.eventType === 'message') {
+        addOptionalField('user_id', 'User ID', '');
+        addOptionalField('alt_message', '备用消息', '');
+    } else if (builderState.eventType === 'notice') {
+        addOptionalField('user_id', 'User ID', '');
+    } else if (builderState.eventType === 'request') {
+        addOptionalField('user_id', 'User ID', '');
+        addOptionalField('comment', '请求附言', '');
+    }
+}
+
+function addOptionalField(key = '', value = '', label = '') {
+    const container = document.getElementById('optionalFields');
+    
+    const div = document.createElement('div');
+    div.className = 'optional-field';
+    div.innerHTML = `
+        <input type="text" placeholder="字段名" value="${esc(key)}" onchange="updateOptionalFieldKey(this)">
+        <input type="text" placeholder="字段值" value="${esc(value)}" onchange="updateOptionalFieldValue(this)">
+        <button class="optional-field-remove" onclick="removeOptionalField(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+    `;
+    
+    container.appendChild(div);
+    updateEventPreview();
+}
+
+function updateOptionalFieldKey(input) {
+    updateEventPreview();
+}
+
+function updateOptionalFieldValue(input) {
+    updateEventPreview();
+}
+
+function removeOptionalField(btn) {
+    btn.closest('.optional-field').remove();
+    updateEventPreview();
+}
+
+async function loadMessageSegmentTypes() {
+    const d = await api('/api/builder/segments');
+    if (!d) return;
+    
+    window.messageSegmentTypes = d;
+}
+
+function addMessageSegment() {
+    if (!window.messageSegmentTypes) {
+        toast('请先加载消息段类型', 'er');
+        return;
+    }
+    
+    const types = window.messageSegmentTypes.standard_segments || [];
+    
+    if (types.length === 0) return;
+    
+    const container = document.getElementById('messageSegments');
+    const segment = {
+        type: types[0].type,
+        fields: {}
+    };
+    
+    const div = document.createElement('div');
+    div.className = 'message-segment';
+    
+    let fieldsHtml = '';
+    types[0].fields.forEach(f => {
+        fieldsHtml += `
+            <input type="text" placeholder="${f.name}" 
+                   data-field="${f.name}" 
+                   oninput="updateMessageSegment(this)"
+                   ${f.required ? 'required' : ''}>
+        `;
+    });
+    
+    div.innerHTML = `
+        <select class="segment-type" onchange="changeSegmentType(this)">
+            ${types.map(t => `<option value="${t.type}">${t.name}</option>`).join('')}
+        </select>
+        <div class="segment-fields">${fieldsHtml}</div>
+        <button class="segment-remove" onclick="removeMessageSegment(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+    `;
+    
+    container.appendChild(div);
+    
+    builderState.messageSegments.push(segment);
+    updateEventPreview();
+}
+
+function changeSegmentType(select) {
+    const segmentDiv = select.closest('.message-segment');
+    const index = Array.from(segmentDiv.parentElement.children).indexOf(segmentDiv);
+    const type = select.value;
+    
+    builderState.messageSegments[index].type = type;
+    builderState.messageSegments[index].fields = {};
+    
+     
+    const segmentType = (window.messageSegmentTypes.standard_segments || []).find(s => s.type === type);
+    if (segmentType) {
+        const fieldsDiv = segmentDiv.querySelector('.segment-fields');
+        let fieldsHtml = '';
+        segmentType.fields.forEach(f => {
+            fieldsHtml += `
+                <input type="text" placeholder="${f.name}" 
+                       data-field="${f.name}" 
+                       oninput="updateMessageSegment(this)"
+                       ${f.required ? 'required' : ''}>
+            `;
+        });
+        fieldsDiv.innerHTML = fieldsHtml;
+    }
+    
+    updateEventPreview();
+}
+
+function updateMessageSegment(input) {
+    const segmentDiv = input.closest('.message-segment');
+    const index = Array.from(segmentDiv.parentElement.children).indexOf(segmentDiv);
+    const fieldName = input.dataset.field;
+    const value = input.value;
+    
+    builderState.messageSegments[index].fields[fieldName] = value;
+    updateEventPreview();
+}
+
+function removeMessageSegment(btn) {
+    const segmentDiv = btn.closest('.message-segment');
+    const index = Array.from(segmentDiv.parentElement.children).indexOf(segmentDiv);
+    
+    segmentDiv.remove();
+    builderState.messageSegments.splice(index, 1);
+    updateEventPreview();
+}
+
+function buildEventData() {
+    const platform = builderState.customPlatform 
+        ? document.getElementById('platformCustom').value 
+        : builderState.platform;
+    
+    const botId = builderState.customBot 
+        ? document.getElementById('botCustom').value 
+        : builderState.botId;
+    
+    const event = {
+        id: 'builder_' + Date.now(),
+        time: Math.floor(Date.now() / 1000),
+        type: builderState.eventType,
+        detail_type: builderState.detailType,
+        platform: platform,
+        self: {
+            platform: platform,
+            user_id: botId
+        }
+    };
+    
+     
+    if (builderState.eventType === 'message') {
+        event.message = builderState.messageSegments.map(seg => ({
+            type: seg.type,
+            data: seg.fields
+        }));
+        
+         
+        const altMsgField = document.querySelector('.optional-field input[placeholder="备用消息"]');
+        event.alt_message = altMsgField ? altMsgField.value : '';
+    }
+    
+     
+    const optionalFields = document.querySelectorAll('.optional-field');
+    optionalFields.forEach(field => {
+        const inputs = field.querySelectorAll('input');
+        if (inputs.length >= 2) {
+            const key = inputs[0].value.trim();
+            const value = inputs[1].value.trim();
+            if (key && value) {
+                event[key] = value;
+            }
+        }
+    });
+    
+     
+    const sessionType = document.getElementById('sessionType').value;
+    const sessionId = document.getElementById('sessionId').value;
+    
+    if (sessionType === 'private') {
+        event.user_id = event.user_id || sessionId;
+    } else if (sessionType === 'group') {
+        event.group_id = sessionId;
+    } else if (sessionType === 'channel') {
+        event.channel_id = sessionId;
+    }
+    
+    return event;
+}
+
+function updateEventPreview() {
+    const event = buildEventData();
+    const preview = document.getElementById('eventJsonPreview');
+    if (preview) {
+        preview.textContent = JSON.stringify(event, null, 2);
+    }
+}
+
+function copyEventJson() {
+    const event = buildEventData();
+    const json = JSON.stringify(event, null, 2);
+    
+    navigator.clipboard.writeText(json).then(() => {
+        toast('已复制到剪贴板', 'ok');
+    }).catch(() => {
+        toast('复制失败', 'er');
+    });
+}
+
+async function previewEvent() {
+    const event = buildEventData();
+    
+    showOutputModal('事件预览', [JSON.stringify(event, null, 2)], [
+        { label: '确定', value: true, primary: true }
+    ]);
+}
+
+async function submitEvent() {
+    const event = buildEventData();
+    
+     
+    const validation = await api('/api/builder/validate', {
+        method: 'POST',
+        body: JSON.stringify(event)
+    });
+    
+    if (!validation || !validation.valid) {
+        const errors = validation?.errors || ['验证失败'];
+        showOutputModal('验证错误', errors, [{ label: '确定', value: true, primary: true }]);
+        return;
+    }
+    
+     
+    const result = await api('/api/builder/submit', {
+        method: 'POST',
+        body: JSON.stringify(event)
+    });
+    
+    if (result && result.success) {
+        toast('事件已提交', 'ok');
+    } else {
+        toast('提交失败: ' + (result?.error || '未知错误'), 'er');
+    }
+}
+
+ 
+document.addEventListener('DOMContentLoaded', function() {
+     
+    const platformCustom = document.getElementById('platformCustom');
+    if (platformCustom) {
+        platformCustom.addEventListener('input', function() {
+            builderState.platform = this.value;
+            updateEventPreview();
+        });
+    }
+    
+     
+    const botCustom = document.getElementById('botCustom');
+    if (botCustom) {
+        botCustom.addEventListener('input', function() {
+            builderState.botId = this.value;
+            updateEventPreview();
+        });
+    }
+    
+     
+    const sessionType = document.getElementById('sessionType');
+    const sessionId = document.getElementById('sessionId');
+    if (sessionType) {
+        sessionType.addEventListener('change', updateEventPreview);
+    }
+    if (sessionId) {
+        sessionId.addEventListener('input', updateEventPreview);
+    }
+});
+
+
 
 (function () {
     applyTheme(getTheme()); applyI18n();

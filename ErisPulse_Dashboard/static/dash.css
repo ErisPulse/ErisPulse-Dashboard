@@ -438,7 +438,7 @@ body {
 }
 
 .card-body {
-    padding: 4px 0
+    padding: 16px 20px
 }
 
 .card-header .header-actions {
@@ -992,9 +992,444 @@ body {
 }
 
 .login-card h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     margin-bottom: 8px
+}
+
+.builder-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-s);
+    border-radius: 12px;
+    border: 1px solid var(--bd)
+}
+
+.builder-layout {
+    display: grid;
+    grid-template-columns: 1fr minmax(350px, 450px);
+    gap: 20px;
+    min-height: 0
+}
+
+.builder-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+    overflow-y: auto
+}
+
+.builder-preview {
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    border-radius: 12px
+}
+
+.event-type-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px
+}
+
+.type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    cursor: pointer;
+    transition: all .2s
+}
+
+.type-btn:hover {
+    border-color: var(--accent);
+    background: var(--bg-t);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px var(--sh)
+}
+
+.type-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--tx-p);
+    box-shadow: 0 2px 8px var(--sh)
+}
+
+.type-btn svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0
+}
+
+.type-btn span {
+    font-size: 13px;
+    font-weight: 600
+}
+
+.form-group {
+    margin-bottom: 20px
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p)
+}
+
+.form-select, .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all .2s
+}
+
+.form-select:focus, .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent)
+}
+
+.form-input::placeholder {
+    color: var(--tx-t)
+}
+
+.btn-link {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: var(--lk);
+    cursor: pointer;
+    font-size: 12px;
+    transition: color .2s
+}
+
+.btn-link:hover {
+    color: var(--accent-h)
+}
+
+.message-segment {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+    background: var(--bg-s);
+    transition: all .2s
+}
+
+.message-segment:hover {
+    background: var(--bg-t);
+    border-color: var(--accent)
+}
+
+.segment-type {
+    flex-shrink: 0;
+    min-width: 140px;
+    padding: 8px 12px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-t);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s
+}
+
+.segment-type:hover {
+    border-color: var(--accent)
+}
+
+.segment-type:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-h)
+}
+
+.segment-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.segment-fields input, .segment-fields select {
+    padding: 8px 12px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-t);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-family: inherit;
+    transition: all .2s
+}
+
+.segment-fields input:focus, .segment-fields select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-h)
+}
+
+.segment-fields input:focus, .segment-fields select:focus {
+    outline: none;
+    border-color: var(--accent)
+}
+
+.segment-remove {
+    flex-shrink: 0;
+    padding: 6px;
+    background: var(--er-bg);
+    color: var(--er-c);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s
+}
+
+.segment-remove:hover {
+    background: var(--er-c);
+    color: white;
+    transform: scale(1.05)
+}
+
+.segment-remove svg {
+    width: 14px;
+    height: 14px
+}
+
+.optional-field {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px;
+    align-items: center;
+    border-bottom: 1px solid var(--bd);
+    background: var(--bg-s);
+    border-radius: 8px;
+    margin-bottom: 10px
+}
+
+.optional-field:last-child {
+    margin-bottom: 0
+}
+
+.optional-field:last-child {
+    border-bottom: none
+}
+
+.optional-field input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-t);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-family: inherit;
+    transition: all .2s
+}
+
+.optional-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-h)
+}
+
+.optional-field-remove {
+    flex-shrink: 0;
+    padding: 6px;
+    background: var(--er-bg);
+    color: var(--er-c);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s
+}
+
+.optional-field-remove:hover {
+    background: var(--er-c);
+    color: white;
+    transform: scale(1.05)
+}
+
+.optional-field-remove svg {
+    width: 14px;
+    height: 14px
+}
+
+.code-preview {
+    background: var(--bg-s);
+    color: var(--tx-p);
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, Monaco, monospace;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+    min-height: 200px;
+    max-height: 500px
+}
+
+.builder-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    color: var(--tx-t);
+    text-align: center;
+    border: 2px dashed var(--bd);
+    border-radius: 10px;
+    min-height: 100px
+}
+
+.builder-empty-state svg {
+    width: 32px;
+    height: 32px;
+    opacity: .4;
+    margin-bottom: 8px
+}
+
+.builder-empty-state span {
+    font-size: 13px
+}
+
+@media(max-width:768px) {
+    .builder-layout {
+        grid-template-columns: 1fr;
+        gap: 16px
+    }
+
+    .builder-preview {
+        position: static;
+        max-height: none;
+        order: -1;
+        margin-bottom: 16px
+    }
+
+    .event-type-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px
+    }
+
+    .type-btn {
+        padding: 12px 8px
+    }
+
+    .type-btn span {
+        font-size: 12px
+    }
+
+    .message-segment {
+        flex-direction: column;
+        padding: 12px
+    }
+
+    .segment-type {
+        min-width: auto;
+        width: 100%
+    }
+
+    .segment-fields {
+        width: 100%
+    }
+
+    .segment-remove {
+        align-self: flex-end
+    }
+}
+
+.view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-s);
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid var(--bd)
+}
+
+.view-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    color: var(--tx-s);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all .2s
+}
+
+.view-btn:hover {
+    color: var(--tx-p)
+}
+
+.view-btn.active {
+    background: var(--bg-t);
+    color: var(--tx-p);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .1)
+}
+
+.view-btn svg {
+    width: 14px;
+    height: 14px
+}
+
+.code-editor {
+    width: 100%;
+    min-height: 300px;
+    max-height: 500px;
+    padding: 12px 16px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, Monaco, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s
+}
+
+.code-editor:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent)
+}
+
+.kv-textarea {
+    min-width: 200px;
+    min-height: 60px;
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, Monaco, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    resize: vertical
 }
 
 .login-card p {
@@ -1002,10 +1437,6 @@ body {
     color: var(--tx-s);
     margin-bottom: 24px;
     line-height: 1.5
-}
-
-.form-group {
-    margin-bottom: 20px
 }
 
 .form-group label {
@@ -1166,4 +1597,22 @@ body {
     .login-card h2 {
         font-size: 18px
     }
+}
+
+#p-event-builder {
+    padding-top: 28px
+}
+
+#p-event-builder .page-title {
+    margin-bottom: 8px
+}
+
+#p-event-builder .page-desc {
+    margin-bottom: 24px
+}
+
+.card-header .header-actions .btn-icon:hover {
+    background: var(--accent);
+    color: var(--tx-p);
+    transform: scale(1.05)
 }

@@ -364,6 +364,15 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/store/upload", handler=self._api_store_upload, methods=["POST"])
         r.register_http_route(mn, "/api/store/install/status", handler=self._api_store_install_status, methods=["GET"])
         r.register_http_route(mn, "/api/restart", handler=self._api_restart, methods=["POST"])
+        
+         
+        r.register_http_route(mn, "/api/builder/validate", handler=self._api_builder_validate, methods=["POST"])
+        r.register_http_route(mn, "/api/builder/submit", handler=self._api_builder_submit, methods=["POST"])
+        r.register_http_route(mn, "/api/builder/segments", handler=self._api_builder_segments, methods=["GET"])
+        
+         
+        r.register_http_route(mn, "/api/config/source", handler=self._api_config_source, methods=["GET", "POST"])
+        
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -384,6 +393,7 @@ class Main(BaseModule):
             "/api/events",
             "/api/events/clear",
             "/api/config",
+            "/api/config/source",
             "/api/storage",
             "/api/storage/delete",
             "/api/store/remote",
@@ -391,6 +401,9 @@ class Main(BaseModule):
             "/api/store/upload",
             "/api/store/install/status",
             "/api/restart",
+            "/api/builder/validate",
+            "/api/builder/submit",
+            "/api/builder/segments",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -817,3 +830,170 @@ class Main(BaseModule):
         _html_path = current_dir / "static" / "dash.html"
         
         return _html_path.read_text(encoding='utf-8')
+
+     
+
+    async def _api_builder_validate(self, request: Request) -> JSONResponse:
+        """验证事件数据"""
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        
+        body = await request.json()
+        event_type = body.get("type")
+        
+         
+        EVENT_TYPES = {
+            "message": {
+                "detail_types": ["private", "group", "channel", "guild", "thread", "user"],
+                "required_fields": ["message", "alt_message", "user_id"],
+                "optional_fields": ["group_id", "channel_id", "guild_id", "user_nickname", "message_id"]
+            },
+            "notice": {
+                "detail_types": ["friend_increase", "friend_decrease", "group_member_increase", "group_member_decrease"],
+                "required_fields": ["user_id"],
+                "optional_fields": ["user_nickname", "group_id", "operator_id", "operator_nickname"]
+            },
+            "request": {
+                "detail_types": ["friend", "group"],
+                "required_fields": ["user_id", "comment"],
+                "optional_fields": ["user_nickname", "group_id"]
+            },
+            "meta": {
+                "detail_types": ["connect", "disconnect", "heartbeat"],
+                "required_fields": [],
+                "optional_fields": []
+            }
+        }
+        
+        if event_type not in EVENT_TYPES:
+            return JSONResponse({
+                "valid": False,
+                "errors": [f"未知的事件类型: {event_type}"]
+            })
+        
+        type_def = EVENT_TYPES[event_type]
+        errors = []
+        
+         
+        for field in type_def["required_fields"]:
+            if field not in body or body[field] is None or body[field] == "":
+                errors.append(f"缺少必填字段: {field}")
+        
+         
+        if "time" in body:
+            try:
+                timestamp = int(body["time"])
+                if timestamp < 1000000000 or timestamp > 9999999999:
+                    errors.append("时间戳格式不正确（应为 10 位 Unix 时间戳）")
+            except (ValueError, TypeError):
+                errors.append("时间戳必须是数字")
+        
+        return JSONResponse({
+            "valid": len(errors) == 0,
+            "errors": errors,
+            "warnings": []
+        })
+
+    async def _api_builder_submit(self, request: Request) -> JSONResponse:
+        """提交构建的事件"""
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        
+        body = await request.json()
+        
+         
+        validation = await self._api_builder_validate(request)
+        validation_data = validation.body.decode() if hasattr(validation, 'body') else {}
+        if isinstance(validation_data, str):
+            validation_data = json.loads(validation_data)
+        
+        if not validation_data.get("valid", False):
+            return JSONResponse({"success": False, "errors": validation_data.get("errors", [])}, status_code=400)
+        
+         
+        try:
+            await self.sdk.adapter.emit(body)
+            return JSONResponse({"success": True, "message": "事件已提交"})
+        except Exception as e:
+            self.logger.error(f"提交事件失败: {e}")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    async def _api_builder_segments(self, request: Request) -> JSONResponse:
+        """获取支持的消息段类型"""
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        
+        return JSONResponse({
+            "standard_segments": [
+                {
+                    "type": "text",
+                    "name": "文本",
+                    "fields": [
+                        {"name": "text", "type": "string", "required": True}
+                    ]
+                },
+                {
+                    "type": "mention",
+                    "name": "@用户",
+                    "fields": [
+                        {"name": "user_id", "type": "string", "required": True},
+                        {"name": "user_name", "type": "string", "required": False}
+                    ]
+                },
+                {
+                    "type": "mention_all",
+                    "name": "@全体",
+                    "fields": []
+                },
+                {
+                    "type": "image",
+                    "name": "图片",
+                    "fields": [
+                        {"name": "file", "type": "string", "required": True}
+                    ]
+                },
+                {
+                    "type": "reply",
+                    "name": "回复",
+                    "fields": [
+                        {"name": "message_id", "type": "string", "required": True}
+                    ]
+                }
+            ],
+            "platform_segments": {
+                "yunhu": [
+                    {"type": "yunhu_form", "name": "表单", "fields": [{"name": "form_id", "type": "string"}]}
+                ],
+                "telegram": [
+                    {"type": "telegram_sticker", "name": "贴纸", "fields": [{"name": "file_id", "type": "string"}]}
+                ]
+            }
+        })
+
+     
+
+    async def _api_config_source(self, request: Request) -> JSONResponse:
+        """获取/更新配置文件源码"""
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        
+        from pathlib import Path
+        config_path = Path.cwd() / "config" / "config.toml"
+        
+        if request.method == "POST":
+            body = await request.json()
+            content = body.get("content", "")
+            
+            try:
+                config_path.write_text(content, encoding='utf-8')
+                 
+                self.sdk.config.reload()
+                return JSONResponse({"success": True})
+            except Exception as e:
+                return JSONResponse({"success": False, "error": str(e)}, status_code=400)
+        else:
+            if config_path.exists():
+                content = config_path.read_text(encoding='utf-8')
+                return JSONResponse({"content": content})
+            else:
+                return JSONResponse({"error": "Config file not found"}, status_code=404)
