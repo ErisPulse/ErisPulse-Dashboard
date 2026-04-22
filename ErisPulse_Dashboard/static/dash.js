@@ -138,6 +138,14 @@ function go(name, el) {
     if (name === 'event-builder') {
         initEventBuilder();
     }
+    if (name === 'logs') {
+        loadLogs();
+        startLogAutoRefresh();
+    } else {
+        stopLogAutoRefresh();
+    }
+    if (name === 'lifecycle') loadLifecycle();
+    if (name === 'api-routes') loadApiRoutes();
 }
 
 function showModal(title, text, actions) {
@@ -544,7 +552,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore() }
+function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats() }
 
  
 
@@ -1011,6 +1019,441 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionId.addEventListener('input', updateEventPreview);
     }
 });
+
+ 
+
+let _logAutoRefreshTimer = null;
+let _logAutoScroll = true;
+let _availableModules = new Set();
+
+let _logDebounceTimer;
+function debounceLogs() { clearTimeout(_logDebounceTimer); _logDebounceTimer = setTimeout(loadLogs, 300) }
+
+function startLogAutoRefresh() {
+    if (_logAutoRefreshTimer) return;
+    loadLogs();
+    _logAutoRefreshTimer = setInterval(loadLogs, 1000);
+}
+
+function stopLogAutoRefresh() {
+    if (_logAutoRefreshTimer) {
+        clearInterval(_logAutoRefreshTimer);
+        _logAutoRefreshTimer = null;
+    }
+}
+
+function toggleAutoScroll() {
+    _logAutoScroll = !_logAutoScroll;
+    const btn = document.getElementById('autoScrollBtn');
+    if (btn) {
+        btn.style.opacity = _logAutoScroll ? '1' : '0.5';
+    }
+}
+
+async function loadLogs() {
+    const moduleFilter = document.getElementById('logModuleFilter')?.value || '';
+    const levelFilter = document.getElementById('logLevelFilter')?.value || '';
+    const search = document.getElementById('logSearch')?.value || '';
+    
+     
+    if (_availableModules.size === 0) {
+        const d = await api('/api/logs');
+        if (d && d.logs) {
+            d.logs.forEach(log => {
+                if (log.module) {
+                    _availableModules.add(log.module);
+                }
+            });
+             
+            updateModuleSelect();
+        }
+    }
+    
+    const params = new URLSearchParams();
+    if (moduleFilter) params.set('module', moduleFilter);
+    if (levelFilter) params.set('level', levelFilter);
+    if (search) params.set('search', search);
+    params.set('limit', '200');
+    
+    const d = await api('/api/logs?' + params);
+    if (!d) return;
+    
+    const logs = d.logs || [];
+    document.getElementById('logCount').textContent = d.total || 0;
+    
+    if (logs.length === 0) {
+        document.getElementById('logList').innerHTML = '<div class="empty-state"><p>暂无日志</p></div>';
+        return;
+    }
+    
+    const logHtml = logs.map(log => {
+        const levelMatch = log.message.match(/\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]/);
+        const level = levelMatch ? levelMatch[1] : '';
+        let levelClass = '';
+        if (level === 'DEBUG') levelClass = 'log-debug';
+        else if (level === 'INFO') levelClass = 'log-info';
+        else if (level === 'WARNING') levelClass = 'log-warning';
+        else if (level === 'ERROR') levelClass = 'log-error';
+        else if (level === 'CRITICAL') levelClass = 'log-critical';
+        
+        const moduleEsc = esc(log.module);
+        const moduleTooltip = log.module.length > 15 ? `title="${esc(log.module)}"` : '';
+        
+        return `<div class="log-entry ${levelClass}">
+            <span class="log-time">${esc(log.timestamp)}</span>
+            <span class="log-module" ${moduleTooltip}>${moduleEsc}</span>
+            <span class="log-message">${esc(log.message)}</span>
+        </div>`;
+    }).join('');
+    
+    const logList = document.getElementById('logList');
+    
+     
+    const wasNearBottom = logList.scrollHeight - logList.scrollTop - logList.clientHeight < 50;
+    
+    logList.innerHTML = logHtml;
+    
+     
+    if (_logAutoScroll || wasNearBottom) {
+        logList.scrollTop = logList.scrollHeight;
+    }
+}
+
+function updateModuleSelect() {
+    const select = document.getElementById('logModuleFilter');
+    if (!select) return;
+    
+    const currentValue = select.value;
+    
+     
+    select.innerHTML = '<option value="">所有模块</option>';
+    
+    const sortedModules = Array.from(_availableModules).sort();
+    sortedModules.forEach(module => {
+        const opt = document.createElement('option');
+        opt.value = module;
+        opt.textContent = module;
+        select.appendChild(opt);
+    });
+    
+     
+    if (currentValue && _availableModules.has(currentValue)) {
+        select.value = currentValue;
+    }
+}
+
+function copyLogs() {
+    const logList = document.getElementById('logList');
+    if (!logList) return;
+    
+    const logs = Array.from(logList.querySelectorAll('.log-entry')).map(el => el.textContent).join('\n');
+    
+    navigator.clipboard.writeText(logs).then(() => {
+        toast('已复制到剪贴板', 'ok');
+    }).catch(() => {
+        toast('复制失败', 'er');
+    });
+}
+
+ 
+
+async function loadLifecycle() {
+    const d = await api('/api/lifecycle');
+    if (!d) return;
+    
+    const events = d.events || [];
+    
+    if (events.length === 0) {
+        document.getElementById('lifecycleTimeline').innerHTML = '<div class="empty-state"><p>暂无生命周期事件</p></div>';
+        return;
+    }
+    
+    const timelineHtml = events.map((event, index) => {
+        const eventParts = event.event.split('.');
+        const eventType = eventParts[0] || '';
+        const eventName = eventParts.slice(1).join('.');
+        
+        const time = new Date(event.timestamp * 1000).toLocaleTimeString();
+        
+         
+        let duration = '';
+        if (event.data && event.data.duration) {
+            const dur = event.data.duration;
+            duration = `<span class="lifecycle-duration">${dur.toFixed(2)}s</span>`;
+        }
+        
+         
+        let icon = '⚪';
+        let statusClass = 'lifecycle-pending';
+        
+        if (eventType === 'core') {
+            icon = '🔵';
+            statusClass = 'lifecycle-core';
+        } else if (eventType === 'module') {
+            icon = '🟢';
+            statusClass = 'lifecycle-module';
+        } else if (eventType === 'adapter') {
+            icon = '🟡';
+            statusClass = 'lifecycle-adapter';
+        } else if (eventType === 'server') {
+            icon = '🟣';
+            statusClass = 'lifecycle-server';
+        }
+        
+        return `<div class="lifecycle-item ${statusClass}">
+            <div class="lifecycle-icon">${icon}</div>
+            <div class="lifecycle-content">
+                <div class="lifecycle-header">
+                    <span class="lifecycle-event">${esc(event.event)}</span>
+                    <span class="lifecycle-time">${time}</span>
+                </div>
+                <div class="lifecycle-details">
+                    <div class="lifecycle-desc">${esc(event.msg || eventName)}</div>
+                    ${duration}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    
+    document.getElementById('lifecycleTimeline').innerHTML = timelineHtml;
+}
+
+ 
+
+async function loadPerformance() {
+    const d = await api('/api/performance');
+    if (!d) return;
+    
+    const system = d.system || {};
+    const ws = d.websocket || {};
+    
+     
+    const memory = system.memory || {};
+    
+     
+    let cpuPercent = memory.cpu_percent;
+    if (typeof cpuPercent === 'string') {
+        cpuPercent = parseFloat(cpuPercent) || 0;
+    } else if (cpuPercent === null || cpuPercent === undefined) {
+        cpuPercent = 0;
+    }
+    
+    let rssMb = memory.rss_mb;
+    if (typeof rssMb === 'string') {
+        rssMb = parseFloat(rssMb) || 0;
+    } else if (rssMb === null || rssMb === undefined) {
+        rssMb = 0;
+    }
+    
+    let sysPercent = memory.system_percent;
+    if (typeof sysPercent === 'string') {
+        sysPercent = parseFloat(sysPercent) || 0;
+    } else if (sysPercent === null || sysPercent === undefined) {
+        sysPercent = 0;
+    }
+    
+     
+    if (document.getElementById('cpuUsage')) {
+        document.getElementById('cpuUsage').textContent = cpuPercent + '%';
+    }
+    if (document.getElementById('memUsage')) {
+        document.getElementById('memUsage').textContent = rssMb + ' MB';
+    }
+    if (document.getElementById('sysMemUsage')) {
+        document.getElementById('sysMemUsage').textContent = sysPercent + '%';
+    }
+    if (document.getElementById('wsConnections')) {
+        document.getElementById('wsConnections').textContent = ws.active_connections || 0;
+    }
+}
+
+ 
+
+async function loadApiRoutes() {
+    const d = await api('/api/routes');
+    if (!d) return;
+    
+    const httpRoutes = d.http_routes || [];
+    const wsRoutes = d.ws_routes || [];
+    
+    document.getElementById('httpRouteCount').textContent = httpRoutes.length;
+    document.getElementById('wsRouteCount').textContent = wsRoutes.length;
+    
+     
+    if (httpRoutes.length === 0) {
+        document.getElementById('httpRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">暂无 HTTP 路由</div>';
+    } else {
+        const httpHtml = httpRoutes.map(route => {
+            const methodColor = {
+                'GET': 'method-get',
+                'POST': 'method-post',
+                'PUT': 'method-put',
+                'DELETE': 'method-delete',
+                'PATCH': 'method-patch',
+                'OPTIONS': 'method-options',
+                'HEAD': 'method-head'
+            }[route.method] || 'method-get';
+            
+            const handler = route.handler || {};
+            const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
+            const handlerInfo = handler.file !== 'unknown' 
+                ? `<div style="font-size:11px;color:var(--tx-t);margin-top:2px">
+                    <span style="font-family:monospace">${handler.name}()</span>
+                    <br>
+                    <span style="color:var(--tx-s)">${handler.file}:${handler.line}</span>
+                   </div>` 
+                : '';
+            
+             
+            const apiPath = `/${route.module}${route.path}`;
+            
+            return `<div class="route-item" style="padding:12px 16px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                    <span class="method-badge ${methodColor}">${route.method}</span>
+                    ${moduleBadge}
+                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(apiPath)}</code>
+                    <button class="btn btn-secondary btn-xs" onclick="testApi('${esc(apiPath)}','${route.method}')" style="margin-left:auto">测试</button>
+                </div>
+                ${handlerInfo}
+            </div>`;
+        }).join('');
+        document.getElementById('httpRouteList').innerHTML = httpHtml;
+    }
+    
+     
+    if (wsRoutes.length === 0) {
+        document.getElementById('wsRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">暂无 WebSocket 路由</div>';
+    } else {
+        const wsHtml = wsRoutes.map(route => {
+            const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
+            const handler = route.handler || {};
+            const authBadge = route.has_auth ? `<span class="chip chip-wr" style="margin-right:8px">需认证</span>` : '';
+            const handlerInfo = handler.file !== 'unknown'
+                ? `<div style="font-size:11px;color:var(--tx-t);margin-top:2px">
+                    <span style="font-family:monospace">${handler.name}()</span>
+                    <br>
+                    <span style="color:var(--tx-s)">${handler.file}:${handler.line}</span>
+                   </div>`
+                : '';
+            
+             
+            const wsPath = `/${route.module}${route.path}`;
+            
+            return `<div class="route-item" style="padding:12px 16px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                    <span class="method-badge method-ws">WS</span>
+                    ${moduleBadge}
+                    ${authBadge}
+                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(wsPath)}</code>
+                </div>
+                ${handlerInfo}
+            </div>`;
+        }).join('');
+        document.getElementById('wsRouteList').innerHTML = wsHtml;
+    }
+}
+
+async function testApi(path, method) {
+    const headers = {};
+    const token = localStorage.getItem(TK);
+    if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+    }
+    
+    const fetchOptions = {
+        method: method,
+        headers: headers
+    };
+    
+     
+    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+        fetchOptions.headers['Content-Type'] = 'application/json';
+        fetchOptions.body = JSON.stringify({ test: true, timestamp: Date.now() });
+    }
+    
+    try {
+        const response = await fetch(API + path, fetchOptions);
+        const data = await response.json();
+        
+        showOutputModal(`测试 ${method} ${path}`, [JSON.stringify(data, null, 2)], [
+            { label: '关闭', value: true, primary: true }
+        ]);
+    } catch (error) {
+        showOutputModal(`测试 ${method} ${path}`, [`错误: ${error.message}`], [
+            { label: '关闭', value: true, primary: true }
+        ]);
+    }
+}
+
+ 
+
+async function loadMessageStats() {
+    const d = await api('/api/message-stats');
+    if (!d) return;
+    
+     
+    const typeStats = d.by_type || {};
+    const typeHtml = Object.entries(typeStats).map(([type, count]) => {
+        const total = d.total_events || 1;
+        const percent = ((count / total) * 100).toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="min-width:80px;font-weight:500">${esc(type)}</span>
+            <div style="flex:1;height:8px;background:var(--bg-s);border-radius:4px;overflow:hidden">
+                <div style="width:${percent}%;height:100%;background:var(--accent)"></div>
+            </div>
+            <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
+        </div>`;
+    }).join('');
+    document.getElementById('msgTypeStats').innerHTML = typeHtml || '<div style="color:var(--tx-s);font-size:13px">暂无数据</div>';
+    
+     
+    const platformStats = d.by_platform || {};
+    const platformHtml = Object.entries(platformStats).map(([platform, count]) => {
+        const total = d.total_events || 1;
+        const percent = ((count / total) * 100).toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="min-width:80px;font-weight:500">${esc(platform)}</span>
+            <div style="flex:1;height:8px;background:var(--bg-s);border-radius:4px;overflow:hidden">
+                <div style="width:${percent}%;height:100%;background:var(--ok-c)"></div>
+            </div>
+            <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
+        </div>`;
+    }).join('');
+    document.getElementById('msgPlatformStats').innerHTML = platformHtml || '<div style="color:var(--tx-s);font-size:13px">暂无数据</div>';
+    
+     
+    const hourlyStats = d.hourly || {};
+    const now = Date.now() / 1000;
+    const hourlyHtml = [];
+    
+    for (let i = 23; i >= 0; i--) {
+        const hourKey = Math.floor((now - i * 3600) / 3600) * 3600;
+        const count = hourlyStats[hourKey] || 0;
+        const maxCount = Math.max(...Object.values(hourlyStats), 1);
+        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+        
+        const hourLabel = new Date(hourKey * 1000).getHours() + ':00';
+        
+        hourlyHtml.push(`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px">
+            <div style="width:12px;height:${height}%;background:var(--accent);border-radius:2px;min-height:2px;transition:height 0.3s"></div>
+            <span style="font-size:10px;color:var(--tx-t)">${hourLabel}</span>
+        </div>`);
+    }
+    
+    document.getElementById('msgHourlyTrend').innerHTML = hourlyHtml.join('');
+}
+
+ 
+const _originalRefreshDashboard = refreshDashboard;
+refreshDashboard = async function() {
+    await _originalRefreshDashboard();
+    await loadPerformance();
+    await loadMessageStats();
+};
+
+
+
+
 
 
 
