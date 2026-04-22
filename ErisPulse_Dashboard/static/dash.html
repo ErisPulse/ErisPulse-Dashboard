@@ -475,25 +475,20 @@
                         <select id="logModuleFilter" onchange="loadLogs()">
                             <option value="">所有模块</option>
                         </select>
-                        <select id="logLevelFilter" onchange="loadLogs()">
-                            <option value="">所有级别</option>
-                            <option value="DEBUG">DEBUG</option>
-                            <option value="INFO">INFO</option>
-                            <option value="WARNING">WARNING</option>
-                            <option value="ERROR">ERROR</option>
-                            <option value="CRITICAL">CRITICAL</option>
-                        </select>
                         <input type="text" id="logSearch" placeholder="搜索日志..." oninput="debounceLogs()">
                         <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" id="logAutoRefreshBtn" onclick="toggleLogAutoRefresh()" title="自动刷新" style="opacity:0.5">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <path d="M21 12a9 9 0 00-9-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+                                <path d="M3 3v5h5" />
+                                <path d="M3 12a9 9 0 009 9 9.75 9.75 0 006.74-2.74L21 16" />
+                                <path d="M16 21h5v-5" />
+                            </svg>
+                        </button>
                         <button class="btn btn-secondary btn-sm" onclick="loadLogs()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
                                 <polyline points="23 4 23 10 17 10" />
                                 <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                            </svg>
-                        </button>
-                        <button class="btn btn-secondary btn-sm" onclick="toggleAutoScroll()" id="autoScrollBtn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
-                                <path d="M12 5v14M19 12l-7 7-7-7" />
                             </svg>
                         </button>
                     </div>
