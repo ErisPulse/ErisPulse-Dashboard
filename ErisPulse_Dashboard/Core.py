@@ -286,22 +286,71 @@ class Main(BaseModule):
 
         uptime = time.time() - self._start_time
         mem = {}
+        proc_info = {}
+        
         try:
             import psutil
 
             proc = psutil.Process(os.getpid())
-            mem["rss_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
+            
+             
+            mem_info_rss = proc.memory_info()
+            mem["rss_mb"] = round(mem_info_rss.rss / 1024 / 1024, 1)
+            mem["vms_mb"] = round(mem_info_rss.vms / 1024 / 1024, 1)
+            
              
             try:
                 mem["cpu_percent"] = round(proc.cpu_percent(interval=1.0), 1)
-            except:
+            except Exception as e:
                  
+                self.logger.debug(f"CPU interval measurement failed: {e}")
                 try:
                     mem["cpu_percent"] = round(proc.cpu_percent(interval=None), 1)
-                except:
+                except Exception as e2:
+                    self.logger.debug(f"CPU non-interval measurement failed: {e2}")
                     mem["cpu_percent"] = 0.0
-            mem["system_percent"] = round(psutil.virtual_memory().percent, 1)
+            
+             
+            vm = psutil.virtual_memory()
+            mem["system_percent"] = round(vm.percent, 1)
+            mem["system_total_gb"] = round(vm.total / 1024 / 1024 / 1024, 2)
+            mem["system_available_gb"] = round(vm.available / 1024 / 1024 / 1024, 2)
+            
+             
+            swap = psutil.swap_memory()
+            mem["swap_percent"] = round(swap.percent, 1)
+            mem["swap_used_mb"] = round(swap.used / 1024 / 1024, 1)
+            
+             
+            proc_info["threads"] = proc.num_threads()
+            proc_info["open_files"] = len(proc.open_files())
+            
+             
+            cpu_times = proc.cpu_times()
+            proc_info["cpu_user"] = round(cpu_times.user, 2)
+            proc_info["cpu_system"] = round(cpu_times.system, 2)
+            
+             
+            try:
+                io_counters = proc.io_counters()
+                proc_info["read_bytes_mb"] = round(io_counters.read_bytes / 1024 / 1024, 1)
+                proc_info["write_bytes_mb"] = round(io_counters.write_bytes / 1024 / 1024, 1)
+            except Exception:
+                pass
+            
+             
+            try:
+                connections = proc.connections()
+                proc_info["connections"] = len(connections)
+                proc_info["listening"] = len([c for c in connections if c.status == 'LISTEN'])
+            except Exception:
+                pass
+            
+             
+            proc_info["created"] = proc.create_time()
+            
         except ImportError:
+            self.logger.warning("psutil not installed, system monitoring unavailable. Install with: pip install psutil")
             mem["rss_mb"] = 0
             mem["cpu_percent"] = 0
             mem["system_percent"] = 0
@@ -323,6 +372,7 @@ class Main(BaseModule):
             "platform_machine": pf.machine(),
             "pid": os.getpid(),
             "memory": mem,
+            "process": proc_info,
             "event_counts": ec,
             "total_events": len(self._event_log),
         }

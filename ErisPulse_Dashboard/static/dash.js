@@ -1212,45 +1212,66 @@ async function loadPerformance() {
     
     const system = d.system || {};
     const ws = d.websocket || {};
+    const process = system.process || {};
     
      
     const memory = system.memory || {};
     
      
-    let cpuPercent = memory.cpu_percent;
-    if (typeof cpuPercent === 'string') {
-        cpuPercent = parseFloat(cpuPercent) || 0;
-    } else if (cpuPercent === null || cpuPercent === undefined) {
-        cpuPercent = 0;
-    }
+    const fmt = (v, unit = '') => {
+        if (v === null || v === undefined) return '--' + unit;
+        if (typeof v === 'string') v = parseFloat(v) || 0;
+        return v.toFixed(1) + unit;
+    };
     
-    let rssMb = memory.rss_mb;
-    if (typeof rssMb === 'string') {
-        rssMb = parseFloat(rssMb) || 0;
-    } else if (rssMb === null || rssMb === undefined) {
-        rssMb = 0;
-    }
-    
-    let sysPercent = memory.system_percent;
-    if (typeof sysPercent === 'string') {
-        sysPercent = parseFloat(sysPercent) || 0;
-    } else if (sysPercent === null || sysPercent === undefined) {
-        sysPercent = 0;
-    }
+     
+    const cpuPercent = memory.cpu_percent || 0;
     
      
     if (document.getElementById('cpuUsage')) {
-        document.getElementById('cpuUsage').textContent = cpuPercent + '%';
+        document.getElementById('cpuUsage').textContent = fmt(cpuPercent, '%');
     }
     if (document.getElementById('memUsage')) {
-        document.getElementById('memUsage').textContent = rssMb + ' MB';
+        document.getElementById('memUsage').textContent = fmt(memory.rss_mb, ' MB');
     }
     if (document.getElementById('sysMemUsage')) {
-        document.getElementById('sysMemUsage').textContent = sysPercent + '%';
+        document.getElementById('sysMemUsage').textContent = fmt(memory.system_percent, '%');
     }
     if (document.getElementById('wsConnections')) {
         document.getElementById('wsConnections').textContent = ws.active_connections || 0;
     }
+    
+     
+    const setEl = (id, v, unit = '') => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = fmt(v, unit);
+    };
+    
+    setEl('vmsMem', memory.vms_mb, ' MB');
+    setEl('sysTotalMem', memory.system_total_gb, ' GB');
+    setEl('sysAvailMem', memory.system_available_gb, ' GB');
+    setEl('swapMem', memory.swap_used_mb, ' MB');
+    setEl('procThreads', process.threads);
+    setEl('netConnections', process.connections);
+    setEl('listeningPorts', process.listening);
+    setEl('ioRead', process.read_bytes_mb, ' MB');
+    setEl('ioWrite', process.write_bytes_mb, ' MB');
+    setEl('cpuUser', process.cpu_user, 's');
+    setEl('cpuSys', process.cpu_system, 's');
+    
+     
+    window._perfData = {
+        vms: memory.vms_mb,
+        threads: process.threads,
+        connections: process.connections,
+        listening: process.listening,
+        readBytes: process.read_bytes_mb,
+        writeBytes: process.write_bytes_mb,
+        swapUsed: memory.swap_used_mb,
+        swapPercent: memory.swap_percent,
+        sysTotal: memory.system_total_gb,
+        sysAvail: memory.system_available_gb,
+    };
 }
 
  
