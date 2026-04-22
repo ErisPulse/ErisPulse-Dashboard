@@ -140,9 +140,14 @@ function go(name, el) {
     }
     if (name === 'logs') {
         loadLogs();
-        startLogAutoRefresh();
     } else {
-        stopLogAutoRefresh();
+        // 离开日志页面时关闭自动刷新
+        if (_logAutoRefreshTimer) {
+            clearInterval(_logAutoRefreshTimer);
+            _logAutoRefreshTimer = null;
+            const btn = document.getElementById('logAutoRefreshBtn');
+            if (btn) btn.style.opacity = '0.5';
+        }
     }
     if (name === 'lifecycle') loadLifecycle();
     if (name === 'api-routes') loadApiRoutes();
@@ -1023,36 +1028,27 @@ document.addEventListener('DOMContentLoaded', function() {
 // ========== 日志功能 ==========
 
 let _logAutoRefreshTimer = null;
-let _logAutoScroll = true;
 let _availableModules = new Set();
 
 let _logDebounceTimer;
 function debounceLogs() { clearTimeout(_logDebounceTimer); _logDebounceTimer = setTimeout(loadLogs, 300) }
 
-function startLogAutoRefresh() {
-    if (_logAutoRefreshTimer) return;
-    loadLogs();
-    _logAutoRefreshTimer = setInterval(loadLogs, 1000);
-}
-
-function stopLogAutoRefresh() {
+function toggleLogAutoRefresh() {
     if (_logAutoRefreshTimer) {
         clearInterval(_logAutoRefreshTimer);
         _logAutoRefreshTimer = null;
-    }
-}
-
-function toggleAutoScroll() {
-    _logAutoScroll = !_logAutoScroll;
-    const btn = document.getElementById('autoScrollBtn');
-    if (btn) {
-        btn.style.opacity = _logAutoScroll ? '1' : '0.5';
+        document.getElementById('logAutoRefreshBtn').style.opacity = '0.5';
+        toast('自动刷新已关闭', '');
+    } else {
+        loadLogs();
+        _logAutoRefreshTimer = setInterval(loadLogs, 2000);
+        document.getElementById('logAutoRefreshBtn').style.opacity = '1';
+        toast('自动刷新已开启', 'ok');
     }
 }
 
 async function loadLogs() {
     const moduleFilter = document.getElementById('logModuleFilter')?.value || '';
-    const levelFilter = document.getElementById('logLevelFilter')?.value || '';
     const search = document.getElementById('logSearch')?.value || '';
     
     // 首次加载时收集所有模块
@@ -1071,7 +1067,6 @@ async function loadLogs() {
     
     const params = new URLSearchParams();
     if (moduleFilter) params.set('module', moduleFilter);
-    if (levelFilter) params.set('level', levelFilter);
     if (search) params.set('search', search);
     params.set('limit', '200');
     
@@ -1087,19 +1082,10 @@ async function loadLogs() {
     }
     
     const logHtml = logs.map(log => {
-        const levelMatch = log.message.match(/\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]/);
-        const level = levelMatch ? levelMatch[1] : '';
-        let levelClass = '';
-        if (level === 'DEBUG') levelClass = 'log-debug';
-        else if (level === 'INFO') levelClass = 'log-info';
-        else if (level === 'WARNING') levelClass = 'log-warning';
-        else if (level === 'ERROR') levelClass = 'log-error';
-        else if (level === 'CRITICAL') levelClass = 'log-critical';
-        
         const moduleEsc = esc(log.module);
         const moduleTooltip = log.module.length > 15 ? `title="${esc(log.module)}"` : '';
         
-        return `<div class="log-entry ${levelClass}">
+        return `<div class="log-entry">
             <span class="log-time">${esc(log.timestamp)}</span>
             <span class="log-module" ${moduleTooltip}>${moduleEsc}</span>
             <span class="log-message">${esc(log.message)}</span>
@@ -1113,8 +1099,8 @@ async function loadLogs() {
     
     logList.innerHTML = logHtml;
     
-    // 只有当用户之前在底部附近，或者启用了自动滚动时才滚动到底部
-    if (_logAutoScroll || wasNearBottom) {
+    // 只有当用户之前在底部附近，或者启用了自动刷新时才滚动到底部
+    if (_logAutoRefreshTimer || wasNearBottom) {
         logList.scrollTop = logList.scrollHeight;
     }
 }
@@ -1304,15 +1290,14 @@ async function loadApiRoutes() {
                    </div>` 
                 : '';
             
-            // 构建完整的 API URL
-            const apiPath = `/${route.module}${route.path}`;
+            // 使用相对路径（去掉模块前缀）
+            const apiPath = route.path;
             
             return `<div class="route-item" style="padding:12px 16px">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
                     <span class="method-badge ${methodColor}">${route.method}</span>
                     ${moduleBadge}
                     <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(apiPath)}</code>
-                    <button class="btn btn-secondary btn-xs" onclick="testApi('${esc(apiPath)}','${route.method}')" style="margin-left:auto">测试</button>
                 </div>
                 ${handlerInfo}
             </div>`;
@@ -1336,8 +1321,8 @@ async function loadApiRoutes() {
                    </div>`
                 : '';
             
-            // 构建完整的 API URL
-            const wsPath = `/${route.module}${route.path}`;
+            // 使用相对路径（去掉模块前缀）
+            const wsPath = route.path;
             
             return `<div class="route-item" style="padding:12px 16px">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
@@ -1350,38 +1335,6 @@ async function loadApiRoutes() {
             </div>`;
         }).join('');
         document.getElementById('wsRouteList').innerHTML = wsHtml;
-    }
-}
-
-async function testApi(path, method) {
-    const headers = {};
-    const token = localStorage.getItem(TK);
-    if (token) {
-        headers['Authorization'] = 'Bearer ' + token;
-    }
-    
-    const fetchOptions = {
-        method: method,
-        headers: headers
-    };
-    
-    // POST 请求需要 body
-    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-        fetchOptions.headers['Content-Type'] = 'application/json';
-        fetchOptions.body = JSON.stringify({ test: true, timestamp: Date.now() });
-    }
-    
-    try {
-        const response = await fetch(API + path, fetchOptions);
-        const data = await response.json();
-        
-        showOutputModal(`测试 ${method} ${path}`, [JSON.stringify(data, null, 2)], [
-            { label: '关闭', value: true, primary: true }
-        ]);
-    } catch (error) {
-        showOutputModal(`测试 ${method} ${path}`, [`错误: ${error.message}`], [
-            { label: '关闭', value: true, primary: true }
-        ]);
     }
 }
 

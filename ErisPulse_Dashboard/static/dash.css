@@ -1778,27 +1778,6 @@ select.form-select::-ms-expand {
     min-width: 0
 }
 
-.log-entry.log-debug .log-message {
-    color: var(--tx-s)
-}
-
-.log-entry.log-info .log-message {
-    color: var(--tx-p)
-}
-
-.log-entry.log-warning .log-message {
-    color: var(--wr-c)
-}
-
-.log-entry.log-error .log-message {
-    color: var(--er-c)
-}
-
-.log-entry.log-critical .log-message {
-    color: var(--er-c);
-    font-weight: 600
-}
-
 /* ========== 生命周期样式 ========== */
 .lifecycle-item {
     display: flex;
