@@ -3,7 +3,7 @@ let ws = null, allEvents = [], platforms = [], authed = false;
 
 const I18N = {
     zh: {
-        dashboard: '仪表盘', bots: '机器人', events: '事件系统', modules: '插件', store: '模块商店', config: '配置管理',
+        dashboard: '仪表盘', bots: '机器人', events: '事件系统', modules: '插件管理', store: '模块商店', config: '配置管理',
         sys_logs: '系统日志', logs: '日志', lifecycle: '生命周期', events_stream: '事件流', events_builder: '构建器',
         sys_logs_desc: '查看系统日志与生命周期', logs_desc: '查看和过滤系统日志', lifecycle_desc: '查看系统启动和运行过程',
         lifecycle_timeline: '生命周期时间轴', all_modules: '所有模块', search_logs: '搜索日志...', no_lifecycle: '暂无生命周期事件',
@@ -68,6 +68,19 @@ const I18N = {
         load_segments_first: '请先加载消息段类型',
         test: '测试', send: '发送', query_params: 'Query 参数', request_body: '请求体', response: '响应',
         force_refresh: '强制刷新',
+        audit_log: '审计日志', audit_log_desc: '查看系统操作记录', all_actions: '所有操作',
+        backup_restore: '备份与恢复', backup_desc: '导出或导入系统配置和存储数据',
+        backup_export: '导出备份', backup_import: '导入恢复',
+        backup_export_success: '备份已导出', backup_import_confirm: '导入将覆盖当前配置和存储数据（Dashboard 配置除外）。确定要继续吗？',
+        import_success: '恢复成功', import_failed: '恢复失败', backup_failed: '备份失败',
+        audit_clear_confirm: '确定要清空审计日志吗？', audit_cleared: '审计日志已清空',
+        last_run: '上次执行', never: '从未', run_count: '执行次数',
+        action_load_module: '加载模块', action_unload_module: '卸载模块',
+        action_load_adapter: '加载适配器', action_unload_adapter: '卸载适配器',
+        action_config_update: '修改配置', action_config_source_save: '保存配置源码',
+        action_storage_set: '设置存储', action_storage_delete: '删除存储',
+        action_package_install: '安装包', action_clear_events: '清除事件',
+        action_restart_framework: '重启框架', action_backup_import: '导入备份',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -135,6 +148,19 @@ const I18N = {
         load_segments_first: 'Please load segment types first',
         test: 'Test', send: 'Send', query_params: 'Query Params', request_body: 'Request Body', response: 'Response',
         force_refresh: 'Force Refresh',
+        audit_log: 'Audit Log', audit_log_desc: 'View system operation records', all_actions: 'All Actions',
+        backup_restore: 'Backup & Restore', backup_desc: 'Export or import system configuration and storage data',
+        backup_export: 'Export Backup', backup_import: 'Import Restore',
+        backup_export_success: 'Backup exported', backup_import_confirm: 'Import will overwrite current config and storage (except Dashboard config). Continue?',
+        import_success: 'Restore successful', import_failed: 'Restore failed', backup_failed: 'Backup failed',
+        audit_clear_confirm: 'Clear all audit logs?', audit_cleared: 'Audit logs cleared',
+        last_run: 'Last Run', never: 'Never', run_count: 'Run Count',
+        action_load_module: 'Load Module', action_unload_module: 'Unload Module',
+        action_load_adapter: 'Load Adapter', action_unload_adapter: 'Unload Adapter',
+        action_config_update: 'Update Config', action_config_source_save: 'Save Config Source',
+        action_storage_set: 'Set Storage', action_storage_delete: 'Delete Storage',
+        action_package_install: 'Install Package', action_clear_events: 'Clear Events',
+        action_restart_framework: 'Restart Framework', action_backup_import: 'Import Backup',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -206,6 +232,7 @@ function go(name, el) {
         if (btn) btn.style.opacity = '0.5';
     }
     if (name === 'api-routes') loadApiRoutes();
+    if (name === 'audit') loadAuditLog();
 }
 
 function showModal(title, text, actions) {
@@ -639,7 +666,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats() }
+function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog() }
 
 // ========== 事件构建器相关 ==========
 
@@ -1526,6 +1553,95 @@ async function sendRouteTest() {
     } catch (e) {
         document.getElementById('rtResponse').textContent = 'Error: ' + e.message;
     }
+}
+
+// ========== 审计日志功能 ==========
+
+async function loadAuditLog() {
+    const actionFilter = document.getElementById('auditActionFilter')?.value || '';
+    const params = new URLSearchParams();
+    if (actionFilter) params.set('action', actionFilter);
+    params.set('limit', '200');
+    const d = await api('/api/audit?' + params);
+    if (!d) return;
+    const logs = d.logs || [];
+    document.getElementById('auditCount').textContent = d.total || 0;
+    if (logs.length === 0) {
+        document.getElementById('auditList').innerHTML = '<div class="empty-state"><p>' + t('no_data') + '</p></div>';
+        return;
+    }
+    const html = logs.slice().reverse().map(log => {
+        const tm = new Date(log.timestamp * 1000).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US');
+        const actionKey = 'action_' + log.action;
+        const actionLabel = t(actionKey) !== actionKey ? t(actionKey) : esc(log.action);
+        const actionClass = {
+            'restart_framework': 'chip-er',
+            'clear_events': 'chip-wr',
+            'package_install': 'chip-ok',
+            'backup_import': 'chip-pr',
+        }[log.action] || 'chip-sc';
+        return '<div class="list-row" style="font-size:13px;gap:12px">' +
+            '<span class="chip ' + actionClass + '" style="min-width:100px;justify-content:center">' + esc(actionLabel) + '</span>' +
+            '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-s)" title="' + esc(log.detail) + '">' + esc(log.detail || '-') + '</span>' +
+            '<span style="font-size:11px;color:var(--tx-t);white-space:nowrap">' + esc(log.ip || '') + '</span>' +
+            '<span style="font-size:11px;color:var(--tx-t);white-space:nowrap;min-width:140px;text-align:right">' + esc(tm) + '</span>' +
+            '</div>';
+    }).join('');
+    document.getElementById('auditList').innerHTML = html;
+}
+
+async function clearAuditLog() {
+    if (!authed) return showLogin();
+    const ok = await confirm2(t('clear_events'), t('audit_clear_confirm'));
+    if (!ok) return;
+    await api('/api/audit/clear', { method: 'POST' });
+    toast(t('audit_cleared'), 'ok');
+    loadAuditLog();
+}
+
+// ========== 备份与恢复功能 ==========
+
+async function exportBackup() {
+    if (!authed) return showLogin();
+    const d = await api('/api/backup/export');
+    if (!d || d.error) {
+        toast(t('backup_failed'), 'er');
+        return;
+    }
+    const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.download = 'erispulse-backup-' + ts + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast(t('backup_export_success'), 'ok');
+}
+
+async function importBackup(input) {
+    if (!authed) return showLogin();
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const ok = await confirm2(t('backup_import'), t('backup_import_confirm'));
+    if (!ok) { input.value = ''; return }
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const result = await api('/api/backup/import', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        if (result && result.success) {
+            toast(t('import_success') + ' (' + result.config_restored + ' config, ' + result.storage_restored + ' storage)', 'ok');
+            loadConfig();
+        } else {
+            toast(t('import_failed') + ': ' + (result?.error || ''), 'er');
+        }
+    } catch (e) {
+        toast(t('import_failed') + ': ' + e.message, 'er');
+    }
+    input.value = '';
 }
 
 (function () {

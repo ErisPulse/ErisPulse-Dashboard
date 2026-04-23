@@ -33,6 +33,8 @@ class Main(BaseModule):
         self._loop: asyncio.AbstractEventLoop | None = None
         self._lifecycle_log: list[dict] = []
         self._max_lifecycle_log = 200
+        self._audit_log: list[dict] = []
+        self._max_audit_log = 500
         self._register_routes()
 
     @staticmethod
@@ -44,6 +46,7 @@ class Main(BaseModule):
     async def on_load(self, event: dict) -> bool:
         self._loop = asyncio.get_running_loop()
         self._restore_persisted_data()
+        self._restore_audit_data()
         self._setup_event_interceptors()
         self.logger.info("WebUI module loaded")
         if getattr(self, "_token_new", False):
@@ -162,6 +165,38 @@ class Main(BaseModule):
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
                 self._event_log = events[-self._max_log:]
+        except Exception:
+            pass
+
+    def _add_audit_log(self, action: str, detail: str = "", request: Request | None = None):
+        ip = ""
+        if request:
+            ip = request.client.host if request.client else ""
+            forwarded = request.headers.get("X-Forwarded-For", "")
+            if forwarded:
+                ip = forwarded.split(",")[0].strip()
+        entry = {
+            "timestamp": time.time(),
+            "action": action,
+            "detail": detail,
+            "ip": ip,
+        }
+        self._audit_log.append(entry)
+        if len(self._audit_log) > self._max_audit_log:
+            self._audit_log = self._audit_log[-self._max_audit_log:]
+        self._persist_audit()
+
+    def _persist_audit(self):
+        try:
+            self.storage.set("__ep_audit__", self._audit_log[-self._max_audit_log:])
+        except Exception:
+            pass
+
+    def _restore_audit_data(self):
+        try:
+            logs = self.storage.get("__ep_audit__")
+            if isinstance(logs, list):
+                self._audit_log = logs[-self._max_audit_log:]
         except Exception:
             pass
 
@@ -488,6 +523,10 @@ class Main(BaseModule):
         # 消息统计相关 API
         r.register_http_route(mn, "/api/message-stats", handler=self._api_message_stats, methods=["GET"])
         
+        r.register_http_route(mn, "/api/audit", handler=self._api_audit, methods=["GET"])
+        r.register_http_route(mn, "/api/audit/clear", handler=self._api_audit_clear, methods=["POST"])
+        r.register_http_route(mn, "/api/backup/export", handler=self._api_backup_export, methods=["GET"])
+        r.register_http_route(mn, "/api/backup/import", handler=self._api_backup_import, methods=["POST"])
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -525,6 +564,10 @@ class Main(BaseModule):
             "/api/performance",
             "/api/routes",
             "/api/message-stats",
+            "/api/audit",
+            "/api/audit/clear",
+            "/api/backup/export",
+            "/api/backup/import",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -630,6 +673,7 @@ class Main(BaseModule):
                 )
             if not result:
                 return JSONResponse({"error": "adapter not found"}, status_code=404)
+            self._add_audit_log(f"{action}_adapter", name, request)
             return JSONResponse({"success": True, "requires_restart": True})
         else:
             if action == "load":
@@ -640,6 +684,7 @@ class Main(BaseModule):
                 return JSONResponse(
                     {"error": f"action {action} failed"}, status_code=400
                 )
+        self._add_audit_log(f"{action}_module", name, request)
         return JSONResponse({"success": True})
 
     async def _api_bots(self, request: Request) -> JSONResponse:
@@ -673,6 +718,7 @@ class Main(BaseModule):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         self._event_log.clear()
         self._persist_events()
+        self._add_audit_log("clear_events", "", request)
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
@@ -687,6 +733,7 @@ class Main(BaseModule):
         if not key:
             return JSONResponse({"error": "key is required"}, status_code=400)
         self.sdk.config.setConfig(key, value)
+        self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})
 
     async def _api_storage(self, request: Request) -> JSONResponse:
@@ -704,6 +751,7 @@ class Main(BaseModule):
         if not key:
             return JSONResponse({"error": "key is required"}, status_code=400)
         self.storage.set(key, value)
+        self._add_audit_log("storage_set", key, request)
         return JSONResponse({"success": True})
 
     async def _api_storage_delete(self, request: Request) -> JSONResponse:
@@ -714,6 +762,7 @@ class Main(BaseModule):
         if not key:
             return JSONResponse({"error": "key is required"}, status_code=400)
         self.storage.delete(key)
+        self._add_audit_log("storage_delete", key, request)
         return JSONResponse({"success": True})
 
     async def _api_store_remote(self, request: Request) -> JSONResponse:
@@ -738,6 +787,7 @@ class Main(BaseModule):
             target=self._run_pip_install, args=(packages, task_id), daemon=True
         )
         t.start()
+        self._add_audit_log("package_install", ", ".join(packages), request)
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_store_install_status(self, request: Request) -> JSONResponse:
@@ -905,6 +955,7 @@ class Main(BaseModule):
             await asyncio.sleep(0.5)
             await self.sdk.restart()
 
+        self._add_audit_log("restart_framework", "", request)
         asyncio.create_task(_delayed_restart())
         return JSONResponse({"success": True})
 
@@ -1108,8 +1159,8 @@ class Main(BaseModule):
             
             try:
                 config_path.write_text(content, encoding='utf-8')
-                # 重新加载配置
                 self.sdk.config.reload()
+                self._add_audit_log("config_source_save", "", request)
                 return JSONResponse({"success": True})
             except Exception as e:
                 return JSONResponse({"success": False, "error": str(e)}, status_code=400)
@@ -1333,3 +1384,64 @@ class Main(BaseModule):
             "by_platform": platform_counts,
             "hourly": hourly_stats
         })
+
+    # ========== 操作审计日志 API ==========
+
+    async def _api_audit(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        limit = int(request.query_params.get("limit", "200"))
+        action_filter = request.query_params.get("action", "")
+        logs = list(self._audit_log)
+        if action_filter:
+            logs = [l for l in logs if l.get("action") == action_filter]
+        return JSONResponse({"logs": logs[-limit:], "total": len(logs)})
+
+    async def _api_audit_clear(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        self._audit_log.clear()
+        self._persist_audit()
+        return JSONResponse({"success": True})
+
+    # ========== 数据备份与恢复 API ==========
+
+    async def _api_backup_export(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        config_data = dict(self.sdk.config._cache)
+        storage_keys = self.storage.get_all_keys()
+        storage_data = {}
+        for k in storage_keys[:500]:
+            storage_data[k] = self.storage.get(k)
+        backup = {
+            "version": "1.0",
+            "timestamp": time.time(),
+            "config": config_data,
+            "storage": storage_data,
+            "audit_log": self._audit_log[-100:],
+        }
+        return JSONResponse(backup)
+
+    async def _api_backup_import(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        if not isinstance(body, dict):
+            return JSONResponse({"error": "Invalid backup format"}, status_code=400)
+        config_keys_before = set(self.sdk.config._cache.keys())
+        config_data = body.get("config", {})
+        if isinstance(config_data, dict):
+            for key, value in config_data.items():
+                if key == "Dashboard":
+                    continue
+                self.sdk.config.setConfig(key, value)
+        storage_data = body.get("storage", {})
+        if isinstance(storage_data, dict):
+            for key, value in storage_data.items():
+                if key.startswith("__ep_"):
+                    continue
+                self.storage.set(key, value)
+        self._add_audit_log("backup_import", f"config: {len(config_data)} keys, storage: {len(storage_data)} keys", request)
+        return JSONResponse({"success": True, "config_restored": len(config_data), "storage_restored": len(storage_data)})
+
