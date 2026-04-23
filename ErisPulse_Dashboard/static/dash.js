@@ -3,14 +3,21 @@ let ws = null, allEvents = [], platforms = [], authed = false;
 
 const I18N = {
     zh: {
-        dashboard: '仪表盘', bots: '机器人', events: '事件流', modules: '插件', store: '模块商店', config: '配置管理',
+        dashboard: '仪表盘', bots: '机器人', events: '事件系统', modules: '插件', store: '模块商店', config: '配置管理',
+        sys_logs: '系统日志', logs: '日志', lifecycle: '生命周期', events_stream: '事件流', events_builder: '构建器',
+        sys_logs_desc: '查看系统日志与生命周期', logs_desc: '查看和过滤系统日志', lifecycle_desc: '查看系统启动和运行过程',
+        lifecycle_timeline: '生命周期时间轴', all_modules: '所有模块', search_logs: '搜索日志...', no_lifecycle: '暂无生命周期事件',
+        log_list: '日志列表', api_routes: 'API 路由', api_routes_desc: '查看所有注册的 HTTP 和 WebSocket 路由',
+        http_routes: 'HTTP 路由', ws_routes: 'WebSocket 路由',
         loading: '加载中...', online: '在线', offline: '离线', live: '实时',
         adapters: '适配器', modules_label: '模块', online_bots: '在线机器人', total_events: '事件总数',
         no_adapters: '暂无适配器', no_modules: '暂无模块', no_events: '暂无事件', no_bots: '暂无机器人',
+        no_logs: '暂无日志', no_http_routes: '暂无 HTTP 路由', no_ws_routes: '暂无 WebSocket 路由',
+        no_data: '暂无数据', requires_auth: '需认证',
         active: '活跃', inactive: '未活跃',
         enable: '启用', load: '加载', unload: '停止加载', install: '安装',
         search_packages: '搜索包...', live_events: '实时事件', waiting_events: '等待事件...',
-        bots_desc: '各平台已发现的机器人', events_desc: '实时事件流',
+        bots_desc: '各平台已发现的机器人', events_desc: '事件流查看/构建',
         modules_desc: '管理已注册的模块和适配器', store_desc: '浏览并安装包',
         config_desc: '查看和管理配置与存储', configuration: '配置', storage: '存储',
         auth_title: '身份验证', auth_desc_text: '请输入访问令牌以继续', auth_label: '访问令牌',
@@ -29,29 +36,53 @@ const I18N = {
         all_types: '所有类型', all_platforms: '所有平台',
         no_packages: '没有匹配的包', failed_registry: '加载注册表失败',
         event_cleared: '事件已清除', empty_storage: '存储为空',
-        // 新增翻译
+        message: '消息', notice: '通知', request: '请求', meta: '元事件', platform: '平台',
         event_builder: '事件构建器', event_builder_desc: '构建自定义事件用于调试和测试',
+        event_type: '事件类型', detail_type: '详情类型', platform_info: '平台信息',
         select_platform: '选择平台', select_bot: '选择 Bot', custom: '自定义',
-        session_type: '会话类型', session_id: '会话 ID', message_content: '消息内容',
-        optional_fields: '附加字段', json_preview: 'JSON 预览',
+        select_detail_type: '请选择详情类型...', select_platform_placeholder: '请先选择平台...',
+        session_type: '会话类型', session_id: '会话 ID',
+        session_private: '私聊', session_group: '群聊', session_channel: '频道',
+        custom_platform_placeholder: '输入自定义平台名称', custom_bot_placeholder: '输入自定义 Bot ID',
+        session_id_placeholder: '群号/频道号/用户 ID',
+        message_content: '消息内容', optional_fields: '附加字段', json_preview: 'JSON 预览',
         preview: '预览', submit_event: '提交事件',
         add_segment: '添加消息段', add_field: '添加字段', copy_json: '复制 JSON',
         validate_error: '验证错误', submit_success: '事件已提交', submit_failed: '提交失败',
         view_tree: '树形', view_source: '源码', reload_config: '重新加载', save_config: '保存配置',
         config_saved: '配置已保存', config_load_failed: '加载配置源码失败',
         read_only: '只读 (根配置)',
-        event_type: '事件类型', detail_type: '详情类型', platform_info: '平台信息',
-        message_content: '消息内容', select_detail_type: '请选择详情类型...', loading: '加载中...',
+        cpu_usage: 'CPU 使用率', process_cpu: '进程 CPU', memory_usage: '内存使用', rss_memory: 'RSS 内存',
+        system_memory: '系统内存', system_total_memory: '系统总内存', available_memory: '可用内存',
+        swap_memory: '交换内存', io_read: 'IO 读取', io_write: 'IO 写入',
+        active_connections: '活跃连接', system_details: '系统详情',
+        websocket: 'WebSocket', message_stats: '消息统计', message_types: '消息类型',
+        platform_distribution: '平台分布', last_24h_trend: '最近24小时趋势',
+        registered_routes: '已注册路由',
+        refresh: '刷新', copy: '复制', auto_refresh: '自动刷新', copy_all_logs: '复制所有日志',
+        event_preview: '事件预览', copied_to_clipboard: '已复制到剪贴板', copy_failed: '复制失败',
+        save_failed: '保存失败', unknown_error: '未知错误', validation_failed: '验证失败',
+        auto_refresh_off: '自动刷新已关闭', auto_refresh_on: '自动刷新已开启',
+        alt_message: '备用消息', request_comment: '请求附言',
+        field_name_placeholder: '字段名', field_value_placeholder: '字段值',
+        load_segments_first: '请先加载消息段类型',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
+        sys_logs: 'System Logs', logs: 'Logs', lifecycle: 'Lifecycle', events_stream: 'Stream', events_builder: 'Builder',
+        sys_logs_desc: 'View system logs and lifecycle events', logs_desc: 'View and filter system logs', lifecycle_desc: 'View system startup and runtime process',
+        lifecycle_timeline: 'Lifecycle Timeline', all_modules: 'All Modules', search_logs: 'Search logs...', no_lifecycle: 'No lifecycle events',
+        log_list: 'Log List', api_routes: 'API Routes', api_routes_desc: 'View all registered HTTP and WebSocket routes',
+        http_routes: 'HTTP Routes', ws_routes: 'WebSocket Routes',
         loading: 'Loading...', online: 'Online', offline: 'Offline', live: 'Live',
         adapters: 'Adapters', modules_label: 'Modules', online_bots: 'Online Bots', total_events: 'Total Events',
         no_adapters: 'No adapters', no_modules: 'No modules', no_events: 'No events', no_bots: 'No bots',
+        no_logs: 'No logs', no_http_routes: 'No HTTP routes', no_ws_routes: 'No WebSocket routes',
+        no_data: 'No data', requires_auth: 'Auth Required',
         active: 'Active', inactive: 'Inactive',
         enable: 'Enable', load: 'Load', unload: 'Unload', install: 'Install',
         search_packages: 'Search packages...', live_events: 'Live Events', waiting_events: 'Waiting for events...',
-        bots_desc: 'Discovered bots across platforms', events_desc: 'Real-time event stream',
+        bots_desc: 'Discovered bots across platforms', events_desc: 'Event stream view/builder',
         modules_desc: 'Manage registered modules and adapters', store_desc: 'Browse and install packages',
         config_desc: 'View and manage configuration and storage', configuration: 'Configuration', storage: 'Storage',
         auth_title: 'Authentication', auth_desc_text: 'Please enter your access token to continue', auth_label: 'Access Token',
@@ -70,13 +101,36 @@ const I18N = {
         all_types: 'All Types', all_platforms: 'All Platforms',
         no_packages: 'No matching packages', failed_registry: 'Failed to load registry',
         event_cleared: 'Events cleared', empty_storage: 'Storage is empty',
-        // 新增翻译
+        message: 'Message', notice: 'Notice', request: 'Request', meta: 'Meta', platform: 'Platform',
+        event_builder: 'Event Builder', event_builder_desc: 'Build custom events for debugging and testing',
+        event_type: 'Event Type', detail_type: 'Detail Type', platform_info: 'Platform Info',
+        select_platform: 'Select Platform', select_bot: 'Select Bot', custom: 'Custom',
+        select_detail_type: 'Select detail type...', select_platform_placeholder: 'Select a platform first...',
+        session_type: 'Session Type', session_id: 'Session ID',
+        session_private: 'Private', session_group: 'Group', session_channel: 'Channel',
+        custom_platform_placeholder: 'Enter custom platform name', custom_bot_placeholder: 'Enter custom Bot ID',
+        session_id_placeholder: 'Group/Channel/User ID',
+        message_content: 'Message Content', optional_fields: 'Optional Fields', json_preview: 'JSON Preview',
+        preview: 'Preview', submit_event: 'Submit Event',
+        add_segment: 'Add Segment', add_field: 'Add Field', copy_json: 'Copy JSON',
         validate_error: 'Validation error', submit_success: 'Event submitted', submit_failed: 'Submit failed',
         view_tree: 'Tree', view_source: 'Source', reload_config: 'Reload', save_config: 'Save',
         config_saved: 'Configuration saved', config_load_failed: 'Failed to load config source',
         read_only: 'Read-only (root config)',
-        event_type: 'Event Type', detail_type: 'Detail Type', platform_info: 'Platform Info',
-        message_content: 'Message Content', select_detail_type: 'Select detail type...', loading: 'Loading...',
+        cpu_usage: 'CPU Usage', process_cpu: 'Process CPU', memory_usage: 'Memory Usage', rss_memory: 'RSS Memory',
+        system_memory: 'System Memory', system_total_memory: 'System Total Memory', available_memory: 'Available Memory',
+        swap_memory: 'Swap Memory', io_read: 'I/O Read', io_write: 'I/O Write',
+        active_connections: 'Active Connections', system_details: 'System Details',
+        websocket: 'WebSocket', message_stats: 'Message Statistics', message_types: 'Message Types',
+        platform_distribution: 'Platform Distribution', last_24h_trend: 'Last 24 Hours',
+        registered_routes: 'Registered Routes',
+        refresh: 'Refresh', copy: 'Copy', auto_refresh: 'Auto Refresh', copy_all_logs: 'Copy All Logs',
+        event_preview: 'Event Preview', copied_to_clipboard: 'Copied to clipboard', copy_failed: 'Copy failed',
+        save_failed: 'Save failed', unknown_error: 'Unknown error', validation_failed: 'Validation failed',
+        auto_refresh_off: 'Auto refresh disabled', auto_refresh_on: 'Auto refresh enabled',
+        alt_message: 'Alt Message', request_comment: 'Request Comment',
+        field_name_placeholder: 'Field Name', field_value_placeholder: 'Field Value',
+        load_segments_first: 'Please load segment types first',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -85,13 +139,13 @@ function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem
 function applyI18n() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const k = el.getAttribute('data-i18n-placeholder'); if (I18N[lang][k]) el.placeholder = I18N[lang][k] });
+    document.querySelectorAll('[data-i18n-option]').forEach(el => { const k = el.getAttribute('data-i18n-option'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { const k = el.getAttribute('data-i18n-title'); if (I18N[lang][k]) el.title = I18N[lang][k] });
     const ah = document.getElementById('authHint'); if (ah && I18N[lang].auth_hint) ah.innerHTML = I18N[lang].auth_hint;
-    document.getElementById('langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
-    document.title = lang === 'zh' ? 'ErisPulse 仪表盘' : 'ErisPulse Dashboard';
-    const tf = document.getElementById('eTypeFilter');
-    if (tf) { tf.options[0].textContent = lang === 'zh' ? '所有类型' : 'All Types' }
-    const pf = document.getElementById('ePlatFilter');
-    if (pf) { pf.options[0].textContent = lang === 'zh' ? '所有平台' : 'All Platforms' }
+    document.getElementById('langBtn').textContent = lang === 'zh' ? 'EN' : '\u4e2d\u6587';
+    document.title = lang === 'zh' ? 'ErisPulse \u4eea\u8868\u76d8' : 'ErisPulse Dashboard';
+    const wsEl = document.getElementById('wsText');
+    if (wsEl) wsEl.textContent = document.getElementById('wsBadge').classList.contains('on') ? t('live') : t('offline');
 }
 
 function getTheme() {
@@ -130,26 +184,23 @@ function go(name, el) {
     document.getElementById('p-' + name).classList.add('active');
     if (el) el.classList.add('active');
     closeSidebar();
-    if (name === 'events') loadEvents();
+    if (name === 'events') {
+        loadEvents();
+        switchEventsTab('ev-stream', document.querySelector('[data-tab="ev-stream"]'));
+    }
     if (name === 'config') loadConfig();
     if (name === 'bots') loadBots();
     if (name === 'modules') loadModules();
     if (name === 'store') loadStore();
-    if (name === 'event-builder') {
-        initEventBuilder();
-    }
     if (name === 'logs') {
         loadLogs();
-    } else {
-        // 离开日志页面时关闭自动刷新
-        if (_logAutoRefreshTimer) {
-            clearInterval(_logAutoRefreshTimer);
-            _logAutoRefreshTimer = null;
-            const btn = document.getElementById('logAutoRefreshBtn');
-            if (btn) btn.style.opacity = '0.5';
-        }
+        switchLogsTab('log-list', document.querySelector('[data-tab="log-list"]'));
+    } else if (_logAutoRefreshTimer) {
+        clearInterval(_logAutoRefreshTimer);
+        _logAutoRefreshTimer = null;
+        const btn = document.getElementById('logAutoRefreshBtn');
+        if (btn) btn.style.opacity = '0.5';
     }
-    if (name === 'lifecycle') loadLifecycle();
     if (name === 'api-routes') loadApiRoutes();
 }
 
@@ -235,10 +286,12 @@ async function refreshDashboard() {
     const ad = d.adapters || {}, mo = d.modules || {};
     let ob = 0; Object.values(ad).forEach(a => Object.values(a.bots || {}).forEach(b => { if (b.status === 'online') ob++ }));
     document.getElementById('statGrid').innerHTML =
+        '<div class="card"><div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">' +
         statCard(Object.keys(ad).length, t('adapters')) +
         statCard(Object.keys(mo).filter(k => mo[k]).length, t('modules_label')) +
         statCard(ob, t('online_bots')) +
-        statCard(allEvents.length, t('total_events'));
+        statCard(allEvents.length, t('total_events')) +
+        '</div></div>';
 
     let aH = ''; Object.entries(ad).forEach(([n, i]) => {
         const on = i.status === 'started';
@@ -381,7 +434,7 @@ async function loadConfig() {
     }
     const s = await api('/api/storage');
     if (s) {
-        document.getElementById('storageCount').textContent = (s.total || 0) + ' ' + t('total_events').replace('事件', '');
+        document.getElementById('storageCount').textContent = (s.total || 0) + ' ' + t('store');
         const k = s.keys || [];
         document.getElementById('storageBody').innerHTML = k.length ? k.slice(0, 200).map(x => kvRow(esc(x), s.data[x], 'storage', x)).join('') : '<div class="empty-state"><p>' + t('empty_storage') + '</p></div>';
     }
@@ -400,7 +453,7 @@ async function loadConfigSource() {
             editor.value = d.content;
         }
     } else {
-        toast('加载配置源码失败', 'er');
+        toast(t('config_load_failed'), 'er');
     }
 }
 
@@ -416,31 +469,47 @@ async function saveConfigSource() {
     });
     
     if (d && d.success) {
-        toast('配置已保存', 'ok');
-        // 重新加载树形视图
+        toast(t('config_saved'), 'ok');
         loadConfig();
     } else {
-        toast('保存失败: ' + (d?.error || '未知错误'), 'er');
+        toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
     }
 }
 
 function switchConfigView(view, btn) {
-    // 更新按钮状态
-    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#p-config .view-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    
-    // 切换视图
     const treeView = document.getElementById('configBodyTree');
     const sourceView = document.getElementById('configBodySource');
-    
     if (view === 'tree') {
         treeView.style.display = 'block';
         sourceView.style.display = 'none';
     } else {
         treeView.style.display = 'none';
         sourceView.style.display = 'block';
-        // 加载源码
         loadConfigSource();
+    }
+}
+
+function switchEventsTab(tab, btn) {
+    document.querySelectorAll('#p-events .view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('evStreamTab').style.display = tab === 'ev-stream' ? 'block' : 'none';
+    document.getElementById('evBuilderTab').style.display = tab === 'ev-builder' ? 'block' : 'none';
+    if (tab === 'ev-builder') initEventBuilder();
+}
+
+function switchLogsTab(tab, btn) {
+    document.querySelectorAll('#p-logs .view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('logListTab').style.display = tab === 'log-list' ? 'block' : 'none';
+    document.getElementById('logLifecycleTab').style.display = tab === 'log-lifecycle' ? 'block' : 'none';
+    if (tab === 'log-lifecycle') loadLifecycle();
+    if (tab !== 'log-list' && _logAutoRefreshTimer) {
+        clearInterval(_logAutoRefreshTimer);
+        _logAutoRefreshTimer = null;
+        const btn2 = document.getElementById('logAutoRefreshBtn');
+        if (btn2) btn2.style.opacity = '0.5';
     }
 }
 
@@ -464,7 +533,7 @@ function kvRow(k, v, mode, fk) {
     
     const delBtn = mode === 'storage' ? `<button class="kv-btn kv-btn-del" onclick="delStorage('${esc(fk)}',this)" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : '';
     
-    const readOnlyIndicator = !canEdit ? '<span style="font-size:11px;color:var(--wr-c);margin-left:8px">只读 (根配置)</span>' : '';
+    const readOnlyIndicator = !canEdit ? '<span style="font-size:11px;color:var(--wr-c);margin-left:8px">' + t('read_only') + '</span>' : '';
     
     return `<div class="kv-row"><div class="kv-key">${esc(k)}</div><div class="kv-actions">${inputHtml}<button class="kv-btn kv-btn-save" onclick="${saveFn}" title="Save" ${!canEdit ? 'style="display:none"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>${delBtn}${readOnlyIndicator}</div></div>`;
 }
@@ -533,7 +602,8 @@ function wsConnect() {
             if (m.type === 'event') {
                 allEvents.push(m.data); if (allEvents.length > 500) allEvents.shift();
                 const sv = document.getElementById('statGrid');
-                if (sv && sv.children[3]) sv.children[3].querySelector('.stat-val').textContent = allEvents.length;
+                const statCards = sv?.querySelectorAll('.stat-val');
+                if (statCards && statCards[3]) statCards[3].textContent = allEvents.length;
                 if (document.querySelector('.page.active')?.id === 'p-dashboard') {
                     const dh = document.getElementById('dashEvents'); const em = dh?.querySelector('.empty-state');
                     if (em) em.remove(); dh?.insertAdjacentHTML('afterbegin', evHtml(m.data));
@@ -612,7 +682,7 @@ async function loadPlatforms() {
     
     const platforms = d.adapters || [];
     const select = document.getElementById('platformSelect');
-    select.innerHTML = '<option value="">选择平台...</option>';
+    select.innerHTML = '<option value="">' + t('select_platform') + '</option>';
     
     platforms.forEach(p => {
         const opt = document.createElement('option');
@@ -624,18 +694,17 @@ async function loadPlatforms() {
 
 async function loadBotsForPlatform(platform) {
     const select = document.getElementById('botSelect');
-    select.innerHTML = '<option value="">选择 Bot...</option>';
+    select.innerHTML = '<option value="">' + t('select_bot') + '</option>';
     
     if (!platform) return;
     
-    // 从当前在线的 Bot 中获取
     const bots = await api('/api/bots');
     if (bots && bots.bots) {
         const platformBots = bots.bots.filter(b => b.platform === platform);
         platformBots.forEach(b => {
             const opt = document.createElement('option');
             opt.value = b.bot_id;
-            opt.textContent = b.bot_id + (b.info?.user_name ? ` (${b.info.user_name})` : '') + ' (在线)';
+            opt.textContent = b.bot_id + (b.info?.user_name ? ` (${b.info.user_name})` : '') + ' (' + t('online') + ')';
             select.appendChild(opt);
         });
     }
@@ -669,7 +738,7 @@ function updateDetailTypeOptions() {
     const select = document.getElementById('detailType');
     const types = EVENT_TYPES[builderState.eventType]?.detail_types || [];
     
-    select.innerHTML = '<option value="">请选择详情类型...</option>';
+    select.innerHTML = '<option value="">' + t('select_detail_type') + '</option>';
     types.forEach(t => {
         const opt = document.createElement('option');
         opt.value = t;
@@ -735,12 +804,12 @@ function updateRequiredFields() {
     
     if (builderState.eventType === 'message') {
         addOptionalField('user_id', 'User ID', '');
-        addOptionalField('alt_message', '备用消息', '');
+        addOptionalField('alt_message', '', t('alt_message'));
     } else if (builderState.eventType === 'notice') {
         addOptionalField('user_id', 'User ID', '');
     } else if (builderState.eventType === 'request') {
         addOptionalField('user_id', 'User ID', '');
-        addOptionalField('comment', '请求附言', '');
+        addOptionalField('comment', '', t('request_comment'));
     }
 }
 
@@ -750,8 +819,8 @@ function addOptionalField(key = '', value = '', label = '') {
     const div = document.createElement('div');
     div.className = 'optional-field';
     div.innerHTML = `
-        <input type="text" placeholder="字段名" value="${esc(key)}" onchange="updateOptionalFieldKey(this)">
-        <input type="text" placeholder="字段值" value="${esc(value)}" onchange="updateOptionalFieldValue(this)">
+        <input type="text" placeholder="${t('field_name_placeholder')}" value="${esc(key)}" onchange="updateOptionalFieldKey(this)">
+        <input type="text" placeholder="${t('field_value_placeholder')}" value="${esc(value)}" onchange="updateOptionalFieldValue(this)"${label ? ' data-label="' + esc(label) + '"' : ''}>
         <button class="optional-field-remove" onclick="removeOptionalField(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -786,7 +855,7 @@ async function loadMessageSegmentTypes() {
 
 function addMessageSegment() {
     if (!window.messageSegmentTypes) {
-        toast('请先加载消息段类型', 'er');
+        toast(t('load_segments_first'), 'er');
         return;
     }
     
@@ -907,7 +976,7 @@ function buildEventData() {
         }));
         
         // 从 alt_message 字段获取
-        const altMsgField = document.querySelector('.optional-field input[placeholder="备用消息"]');
+        const altMsgField = document.querySelector('.optional-field input[data-label="alt_message"]');
         event.alt_message = altMsgField ? altMsgField.value : '';
     }
     
@@ -952,45 +1021,43 @@ function copyEventJson() {
     const json = JSON.stringify(event, null, 2);
     
     navigator.clipboard.writeText(json).then(() => {
-        toast('已复制到剪贴板', 'ok');
+        toast(t('copied_to_clipboard'), 'ok');
     }).catch(() => {
-        toast('复制失败', 'er');
+        toast(t('copy_failed'), 'er');
     });
 }
 
 async function previewEvent() {
     const event = buildEventData();
     
-    showOutputModal('事件预览', [JSON.stringify(event, null, 2)], [
-        { label: '确定', value: true, primary: true }
+    showOutputModal(t('event_preview'), [JSON.stringify(event, null, 2)], [
+        { label: t('ok'), value: true, primary: true }
     ]);
 }
 
 async function submitEvent() {
     const event = buildEventData();
     
-    // 验证
     const validation = await api('/api/builder/validate', {
         method: 'POST',
         body: JSON.stringify(event)
     });
     
     if (!validation || !validation.valid) {
-        const errors = validation?.errors || ['验证失败'];
-        showOutputModal('验证错误', errors, [{ label: '确定', value: true, primary: true }]);
+        const errors = validation?.errors || [t('validation_failed')];
+        showOutputModal(t('validate_error'), errors, [{ label: t('ok'), value: true, primary: true }]);
         return;
     }
     
-    // 提交
     const result = await api('/api/builder/submit', {
         method: 'POST',
         body: JSON.stringify(event)
     });
     
     if (result && result.success) {
-        toast('事件已提交', 'ok');
+        toast(t('submit_success'), 'ok');
     } else {
-        toast('提交失败: ' + (result?.error || '未知错误'), 'er');
+        toast(t('submit_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
     }
 }
 
@@ -1038,12 +1105,12 @@ function toggleLogAutoRefresh() {
         clearInterval(_logAutoRefreshTimer);
         _logAutoRefreshTimer = null;
         document.getElementById('logAutoRefreshBtn').style.opacity = '0.5';
-        toast('自动刷新已关闭', '');
+        toast(t('auto_refresh_off'), '');
     } else {
         loadLogs();
         _logAutoRefreshTimer = setInterval(loadLogs, 2000);
         document.getElementById('logAutoRefreshBtn').style.opacity = '1';
-        toast('自动刷新已开启', 'ok');
+        toast(t('auto_refresh_on'), 'ok');
     }
 }
 
@@ -1077,7 +1144,7 @@ async function loadLogs() {
     document.getElementById('logCount').textContent = d.total || 0;
     
     if (logs.length === 0) {
-        document.getElementById('logList').innerHTML = '<div class="empty-state"><p>暂无日志</p></div>';
+        document.getElementById('logList').innerHTML = '<div class="empty-state"><p>' + t('no_logs') + '</p></div>';
         return;
     }
     
@@ -1112,7 +1179,7 @@ function updateModuleSelect() {
     const currentValue = select.value;
     
     // 清空并重新填充
-    select.innerHTML = '<option value="">所有模块</option>';
+    select.innerHTML = '<option value="">' + t('all_modules') + '</option>';
     
     const sortedModules = Array.from(_availableModules).sort();
     sortedModules.forEach(module => {
@@ -1135,9 +1202,9 @@ function copyLogs() {
     const logs = Array.from(logList.querySelectorAll('.log-entry')).map(el => el.textContent).join('\n');
     
     navigator.clipboard.writeText(logs).then(() => {
-        toast('已复制到剪贴板', 'ok');
+        toast(t('copied_to_clipboard'), 'ok');
     }).catch(() => {
-        toast('复制失败', 'er');
+        toast(t('copy_failed'), 'er');
     });
 }
 
@@ -1150,51 +1217,32 @@ async function loadLifecycle() {
     const events = d.events || [];
     
     if (events.length === 0) {
-        document.getElementById('lifecycleTimeline').innerHTML = '<div class="empty-state"><p>暂无生命周期事件</p></div>';
+        document.getElementById('lifecycleTimeline').innerHTML = '<div class="empty-state"><p>' + esc(t('no_lifecycle')) + '</p></div>';
         return;
     }
     
-    const timelineHtml = events.map((event, index) => {
+    const timelineHtml = events.map((event) => {
         const eventParts = event.event.split('.');
         const eventType = eventParts[0] || '';
         const eventName = eventParts.slice(1).join('.');
         
         const time = new Date(event.timestamp * 1000).toLocaleTimeString();
         
-        // 计算持续时间（如果有计时器数据）
         let duration = '';
         if (event.data && event.data.duration) {
             const dur = event.data.duration;
             duration = `<span class="lifecycle-duration">${dur.toFixed(2)}s</span>`;
         }
         
-        // 判断事件类型
-        let icon = '⚪';
-        let statusClass = 'lifecycle-pending';
-        
-        if (eventType === 'core') {
-            icon = '🔵';
-            statusClass = 'lifecycle-core';
-        } else if (eventType === 'module') {
-            icon = '🟢';
-            statusClass = 'lifecycle-module';
-        } else if (eventType === 'adapter') {
-            icon = '🟡';
-            statusClass = 'lifecycle-adapter';
-        } else if (eventType === 'server') {
-            icon = '🟣';
-            statusClass = 'lifecycle-server';
-        }
-        
-        return `<div class="lifecycle-item ${statusClass}">
-            <div class="lifecycle-icon">${icon}</div>
+        return `<div class="lifecycle-item">
+            <span class="lifecycle-badge ${esc(eventType)}">${esc(eventType)}</span>
             <div class="lifecycle-content">
                 <div class="lifecycle-header">
                     <span class="lifecycle-event">${esc(event.event)}</span>
                     <span class="lifecycle-time">${time}</span>
                 </div>
                 <div class="lifecycle-details">
-                    <div class="lifecycle-desc">${esc(event.msg || eventName)}</div>
+                    <span class="lifecycle-desc">${esc(event.msg || eventName)}</span>
                     ${duration}
                 </div>
             </div>
@@ -1237,8 +1285,8 @@ async function loadPerformance() {
     if (document.getElementById('sysMemUsage')) {
         document.getElementById('sysMemUsage').textContent = fmt(memory.system_percent, '%');
     }
-    if (document.getElementById('wsConnections')) {
-        document.getElementById('wsConnections').textContent = ws.active_connections || 0;
+    if (document.getElementById('rssMemVal')) {
+        document.getElementById('rssMemVal').textContent = fmt(memory.rss_mb, ' MB');
     }
     
     // 更新系统详情卡片
@@ -1247,17 +1295,11 @@ async function loadPerformance() {
         if (el) el.textContent = fmt(v, unit);
     };
     
-    setEl('vmsMem', memory.vms_mb, ' MB');
     setEl('sysTotalMem', memory.system_total_gb, ' GB');
     setEl('sysAvailMem', memory.system_available_gb, ' GB');
     setEl('swapMem', memory.swap_used_mb, ' MB');
-    setEl('procThreads', process.threads);
-    setEl('netConnections', process.connections);
-    setEl('listeningPorts', process.listening);
     setEl('ioRead', process.read_bytes_mb, ' MB');
     setEl('ioWrite', process.write_bytes_mb, ' MB');
-    setEl('cpuUser', process.cpu_user, 's');
-    setEl('cpuSys', process.cpu_system, 's');
     
     // 存储以便后续使用
     window._perfData = {
@@ -1288,7 +1330,7 @@ async function loadApiRoutes() {
     
     // HTTP 路由列表
     if (httpRoutes.length === 0) {
-        document.getElementById('httpRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">暂无 HTTP 路由</div>';
+        document.getElementById('httpRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_http_routes') + '</div>';
     } else {
         const httpHtml = httpRoutes.map(route => {
             const methodColor = {
@@ -1328,12 +1370,12 @@ async function loadApiRoutes() {
     
     // WebSocket 路由列表
     if (wsRoutes.length === 0) {
-        document.getElementById('wsRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">暂无 WebSocket 路由</div>';
+        document.getElementById('wsRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_ws_routes') + '</div>';
     } else {
         const wsHtml = wsRoutes.map(route => {
             const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
             const handler = route.handler || {};
-            const authBadge = route.has_auth ? `<span class="chip chip-wr" style="margin-right:8px">需认证</span>` : '';
+            const authBadge = route.has_auth ? `<span class="chip chip-wr" style="margin-right:8px">${t('requires_auth')}</span>` : '';
             const handlerInfo = handler.file !== 'unknown'
                 ? `<div style="font-size:11px;color:var(--tx-t);margin-top:2px">
                     <span style="font-family:monospace">${handler.name}()</span>
@@ -1378,7 +1420,7 @@ async function loadMessageStats() {
             <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
         </div>`;
     }).join('');
-    document.getElementById('msgTypeStats').innerHTML = typeHtml || '<div style="color:var(--tx-s);font-size:13px">暂无数据</div>';
+    document.getElementById('msgTypeStats').innerHTML = typeHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
     // 平台分布
     const platformStats = d.by_platform || {};
@@ -1393,7 +1435,7 @@ async function loadMessageStats() {
             <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
         </div>`;
     }).join('');
-    document.getElementById('msgPlatformStats').innerHTML = platformHtml || '<div style="color:var(--tx-s);font-size:13px">暂无数据</div>';
+    document.getElementById('msgPlatformStats').innerHTML = platformHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
     // 每小时趋势（最近24小时）
     const hourlyStats = d.hourly || {};

@@ -80,13 +80,6 @@
                         </svg>
                         <span data-i18n="events"></span>
                     </a>
-                    <a class="nav-item" data-page="event-builder" onclick="go('event-builder',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                        </svg>
-                        <span>事件构建器</span>
-                    </a>
                     <a class="nav-item" data-page="logs" onclick="go('logs',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -96,15 +89,7 @@
                             <line x1="16" y1="17" x2="8" y2="17" />
                             <polyline points="10 9 9 9 8 9" />
                         </svg>
-                        <span>日志</span>
-                    </a>
-                    <a class="nav-item" data-page="lifecycle" onclick="go('lifecycle',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 16" />
-                        </svg>
-                        <span>生命周期</span>
+                        <span data-i18n="sys_logs"></span>
                     </a>
                     <a class="nav-item" data-page="api-routes" onclick="go('api-routes',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -113,7 +98,7 @@
                             <line x1="2" y1="12" x2="22" y2="12" />
                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                         </svg>
-                        <span>API 路由</span>
+                        <span data-i18n="api_routes"></span>
                     </a>
                     <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -157,18 +142,18 @@
                 <div class="page active" id="p-dashboard">
                     <h1 class="page-title" data-i18n="dashboard"></h1>
                     <p class="page-desc" id="fwDesc"></p>
-                    <div class="grid-4" style="margin-bottom:20px" id="statGrid"></div>
-                    <div class="grid-4" style="margin-bottom:20px">
+                    <div id="statGrid" style="margin-bottom:20px"></div>
+                    <div class="grid-3" style="margin-bottom:20px">
                         <div class="card">
                             <div class="card-header">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                                 </svg>
-                                <span>CPU 使用率</span>
+                                <span data-i18n="cpu_usage"></span>
                             </div>
                             <div class="card-body">
                                 <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="cpuUsage">--%</div>
-                                <div style="font-size:12px;color:var(--tx-s)">进程 CPU</div>
+                                <div style="font-size:12px;color:var(--tx-s)" data-i18n="process_cpu"></div>
                             </div>
                         </div>
                         <div class="card">
@@ -179,11 +164,16 @@
                                     <line x1="6" y1="6" x2="6.01" y2="6" />
                                     <line x1="6" y1="18" x2="6.01" y2="18" />
                                 </svg>
-                                <span>内存使用</span>
+                                <span data-i18n="memory_usage"></span>
                             </div>
                             <div class="card-body">
                                 <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="memUsage">-- MB</div>
-                                <div style="font-size:12px;color:var(--tx-s)">RSS 内存</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:8px;font-size:12px;color:var(--tx-s)">
+                                    <span data-i18n="rss_memory"></span><span id="rssMemVal" style="color:var(--tx-p);font-weight:500;text-align:right">--</span>
+                                    <span data-i18n="swap_memory"></span><span id="swapMem" class="stat-value-sm" style="text-align:right">-- MB</span>
+                                    <span data-i18n="io_read"></span><span id="ioRead" class="stat-value-sm" style="text-align:right">-- MB</span>
+                                    <span data-i18n="io_write"></span><span id="ioWrite" class="stat-value-sm" style="text-align:right">-- MB</span>
+                                </div>
                             </div>
                         </div>
                         <div class="card">
@@ -193,95 +183,18 @@
                                     <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
                                     <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
                                 </svg>
-                                <span>系统内存</span>
+                                <span data-i18n="system_memory"></span>
                             </div>
                             <div class="card-body">
                                 <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="sysMemUsage">--%</div>
-                                <div style="font-size:12px;color:var(--tx-s)">系统总内存</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-                                    <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-                                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-                                    <line x1="12" y1="20" x2="12.01" y2="20" />
-                                </svg>
-                                <span>WebSocket</span>
-                            </div>
-                            <div class="card-body">
-                                <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="wsConnections">0</div>
-                                <div style="font-size:12px;color:var(--tx-s)">活跃连接</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:8px;font-size:12px;color:var(--tx-s)">
+                                    <span data-i18n="system_total_memory"></span><span id="sysTotalMem" class="stat-value-sm" style="text-align:right">-- GB</span>
+                                    <span data-i18n="available_memory"></span><span id="sysAvailMem" class="stat-value-sm" style="text-align:right">-- GB</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div id="perfDetails" style="display:none"></div>
-                    <div class="card" style="margin-top:16px;margin-bottom:16px">
-                        <div class="card-header">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="4" y="4" width="16" height="16" rx="2" />
-                                <path d="M9 9h6v6H9z" />
-                            </svg>
-                            <span>系统详情</span>
-                            <div class="header-actions">
-                                <button class="btn-icon" onclick="loadPerformance()" title="刷新">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
-                                        <polyline points="23 4 23 10 17 10" />
-                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body" id="sysDetailBody" style="font-size:13px">
-                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
-                                <!-- <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">VMS 内存</div>
-                                    <div id="vmsMem" class="stat-value-sm">-- MB</div>
-                                </div> -->
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">系统总内存</div>
-                                    <div id="sysTotalMem" class="stat-value-sm">-- GB</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">可用内存</div>
-                                    <div id="sysAvailMem" class="stat-value-sm">-- GB</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">交换内存</div>
-                                    <div id="swapMem" class="stat-value-sm">-- MB</div>
-                                </div>
-                                <!-- <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">线程数</div>
-                                    <div id="procThreads" class="stat-value-sm">--</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">网络连接</div>
-                                    <div id="netConnections" class="stat-value-sm">--</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">监听端口</div>
-                                    <div id="listeningPorts" class="stat-value-sm">--</div>
-                                </div> -->
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">IO 读取</div>
-                                    <div id="ioRead" class="stat-value-sm">-- MB</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">IO 写入</div>
-                                    <div id="ioWrite" class="stat-value-sm">-- MB</div>
-                                </div>
-                                <!-- <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">CPU 用户</div>
-                                    <div id="cpuUser" class="stat-value-sm">--s</div>
-                                </div> -->
-                                <!-- <div class="stat-item">
-                                    <div style="font-size:11px;color:var(--tx-s)">CPU 系统</div>
-                                    <div id="cpuSys" class="stat-value-sm">--s</div>
-                                </div> -->
-                            </div>
-                        </div>
-                    </div>
                     <div class="grid-2">
                         <div class="card">
                             <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -325,21 +238,21 @@
                                 <path d="M23 6l-9.5 9.5-5-5L1 18" />
                                 <path d="M17 6h6v6" />
                             </svg>
-                            <span>消息统计</span>
+                            <span data-i18n="message_stats"></span>
                         </div>
                         <div class="card-body">
                             <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">
                                 <div>
-                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px">消息类型</div>
+                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="message_types"></div>
                                     <div id="msgTypeStats"></div>
                                 </div>
                                 <div>
-                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px">平台分布</div>
+                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="platform_distribution"></div>
                                     <div id="msgPlatformStats"></div>
                                 </div>
                             </div>
                             <div style="border-top:1px solid var(--bd);padding-top:12px">
-                                <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px">最近24小时趋势</div>
+                                <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px" data-i18n="last_24h_trend"></div>
                                 <div id="msgHourlyTrend" style="height:80px;display:flex;align-items:flex-end;gap:4px"></div>
                             </div>
                         </div>
@@ -351,18 +264,33 @@
                     <div class="grid-3" style="margin-top:16px" id="botGrid"></div>
                 </div>
                 <div class="page" id="p-events">
-                    <h1 class="page-title" data-i18n="events"></h1>
-                    <p class="page-desc" data-i18n="events_desc"></p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+                        <div>
+                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="events"></h1>
+                            <p class="page-desc" data-i18n="events_desc"></p>
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-tab="ev-stream" onclick="switchEventsTab('ev-stream',this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                                <span data-i18n="events_stream"></span>
+                            </button>
+                            <button class="view-btn" data-tab="ev-builder" onclick="switchEventsTab('ev-builder',this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                <span data-i18n="event_builder"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="evStreamTab">
                     <div class="filter-bar">
                         <select id="eTypeFilter" onchange="loadEvents()">
                             <option value="">--</option>
-                            <option value="message">Message</option>
-                            <option value="notice">Notice</option>
-                            <option value="request">Request</option>
-                            <option value="meta">Meta</option>
+                            <option value="message" data-i18n-option="message"></option>
+                            <option value="notice" data-i18n-option="notice"></option>
+                            <option value="request" data-i18n-option="request"></option>
+                            <option value="meta" data-i18n-option="meta"></option>
                         </select>
                         <select id="ePlatFilter" onchange="loadEvents()">
-                            <option value="">--</option>
+                            <option value="" data-i18n-option="all_platforms"></option>
                         </select>
                         <div style="flex:1"></div>
                         <button class="btn btn-secondary btn-sm" onclick="loadEvents()"><svg viewBox="0 0 24 24"
@@ -381,10 +309,8 @@
                     <div class="card">
                         <div id="eventList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
                     </div>
-                </div>
-                <div class="page" id="p-event-builder">
-                    <h1 class="page-title" data-i18n="event_builder"></h1>
-                    <p class="page-desc" data-i18n="event_builder_desc"></p>
+                    </div>
+                    <div id="evBuilderTab" style="display:none">
                     
                     <div class="builder-toolbar">
                         <div style="flex:1"></div>
@@ -452,7 +378,7 @@
                                 </div>
                                 <div class="card-body">
                                     <select id="detailType" class="form-select" onchange="onDetailTypeChange()">
-                                        <option value="" data-i18n="select_detail_type">请选择详情类型...</option>
+                                        <option value="" data-i18n="select_detail_type"></option>
                                     </select>
                                 </div>
                             </div>
@@ -465,37 +391,37 @@
                                     <div class="form-group">
                                         <label data-i18n="platform"></label>
                                         <select id="platformSelect" class="form-select" onchange="onPlatformChange()">
-                                            <option value="" data-i18n="loading">加载中...</option>
+                                            <option value="" data-i18n-option="loading"></option>
                                         </select>
                                         <button class="btn-link" onclick="toggleCustomPlatform()" style="margin-left:8px" data-i18n="custom"></button>
                                     </div>
                                     <div class="form-group" id="customPlatformGroup" style="display:none">
-                                        <input type="text" id="platformCustom" class="form-input" placeholder="输入自定义平台名称">
+                                        <input type="text" id="platformCustom" class="form-input" data-i18n-placeholder="custom_platform_placeholder" placeholder="">
                                     </div>
                                     
                                     <div class="form-group">
                                         <label>Bot</label>
                                         <select id="botSelect" class="form-select" onchange="onBotChange()">
-                                            <option value="" data-i18n="select_bot">请先选择平台...</option>
+                                            <option value="" data-i18n-option="select_platform_placeholder"></option>
                                         </select>
                                         <button class="btn-link" onclick="toggleCustomBot()" style="margin-left:8px" data-i18n="custom"></button>
                                     </div>
                                     <div class="form-group" id="customBotGroup" style="display:none">
-                                        <input type="text" id="botCustom" class="form-input" placeholder="输入自定义 Bot ID">
+                                        <input type="text" id="botCustom" class="form-input" data-i18n-placeholder="custom_bot_placeholder" placeholder="">
                                     </div>
                                     
                                     <div class="form-group">
                                         <label data-i18n="session_type"></label>
                                         <select id="sessionType" class="form-select">
-                                            <option value="private">私聊</option>
-                                            <option value="group">群聊</option>
-                                            <option value="channel">频道</option>
+                                            <option value="private" data-i18n="session_private"></option>
+                                            <option value="group" data-i18n="session_group"></option>
+                                            <option value="channel" data-i18n="session_channel"></option>
                                         </select>
                                     </div>
                                     
                                     <div class="form-group">
                                         <label data-i18n="session_id"></label>
-                                        <input type="text" id="sessionId" class="form-input" placeholder="群号/频道号/用户 ID">
+                                        <input type="text" id="sessionId" class="form-input" data-i18n-placeholder="session_id_placeholder" placeholder="">
                                     </div>
                                 </div>
                             </div>
@@ -503,7 +429,7 @@
                             <div class="card" id="messageBuilderCard">
                                 <div class="card-header">
                                     <span data-i18n="message_content"></span>
-                                    <button class="btn-icon" onclick="addMessageSegment()" title="添加消息段">
+                                    <button class="btn-icon" onclick="addMessageSegment()" title="" data-i18n-title="add_segment">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <line x1="12" y1="5" x2="12" y2="19" />
                                             <line x1="5" y1="12" x2="19" y2="12" />
@@ -534,7 +460,7 @@
                             <div class="card">
                                 <div class="card-header">
                                     <span data-i18n="json_preview"></span>
-                                    <button class="btn-icon" onclick="copyEventJson()" title="复制">
+                                    <button class="btn-icon" onclick="copyEventJson()" title="" data-i18n-title="copy">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
@@ -547,17 +473,33 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
                 <div class="page" id="p-logs">
-                    <h1 class="page-title">日志</h1>
-                    <p class="page-desc">查看和过滤系统日志</p>
-                    <div class="filter-bar" style="margin-top:16px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+                        <div>
+                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="sys_logs"></h1>
+                            <p class="page-desc" data-i18n="sys_logs_desc"></p>
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-tab="log-list" onclick="switchLogsTab('log-list',this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span data-i18n="logs"></span>
+                            </button>
+                            <button class="view-btn" data-tab="log-lifecycle" onclick="switchLogsTab('log-lifecycle',this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 16"/></svg>
+                                <span data-i18n="lifecycle"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="logListTab">
+                    <div class="filter-bar">
                         <select id="logModuleFilter" onchange="loadLogs()">
-                            <option value="">所有模块</option>
+                            <option value="" data-i18n-option="all_modules"></option>
                         </select>
-                        <input type="text" id="logSearch" placeholder="搜索日志..." oninput="debounceLogs()">
+                                        <input type="text" id="logSearch" data-i18n-placeholder="search_logs" placeholder="" oninput="debounceLogs()">
                         <div style="flex:1"></div>
-                        <button class="btn btn-secondary btn-sm" id="logAutoRefreshBtn" onclick="toggleLogAutoRefresh()" title="自动刷新" style="opacity:0.5">
+                        <button class="btn btn-secondary btn-sm" id="logAutoRefreshBtn" onclick="toggleLogAutoRefresh()" title="" data-i18n-title="auto_refresh" style="opacity:0.5">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
                                 <path d="M21 12a9 9 0 00-9-9 9.75 9.75 0 00-6.74 2.74L3 8" />
                                 <path d="M3 3v5h5" />
@@ -578,10 +520,10 @@
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                 <polyline points="14 2 14 8 20 8" />
                             </svg>
-                            <span>日志列表</span>
+                            <span data-i18n="log_list"></span>
                             <span class="chip chip-pr" id="logCount" style="margin-left:8px">0</span>
                             <div class="header-actions">
-                                <button class="btn-icon" onclick="copyLogs()" title="复制所有日志">
+                                <button class="btn-icon" onclick="copyLogs()" title="" data-i18n-title="copy_all_logs">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                         <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
@@ -591,19 +533,17 @@
                         </div>
                         <div id="logList" style="max-height:calc(100vh - 260px);overflow-y:auto;font-family:'Cascadia Code','Fira Code',Consolas,Monospace;font-size:12px;line-height:1.6"></div>
                     </div>
-                </div>
-                <div class="page" id="p-lifecycle">
-                    <h1 class="page-title">生命周期</h1>
-                    <p class="page-desc">查看系统启动和运行过程</p>
-                    <div class="card" style="margin-top:16px">
+                    </div>
+                    <div id="logLifecycleTab" style="display:none">
+                    <div class="card">
                         <div class="card-header">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <polyline points="12 6 12 12 16 16" />
                             </svg>
-                            <span>生命周期时间轴</span>
+                            <span data-i18n="lifecycle_timeline"></span>
                             <div class="header-actions">
-                                <button class="btn-icon" onclick="loadLifecycle()" title="刷新">
+                                <button class="btn-icon" onclick="loadLifecycle()" title="" data-i18n-title="refresh">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
                                         <polyline points="23 4 23 10 17 10" />
                                         <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
@@ -611,12 +551,13 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="lifecycleTimeline" style="max-height:calc(100vh - 200px);overflow-y:auto"></div>
+                        <div id="lifecycleTimeline" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
                     </div>
                 </div>
                 <div class="page" id="p-api-routes">
-                    <h1 class="page-title">API 路由</h1>
-                    <p class="page-desc">查看所有注册的 HTTP 和 WebSocket 路由</p>
+                    <h1 class="page-title" data-i18n="api_routes"></h1>
+                    <p class="page-desc" data-i18n="api_routes_desc"></p>
                     <div class="grid-2" style="margin-top:16px">
                         <div class="card">
                             <div class="card-header">
@@ -625,7 +566,7 @@
                                     <line x1="2" y1="12" x2="22" y2="12" />
                                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                                 </svg>
-                                <span>HTTP 路由</span>
+                                <span data-i18n="http_routes"></span>
                                 <span class="chip chip-pr" id="httpRouteCount" style="margin-left:8px">0</span>
                             </div>
                             <div id="httpRouteList" style="max-height:400px;overflow-y:auto"></div>
@@ -637,7 +578,7 @@
                                     <polyline points="17 8 12 3 7 8" />
                                     <line x1="12" y1="3" x2="12" y2="15" />
                                 </svg>
-                                <span>WebSocket 路由</span>
+                                <span data-i18n="ws_routes"></span>
                                 <span class="chip chip-sc" id="wsRouteCount" style="margin-left:8px">0</span>
                             </div>
                             <div id="wsRouteList" style="max-height:400px;overflow-y:auto"></div>
@@ -744,14 +685,14 @@
                                             <rect x="3" y="14" width="7" height="7" rx="1" />
                                             <rect x="14" y="14" width="7" height="7" rx="1" />
                                         </svg>
-                                        <span>树形</span>
+                                        <span data-i18n="view_tree"></span>
                                     </button>
                                     <button class="view-btn" data-view="source" onclick="switchConfigView('source',this)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
                                             <polyline points="16 18 22 12 16 6" />
                                             <polyline points="8 6 2 12 8 18" />
                                         </svg>
-                                        <span>源码</span>
+                                        <span data-i18n="view_source"></span>
                                     </button>
                                 </div>
                                 <button class="btn-icon" onclick="loadConfig()" title="Refresh"><svg viewBox="0 0 24 24"
@@ -768,8 +709,8 @@
                             <div style="padding:12px 16px">
                                 <textarea id="configSourceEditor" class="code-editor" spellcheck="false"></textarea>
                                 <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
-                                    <button class="btn btn-secondary btn-sm" onclick="loadConfigSource()">重新加载</button>
-                                    <button class="btn btn-primary btn-sm" onclick="saveConfigSource()">保存</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="loadConfigSource()"><span data-i18n="reload_config"></span></button>
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfigSource()"><span data-i18n="save_config"></span></button>
                                 </div>
                             </div>
                         </div>

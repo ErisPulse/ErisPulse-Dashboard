@@ -1795,9 +1795,11 @@ select.form-select::-ms-expand {
 /* ========== 生命周期样式 ========== */
 .lifecycle-item {
     display: flex;
-    gap: 16px;
-    padding: 16px 20px;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 18px;
     border-bottom: 1px solid var(--bd);
+    font-size: 13px;
     transition: background .2s
 }
 
@@ -1809,14 +1811,37 @@ select.form-select::-ms-expand {
     background: var(--bg-s)
 }
 
-.lifecycle-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0
+.lifecycle-badge {
+    font-weight: 600;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    min-width: 48px;
+    text-align: center;
+    flex-shrink: 0;
+    letter-spacing: .3px;
+    margin-top: 1px
+}
+
+.lifecycle-badge.core {
+    background: var(--pr-bg);
+    color: var(--pr-c)
+}
+
+.lifecycle-badge.module {
+    background: var(--ok-bg);
+    color: var(--ok-c)
+}
+
+.lifecycle-badge.adapter {
+    background: var(--wr-bg);
+    color: var(--wr-c)
+}
+
+.lifecycle-badge.server {
+    background: var(--sc-bg);
+    color: var(--sc-c)
 }
 
 .lifecycle-content {
@@ -1827,20 +1852,20 @@ select.form-select::-ms-expand {
 .lifecycle-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 4px
+    gap: 8px;
+    margin-bottom: 2px;
+    flex-wrap: wrap
 }
 
 .lifecycle-event {
     font-weight: 600;
     color: var(--tx-p);
-    font-size: 14px
+    font-size: 13px
 }
 
 .lifecycle-time {
     font-size: 12px;
-    color: var(--tx-t);
-    margin-left: auto
+    color: var(--tx-t)
 }
 
 .lifecycle-details {
