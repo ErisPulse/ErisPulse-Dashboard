@@ -43,6 +43,7 @@ class Main(BaseModule):
 
     async def on_load(self, event: dict) -> bool:
         self._loop = asyncio.get_running_loop()
+        self._restore_persisted_data()
         self._setup_event_interceptors()
         self.logger.info("WebUI module loaded")
         if getattr(self, "_token_new", False):
@@ -122,6 +123,7 @@ class Main(BaseModule):
         self._event_log.append(entry)
         if len(self._event_log) > self._max_log:
             self._event_log = self._event_log[-self._max_log :]
+        self._persist_events()
         asyncio.ensure_future(self._broadcast_event(entry))
     
     def _add_lifecycle_log(self, data: dict):
@@ -148,6 +150,20 @@ class Main(BaseModule):
                 dead.append(ws)
         for ws in dead:
             self._ws_clients.remove(ws)
+
+    def _persist_events(self):
+        try:
+            self.storage.set("__ep_events__", self._event_log[-self._max_log:])
+        except Exception:
+            pass
+
+    def _restore_persisted_data(self):
+        try:
+            events = self.storage.get("__ep_events__")
+            if isinstance(events, list):
+                self._event_log = events[-self._max_log:]
+        except Exception:
+            pass
 
     async def _broadcast(self, msg: dict):
         if not self._ws_clients:
@@ -656,6 +672,7 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         self._event_log.clear()
+        self._persist_events()
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
@@ -1242,7 +1259,7 @@ class Main(BaseModule):
                     handler_line = inspect.getsourcelines(handler)[0] if inspect.isfunction(handler) else 'unknown'
                     
                     http_routes.append({
-                        "path": path.replace('/' + module_name, '', 1),  # 移除模块前缀
+                        "path": path.replace('/' + module_name, '', 1) or '/',  # 移除模块前缀
                         "full_path": path,
                         "method": method,
                         "module": module_name,
@@ -1263,7 +1280,7 @@ class Main(BaseModule):
                 handler_line = inspect.getsourcelines(handler)[0] if inspect.isfunction(handler) else 'unknown'
                 
                 ws_routes.append({
-                    "path": path.replace('/' + module_name, '', 1),  # 移除模块前缀
+                    "path": path.replace('/' + module_name, '', 1) or '/',  # 移除模块前缀
                     "full_path": path,
                     "module": module_name,
                     "has_auth": auth_handler is not None,

@@ -241,7 +241,7 @@
                             <span data-i18n="message_stats"></span>
                         </div>
                         <div class="card-body">
-                            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">
+                            <div class="msg-stats-grid">
                                 <div>
                                     <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="message_types"></div>
                                     <div id="msgTypeStats"></div>
@@ -253,7 +253,7 @@
                             </div>
                             <div style="border-top:1px solid var(--bd);padding-top:12px">
                                 <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px" data-i18n="last_24h_trend"></div>
-                                <div id="msgHourlyTrend" style="height:80px;display:flex;align-items:flex-end;gap:4px"></div>
+                                <div id="msgHourlyTrend" class="hourly-trend"></div>
                             </div>
                         </div>
                     </div>
@@ -633,7 +633,7 @@
                     <div class="filter-bar" style="margin-top:16px">
                         <input type="text" id="storeSearch" data-i18n-placeholder="search_packages"
                             oninput="debounceStore()">
-                        <button class="btn btn-secondary btn-sm" onclick="loadStore()"><svg viewBox="0 0 24 24"
+                        <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" title="" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" style="width:14px;height:14px">
                                 <polyline points="23 4 23 10 17 10" />
@@ -767,6 +767,37 @@
             <div class="login-actions">
                 <button class="btn btn-secondary" onclick="closeLogin()" data-i18n="cancel"></button>
                 <button class="btn btn-primary" onclick="doLogin()" data-i18n="login"></button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="routeTestOverlay" style="display:none" onclick="if(event.target===this)closeRouteTest()">
+        <div class="modal-box" style="max-width:720px;max-height:90vh;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <span class="method-badge" id="rtMethod">GET</span>
+                <code id="rtPath" style="font-size:14px;font-weight:600;flex:1;word-break:break-all"></code>
+                <button class="btn-icon" onclick="closeRouteTest()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div style="flex:1;overflow-y:auto;min-height:0">
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="query_params"></div>
+                    <div id="rtParams"></div>
+                    <button class="btn btn-secondary btn-xs" onclick="addRouteParam()" style="margin-top:4px">+ Param</button>
+                </div>
+                <div id="rtBodySection" style="margin-bottom:12px;display:none">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="request_body"></div>
+                    <textarea id="rtBody" class="code-editor" style="min-height:100px;max-height:200px;font-size:12px" placeholder="JSON"></textarea>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="response"></div>
+                    <div id="rtResponseStatus" style="display:none;margin-bottom:6px"></div>
+                    <pre id="rtResponse" style="background:var(--bg-s);border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:12px;max-height:300px;overflow:auto;font-family:'Cascadia Code','Fira Code',Consolas,Monospace,monospace;white-space:pre-wrap;word-break:break-all"></pre>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                <button class="btn btn-secondary" onclick="closeRouteTest()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" onclick="sendRouteTest()" data-i18n="send"></button>
             </div>
         </div>
     </div>

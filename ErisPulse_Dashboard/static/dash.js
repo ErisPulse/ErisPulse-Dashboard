@@ -66,6 +66,8 @@ const I18N = {
         alt_message: '备用消息', request_comment: '请求附言',
         field_name_placeholder: '字段名', field_value_placeholder: '字段值',
         load_segments_first: '请先加载消息段类型',
+        test: '测试', send: '发送', query_params: 'Query 参数', request_body: '请求体', response: '响应',
+        force_refresh: '强制刷新',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -131,6 +133,8 @@ const I18N = {
         alt_message: 'Alt Message', request_comment: 'Request Comment',
         field_name_placeholder: 'Field Name', field_value_placeholder: 'Field Value',
         load_segments_first: 'Please load segment types first',
+        test: 'Test', send: 'Send', query_params: 'Query Params', request_body: 'Request Body', response: 'Response',
+        force_refresh: 'Force Refresh',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -379,9 +383,17 @@ async function moduleAction(name, action, type) {
 
 let _storeTimer;
 function debounceStore() { clearTimeout(_storeTimer); _storeTimer = setTimeout(loadStore, 300) }
-async function loadStore() {
+const STORE_CACHE_KEY = '__ep_store__', STORE_CACHE_TTL = 4 * 3600 * 1000;
+async function loadStore(forceRefresh) {
     const q = document.getElementById('storeSearch')?.value?.toLowerCase() || '';
-    const d = await api('/api/store/remote');
+    let d = null;
+    if (!forceRefresh) {
+        try { const c = JSON.parse(localStorage.getItem(STORE_CACHE_KEY)); if (c && Date.now() - c.ts < STORE_CACHE_TTL) d = c.data; } catch (e) {}
+    }
+    if (!d) {
+        d = await api('/api/store/remote');
+        if (d && d.packages) localStorage.setItem(STORE_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: d }));
+    }
     if (!d || !d.packages) { document.getElementById('storeGrid').innerHTML = '<div class="empty-state" style="grid-column:span 3"><p>' + t('failed_registry') + '</p></div>'; return }
     const pk = d.packages;
     const all = [...Object.entries(pk.modules || {}).map(([n, i]) => ({ ...i, name: n, type: 'module' })), ...Object.entries(pk.adapters || {}).map(([n, i]) => ({ ...i, name: n, type: 'adapter' }))];
@@ -1328,73 +1340,43 @@ async function loadApiRoutes() {
     document.getElementById('httpRouteCount').textContent = httpRoutes.length;
     document.getElementById('wsRouteCount').textContent = wsRoutes.length;
     
-    // HTTP 路由列表
     if (httpRoutes.length === 0) {
         document.getElementById('httpRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_http_routes') + '</div>';
     } else {
         const httpHtml = httpRoutes.map(route => {
             const methodColor = {
-                'GET': 'method-get',
-                'POST': 'method-post',
-                'PUT': 'method-put',
-                'DELETE': 'method-delete',
-                'PATCH': 'method-patch',
-                'OPTIONS': 'method-options',
-                'HEAD': 'method-head'
+                'GET': 'method-get', 'POST': 'method-post', 'PUT': 'method-put',
+                'DELETE': 'method-delete', 'PATCH': 'method-patch', 'OPTIONS': 'method-options', 'HEAD': 'method-head'
             }[route.method] || 'method-get';
-            
-            const handler = route.handler || {};
             const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
-            const handlerInfo = handler.file !== 'unknown' 
-                ? `<div style="font-size:11px;color:var(--tx-t);margin-top:2px">
-                    <span style="font-family:monospace">${handler.name}()</span>
-                    <br>
-                    <span style="color:var(--tx-s)">${handler.file}:${handler.line}</span>
-                   </div>` 
-                : '';
-            
-            // 使用相对路径（去掉模块前缀）
             const apiPath = route.path;
-            
             return `<div class="route-item" style="padding:12px 16px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <span class="method-badge ${methodColor}">${route.method}</span>
                     ${moduleBadge}
                     <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(apiPath)}</code>
+                    <div style="margin-left:auto">
+                        <button class="btn btn-secondary btn-xs" onclick="openRouteTest('${esc(route.method)}','${esc(route.full_path)}')">${t('test')}</button>
+                    </div>
                 </div>
-                ${handlerInfo}
             </div>`;
         }).join('');
         document.getElementById('httpRouteList').innerHTML = httpHtml;
     }
     
-    // WebSocket 路由列表
     if (wsRoutes.length === 0) {
         document.getElementById('wsRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_ws_routes') + '</div>';
     } else {
         const wsHtml = wsRoutes.map(route => {
             const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
-            const handler = route.handler || {};
             const authBadge = route.has_auth ? `<span class="chip chip-wr" style="margin-right:8px">${t('requires_auth')}</span>` : '';
-            const handlerInfo = handler.file !== 'unknown'
-                ? `<div style="font-size:11px;color:var(--tx-t);margin-top:2px">
-                    <span style="font-family:monospace">${handler.name}()</span>
-                    <br>
-                    <span style="color:var(--tx-s)">${handler.file}:${handler.line}</span>
-                   </div>`
-                : '';
-            
-            // 使用相对路径（去掉模块前缀）
-            const wsPath = route.path;
-            
             return `<div class="route-item" style="padding:12px 16px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <span class="method-badge method-ws">WS</span>
                     ${moduleBadge}
                     ${authBadge}
-                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(wsPath)}</code>
+                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(route.path)}</code>
                 </div>
-                ${handlerInfo}
             </div>`;
         }).join('');
         document.getElementById('wsRouteList').innerHTML = wsHtml;
@@ -1450,9 +1432,9 @@ async function loadMessageStats() {
         
         const hourLabel = new Date(hourKey * 1000).getHours() + ':00';
         
-        hourlyHtml.push(`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px">
-            <div style="width:12px;height:${height}%;background:var(--accent);border-radius:2px;min-height:2px;transition:height 0.3s"></div>
-            <span style="font-size:10px;color:var(--tx-t)">${hourLabel}</span>
+        hourlyHtml.push(`<div style="flex:1;min-width:28px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px">
+            <div style="width:100%;max-width:16px;height:${height}%;background:var(--accent);border-radius:2px;min-height:2px;transition:height 0.3s"></div>
+            <span style="font-size:9px;color:var(--tx-t);white-space:nowrap">${hourLabel}</span>
         </div>`);
     }
     
@@ -1472,6 +1454,79 @@ refreshDashboard = async function() {
 
 
 
+
+// ========== API 路由测试 ==========
+
+let _rtMethod = '', _rtFullPath = '';
+
+function openRouteTest(method, fullPath) {
+    _rtMethod = method;
+    _rtFullPath = fullPath;
+    const methodColor = { 'GET': 'method-get', 'POST': 'method-post', 'PUT': 'method-put', 'DELETE': 'method-delete', 'PATCH': 'method-patch' }[method] || 'method-get';
+    const mb = document.getElementById('rtMethod');
+    mb.textContent = method;
+    mb.className = 'method-badge ' + methodColor;
+    document.getElementById('rtPath').textContent = fullPath;
+    document.getElementById('rtBodySection').style.display = ['POST', 'PUT', 'PATCH'].includes(method) ? 'block' : 'none';
+    document.getElementById('rtParams').innerHTML = '';
+    document.getElementById('rtBody').value = '';
+    document.getElementById('rtResponse').textContent = '';
+    document.getElementById('rtResponseStatus').style.display = 'none';
+    document.getElementById('routeTestOverlay').style.display = 'flex';
+}
+
+function closeRouteTest() {
+    document.getElementById('routeTestOverlay').style.display = 'none';
+}
+
+function addRouteParam(k, v) {
+    const c = document.getElementById('rtParams');
+    const d = document.createElement('div');
+    d.style.cssText = 'display:flex;gap:6px;margin-bottom:4px';
+    d.innerHTML = '<input class="rt-pk" style="flex:1;padding:4px 8px;border:1px solid var(--bd);border-radius:4px;font-size:12px;background:var(--bg-s);color:var(--tx-p)" placeholder="Key" value="' + esc(k || '') + '">' +
+        '<input class="rt-pv" style="flex:2;padding:4px 8px;border:1px solid var(--bd);border-radius:4px;font-size:12px;background:var(--bg-s);color:var(--tx-p)" placeholder="Value" value="' + esc(v || '') + '">' +
+        '<button class="btn-icon" onclick="this.parentElement.remove()" style="flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    c.appendChild(d);
+}
+
+async function sendRouteTest() {
+    const params = [];
+    document.querySelectorAll('#rtParams > div').forEach(row => {
+        const k = row.querySelector('.rt-pk').value.trim();
+        const v = row.querySelector('.rt-pv').value.trim();
+        if (k) params.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
+    });
+    const qs = params.length ? '?' + params.join('&') : '';
+    const url = _rtFullPath + qs;
+    const tk = localStorage.getItem(TK);
+    const headers = { 'Authorization': 'Bearer ' + tk };
+    const bodyArea = document.getElementById('rtBody');
+    const hasBody = ['POST', 'PUT', 'PATCH'].includes(_rtMethod) && bodyArea.value.trim();
+    if (hasBody) headers['Content-Type'] = 'application/json';
+    document.getElementById('rtResponse').textContent = t('loading');
+    document.getElementById('rtResponseStatus').style.display = 'none';
+    try {
+        const opts = { method: _rtMethod, headers };
+        if (hasBody) opts.body = bodyArea.value.trim();
+        const resp = await fetch(url, opts);
+        const statusEl = document.getElementById('rtResponseStatus');
+        const isOk = resp.status >= 200 && resp.status < 300;
+        statusEl.innerHTML = '<span class="chip ' + (isOk ? 'chip-ok' : 'chip-er') + '">' + resp.status + ' ' + esc(resp.statusText) + '</span>';
+        statusEl.style.display = 'block';
+        const ct = resp.headers.get('content-type') || '';
+        let text;
+        if (ct.includes('json')) {
+            const json = await resp.json();
+            text = JSON.stringify(json, null, 2);
+        } else {
+            text = await resp.text();
+            try { text = JSON.stringify(JSON.parse(text), null, 2); } catch (e) {}
+        }
+        document.getElementById('rtResponse').textContent = text;
+    } catch (e) {
+        document.getElementById('rtResponse').textContent = 'Error: ' + e.message;
+    }
+}
 
 (function () {
     applyTheme(getTheme()); applyI18n();

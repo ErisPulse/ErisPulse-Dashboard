@@ -1730,6 +1730,16 @@ select.form-select::-ms-expand {
     .login-card h2 {
         font-size: 18px
     }
+
+    .msg-stats-grid {
+        grid-template-columns: 1fr
+    }
+
+    .hourly-trend {
+        height: 60px;
+        gap: 2px;
+        padding-bottom: 16px
+    }
 }
 
 #p-event-builder {
@@ -1891,6 +1901,32 @@ select.form-select::-ms-expand {
 }
 
 /* ========== API 路由样式 ========== */
+.msg-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 16px
+}
+
+.hourly-trend {
+    height: 80px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin
+}
+
+.hourly-trend::-webkit-scrollbar {
+    height: 3px
+}
+
+.hourly-trend::-webkit-scrollbar-thumb {
+    background: var(--bd);
+    border-radius: 2px
+}
+
 .route-item {
     padding: 10px 16px;
     border-bottom: 1px solid var(--bd);
