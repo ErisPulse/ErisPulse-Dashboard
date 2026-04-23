@@ -100,6 +100,13 @@
                         </svg>
                         <span data-i18n="api_routes"></span>
                     </a>
+                    <a class="nav-item" data-page="audit" onclick="go('audit',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        <span data-i18n="audit_log"></span>
+                    </a>
                     <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -585,6 +592,54 @@
                         </div>
                     </div>
                 </div>
+                <div class="page" id="p-audit">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+                        <div>
+                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="audit_log"></h1>
+                            <p class="page-desc" data-i18n="audit_log_desc"></p>
+                        </div>
+                    </div>
+                    <div class="filter-bar">
+                        <select id="auditActionFilter" onchange="loadAuditLog()">
+                            <option value="" data-i18n="all_actions"></option>
+                            <option value="load_module">load_module</option>
+                            <option value="unload_module">unload_module</option>
+                            <option value="load_adapter">load_adapter</option>
+                            <option value="unload_adapter">unload_adapter</option>
+                            <option value="config_update">config_update</option>
+                            <option value="config_source_save">config_source_save</option>
+                            <option value="storage_set">storage_set</option>
+                            <option value="storage_delete">storage_delete</option>
+                            <option value="package_install">package_install</option>
+                            <option value="clear_events">clear_events</option>
+                            <option value="restart_framework">restart_framework</option>
+                            <option value="backup_import">backup_import</option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                            </svg></button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearAuditLog()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg></button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                            <span data-i18n="audit_log"></span>
+                            <span class="chip chip-pr" id="auditCount" style="margin-left:8px">0</span>
+                        </div>
+                        <div id="auditList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
+                </div>
                 <div class="page" id="p-modules">
                     <h1 class="page-title" data-i18n="modules"></h1>
                     <p class="page-desc" data-i18n="modules_desc"></p>
@@ -668,6 +723,37 @@
                 <div class="page" id="p-config">
                     <h1 class="page-title" data-i18n="config"></h1>
                     <p class="page-desc" data-i18n="config_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <span data-i18n="backup_restore"></span>
+                        </div>
+                        <div style="padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+                            <span style="font-size:13px;color:var(--tx-s);flex:1;min-width:200px" data-i18n="backup_desc"></span>
+                            <button class="btn btn-primary btn-sm" onclick="exportBackup()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                                <span data-i18n="backup_export"></span>
+                            </button>
+                            <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="importBackup(this)">
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('backupFileInput').click()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <span data-i18n="backup_import"></span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="card" style="margin-top:16px">
                         <div class="card-header">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"

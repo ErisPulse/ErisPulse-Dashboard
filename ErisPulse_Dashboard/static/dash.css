@@ -1977,3 +1977,8 @@ select.form-select::-ms-expand {
     background: var(--sc-bg);
     color: var(--sc-c)
 }
+
+.btn-danger:hover {
+    background: var(--er-c);
+    color: white
+}
