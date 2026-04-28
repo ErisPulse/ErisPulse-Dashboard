@@ -81,6 +81,30 @@ const I18N = {
         action_storage_set: '设置存储', action_storage_delete: '删除存储',
         action_package_install: '安装包', action_clear_events: '清除事件',
         action_restart_framework: '重启框架', action_backup_import: '导入备份',
+        files: '文件管理', files_desc: '浏览和管理项目文件',
+        search_files: '搜索文件...', new_file: '新建文件', new_folder: '新建文件夹',
+        upload: '上传', save: '保存', upload_success: '上传成功', upload_failed: '上传失败',
+        upload_drop: '拖拽文件到此处或点击上传',
+        file_saved: '文件已保存', file_save_failed: '保存失败',
+        file_too_large: '文件过大，无法编辑', binary_file: '二进制文件，无法编辑',
+        file_not_found: '文件未找到', folder_exists: '文件夹已存在',
+        delete_confirm: '确定要删除选中的文件吗？此操作不可撤销。',
+        delete_success: '删除成功', delete_failed: '删除失败',
+        rename_label: '新名称', rename_success: '重命名成功', rename_failed: '重命名失败',
+        new_file_name: '文件名', new_folder_name: '文件夹名',
+        enable_module: '启用', disable_module: '禁用', reload_module: '重载',
+        uninstall_module: '卸载', uninstall_confirm: '确定要卸载此模块吗？这将删除模块包。',
+        module_uninstalling: '卸载中...', module_version: '版本',
+        module_author: '作者', module_no_desc: '无描述',
+        module_enabled_not_loaded: '已启用未加载',
+        module_disabled: '已禁用', reload: '重载',
+        action_enable_module: '启用模块', action_disable_module: '禁用模块',
+        action_reload_module: '重载模块', action_uninstall_module: '卸载模块',
+        search_modules: '搜索模块...',
+        module_loaded_dynamic: '模块已动态加载',
+        installed_no_restart: '安装完成，模块已自动加载',
+        permissions: '权限', download: '下载', chmod: '修改权限',
+        chmod_prompt: '输入权限值（如 755、644）',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -161,6 +185,30 @@ const I18N = {
         action_storage_set: 'Set Storage', action_storage_delete: 'Delete Storage',
         action_package_install: 'Install Package', action_clear_events: 'Clear Events',
         action_restart_framework: 'Restart Framework', action_backup_import: 'Import Backup',
+        files: 'Files', files_desc: 'Browse and manage project files',
+        search_files: 'Search files...', new_file: 'New File', new_folder: 'New Folder',
+        upload: 'Upload', save: 'Save', upload_success: 'Upload successful', upload_failed: 'Upload failed',
+        upload_drop: 'Drop files here or click to upload',
+        file_saved: 'File saved', file_save_failed: 'Save failed',
+        file_too_large: 'File too large to edit', binary_file: 'Binary file, cannot edit',
+        file_not_found: 'File not found', folder_exists: 'Folder already exists',
+        delete_confirm: 'Delete selected files? This cannot be undone.',
+        delete_success: 'Deleted', delete_failed: 'Delete failed',
+        rename_label: 'New name', rename_success: 'Renamed', rename_failed: 'Rename failed',
+        new_file_name: 'File name', new_folder_name: 'Folder name',
+        enable_module: 'Enable', disable_module: 'Disable', reload_module: 'Reload',
+        uninstall_module: 'Uninstall', uninstall_confirm: 'Uninstall this module? This will remove the package.',
+        module_uninstalling: 'Uninstalling...', module_version: 'Version',
+        module_author: 'Author', module_no_desc: 'No description',
+        module_enabled_not_loaded: 'Enabled',
+        module_disabled: 'Disabled', reload: 'Reload',
+        action_enable_module: 'Enable Module', action_disable_module: 'Disable Module',
+        action_reload_module: 'Reload Module', action_uninstall_module: 'Uninstall Module',
+        search_modules: 'Search modules...',
+        module_loaded_dynamic: 'Module loaded dynamically',
+        installed_no_restart: 'Installed, module auto-loaded',
+        permissions: 'Permissions', download: 'Download', chmod: 'Change Permissions',
+        chmod_prompt: 'Enter permission (e.g. 755, 644)',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -233,6 +281,7 @@ function go(name, el) {
     }
     if (name === 'api-routes') loadApiRoutes();
     if (name === 'audit') loadAuditLog();
+    if (name === 'files') fmBrowse('.');
 }
 
 function showModal(title, text, actions) {
@@ -386,26 +435,54 @@ async function loadModules() {
     document.getElementById('moduleList').innerHTML = modules.length ? modules.map(m => renderPluginRow(m, false)).join('') : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' + t('no_modules') + '</div>';
 }
 function renderPluginRow(m, isAd) {
-    const cl = m.loaded ? 'chip-ok' : 'chip-er';
+    let statusDot = '', statusText = '', statusClass = '';
+    if (m.loaded) { statusDot = 'loaded'; statusText = t('active'); statusClass = 'chip-ok'; }
+    else if (m.enabled) { statusDot = 'enabled'; statusText = t('module_enabled_not_loaded'); statusClass = 'chip-wr'; }
+    else { statusDot = 'disabled'; statusText = t('module_disabled'); statusClass = 'chip-er'; }
+
+    let meta = '';
+    if (m.version) meta += '<span>' + t('module_version') + ': ' + esc(m.version) + '</span>';
+    if (m.author) meta += '<span>' + t('module_author') + ': ' + esc(m.author) + '</span>';
+    if (!meta && m.description) meta = '<span>' + esc(m.description) + '</span>';
+    if (!meta) meta = '<span>' + t('module_no_desc') + '</span>';
+
     let acts = '';
-    if (!isAd) {
-        if (!m.loaded) acts += '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'load\',\'' + esc(m.type) + '\')">' + t('load') + '</button> ';
-        if (m.loaded) acts += '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'unload\',\'' + esc(m.type) + '\')">' + t('unload') + '</button> ';
-    } else {
-        if (!m.loaded) acts += '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'load\',\'' + esc(m.type) + '\')">' + t('load') + '</button> ';
-        if (m.loaded) acts += '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'unload\',\'' + esc(m.type) + '\')">' + t('unload') + '</button> ';
+    if (m.loaded) {
+        if (!isAd) acts += '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'reload\',\'' + esc(m.type) + '\')">' + t('reload') + '</button> ';
+        acts += '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'unload\',\'' + esc(m.type) + '\')">' + t('unload') + '</button> ';
+    } else if (m.enabled) {
+        acts += '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'load\',\'' + esc(m.type) + '\')">' + t('load') + '</button> ';
     }
-    return '<div class="list-row"><span class="chip ' + cl + '" style="min-width:64px;justify-content:center">' + (m.loaded ? t('active') : t('inactive')) + '</span><span style="flex:1;font-weight:500">' + esc(m.name) + '</span><div style="display:flex;gap:4px">' + acts + '</div></div>';
+    if (m.enabled) {
+        acts += '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'disable\',\'' + esc(m.type) + '\')">' + t('disable_module') + '</button> ';
+    } else {
+        acts += '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'enable\',\'' + esc(m.type) + '\')">' + t('enable_module') + '</button> ';
+    }
+    if (!isAd && m.package) {
+        acts += '<button class="btn btn-danger btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'uninstall\',\'' + esc(m.type) + '\',\'' + esc(m.package) + '\')">' + t('uninstall_module') + '</button> ';
+    }
+
+    return '<div class="module-row"><span class="module-status-dot ' + statusDot + '"></span><div class="module-info"><div class="module-name">' + esc(m.name) + '</div><div class="module-meta">' + meta + '</div></div><div class="module-actions">' + acts + '</div></div>';
 }
-async function moduleAction(name, action, type) {
+async function moduleAction(name, action, type, pkg) {
     if (!authed) return showLogin();
     if (action === 'unload' && name === 'Dashboard') {
         const ok = await confirm2(t('unload_self_title'), t('unload_self_confirm')); if (!ok) return;
     }
-    const d = await api('/api/modules/action', { method: 'POST', body: JSON.stringify({ name, action, type }) });
+    if (action === 'uninstall') {
+        const ok = await confirm2(t('uninstall_module'), t('uninstall_confirm') + ' <strong>' + esc(name) + '</strong>'); if (!ok) return;
+    }
+    const body = { name, action, type };
+    if (pkg) body.package = pkg;
+    const d = await api('/api/modules/action', { method: 'POST', body: JSON.stringify(body) });
     if (d && d.success) {
-        setTimeout(loadModules, 300); toast(t('action_completed'), 'ok');
-    } else toast(t('action_failed'), 'er');
+        if (d.task_id) {
+            _installTaskIds.set(d.task_id, name);
+            toast(t('module_uninstalling'), '');
+        } else {
+            setTimeout(loadModules, 300); toast(t('action_completed'), 'ok');
+        }
+    } else toast(d?.error || t('action_failed'), 'er');
 }
 
 let _storeTimer;
@@ -653,20 +730,23 @@ function wsConnect() {
                 if (m.status === 'success') {
                     _installTaskIds.delete(m.task_id);
                     const title = pkg + ': ' + t('install_success');
-                    showOutputModal(title + ' - ' + t('install_detail'), m.output || [], [{ label: t('install_restart_btn'), value: 'restart', primary: true }, { label: t('ok'), value: true }]).then(v => {
-                        if (v === 'restart') restartFramework();
-                    });
+                    showOutputModal(title + ' - ' + t('install_detail'), m.output || [], [{ label: t('ok'), value: true, primary: true }]);
                     loadModules();
                 } else if (m.status === 'error') {
                     _installTaskIds.delete(m.task_id);
                     showOutputModal(pkg + ': ' + t('install_failed'), m.output || [], [{ label: t('ok'), value: true }]);
                 }
+            } else if (m.type === 'module_changed') {
+                if (m.data && m.data.action === 'installed') {
+                    toast(m.data.name + ': ' + t('module_loaded_dynamic'), 'ok');
+                }
+                loadModules();
             }
         } catch (err) { }
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog() }
+function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance() }
 
  
 
@@ -1643,6 +1723,381 @@ async function importBackup(input) {
     }
     input.value = '';
 }
+
+ 
+
+let _fmCurrentPath = '.';
+let _fmShowHidden = false;
+let _fmEditor = null;
+let _fmEditPath = '';
+let _fmDirty = false;
+let _fmContextMenu = null;
+let _fmSearchTimer;
+
+function debounceFmSearch() { clearTimeout(_fmSearchTimer); _fmSearchTimer = setTimeout(() => fmBrowse(_fmCurrentPath), 300) }
+
+function fmGetMode(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const modes = {
+        js: 'javascript', json: 'javascript', mjs: 'javascript',
+        py: 'python', pyw: 'python',
+        html: 'htmlmixed', htm: 'htmlmixed',
+        css: 'css', xml: 'xml', svg: 'xml',
+        md: 'markdown', markdown: 'markdown',
+        toml: 'toml', yaml: 'yaml', yml: 'yaml',
+        sh: 'shell', bash: 'shell', zsh: 'shell',
+        txt: 'text',
+    };
+    return modes[ext] || 'text';
+}
+
+function fmFormatSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+}
+
+function fmFormatTime(ts) {
+    if (!ts) return '';
+    return new Date(ts * 1000).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US', {
+        month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function fmGetIcon(type, name) {
+    if (type === 'directory') return '<svg class="fm-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+    return '<svg class="fm-icon file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+}
+
+function fmUpdateBreadcrumb(path) {
+    const bc = document.getElementById('fmBreadcrumb');
+    const parts = path === '.' ? [] : path.split('/');
+    let html = '<span class="fm-crumb' + (parts.length === 0 ? ' active' : '') + '" onclick="fmNavigateTo(\'.\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>';
+    let accumulated = '';
+    parts.forEach((part, i) => {
+        accumulated += (accumulated ? '/' : '') + part;
+        const p = accumulated;
+        html += '<span class="fm-crumb-sep">/</span><span class="fm-crumb' + (i === parts.length - 1 ? ' active' : '') + '" onclick="fmNavigateTo(\'' + esc(p) + '\')">' + esc(part) + '</span>';
+    });
+    bc.innerHTML = html;
+}
+
+function fmNavigateTo(path) {
+    _fmCurrentPath = path;
+    fmBrowse(path);
+}
+
+function fmGoUp() {
+    if (_fmCurrentPath === '.') return;
+    const parts = _fmCurrentPath.split('/');
+    parts.pop();
+    fmNavigateTo(parts.length ? parts.join('/') : '.');
+}
+
+function fmToggleHidden() {
+    _fmShowHidden = !_fmShowHidden;
+    const btn = document.getElementById('fmHiddenBtn');
+    btn.style.background = _fmShowHidden ? 'var(--accent)' : '';
+    fmBrowse(_fmCurrentPath);
+}
+
+function fmRefresh() { fmBrowse(_fmCurrentPath); }
+
+async function fmBrowse(path) {
+    _fmCurrentPath = path;
+    const search = document.getElementById('fmSearch')?.value || '';
+    const params = new URLSearchParams({ path, hidden: _fmShowHidden ? 'true' : 'false' });
+    if (search) params.set('pattern', '*' + search + '*');
+    const d = search ? await api('/api/files/search?' + params) : await api('/api/files/browse?' + params);
+    if (!d) return;
+    if (d.error) { toast(d.error, 'er'); return; }
+
+    const entries = d.entries || d.results || [];
+    document.getElementById('fmCurrentPath').textContent = d.path || path;
+    document.getElementById('fmItemCount').textContent = entries.length;
+    fmUpdateBreadcrumb(d.path || path);
+
+    const fileList = document.getElementById('fmFileList');
+    if (entries.length === 0) {
+        fileList.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><p>' + t('no_data') + '</p></div>';
+        return;
+    }
+
+    fileList.innerHTML = entries.map(e => {
+        const isDir = e.type === 'directory';
+        const nameClass = isDir ? 'fm-name folder-name' : 'fm-name';
+        const icon = fmGetIcon(e.type, e.name);
+        const size = isDir ? '--' : fmFormatSize(e.size || 0);
+        const perm = e.permissions || '';
+        const mtime = fmFormatTime(e.modified);
+        const rowActions = !isDir ?
+            '<button class="btn-icon" onclick="event.stopPropagation();fmDownload(\'' + esc(e.path) + '\')" title="Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>' +
+            '<button class="btn-icon" onclick="event.stopPropagation();fmEditFile(\'' + esc(e.path) + '\')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+            : '';
+        return '<div class="fm-file-row" ondblclick="' + (isDir ? 'fmNavigateTo(\'' + esc(e.path) + '\')' : 'fmEditFile(\'' + esc(e.path) + '\')') + '" oncontextmenu="fmContextMenu(event,\'' + esc(e.path) + '\',\'' + esc(e.type) + '\')">' +
+            icon +
+            '<span class="' + nameClass + '">' + esc(e.name) + '</span>' +
+            '<span class="fm-size">' + size + '</span>' +
+            '<span class="fm-perm">' + esc(perm) + '</span>' +
+            '<span class="fm-time">' + mtime + '</span>' +
+            '<div class="fm-actions-cell">' + rowActions + '</div>' +
+            '</div>';
+    }).join('');
+}
+
+function fmContextMenu(event, path, type) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (_fmContextMenu) _fmContextMenu.remove();
+
+    const isDir = type === 'directory';
+    const menu = document.createElement('div');
+    menu.className = 'fm-context-menu';
+    menu.style.left = event.clientX + 'px';
+    menu.style.top = event.clientY + 'px';
+
+    let items = '';
+    if (isDir) {
+        items += fmCtxItem(t('files'), '<polyline points="9 18 15 12 9 6"/>', 'fmNavigateTo(\'' + esc(path) + '\')');
+    } else {
+        items += fmCtxItem(t('files'), '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>', 'fmEditFile(\'' + esc(path) + '\')');
+        items += fmCtxItem(t('download'), '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>', 'fmDownload(\'' + esc(path) + '\')');
+    }
+    items += '<div class="fm-ctx-sep"></div>';
+    items += fmCtxItem(t('permissions'), '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>', 'fmChmod(\'' + esc(path) + '\')');
+    items += fmCtxItem(t('rename_label'), '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/>', 'fmRename(\'' + esc(path) + '\')');
+    items += '<div class="fm-ctx-sep"></div>';
+    items += '<div class="fm-ctx-item danger" onclick="fmDelete(\'' + esc(path) + '\');this.closest(\'.fm-context-menu\').remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg><span>' + t('delete') + '</span></div>';
+
+    menu.innerHTML = items;
+    document.body.appendChild(menu);
+    _fmContextMenu = menu;
+
+    const close = () => { menu.remove(); _fmContextMenu = null; document.removeEventListener('click', close); };
+    setTimeout(() => document.addEventListener('click', close), 0);
+}
+
+function fmCtxItem(label, svgPath, onclick) {
+    return '<div class="fm-ctx-item" onclick="' + onclick + ';this.closest(\'.fm-context-menu\').remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + svgPath + '</svg><span>' + label + '</span></div>';
+}
+
+async function fmEditFile(path) {
+    const d = await api('/api/files/read?path=' + encodeURIComponent(path));
+    if (!d) return;
+    if (d.error) {
+        if (d.binary) toast(t('binary_file'), 'er');
+        else if (d.error === 'File too large') toast(t('file_too_large') + ' (' + fmFormatSize(d.size) + ')', 'er');
+        else toast(d.error, 'er');
+        return;
+    }
+    _fmEditPath = path;
+    _fmDirty = false;
+    const panel = document.getElementById('fmEditorPanel');
+    panel.style.display = 'block';
+    document.getElementById('fmEditorTitle').textContent = path;
+    document.getElementById('fmEditorStatus').textContent = '';
+
+    const container = document.getElementById('fmEditorContainer');
+    if (typeof CodeMirror !== 'undefined') {
+        if (_fmEditor) _fmEditor.toTextArea();
+        const textarea = document.createElement('textarea');
+        container.innerHTML = '';
+        container.appendChild(textarea);
+        textarea.value = d.content;
+        _fmEditor = CodeMirror.fromTextArea(textarea, {
+            mode: fmGetMode(path),
+            theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dracula' : 'default',
+            lineNumbers: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            lineWrapping: true,
+            tabSize: 4,
+            indentUnit: 4,
+        });
+        _fmEditor.on('change', () => {
+            _fmDirty = true;
+            document.getElementById('fmEditorStatus').textContent = '●';
+            document.getElementById('fmEditorStatus').style.color = 'var(--wr-c)';
+        });
+        _fmEditor.setSize('100%', '100%');
+        setTimeout(() => _fmEditor.refresh(), 100);
+    } else {
+        container.innerHTML = '<textarea id="fmFallbackEditor" class="code-editor" style="width:100%;height:500px" spellcheck="false">' + esc(d.content) + '</textarea>';
+    }
+    panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function fmSaveFile() {
+    if (!_fmEditPath) return;
+    let content;
+    if (_fmEditor) {
+        content = _fmEditor.getValue();
+    } else {
+        const ta = document.getElementById('fmFallbackEditor');
+        content = ta ? ta.value : '';
+    }
+    const d = await api('/api/files/write', {
+        method: 'PUT',
+        body: JSON.stringify({ path: _fmEditPath, content })
+    });
+    if (d && d.success) {
+        _fmDirty = false;
+        document.getElementById('fmEditorStatus').textContent = t('file_saved');
+        document.getElementById('fmEditorStatus').style.color = 'var(--ok-c)';
+        toast(t('file_saved'), 'ok');
+    } else {
+        toast(d?.error || t('file_save_failed'), 'er');
+    }
+}
+
+function fmCloseEditor() {
+    document.getElementById('fmEditorPanel').style.display = 'none';
+    if (_fmEditor) { _fmEditor.toTextArea(); _fmEditor = null; }
+    _fmEditPath = '';
+    _fmDirty = false;
+}
+
+function fmDownload(path) {
+    const tk = localStorage.getItem(TK);
+    const url = API + '/api/files/download?path=' + encodeURIComponent(path) + (tk ? '&token=' + encodeURIComponent(tk) : '');
+    window.open(url, '_blank');
+}
+
+async function fmNewFile() {
+    const name = await showModal(t('new_file'), '<input type="text" id="fmNewName" class="form-input" data-i18n-placeholder="new_file_name" placeholder="' + esc(t('new_file_name')) + '" style="width:100%">', [
+        { label: t('cancel'), value: null },
+        { label: t('ok'), value: 'ok', primary: true }
+    ]);
+    if (!name) return;
+    const input = document.getElementById('fmNewName');
+    const fileName = input ? input.value.trim() : '';
+    if (!fileName) return;
+    const fullPath = _fmCurrentPath === '.' ? fileName : _fmCurrentPath + '/' + fileName;
+    const d = await api('/api/files/write', {
+        method: 'PUT',
+        body: JSON.stringify({ path: fullPath, content: '' })
+    });
+    if (d && d.success) {
+        toast(t('file_saved'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('file_save_failed'), 'er');
+    }
+}
+
+async function fmNewFolder() {
+    const name = await showModal(t('new_folder'), '<input type="text" id="fmNewName" class="form-input" data-i18n-placeholder="new_folder_name" placeholder="' + esc(t('new_folder_name')) + '" style="width:100%">', [
+        { label: t('cancel'), value: null },
+        { label: t('ok'), value: 'ok', primary: true }
+    ]);
+    if (!name) return;
+    const input = document.getElementById('fmNewName');
+    const folderName = input ? input.value.trim() : '';
+    if (!folderName) return;
+    const fullPath = _fmCurrentPath === '.' ? folderName : _fmCurrentPath + '/' + folderName;
+    const d = await api('/api/files/mkdir', {
+        method: 'POST',
+        body: JSON.stringify({ path: fullPath, recursive: true })
+    });
+    if (d && d.success) {
+        toast(t('action_completed'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('action_failed'), 'er');
+    }
+}
+
+function fmUpload() {
+    document.getElementById('fmUploadInput').click();
+}
+
+async function fmDoUpload(input) {
+    const files = input.files;
+    if (!files || files.length === 0) return;
+    const fd = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        fd.append('files', files[i]);
+    }
+    const d = await api('/api/files/upload?path=' + encodeURIComponent(_fmCurrentPath), {
+        method: 'POST',
+        body: fd
+    });
+    if (d && d.success) {
+        toast(t('upload_success') + ' (' + d.count + ')', 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('upload_failed'), 'er');
+    }
+    input.value = '';
+}
+
+async function fmDelete(path) {
+    const ok = await confirm2(t('delete'), t('delete_confirm'));
+    if (!ok) return;
+    const d = await api('/api/files/delete', {
+        method: 'POST',
+        body: JSON.stringify({ paths: [path] })
+    });
+    if (d && d.success) {
+        toast(t('delete_success'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('delete_failed'), 'er');
+    }
+}
+
+async function fmRename(path) {
+    const oldName = path.split('/').pop();
+    const result = await showModal(t('rename_label'), '<input type="text" id="fmRenameInput" class="form-input" value="' + esc(oldName) + '" style="width:100%">', [
+        { label: t('cancel'), value: null },
+        { label: t('ok'), value: 'ok', primary: true }
+    ]);
+    if (!result) return;
+    const input = document.getElementById('fmRenameInput');
+    const newName = input ? input.value.trim() : '';
+    if (!newName || newName === oldName) return;
+    const dir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : '.';
+    const newPath = dir === '.' ? newName : dir + '/' + newName;
+    const d = await api('/api/files/rename', {
+        method: 'POST',
+        body: JSON.stringify({ old_path: path, new_path: newPath })
+    });
+    if (d && d.success) {
+        toast(t('rename_success'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('rename_failed'), 'er');
+    }
+}
+
+async function fmChmod(path) {
+    const result = await showModal(t('chmod'), '<input type="text" id="fmChmodInput" class="form-input" placeholder="755" style="width:100%">', [
+        { label: t('cancel'), value: null },
+        { label: t('ok'), value: 'ok', primary: true }
+    ]);
+    if (!result) return;
+    const input = document.getElementById('fmChmodInput');
+    const mode = input ? input.value.trim() : '';
+    if (!mode || !/^[0-7]{3,4}$/.test(mode)) { toast('Invalid mode', 'er'); return; }
+    const d = await api('/api/files/chmod', {
+        method: 'POST',
+        body: JSON.stringify({ path, mode })
+    });
+    if (d && d.success) {
+        toast(t('action_completed'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('action_failed'), 'er');
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 's' && _fmEditPath) {
+        e.preventDefault();
+        fmSaveFile();
+    }
+});
 
 (function () {
     applyTheme(getTheme()); applyI18n();

@@ -1,21 +1,25 @@
 import asyncio
+import fnmatch
 import hashlib
+import importlib.metadata
 import importlib.resources
 import json
 import os
 import secrets
 import shutil
+import stat as stat_mod
 import subprocess
 import sys
 import tempfile
 import time
 import threading
+from pathlib import Path
 from typing import Any
 
 from ErisPulse import sdk
 from ErisPulse.Core.Bases import BaseModule
 from fastapi import Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 
 class Main(BaseModule):
@@ -294,6 +298,7 @@ class Main(BaseModule):
                         "output": stdout_lines,
                     }
                 )
+                self._dynamic_load_new_modules()
             else:
                 self._install_tasks[task_id]["status"] = "error"
                 self._install_tasks[task_id]["error"] = "\n".join(stderr_lines)
@@ -319,6 +324,67 @@ class Main(BaseModule):
                     "message": str(e),
                 }
             )
+
+    def _dynamic_load_new_modules(self):
+        try:
+            from ErisPulse.loaders import ModuleLoader, AdapterLoader
+            from ErisPulse.finders import ModuleFinder, AdapterFinder
+            
+            mf = ModuleFinder()
+            af = AdapterFinder()
+            mf.clear_cache()
+            af.clear_cache()
+            
+            new_module_map = mf.get_entry_point_map()
+            existing_modules = set(self.sdk.module.list_registered())
+            
+            for ep_name, ep in new_module_map.items():
+                if ep_name not in existing_modules:
+                    self.logger.info(f"Dynamic loading new module: {ep_name}")
+                    try:
+                        module_class = ep.load()
+                        import importlib.metadata as imd
+                        dist = imd.distribution(ep.dist.name) if ep.dist else None
+                        import sys
+                        module_pkg = sys.modules.get(module_class.__module__)
+                        module_info = {
+                            "meta": {
+                                "name": ep_name,
+                                "version": getattr(module_pkg, "__version__", dist.version if dist else "1.0.0"),
+                                "description": getattr(module_pkg, "__description__", ""),
+                                "author": getattr(module_pkg, "__author__", ""),
+                                "license": getattr(module_pkg, "__license__", ""),
+                                "package": ep.dist.name,
+                                "lazy_load": False,
+                                "priority": 0,
+                                "is_base_module": True,
+                            },
+                            "module_class": module_class,
+                        }
+                        self.sdk.module._config_register(ep_name, True)
+                        self.sdk.module.register(ep_name, module_class, module_info)
+                        
+                        if self._loop and not self._loop.is_closed():
+                            asyncio.run_coroutine_threadsafe(self.sdk.module.load(ep_name), self._loop)
+                        
+                        self._safe_broadcast({
+                            "type": "module_changed",
+                            "data": {"name": ep_name, "action": "installed"},
+                        })
+                    except Exception as e:
+                        self.logger.warning(f"Failed to dynamic load module {ep_name}: {e}")
+            
+            new_adapter_map = af.get_entry_point_map()
+            existing_adapters = set(self.sdk.adapter.list_registered())
+            for ep_name, ep in new_adapter_map.items():
+                if ep_name not in existing_adapters:
+                    self.logger.info(f"Found new adapter: {ep_name} (requires restart)")
+                    self._safe_broadcast({
+                        "type": "module_changed",
+                        "data": {"name": ep_name, "action": "installed_adapter"},
+                    })
+        except Exception as e:
+            self.logger.warning(f"Dynamic module loading failed: {e}")
 
     def _get_framework_info(self) -> dict:
         try:
@@ -527,6 +593,20 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/audit/clear", handler=self._api_audit_clear, methods=["POST"])
         r.register_http_route(mn, "/api/backup/export", handler=self._api_backup_export, methods=["GET"])
         r.register_http_route(mn, "/api/backup/import", handler=self._api_backup_import, methods=["POST"])
+        
+        r.register_http_route(mn, "/api/files/browse", handler=self._api_files_browse, methods=["GET"])
+        r.register_http_route(mn, "/api/files/read", handler=self._api_files_read, methods=["GET"])
+        r.register_http_route(mn, "/api/files/write", handler=self._api_files_write, methods=["PUT"])
+        r.register_http_route(mn, "/api/files/upload", handler=self._api_files_upload, methods=["POST"])
+        r.register_http_route(mn, "/api/files/download", handler=self._api_files_download, methods=["GET"])
+        r.register_http_route(mn, "/api/files/mkdir", handler=self._api_files_mkdir, methods=["POST"])
+        r.register_http_route(mn, "/api/files/delete", handler=self._api_files_delete, methods=["POST"])
+        r.register_http_route(mn, "/api/files/rename", handler=self._api_files_rename, methods=["POST"])
+        r.register_http_route(mn, "/api/files/copy", handler=self._api_files_copy, methods=["POST"])
+        r.register_http_route(mn, "/api/files/chmod", handler=self._api_files_chmod, methods=["POST"])
+        r.register_http_route(mn, "/api/files/stat", handler=self._api_files_stat, methods=["GET"])
+        r.register_http_route(mn, "/api/files/search", handler=self._api_files_search, methods=["GET"])
+        
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -568,6 +648,18 @@ class Main(BaseModule):
             "/api/audit/clear",
             "/api/backup/export",
             "/api/backup/import",
+            "/api/files/browse",
+            "/api/files/read",
+            "/api/files/write",
+            "/api/files/upload",
+            "/api/files/download",
+            "/api/files/mkdir",
+            "/api/files/delete",
+            "/api/files/rename",
+            "/api/files/copy",
+            "/api/files/chmod",
+            "/api/files/stat",
+            "/api/files/search",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -650,42 +742,172 @@ class Main(BaseModule):
         )
         if not name or not action:
             return JSONResponse({"error": "name and action required"}, status_code=400)
-        if action not in ("load", "unload"):
-            return JSONResponse(
-                {"error": f"unknown action: {action}"}, status_code=400
-            )
+
         if mtype == "adapter":
-            if action == "unload":
-                shutdown_adapter = self.sdk.adapter.get(name)
-                if shutdown_adapter:
-                    await shutdown_adapter.shutdown()
-                    self.sdk.adapter._started_instances.discard(shutdown_adapter)
-                    result = True
-            elif action == "load":
+            if action == "load":
                 load_adapter = self.sdk.adapter.get(name)
                 if load_adapter:
                     await load_adapter.start()
                     self.sdk.adapter._started_instances.add(load_adapter)
-                    result = True
+                    self._add_audit_log("load_adapter", name, request)
+                    return JSONResponse({"success": True, "requires_restart": True})
+            elif action == "unload":
+                shutdown_adapter = self.sdk.adapter.get(name)
+                if shutdown_adapter:
+                    await shutdown_adapter.shutdown()
+                    self.sdk.adapter._started_instances.discard(shutdown_adapter)
+                    self._add_audit_log("unload_adapter", name, request)
+                    return JSONResponse({"success": True, "requires_restart": True})
+            elif action == "reload":
+                shutdown_adapter = self.sdk.adapter.get(name)
+                if shutdown_adapter:
+                    await shutdown_adapter.shutdown()
+                    self.sdk.adapter._started_instances.discard(shutdown_adapter)
+                    await shutdown_adapter.start()
+                    self.sdk.adapter._started_instances.add(shutdown_adapter)
+                    self._add_audit_log("reload_adapter", name, request)
+                    return JSONResponse({"success": True, "requires_restart": True})
+            elif action == "enable":
+                self.sdk.adapter.enable(name)
+                self._add_audit_log("enable_adapter", name, request)
+                return JSONResponse({"success": True})
+            elif action == "disable":
+                self.sdk.adapter.disable(name)
+                shutdown_adapter = self.sdk.adapter.get(name)
+                if shutdown_adapter:
+                    try:
+                        await shutdown_adapter.shutdown()
+                    except Exception:
+                        pass
+                    self.sdk.adapter._started_instances.discard(shutdown_adapter)
+                self._add_audit_log("disable_adapter", name, request)
+                return JSONResponse({"success": True})
             else:
                 return JSONResponse(
                     {"error": f"unknown action for adapter: {action}"}, status_code=400
                 )
+            return JSONResponse({"error": "adapter not found"}, status_code=404)
+
+        if action == "load":
+            result = await self.sdk.module.load(name)
             if not result:
-                return JSONResponse({"error": "adapter not found"}, status_code=404)
-            self._add_audit_log(f"{action}_adapter", name, request)
-            return JSONResponse({"success": True, "requires_restart": True})
+                return JSONResponse({"error": "load failed"}, status_code=400)
+            self._add_audit_log("load_module", name, request)
+            return JSONResponse({"success": True})
+        elif action == "unload":
+            result = await self.sdk.module.unload(name)
+            if not result:
+                return JSONResponse({"error": "unload failed"}, status_code=400)
+            self._add_audit_log("unload_module", name, request)
+            return JSONResponse({"success": True})
+        elif action == "enable":
+            result = self.sdk.module.enable(name)
+            if not result:
+                return JSONResponse({"error": "enable failed (module not registered)"}, status_code=400)
+            self._add_audit_log("enable_module", name, request)
+            return JSONResponse({"success": True})
+        elif action == "disable":
+            if name == "Dashboard":
+                return JSONResponse({"error": "Cannot disable Dashboard module"}, status_code=400)
+            result = self.sdk.module.disable(name)
+            if not result:
+                return JSONResponse({"error": "disable failed"}, status_code=400)
+            self._add_audit_log("disable_module", name, request)
+            return JSONResponse({"success": True})
+        elif action == "reload":
+            if name == "Dashboard":
+                return JSONResponse({"error": "Cannot reload Dashboard from dashboard"}, status_code=400)
+            await self.sdk.module.unload(name)
+            result = await self.sdk.module.load(name)
+            if not result:
+                return JSONResponse({"error": "reload failed"}, status_code=400)
+            self._add_audit_log("reload_module", name, request)
+            return JSONResponse({"success": True})
+        elif action == "uninstall":
+            if name == "Dashboard":
+                return JSONResponse({"error": "Cannot uninstall Dashboard"}, status_code=400)
+            pkg_name = body.get("package", "")
+            if not pkg_name:
+                info = self.sdk.module.get_info(name)
+                if info and info.get("package"):
+                    pkg_name = info["package"]
+                else:
+                    return JSONResponse({"error": "package name required for uninstall"}, status_code=400)
+            if self.sdk.module.is_loaded(name):
+                await self.sdk.module.unload(name)
+            self.sdk.module.disable(name)
+            task_id = secrets.token_urlsafe(8)
+            t = threading.Thread(
+                target=self._run_pip_uninstall, args=(pkg_name, name, task_id), daemon=True
+            )
+            t.start()
+            self._add_audit_log("uninstall_module", f"{name} ({pkg_name})", request)
+            return JSONResponse({"success": True, "task_id": task_id})
         else:
-            if action == "load":
-                result = await self.sdk.module.load(name)
-            elif action == "unload":
-                result = await self.sdk.module.unload(name)
-            if not result:
-                return JSONResponse(
-                    {"error": f"action {action} failed"}, status_code=400
-                )
-        self._add_audit_log(f"{action}_module", name, request)
-        return JSONResponse({"success": True})
+            return JSONResponse(
+                {"error": f"unknown action: {action}"}, status_code=400
+            )
+
+    def _run_pip_uninstall(self, package_name: str, module_name: str, task_id: str):
+        self._install_tasks[task_id] = {
+            "status": "running",
+            "started_at": time.time(),
+            "packages": [package_name],
+        }
+        self._safe_broadcast({
+            "type": "install_progress",
+            "task_id": task_id,
+            "status": "running",
+            "packages": [package_name],
+        })
+        try:
+            cmd = [sys.executable, "-m", "pip", "uninstall", "-y", package_name]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if proc.returncode == 0:
+                self.sdk.module.unregister(module_name)
+                self.sdk.config.setConfig(f"ErisPulse.modules.status.{module_name}", None)
+                self._install_tasks[task_id] = {
+                    "status": "success",
+                    "started_at": time.time(),
+                    "packages": [package_name],
+                    "output": proc.stdout.splitlines()[-20:],
+                }
+                self._safe_broadcast({
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "success",
+                    "output": proc.stdout.splitlines()[-20:],
+                })
+                self._safe_broadcast({
+                    "type": "module_changed",
+                    "data": {"name": module_name, "action": "uninstalled"},
+                })
+            else:
+                self._install_tasks[task_id] = {
+                    "status": "error",
+                    "started_at": time.time(),
+                    "packages": [package_name],
+                    "error": proc.stderr,
+                }
+                self._safe_broadcast({
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "error",
+                    "message": proc.stderr[-500:] if proc.stderr else "Uninstall failed",
+                })
+        except Exception as e:
+            self._install_tasks[task_id] = {
+                "status": "error",
+                "started_at": time.time(),
+                "packages": [package_name],
+                "error": str(e),
+            }
+            self._safe_broadcast({
+                "type": "install_progress",
+                "task_id": task_id,
+                "status": "error",
+                "message": str(e),
+            })
 
     async def _api_bots(self, request: Request) -> JSONResponse:
         bots = []
@@ -910,6 +1132,7 @@ class Main(BaseModule):
                         "output": all_lines[-50:],
                     }
                 )
+                self._dynamic_load_new_modules()
             else:
                 self._install_tasks[task_id] = {
                     "status": "error",
@@ -962,23 +1185,28 @@ class Main(BaseModule):
     async def _api_modules(self, request: Request) -> JSONResponse:
         modules = []
         for name in self.sdk.module.list_registered():
-            modules.append(
-                {
-                    "name": name,
-                    "type": "module",
-                    "enabled": self.sdk.module.is_enabled(name),
-                    "loaded": self.sdk.module.is_loaded(name),
-                }
-            )
+            info = self.sdk.module.get_info(name) or {}
+            modules.append({
+                "name": name,
+                "type": "module",
+                "enabled": self.sdk.module.is_enabled(name),
+                "loaded": self.sdk.module.is_loaded(name),
+                "version": info.get("version", ""),
+                "description": info.get("description", ""),
+                "author": info.get("author", ""),
+                "package": info.get("package", ""),
+            })
         for name in self.sdk.adapter.list_registered():
-            modules.append(
-                {
-                    "name": name,
-                    "type": "adapter",
-                    "enabled": self.sdk.adapter.is_enabled(name),
-                    "loaded": self.sdk.adapter.is_running(name),
-                }
-            )
+            modules.append({
+                "name": name,
+                "type": "adapter",
+                "enabled": self.sdk.adapter.is_enabled(name),
+                "loaded": self.sdk.adapter.is_running(name),
+                "version": "",
+                "description": "",
+                "author": "",
+                "package": "",
+            })
         return JSONResponse({"modules": modules})
 
     async def _ws_handler(self, websocket: WebSocket):
@@ -1444,4 +1672,359 @@ class Main(BaseModule):
                 self.storage.set(key, value)
         self._add_audit_log("backup_import", f"config: {len(config_data)} keys, storage: {len(storage_data)} keys", request)
         return JSONResponse({"success": True, "config_restored": len(config_data), "storage_restored": len(storage_data)})
+
+     
+
+    _SENSITIVE_FILES = {".env", "credentials.json", "id_rsa", "id_ed25519", ".htpasswd"}
+    _MAX_READ_SIZE = 2 * 1024 * 1024
+    _MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+
+    def _get_project_root(self) -> Path:
+        return Path.cwd()
+
+    def _resolve_safe_path(self, relative_path: str) -> Path | None:
+        root = self._get_project_root().resolve()
+        decoded = relative_path.replace("\\", "/")
+        while decoded.startswith("/"):
+            decoded = decoded[1:]
+        target = (root / decoded).resolve()
+        try:
+            target.relative_to(root)
+        except ValueError:
+            return None
+        return target
+
+    def _is_sensitive_file(self, path: Path) -> bool:
+        return path.name in self._SENSITIVE_FILES or path.name.endswith(".key") or path.name.endswith(".pem")
+
+    def _format_permissions(self, mode: int) -> str:
+        def _rwx(m):
+            r = "r" if m & 4 else "-"
+            w = "w" if m & 2 else "-"
+            x = "x" if m & 1 else "-"
+            return r + w + x
+        owner = _rwx((mode >> 6) & 7)
+        group = _rwx((mode >> 3) & 7)
+        others = _rwx(mode & 7)
+        return owner + group + others
+
+    def _file_entry(self, path: Path, root: Path) -> dict:
+        try:
+            st = path.stat()
+            is_dir = path.is_dir()
+            rel = str(path.relative_to(root)).replace("\\", "/")
+            perm = self._format_permissions(st.st_mode & 0o777) if hasattr(st, 'st_mode') else ""
+            return {
+                "name": path.name,
+                "path": rel,
+                "type": "directory" if is_dir else "file",
+                "size": 0 if is_dir else st.st_size,
+                "modified": st.st_mtime,
+                "permissions": perm,
+                "mode_octal": oct(st.st_mode & 0o777),
+                "readable": os.access(path, os.R_OK),
+                "writable": os.access(path, os.W_OK),
+            }
+        except (OSError, PermissionError):
+            rel = str(path.relative_to(root)).replace("\\", "/")
+            return {"name": path.name, "path": rel, "type": "unknown", "error": "access_denied"}
+
+    async def _api_files_browse(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        dir_path = request.query_params.get("path", ".")
+        sort_by = request.query_params.get("sort", "name")
+        show_hidden = request.query_params.get("hidden", "false") == "true"
+        target = self._resolve_safe_path(dir_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists() or not target.is_dir():
+            return JSONResponse({"error": "Directory not found"}, status_code=404)
+        try:
+            entries = []
+            for item in target.iterdir():
+                if not show_hidden and item.name.startswith("."):
+                    continue
+                entries.append(self._file_entry(item, self._get_project_root().resolve()))
+        except PermissionError:
+            return JSONResponse({"error": "Permission denied"}, status_code=403)
+        sort_key_map = {"name": "name", "size": "size", "modified": "modified", "type": "type"}
+        sort_key = sort_key_map.get(sort_by, "name")
+        entries.sort(key=lambda e: (e.get("type", "") != "directory", e.get(sort_key, "")))
+        root = self._get_project_root().resolve()
+        return JSONResponse({
+            "path": str(target.relative_to(root)).replace("\\", "/") if target != root else ".",
+            "absolute_path": str(target),
+            "entries": entries,
+            "total": len(entries),
+        })
+
+    async def _api_files_read(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        file_path = request.query_params.get("path", "")
+        encoding = request.query_params.get("encoding", "utf-8")
+        target = self._resolve_safe_path(file_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists() or not target.is_file():
+            return JSONResponse({"error": "File not found"}, status_code=404)
+        if self._is_sensitive_file(target):
+            return JSONResponse({"error": "Cannot read sensitive file"}, status_code=403)
+        try:
+            st = target.stat()
+            if st.st_size > self._MAX_READ_SIZE:
+                return JSONResponse({
+                    "error": "File too large",
+                    "size": st.st_size,
+                    "max_size": self._MAX_READ_SIZE,
+                }, status_code=413)
+        except OSError:
+            pass
+        try:
+            content = target.read_text(encoding=encoding)
+            return JSONResponse({"content": content, "size": st.st_size, "encoding": encoding, "path": file_path})
+        except UnicodeDecodeError:
+            return JSONResponse({"error": "Binary file, cannot display as text", "binary": True}, status_code=415)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_write(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        file_path = body.get("path", "")
+        content = body.get("content", "")
+        encoding = body.get("encoding", "utf-8")
+        target = self._resolve_safe_path(file_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding=encoding)
+            self._add_audit_log("file_write", file_path, request)
+            return JSONResponse({"success": True, "path": file_path, "size": len(content.encode(encoding))})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_upload(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        form = await request.form()
+        dest_dir = request.query_params.get("path", ".")
+        target_dir = self._resolve_safe_path(dest_dir)
+        if target_dir is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target_dir.exists():
+            target_dir.mkdir(parents=True, exist_ok=True)
+        files = form.getlist("files") if hasattr(form, "getlist") else [form.get("file")]
+        if not files or files[0] is None:
+            files = [v for k, v in form.items() if hasattr(v, 'filename')]
+        if not files:
+            return JSONResponse({"error": "No files provided"}, status_code=400)
+        uploaded = []
+        for f in files:
+            if not hasattr(f, 'filename') or not f.filename:
+                continue
+            filename = os.path.basename(f.filename)
+            target_path = target_dir / filename
+            resolved = self._resolve_safe_path(str(target_path.relative_to(self._get_project_root().resolve())))
+            if resolved is None:
+                continue
+            content = await f.read()
+            if len(content) > self._MAX_UPLOAD_SIZE:
+                continue
+            resolved.write_bytes(content)
+            uploaded.append({"name": filename, "size": len(content)})
+        self._add_audit_log("file_upload", f"{dest_dir}: {len(uploaded)} files", request)
+        return JSONResponse({"success": True, "uploaded": uploaded, "count": len(uploaded)})
+
+    async def _api_files_download(self, request: Request):
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        file_path = request.query_params.get("path", "")
+        target = self._resolve_safe_path(file_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists() or not target.is_file():
+            return JSONResponse({"error": "File not found"}, status_code=404)
+
+        def _iter():
+            with open(target, "rb") as f:
+                while chunk := f.read(65536):
+                    yield chunk
+
+        return StreamingResponse(_iter(), media_type="application/octet-stream", headers={
+            "Content-Disposition": f'attachment; filename="{target.name}"',
+            "Content-Length": str(target.stat().st_size),
+        })
+
+    async def _api_files_mkdir(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        dir_path = body.get("path", "")
+        recursive = body.get("recursive", True)
+        target = self._resolve_safe_path(dir_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        try:
+            target.mkdir(parents=recursive, exist_ok=False)
+            self._add_audit_log("file_mkdir", dir_path, request)
+            return JSONResponse({"success": True, "path": dir_path})
+        except FileExistsError:
+            return JSONResponse({"error": "Directory already exists"}, status_code=409)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_delete(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        paths = body.get("paths", [])
+        if not paths:
+            return JSONResponse({"error": "paths required"}, status_code=400)
+        deleted = []
+        for p in paths:
+            target = self._resolve_safe_path(p)
+            if target is None:
+                continue
+            if not target.exists():
+                continue
+            try:
+                if target.is_dir():
+                    shutil.rmtree(target)
+                else:
+                    target.unlink()
+                deleted.append(p)
+            except Exception:
+                pass
+        self._add_audit_log("file_delete", f"{len(deleted)} items", request)
+        return JSONResponse({"success": True, "deleted": deleted, "count": len(deleted)})
+
+    async def _api_files_rename(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        old_path = body.get("old_path", "")
+        new_path = body.get("new_path", "")
+        if not old_path or not new_path:
+            return JSONResponse({"error": "old_path and new_path required"}, status_code=400)
+        old_target = self._resolve_safe_path(old_path)
+        new_target = self._resolve_safe_path(new_path)
+        if old_target is None or new_target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not old_target.exists():
+            return JSONResponse({"error": "Source not found"}, status_code=404)
+        try:
+            new_target.parent.mkdir(parents=True, exist_ok=True)
+            old_target.rename(new_target)
+            self._add_audit_log("file_rename", f"{old_path} -> {new_path}", request)
+            return JSONResponse({"success": True})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_copy(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        src_path = body.get("src", "")
+        dst_path = body.get("dst", "")
+        if not src_path or not dst_path:
+            return JSONResponse({"error": "src and dst required"}, status_code=400)
+        src = self._resolve_safe_path(src_path)
+        dst = self._resolve_safe_path(dst_path)
+        if src is None or dst is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not src.exists():
+            return JSONResponse({"error": "Source not found"}, status_code=404)
+        try:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if src.is_dir():
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, dst)
+            self._add_audit_log("file_copy", f"{src_path} -> {dst_path}", request)
+            return JSONResponse({"success": True})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_chmod(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        file_path = body.get("path", "")
+        mode = body.get("mode", "")
+        if not file_path or not mode:
+            return JSONResponse({"error": "path and mode required"}, status_code=400)
+        target = self._resolve_safe_path(file_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists():
+            return JSONResponse({"error": "File not found"}, status_code=404)
+        try:
+            if isinstance(mode, str):
+                mode_int = int(mode, 8)
+            else:
+                mode_int = int(mode)
+            target.chmod(mode_int)
+            self._add_audit_log("file_chmod", f"{file_path} -> {oct(mode_int)}", request)
+            return JSONResponse({"success": True, "mode": oct(mode_int)})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_stat(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        file_path = request.query_params.get("path", "")
+        target = self._resolve_safe_path(file_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists():
+            return JSONResponse({"error": "Not found"}, status_code=404)
+        try:
+            st = target.stat()
+            is_dir = target.is_dir()
+            root = self._get_project_root().resolve()
+            rel = str(target.relative_to(root)).replace("\\", "/")
+            return JSONResponse({
+                "name": target.name,
+                "path": rel,
+                "type": "directory" if is_dir else "file",
+                "size": st.st_size,
+                "modified": st.st_mtime,
+                "created": st.st_ctime,
+                "permissions": self._format_permissions(st.st_mode & 0o777),
+                "mode_octal": oct(st.st_mode & 0o777),
+                "readable": os.access(target, os.R_OK),
+                "writable": os.access(target, os.W_OK),
+                "executable": os.access(target, os.X_OK),
+                "is_symlink": target.is_symlink(),
+            })
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_files_search(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        search_path = request.query_params.get("path", ".")
+        pattern = request.query_params.get("pattern", "*")
+        max_results = int(request.query_params.get("limit", "100"))
+        target = self._resolve_safe_path(search_path)
+        if target is None:
+            return JSONResponse({"error": "Path not allowed"}, status_code=403)
+        if not target.exists() or not target.is_dir():
+            return JSONResponse({"error": "Directory not found"}, status_code=404)
+        root = self._get_project_root().resolve()
+        results = []
+        try:
+            for item in target.rglob(pattern):
+                if len(results) >= max_results:
+                    break
+                if item.name.startswith(".") and not pattern.startswith("."):
+                    continue
+                results.append(self._file_entry(item, root))
+        except PermissionError:
+            pass
+        return JSONResponse({"results": results, "total": len(results), "pattern": pattern})
 
