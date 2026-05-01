@@ -27,6 +27,10 @@
                 <h1 id="appTitle">ErisPulse Dashboard</h1>
             </div>
             <div class="header-right">
+                <button class="task-badge" id="taskBadge" onclick="toggleTaskPanel()" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="task-badge-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span class="task-badge-count" id="taskCount">0</span>
+                </button>
                 <div class="ws-badge" id="wsBadge"><span class="dot"></span><span id="wsText">Offline</span></div>
                 <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">
                     <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -48,6 +52,10 @@
                 <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
             </div>
         </header>
+        <div class="task-panel" id="taskPanel">
+            <div class="task-panel-hd"><span data-i18n="task_list"></span><button class="btn-icon" onclick="clearAllTasks()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>
+            <div id="taskList" class="task-panel-body"></div>
+        </div>
         <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
         <div class="main">
             <nav class="sidebar" id="sidebar">
@@ -102,31 +110,14 @@
                         </svg>
                         <span data-i18n="api_routes"></span>
                     </a>
-                    <a class="nav-item" data-page="audit" onclick="go('audit',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </svg>
-                        <span data-i18n="audit_log"></span>
-                    </a>
                     <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
                             <line x1="12" y1="22.08" x2="12" y2="12" />
                         </svg>
-                        <span data-i18n="modules"></span>
-                    </a>
-                    <a class="nav-item" data-page="store" onclick="go('store',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 01-8 0" />
-                        </svg>
-                        <span data-i18n="store"></span>
+                        <span data-i18n="module_hub"></span>
                     </a>
                     <a class="nav-item" data-page="files" onclick="go('files',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -506,6 +497,10 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 16"/></svg>
                                 <span data-i18n="lifecycle"></span>
                             </button>
+                            <button class="view-btn" data-tab="log-audit" onclick="switchLogsTab('log-audit',this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span data-i18n="audit_log"></span>
+                            </button>
                         </div>
                     </div>
                     <div id="logListTab">
@@ -570,6 +565,36 @@
                         <div id="lifecycleTimeline" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
                     </div>
                     </div>
+                    <div id="logAuditTab" style="display:none">
+                    <div class="filter-bar">
+                        <select id="auditActionFilter" onchange="loadAuditLog()">
+                            <option value="" data-i18n="all_actions"></option>
+                            <option value="load_module">load_module</option>
+                            <option value="unload_module">unload_module</option>
+                            <option value="load_adapter">load_adapter</option>
+                            <option value="unload_adapter">unload_adapter</option>
+                            <option value="config_update">config_update</option>
+                            <option value="config_source_save">config_source_save</option>
+                            <option value="storage_set">storage_set</option>
+                            <option value="storage_delete">storage_delete</option>
+                            <option value="package_install">package_install</option>
+                            <option value="clear_events">clear_events</option>
+                            <option value="restart_framework">restart_framework</option>
+                            <option value="backup_import">backup_import</option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearAuditLog()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span data-i18n="audit_log"></span>
+                            <span class="chip chip-pr" id="auditCount" style="margin-left:8px">0</span>
+                        </div>
+                        <div id="auditList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
+                    </div>
                 </div>
                 <div class="page" id="p-api-routes">
                     <h1 class="page-title" data-i18n="api_routes"></h1>
@@ -601,133 +626,133 @@
                         </div>
                     </div>
                 </div>
-                <div class="page" id="p-audit">
+                <div class="page" id="p-modules">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
                         <div>
-                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="audit_log"></h1>
-                            <p class="page-desc" data-i18n="audit_log_desc"></p>
+                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="module_hub"></h1>
+                            <p class="page-desc" data-i18n="module_hub_desc"></p>
                         </div>
                     </div>
-                    <div class="filter-bar">
-                        <select id="auditActionFilter" onchange="loadAuditLog()">
-                            <option value="" data-i18n="all_actions"></option>
-                            <option value="load_module">load_module</option>
-                            <option value="unload_module">unload_module</option>
-                            <option value="load_adapter">load_adapter</option>
-                            <option value="unload_adapter">unload_adapter</option>
-                            <option value="config_update">config_update</option>
-                            <option value="config_source_save">config_source_save</option>
-                            <option value="storage_set">storage_set</option>
-                            <option value="storage_delete">storage_delete</option>
-                            <option value="package_install">package_install</option>
-                            <option value="clear_events">clear_events</option>
-                            <option value="restart_framework">restart_framework</option>
-                            <option value="backup_import">backup_import</option>
-                        </select>
-                        <div style="flex:1"></div>
-                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()"><svg viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" style="width:14px;height:14px">
-                                <polyline points="23 4 23 10 17 10" />
-                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                            </svg></button>
-                        <button class="btn btn-secondary btn-sm" onclick="clearAuditLog()"><svg viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" style="width:14px;height:14px">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                            </svg></button>
+                    <div class="view-toggle" style="margin-bottom:16px">
+                        <button class="view-btn active" data-tab="mh-registered" onclick="switchModuleTab('mh-registered',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span data-i18n="registered"></span>
+                        </button>
+                        <button class="view-btn" data-tab="mh-store" onclick="switchModuleTab('mh-store',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                            <span data-i18n="store"></span>
+                        </button>
+                        <button class="view-btn" data-tab="mh-packages" onclick="switchModuleTab('mh-packages',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span data-i18n="pkg_manager"></span>
+                        </button>
                     </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
-                            <span data-i18n="audit_log"></span>
-                            <span class="chip chip-pr" id="auditCount" style="margin-left:8px">0</span>
+
+                    <!-- Tab: 已注册 -->
+                    <div id="mhRegisteredTab">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                </svg><span data-i18n="adapters"></span><span class="chip chip-pr" id="adapterCount"
+                                    style="margin-left:6px"></span>
+                                <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                        title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            style="width:16px;height:16px">
+                                            <polyline points="23 4 23 10 17 10" />
+                                            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                        </svg></button></div>
+                            </div>
+                            <div id="adapterList"></div>
                         </div>
-                        <div id="auditList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
-                    </div>
-                </div>
-                <div class="page" id="p-modules">
-                    <h1 class="page-title" data-i18n="modules"></h1>
-                    <p class="page-desc" data-i18n="modules_desc"></p>
-                    <div class="card" style="margin-top:16px">
-                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="2" y1="12" x2="22" y2="12" />
-                                <path
-                                    d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-                            </svg><span data-i18n="adapters"></span><span class="chip chip-pr" id="adapterCount"
-                                style="margin-left:6px"></span>
-                            <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
-                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        style="width:16px;height:16px">
-                                        <polyline points="23 4 23 10 17 10" />
-                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                                    </svg></button></div>
+                        <div class="card" style="margin-top:16px">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                                </svg><span data-i18n="modules_label"></span><span class="chip chip-sc" id="moduleCount"
+                                    style="margin-left:6px"></span>
+                                <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                        title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            style="width:16px;height:16px">
+                                            <polyline points="23 4 23 10 17 10" />
+                                            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                        </svg></button></div>
+                            </div>
+                            <div id="moduleList"></div>
                         </div>
-                        <div id="adapterList"></div>
                     </div>
-                    <div class="card" style="margin-top:16px">
-                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                                <line x1="12" y1="22.08" x2="12" y2="12" />
-                            </svg><span data-i18n="modules_label"></span><span class="chip chip-sc" id="moduleCount"
-                                style="margin-left:6px"></span>
-                            <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
-                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        style="width:16px;height:16px">
-                                        <polyline points="23 4 23 10 17 10" />
-                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                                    </svg></button></div>
+
+                    <!-- Tab: 商店 -->
+                    <div id="mhStoreTab" style="display:none">
+                        <div class="filter-bar" style="margin-top:0">
+                            <input type="text" id="storeSearch" data-i18n-placeholder="search_packages" oninput="debounceStore()">
+                            <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
                         </div>
-                        <div id="moduleList"></div>
+                        <div class="card" style="margin-top:12px;margin-bottom:16px">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_title"></span></div>
+                            <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
+                                <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
+                                <div style="flex:1"></div>
+                                <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none" onchange="uploadModule(this)">
+                                <button class="btn btn-primary btn-sm" onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
+                            </div>
+                        </div>
+                        <div class="grid-3" id="storeGrid"></div>
                     </div>
-                </div>
-                <div class="page" id="p-store">
-                    <h1 class="page-title" data-i18n="store"></h1>
-                    <p class="page-desc" data-i18n="store_desc"></p>
-                    <div class="filter-bar" style="margin-top:16px">
-                        <input type="text" id="storeSearch" data-i18n-placeholder="search_packages"
-                            oninput="debounceStore()">
-                        <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" title="" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" style="width:14px;height:14px">
-                                <polyline points="23 4 23 10 17 10" />
-                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-                            </svg></button>
-                    </div>
-                    <div class="card" style="margin-top:12px;margin-bottom:16px">
-                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                style="width:16px;height:16px">
-                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                                <polyline points="17 8 12 3 7 8" />
-                                <line x1="12" y1="3" x2="12" y2="15" />
-                            </svg><span data-i18n="upload_title"></span></div>
-                        <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
-                            <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
+
+                    <!-- Tab: 包管理 -->
+                    <div id="mhPackagesTab" style="display:none">
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+                            <input type="text" id="pkgSearch" data-i18n-placeholder="search_packages" oninput="debouncePkgs()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:200px">
+                            <button class="btn btn-secondary btn-sm" onclick="loadPackages(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
                             <div style="flex:1"></div>
-                            <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none"
-                                onchange="uploadModule(this)">
-                            <button class="btn btn-primary btn-sm"
-                                onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px">
-                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                                    <polyline points="17 8 12 3 7 8" />
-                                    <line x1="12" y1="3" x2="12" y2="15" />
-                                </svg><span data-i18n="upload_btn"></span></button>
+                            <div class="view-toggle" style="margin:0">
+                                <button class="view-btn active" data-tab="pk-installed" onclick="switchPkgTab('pk-installed',this)">
+                                    <span data-i18n="pkg_installed"></span>
+                                    <span class="chip chip-sc" id="pkgInstalledCount" style="margin-left:4px;font-size:11px;padding:1px 6px">0</span>
+                                </button>
+                                <button class="view-btn" data-tab="pk-updates" onclick="switchPkgTab('pk-updates',this)">
+                                    <span data-i18n="pkg_updates"></span>
+                                    <span class="chip chip-wr" id="pkgUpdateCount" style="margin-left:4px;font-size:11px;padding:1px 6px;display:none">0</span>
+                                </button>
+                                <button class="view-btn" data-tab="pk-install-new" onclick="switchPkgTab('pk-install-new',this)">
+                                    <span data-i18n="pkg_install_new"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="pkInstalledTab">
+                            <div class="card">
+                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span data-i18n="pkg_installed"></span></div>
+                                <div id="pkgInstalledList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                            </div>
+                        </div>
+                        <div id="pkUpdatesTab" style="display:none">
+                            <div class="card">
+                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><span data-i18n="pkg_updates_available"></span><span class="chip chip-wr" id="pkgUpdateCountInner" style="margin-left:6px">0</span>
+                                    <div class="header-actions"><button class="btn btn-primary btn-xs" onclick="upgradeAllPkgs()" data-i18n="pkg_upgrade_all"></button></div>
+                                </div>
+                                <div id="pkgUpdateList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                            </div>
+                        </div>
+                        <div id="pkInstallNewTab" style="display:none">
+                            <div class="card">
+                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="pkg_install_new"></span></div>
+                                <div style="padding:16px">
+                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                                        <input type="text" id="pkgInstallInput" data-i18n-placeholder="pkg_install_placeholder" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);font-family:Consolas,Monaco,monospace">
+                                        <button class="btn btn-primary btn-sm" onclick="installNewPkg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="install"></span></button>
+                                    </div>
+                                    <div style="font-size:12px;color:var(--tx-t);margin-top:8px" data-i18n="pkg_install_hint"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid-3" id="storeGrid"></div>
                 </div>
                 <div class="page" id="p-files">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
@@ -764,6 +789,21 @@
                             <span data-i18n="upload"></span>
                         </button>
                         <input type="file" id="fmUploadInput" multiple style="display:none" onchange="fmDoUpload(this)">
+                        <input type="file" id="fmUploadDirInput" webkitdirectory multiple style="display:none" onchange="fmDoUpload(this)">
+                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fmUploadDirInput').click()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span data-i18n="upload_folder"></span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fmCompress()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <!-- 文件夹主体 -->
+                                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                                <!-- 下载箭头 -->
+                                <polyline points="12 11 12 17"></polyline>
+                                <polyline points="9 14 12 17 15 14"></polyline>
+                            </svg>
+                            <span data-i18n="compress"></span>
+                        </button>
                     </div>
                     <div class="card" style="margin-top:12px">
                         <div class="card-header">

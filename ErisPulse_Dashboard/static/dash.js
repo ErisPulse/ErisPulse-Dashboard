@@ -105,6 +105,29 @@ const I18N = {
         installed_no_restart: '安装完成，模块已自动加载',
         permissions: '权限', download: '下载', chmod: '修改权限',
         chmod_prompt: '输入权限值（如 755、644）',
+        pkg_manager: '包管理', pkg_manager_desc: '管理已安装的 Python 包，检查更新并安装新包',
+        pkg_installed: '已安装', pkg_updates: '可更新', pkg_install_new: '安装新包',
+        pkg_updates_available: '可用的更新', pkg_upgrade_all: '全部更新',
+        pkg_install_placeholder: '包名（如 requests 或 numpy==1.24.0）',
+        pkg_install_hint: '支持输入包名、带版本号（package==version）或多个包用空格分隔',
+        pkg_name: '包名', pkg_version: '版本', pkg_type: '类型', pkg_latest: '最新版本',
+        pkg_type_module: '模块', pkg_type_adapter: '适配器', pkg_type_library: '库',
+        pkg_no_installed: '未找到已安装的包', pkg_no_updates: '所有包均为最新版本',
+        pkg_checking_updates: '正在检查更新...', pkg_upgrading: '更新中...',
+        pkg_upgrade: '更新', pkg_upgrade_confirm: '确定要更新以下包吗？',
+        pkg_upgrade_all_confirm: '确定要更新所有可更新的包吗？这可能需要一些时间。',
+        pkg_uninstall_confirm: '确定要卸载此包吗？这可能导致依赖问题。',
+        pkg_cannot_uninstall: '核心包不可卸载',
+        pkg_install_success: '包安装完成', pkg_upgrade_success: '包更新完成',
+        pkg_install_failed: '包安装失败', pkg_upgrade_failed: '包更新失败',
+        store_version_current: '当前', store_version_latest: '最新',
+        store_update_available: '有更新',
+        action_package_upgrade: '更新包', action_package_uninstall: '卸载包',
+        upgrade_all: '全部更新',
+        module_hub: '模块中心', module_hub_desc: '管理模块、浏览商店、管理 Python 包',
+        registered: '已注册', registered_desc: '管理已注册的模块和适配器',
+        compress: '压缩', decompress: '解压', upload_folder: '上传文件夹',
+        task_list: '任务列表',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -209,6 +232,29 @@ const I18N = {
         installed_no_restart: 'Installed, module auto-loaded',
         permissions: 'Permissions', download: 'Download', chmod: 'Change Permissions',
         chmod_prompt: 'Enter permission (e.g. 755, 644)',
+        pkg_manager: 'Packages', pkg_manager_desc: 'Manage installed Python packages, check updates and install new ones',
+        pkg_installed: 'Installed', pkg_updates: 'Updates', pkg_install_new: 'Install New',
+        pkg_updates_available: 'Updates Available', pkg_upgrade_all: 'Upgrade All',
+        pkg_install_placeholder: 'Package name (e.g. requests or numpy==1.24.0)',
+        pkg_install_hint: 'Supports package name, with version (package==version), or multiple packages separated by spaces',
+        pkg_name: 'Package', pkg_version: 'Version', pkg_type: 'Type', pkg_latest: 'Latest',
+        pkg_type_module: 'Module', pkg_type_adapter: 'Adapter', pkg_type_library: 'Library',
+        pkg_no_installed: 'No installed packages found', pkg_no_updates: 'All packages are up to date',
+        pkg_checking_updates: 'Checking for updates...', pkg_upgrading: 'Upgrading...',
+        pkg_upgrade: 'Upgrade', pkg_upgrade_confirm: 'Are you sure you want to upgrade the following packages?',
+        pkg_upgrade_all_confirm: 'Are you sure you want to upgrade all outdated packages? This may take a while.',
+        pkg_uninstall_confirm: 'Are you sure you want to uninstall this package? This may cause dependency issues.',
+        pkg_cannot_uninstall: 'Cannot uninstall core package',
+        pkg_install_success: 'Package installed', pkg_upgrade_success: 'Package upgraded',
+        pkg_install_failed: 'Package install failed', pkg_upgrade_failed: 'Package upgrade failed',
+        store_version_current: 'Current', store_version_latest: 'Latest',
+        store_update_available: 'Update available',
+        action_package_upgrade: 'Upgrade Package', action_package_uninstall: 'Uninstall Package',
+        upgrade_all: 'Upgrade All',
+        module_hub: 'Module Hub', module_hub_desc: 'Manage modules, browse store, manage Python packages',
+        registered: 'Registered', registered_desc: 'Manage registered modules and adapters',
+        compress: 'Compress', decompress: 'Decompress', upload_folder: 'Upload Folder',
+        task_list: 'Task List',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -268,8 +314,12 @@ function go(name, el) {
     }
     if (name === 'config') loadConfig();
     if (name === 'bots') loadBots();
-    if (name === 'modules') loadModules();
-    if (name === 'store') loadStore();
+    if (name === 'modules') {
+        loadModules();
+        loadStore();
+        loadPackages();
+        switchModuleTab('mh-registered', document.querySelector('[data-tab="mh-registered"]'));
+    }
     if (name === 'logs') {
         loadLogs();
         switchLogsTab('log-list', document.querySelector('[data-tab="log-list"]'));
@@ -280,7 +330,6 @@ function go(name, el) {
         if (btn) btn.style.opacity = '0.5';
     }
     if (name === 'api-routes') loadApiRoutes();
-    if (name === 'audit') loadAuditLog();
     if (name === 'files') fmBrowse('.');
 }
 
@@ -500,9 +549,27 @@ async function loadStore(forceRefresh) {
     }
     if (!d || !d.packages) { document.getElementById('storeGrid').innerHTML = '<div class="empty-state" style="grid-column:span 3"><p>' + t('failed_registry') + '</p></div>'; return }
     const pk = d.packages;
+    const installedVersions = d.installed_versions || {};
     const all = [...Object.entries(pk.modules || {}).map(([n, i]) => ({ ...i, name: n, type: 'module' })), ...Object.entries(pk.adapters || {}).map(([n, i]) => ({ ...i, name: n, type: 'adapter' }))];
     const f = q ? all.filter(i => (i.name + i.description + i.package).toLowerCase().includes(q)) : all;
-    document.getElementById('storeGrid').innerHTML = f.length ? f.map(i => '<div class="store-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600">' + esc(i.name) + '</span><span class="chip chip-pr">' + esc(i.type) + '</span></div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' + esc(i.package) + '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' + esc(i.description || '-') + '</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' + esc(i.version || '?') + '</span><button class="btn btn-primary btn-sm" onclick="installPkg(\'' + esc(i.package) + '\')">' + t('install') + '</button></div></div>').join('') : '<div class="empty-state" style="grid-column:span 3"><p>' + t('no_packages') + '</p></div>';
+    document.getElementById('storeGrid').innerHTML = f.length ? f.map(i => {
+        const pkgLower = (i.package || '').toLowerCase();
+        const installedVer = installedVersions[pkgLower] || '';
+        const isInstalled = !!installedVer;
+        const hasUpdate = isInstalled && installedVer !== i.version;
+        let statusBadge = '';
+        let actionBtn = '';
+        if (hasUpdate) {
+            statusBadge = '<span class="chip chip-wr" style="margin-left:4px;font-size:10px">' + t('store_update_available') + '</span>';
+            actionBtn = '<button class="btn btn-primary btn-sm" onclick="upgradePkg(\'' + esc(i.package) + '\')">' + t('pkg_upgrade') + '</button>';
+        } else if (isInstalled) {
+            statusBadge = '<span class="chip chip-ok" style="margin-left:4px;font-size:10px">v' + esc(installedVer) + '</span>';
+            actionBtn = '<span style="font-size:12px;color:var(--ok-c);font-weight:500">' + t('active') + '</span>';
+        } else {
+            actionBtn = '<button class="btn btn-primary btn-sm" onclick="installPkg(\'' + esc(i.package) + '\')">' + t('install') + '</button>';
+        }
+        return '<div class="store-card' + (hasUpdate ? ' store-card-update' : '') + '"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600">' + esc(i.name) + '</span><span class="chip chip-pr">' + esc(i.type) + '</span>' + statusBadge + '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' + esc(i.package) + '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' + esc(i.description || '-') + '</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' + esc(i.version || '?') + (hasUpdate ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' + t('store_version_current') + ' v' + esc(installedVer) : '') + '</span>' + actionBtn + '</div></div>';
+    }).join('') : '<div class="empty-state" style="grid-column:span 3"><p>' + t('no_packages') + '</p></div>';
 }
 let _installTaskIds = new Map();
 async function installPkg(pkg) {
@@ -620,7 +687,9 @@ function switchLogsTab(tab, btn) {
     btn.classList.add('active');
     document.getElementById('logListTab').style.display = tab === 'log-list' ? 'block' : 'none';
     document.getElementById('logLifecycleTab').style.display = tab === 'log-lifecycle' ? 'block' : 'none';
+    document.getElementById('logAuditTab').style.display = tab === 'log-audit' ? 'block' : 'none';
     if (tab === 'log-lifecycle') loadLifecycle();
+    if (tab === 'log-audit') loadAuditLog();
     if (tab !== 'log-list' && _logAutoRefreshTimer) {
         clearInterval(_logAutoRefreshTimer);
         _logAutoRefreshTimer = null;
@@ -726,19 +795,25 @@ function wsConnect() {
                     while (dh && dh.children.length > 20) dh.removeChild(dh.lastChild);
                 }
             } else if (m.type === 'install_progress') {
-                const pkg = _installTaskIds.get(m.task_id) || '';
-                if (m.status === 'success') {
+                const pkg = _installTaskIds.get(m.task_id) || (m.packages ? m.packages.join(', ') : '');
+                if (m.status === 'running') {
+                    addOrUpdateTask(m.task_id, pkg, 'running', m.output || []);
+                } else if (m.status === 'success') {
                     _installTaskIds.delete(m.task_id);
-                    const title = pkg + ': ' + t('install_success');
-                    showOutputModal(title + ' - ' + t('install_detail'), m.output || [], [{ label: t('ok'), value: true, primary: true }]);
+                    addOrUpdateTask(m.task_id, pkg, 'success', m.output || []);
                     loadModules();
+                    loadPackages(true);
                 } else if (m.status === 'error') {
                     _installTaskIds.delete(m.task_id);
-                    showOutputModal(pkg + ': ' + t('install_failed'), m.output || [], [{ label: t('ok'), value: true }]);
+                    addOrUpdateTask(m.task_id, pkg, 'error', m.output || [], m.message || t('install_failed'));
                 }
             } else if (m.type === 'module_changed') {
                 if (m.data && m.data.action === 'installed') {
                     toast(m.data.name + ': ' + t('module_loaded_dynamic'), 'ok');
+                }
+                if (m.data && m.data.action === 'upgraded') {
+                    toast(t('pkg_upgrade_success'), 'ok');
+                    loadPackages(true);
                 }
                 loadModules();
             }
@@ -746,7 +821,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance() }
+function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates() }
 
 // ========== 事件构建器相关 ==========
 
@@ -1867,6 +1942,10 @@ function fmContextMenu(event, path, type) {
     items += '<div class="fm-ctx-sep"></div>';
     items += fmCtxItem(t('permissions'), '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>', 'fmChmod(\'' + esc(path) + '\')');
     items += fmCtxItem(t('rename_label'), '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/>', 'fmRename(\'' + esc(path) + '\')');
+    const fname = path.split('/').pop().toLowerCase();
+    if (fname.endsWith('.zip') || fname.endsWith('.tar.gz') || fname.endsWith('.tgz') || fname.endsWith('.tar.bz2') || fname.endsWith('.tar.xz') || fname.endsWith('.tar')) {
+        items += fmCtxItem(t('decompress'), '<polyline points="17 1 21 5 17 9"/><path d="M3 7V5a2 2 0 012-2h12"/><line x1="9" y1="12" x2="15" y2="12"/>', 'fmDecompress(\'' + esc(path) + '\')');
+    }
     items += '<div class="fm-ctx-sep"></div>';
     items += '<div class="fm-ctx-item danger" onclick="fmDelete(\'' + esc(path) + '\');this.closest(\'.fm-context-menu\').remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg><span>' + t('delete') + '</span></div>';
 
@@ -2098,6 +2177,338 @@ document.addEventListener('keydown', function(e) {
         fmSaveFile();
     }
 });
+
+async function fmCompress() {
+    if (!authed) return showLogin();
+    const allRows = document.querySelectorAll('#fmFileList .fm-file-row');
+    if (allRows.length === 0) { toast(t('no_data'), ''); return }
+    const archiveName = await showModal(t('compress'), '<input type="text" id="fmCompressName" class="form-input" value="archive.zip" style="width:100%">', [
+        { label: t('cancel'), value: null },
+        { label: t('ok'), value: 'ok', primary: true }
+    ]);
+    if (!archiveName) return;
+    const name = document.getElementById('fmCompressName')?.value?.trim() || 'archive.zip';
+    const paths = [];
+    allRows.forEach(row => {
+        const nameEl = row.querySelector('.fm-name, .folder-name');
+        if (nameEl) {
+            const n = nameEl.textContent;
+            paths.push(_fmCurrentPath === '.' ? n : _fmCurrentPath + '/' + n);
+        }
+    });
+    if (paths.length === 0) return;
+    const resp = await fetch(API + '/api/files/compress', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem(TK), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths, archive_name: name })
+    });
+    if (resp.ok) {
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+        URL.revokeObjectURL(url);
+        toast(t('action_completed'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        const err = await resp.json().catch(() => ({}));
+        toast(err.error || t('action_failed'), 'er');
+    }
+}
+
+async function fmDecompress(path) {
+    if (!authed) return showLogin();
+    const d = await api('/api/files/decompress', { method: 'POST', body: JSON.stringify({ path }) });
+    if (d && d.success) {
+        toast(t('action_completed'), 'ok');
+        fmBrowse(_fmCurrentPath);
+    } else {
+        toast(d?.error || t('action_failed'), 'er');
+    }
+}
+
+// ========== 模块中心 Tab 切换 ==========
+
+function switchModuleTab(tab, btn) {
+    document.querySelectorAll('#p-modules > .view-toggle .view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('mhRegisteredTab').style.display = tab === 'mh-registered' ? 'block' : 'none';
+    document.getElementById('mhStoreTab').style.display = tab === 'mh-store' ? 'block' : 'none';
+    document.getElementById('mhPackagesTab').style.display = tab === 'mh-packages' ? 'block' : 'none';
+    if (tab === 'mh-store') loadStore();
+    if (tab === 'mh-packages') { loadPackages(); switchPkgTab('pk-installed', document.querySelector('[data-tab="pk-installed"]')); }
+}
+
+// ========== 任务列表系统 ==========
+
+let _tasks = [];
+let _taskPanelOpen = false;
+
+function addOrUpdateTask(id, name, status, outputLines, errorMsg) {
+    let task = _tasks.find(t => t.id === id);
+    if (!task) {
+        task = { id, name, status, output: [], startedAt: Date.now(), errorMsg: '' };
+        _tasks.unshift(task);
+    }
+    task.status = status;
+    task.output = outputLines || task.output;
+    if (errorMsg) task.errorMsg = errorMsg;
+    renderTaskPanel();
+    renderTaskBadge();
+}
+
+function removeTask(id) {
+    _tasks = _tasks.filter(t => t.id !== id);
+    renderTaskPanel();
+    renderTaskBadge();
+}
+
+function toggleTaskPanel() {
+    _taskPanelOpen = !_taskPanelOpen;
+    document.getElementById('taskPanel').classList.toggle('open', _taskPanelOpen);
+    renderTaskPanel();
+}
+
+function clearAllTasks() {
+    _tasks = _tasks.filter(t => t.status === 'running');
+    renderTaskPanel();
+    renderTaskBadge();
+}
+
+function renderTaskBadge() {
+    const badge = document.getElementById('taskBadge');
+    const count = _tasks.length;
+    const hasRunning = _tasks.some(t => t.status === 'running');
+    document.getElementById('taskCount').textContent = count;
+    if (count > 0) {
+        badge.style.display = '';
+        badge.classList.toggle('pulse', hasRunning);
+    } else {
+        badge.style.display = 'none';
+        badge.classList.remove('pulse');
+        _taskPanelOpen = false;
+        document.getElementById('taskPanel').classList.remove('open');
+    }
+}
+
+function renderTaskPanel() {
+    if (!_taskPanelOpen) return;
+    const container = document.getElementById('taskList');
+    if (_tasks.length === 0) {
+        container.innerHTML = '<div class="task-empty">' + t('no_data') + '</div>';
+        return;
+    }
+    container.innerHTML = _tasks.map(t => {
+        let statusIcon = '';
+        let statusClass = '';
+        if (t.status === 'running') {
+            statusIcon = '<svg class="task-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>';
+            statusClass = 'task-running';
+        } else if (t.status === 'success') {
+            statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+            statusClass = 'task-success';
+        } else {
+            statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+            statusClass = 'task-error';
+        }
+        const output = (t.output || []).slice(-20).join('\n');
+        const detail = t.status === 'error' && t.errorMsg ? '\n' + t.errorMsg : '';
+        return '<div class="task-item ' + statusClass + '" onclick="this.classList.toggle(\'task-expanded\')">' +
+            '<div class="task-item-hd">' +
+                '<span class="task-icon">' + statusIcon + '</span>' +
+                '<span class="task-name">' + esc(t.name) + '</span>' +
+                '<span class="task-time">' + new Date(t.startedAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en-US') + '</span>' +
+                '<button class="btn-icon" onclick="event.stopPropagation();removeTask(\'' + esc(t.id) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+            '</div>' +
+            '<pre class="task-output">' + esc(output + detail) + '</pre>' +
+        '</div>';
+    }).join('');
+}
+
+// 30秒后自动清理已完成任务
+setInterval(function() {
+    const now = Date.now();
+    const before = _tasks.length;
+    _tasks = _tasks.filter(t => t.status === 'running' || now - t.startedAt < 30000);
+    if (_tasks.length !== before) renderTaskBadge();
+    if (_taskPanelOpen) renderTaskPanel();
+}, 5000);
+
+// ========== 包管理功能 ==========
+
+let _pkgCache = null;
+let _pkgUpdateCache = null;
+let _pkgDebounceTimer;
+
+function debouncePkgs() { clearTimeout(_pkgDebounceTimer); _pkgDebounceTimer = setTimeout(renderPkgInstalled, 300) }
+
+function switchPkgTab(tab, btn) {
+    btn.parentElement.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pkInstalledTab').style.display = tab === 'pk-installed' ? 'block' : 'none';
+    document.getElementById('pkUpdatesTab').style.display = tab === 'pk-updates' ? 'block' : 'none';
+    document.getElementById('pkInstallNewTab').style.display = tab === 'pk-install-new' ? 'block' : 'none';
+    if (tab === 'pk-updates') loadPackageUpdates();
+}
+
+async function loadPackages(forceRefresh) {
+    const force = forceRefresh === true;
+    const params = force ? '?force=true' : '';
+    const d = await api('/api/packages' + params);
+    if (!d || d.error) return;
+    _pkgCache = d.packages || [];
+    document.getElementById('pkgInstalledCount').textContent = _pkgCache.length;
+    renderPkgInstalled();
+}
+
+function renderPkgInstalled() {
+    if (!_pkgCache) return;
+    const search = (document.getElementById('pkgSearch')?.value || '').toLowerCase();
+    const filtered = search
+        ? _pkgCache.filter(p => p.name.toLowerCase().includes(search) || (p.summary || '').toLowerCase().includes(search))
+        : _pkgCache;
+
+    if (filtered.length === 0) {
+        document.getElementById('pkgInstalledList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><p>' + t('pkg_no_installed') + '</p></div>';
+        return;
+    }
+
+    const html = filtered.map(p => {
+        let typeBadges = '';
+        if (p.is_module) typeBadges += '<span class="chip chip-pr" style="font-size:10px;padding:1px 6px">' + t('pkg_type_module') + '</span>';
+        if (p.is_adapter) typeBadges += '<span class="chip chip-sc" style="font-size:10px;padding:1px 6px">' + t('pkg_type_adapter') + '</span>';
+        if (!p.is_module && !p.is_adapter) typeBadges += '<span class="chip" style="font-size:10px;padding:1px 6px;background:var(--bg-s);color:var(--tx-t)">' + t('pkg_type_library') + '</span>';
+
+        const isProtected = p.name.toLowerCase().replace(/[-_]/g, '') === 'erispulse' || p.name.toLowerCase().replace(/[-_]/g, '') === 'erispulsedashboard';
+        let actions = '';
+        if (!isProtected) {
+            actions += '<button class="btn btn-secondary btn-xs" onclick="upgradePkg(\'' + esc(p.name) + '\')">' + t('pkg_upgrade') + '</button> ';
+            actions += '<button class="btn btn-danger btn-xs" onclick="uninstallPkg(\'' + esc(p.name) + '\')">' + t('uninstall_module') + '</button>';
+        }
+
+        return '<div class="pkg-row">' +
+            '<div class="pkg-info">' +
+                '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+                    '<span class="pkg-name">' + esc(p.name) + '</span>' +
+                    typeBadges +
+                '</div>' +
+                '<div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(p.summary || '') + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">' +
+                '<span class="pkg-version">v' + esc(p.version) + '</span>' +
+                actions +
+            '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('pkgInstalledList').innerHTML = html;
+}
+
+async function loadPackageUpdates(forceRefresh) {
+    const countEl = document.getElementById('pkgUpdateCount');
+    const countInnerEl = document.getElementById('pkgUpdateCountInner');
+    
+    if (!_pkgUpdateCache || forceRefresh) {
+        document.getElementById('pkgUpdateList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><p>' + t('pkg_checking_updates') + '</p></div>';
+        const force = forceRefresh === true;
+        const params = force ? '?force=true' : '';
+        const d = await api('/api/packages/updates' + params);
+        if (!d || d.error) {
+            document.getElementById('pkgUpdateList').innerHTML = '<div class="empty-state"><p>' + (d?.error || t('action_failed')) + '</p></div>';
+            return;
+        }
+        _pkgUpdateCache = d.updates || [];
+    }
+
+    const updates = _pkgUpdateCache;
+    countEl.textContent = updates.length;
+    countEl.style.display = updates.length > 0 ? 'inline-flex' : 'none';
+    countInnerEl.textContent = updates.length;
+
+    if (updates.length === 0) {
+        document.getElementById('pkgUpdateList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg><p>' + t('pkg_no_updates') + '</p></div>';
+        return;
+    }
+
+    const html = updates.map(u => {
+        return '<div class="pkg-row pkg-row-update">' +
+            '<div class="pkg-info">' +
+                '<span class="pkg-name">' + esc(u.name) + '</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">' +
+                '<span class="pkg-version-old">v' + esc(u.current) + '</span>' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--wr-c)"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+                '<span class="pkg-version-new">v' + esc(u.latest) + '</span>' +
+                '<button class="btn btn-primary btn-xs" onclick="upgradePkg(\'' + esc(u.name) + '\')">' + t('pkg_upgrade') + '</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('pkgUpdateList').innerHTML = html;
+}
+
+async function upgradePkg(pkgName) {
+    if (!authed) return showLogin();
+    const ok = await confirm2(t('pkg_upgrade'), t('pkg_upgrade_confirm') + ' <strong>' + esc(pkgName) + '</strong>?');
+    if (!ok) return;
+    const d = await api('/api/packages/upgrade', { method: 'POST', body: JSON.stringify({ packages: [pkgName] }) });
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, pkgName);
+        toast(t('pkg_upgrading'), '');
+    } else {
+        toast(t('pkg_upgrade_failed') + ': ' + (d?.error || ''), 'er');
+    }
+}
+
+async function upgradeAllPkgs() {
+    if (!authed) return showLogin();
+    if (!_pkgUpdateCache || _pkgUpdateCache.length === 0) {
+        toast(t('pkg_no_updates'), '');
+        return;
+    }
+    const ok = await confirm2(t('upgrade_all'), t('pkg_upgrade_all_confirm'));
+    if (!ok) return;
+    const packages = _pkgUpdateCache.map(u => u.name);
+    const d = await api('/api/packages/upgrade', { method: 'POST', body: JSON.stringify({ packages }) });
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, packages.join(', '));
+        toast(t('pkg_upgrading'), '');
+    } else {
+        toast(t('pkg_upgrade_failed') + ': ' + (d?.error || ''), 'er');
+    }
+}
+
+async function installNewPkg() {
+    if (!authed) return showLogin();
+    const input = document.getElementById('pkgInstallInput');
+    const val = input.value.trim();
+    if (!val) return;
+    const packages = val.split(/\s+/).filter(s => s.length > 0);
+    const ok = await confirm2(t('install'), t('install') + ' <strong>' + esc(packages.join(', ')) + '</strong>?');
+    if (!ok) return;
+    const d = await api('/api/packages/install', { method: 'POST', body: JSON.stringify({ packages }) });
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, packages.join(', '));
+        toast(t('installing'), '');
+        input.value = '';
+    } else {
+        toast(t('install_failed') + ': ' + (d?.error || ''), 'er');
+    }
+}
+
+async function uninstallPkg(pkgName) {
+    if (!authed) return showLogin();
+    const ok = await confirm2(t('uninstall_module'), t('pkg_uninstall_confirm') + ' <strong>' + esc(pkgName) + '</strong>');
+    if (!ok) return;
+    const d = await api('/api/packages/uninstall', { method: 'POST', body: JSON.stringify({ package: pkgName }) });
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, pkgName);
+        toast(t('module_uninstalling'), '');
+    } else if (d && d.error === 'Cannot uninstall core package') {
+        toast(t('pkg_cannot_uninstall'), 'er');
+    } else {
+        toast(d?.error || t('action_failed'), 'er');
+    }
+}
 
 (function () {
     applyTheme(getTheme()); applyI18n();

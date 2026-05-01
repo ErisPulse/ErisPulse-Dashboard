@@ -1,20 +1,14 @@
 import asyncio
-import fnmatch
-import hashlib
-import importlib.metadata
-import importlib.resources
 import json
 import os
 import secrets
 import shutil
-import stat as stat_mod
 import subprocess
 import sys
 import tempfile
 import time
 import threading
 from pathlib import Path
-from typing import Any
 
 from ErisPulse import sdk
 from ErisPulse.Core.Bases import BaseModule
@@ -34,6 +28,7 @@ class Main(BaseModule):
         self._max_log = 500
         self._start_time = time.time()
         self._install_tasks: dict[str, dict] = {}
+        self._pkg_manager = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._lifecycle_log: list[dict] = []
         self._max_lifecycle_log = 200
@@ -46,6 +41,12 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
 
         return ModuleLoadStrategy(lazy_load=False, priority=100)
+
+    def _get_pkg_manager(self):
+        if self._pkg_manager is None:
+            from .PackageManager import DashboardPackageManager
+            self._pkg_manager = DashboardPackageManager()
+        return self._pkg_manager
 
     async def on_load(self, event: dict) -> bool:
         self._loop = asyncio.get_running_loop()
@@ -243,28 +244,27 @@ class Main(BaseModule):
                 universal_newlines=True,
                 bufsize=1,
             )
-            stdout_lines = []
-            stderr_lines = []
+            combined_lines = []
 
-            def read_pipe(pipe, lines):
+            def read_pipe(pipe):
                 try:
                     for line in iter(pipe.readline, ""):
-                        lines.append(line.rstrip())
-                        if len(lines) % 5 == 0:
+                        combined_lines.append(line.rstrip())
+                        if len(combined_lines) % 5 == 0:
                             self._safe_broadcast(
                                 {
                                     "type": "install_progress",
                                     "task_id": task_id,
                                     "status": "running",
-                                    "output": lines[-10:],
+                                    "output": combined_lines[-10:],
                                 }
                             )
                 except Exception:
                     pass
                 pipe.close()
 
-            t_out = threading.Thread(target=read_pipe, args=(proc.stdout, stdout_lines))
-            t_err = threading.Thread(target=read_pipe, args=(proc.stderr, stderr_lines))
+            t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
+            t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
             t_out.start()
             t_err.start()
 
@@ -289,27 +289,27 @@ class Main(BaseModule):
 
             if proc.returncode == 0:
                 self._install_tasks[task_id]["status"] = "success"
-                self._install_tasks[task_id]["output"] = stdout_lines
+                self._install_tasks[task_id]["output"] = combined_lines
                 self._safe_broadcast(
                     {
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "success",
-                        "output": stdout_lines,
+                        "output": combined_lines,
                     }
                 )
                 self._dynamic_load_new_modules()
             else:
                 self._install_tasks[task_id]["status"] = "error"
-                self._install_tasks[task_id]["error"] = "\n".join(stderr_lines)
+                self._install_tasks[task_id]["error"] = "\n".join(combined_lines[-20:])
                 self._safe_broadcast(
                     {
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
-                        "output": stdout_lines + stderr_lines,
-                        "message": "\n".join(stderr_lines[-10:])
-                        if stderr_lines
+                        "output": combined_lines,
+                        "message": "\n".join(combined_lines[-10:])
+                        if combined_lines
                         else "Unknown error",
                     }
                 )
@@ -563,6 +563,12 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/store/install", handler=self._api_store_install, methods=["POST"])
         r.register_http_route(mn, "/api/store/upload", handler=self._api_store_upload, methods=["POST"])
         r.register_http_route(mn, "/api/store/install/status", handler=self._api_store_install_status, methods=["GET"])
+        
+        r.register_http_route(mn, "/api/packages", handler=self._api_packages, methods=["GET"])
+        r.register_http_route(mn, "/api/packages/updates", handler=self._api_packages_updates, methods=["GET"])
+        r.register_http_route(mn, "/api/packages/upgrade", handler=self._api_packages_upgrade, methods=["POST"])
+        r.register_http_route(mn, "/api/packages/install", handler=self._api_packages_install, methods=["POST"])
+        r.register_http_route(mn, "/api/packages/uninstall", handler=self._api_packages_uninstall, methods=["POST"])
         r.register_http_route(mn, "/api/restart", handler=self._api_restart, methods=["POST"])
         
         # 事件构建器相关 API
@@ -606,6 +612,8 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/files/chmod", handler=self._api_files_chmod, methods=["POST"])
         r.register_http_route(mn, "/api/files/stat", handler=self._api_files_stat, methods=["GET"])
         r.register_http_route(mn, "/api/files/search", handler=self._api_files_search, methods=["GET"])
+        r.register_http_route(mn, "/api/files/compress", handler=self._api_files_compress, methods=["POST"])
+        r.register_http_route(mn, "/api/files/decompress", handler=self._api_files_decompress, methods=["POST"])
         
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
@@ -634,6 +642,11 @@ class Main(BaseModule):
             "/api/store/install",
             "/api/store/upload",
             "/api/store/install/status",
+            "/api/packages",
+            "/api/packages/updates",
+            "/api/packages/upgrade",
+            "/api/packages/install",
+            "/api/packages/uninstall",
             "/api/restart",
             "/api/builder/validate",
             "/api/builder/submit",
@@ -660,6 +673,8 @@ class Main(BaseModule):
             "/api/files/chmod",
             "/api/files/stat",
             "/api/files/search",
+            "/api/files/compress",
+            "/api/files/decompress",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -989,11 +1004,9 @@ class Main(BaseModule):
 
     async def _api_store_remote(self, request: Request) -> JSONResponse:
         try:
-            from ErisPulse.CLI.utils import PackageManager
-
-            pm = PackageManager()
-            remote = await pm.get_remote_packages()
-            return JSONResponse({"packages": remote})
+            force = request.query_params.get("force", "") == "true"
+            data = await self._get_pkg_manager().get_store_data(force)
+            return JSONResponse(data)
         except Exception as e:
             return JSONResponse({"error": str(e), "packages": None})
 
@@ -1011,6 +1024,168 @@ class Main(BaseModule):
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
         return JSONResponse({"success": True, "task_id": task_id})
+
+    async def _api_packages(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        force = request.query_params.get("force", "") == "true"
+        try:
+            result = self._get_pkg_manager().get_installed_packages(force)
+            return JSONResponse(result)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_packages_updates(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        force = request.query_params.get("force", "") == "true"
+        try:
+            updates = await self._get_pkg_manager().check_updates(force)
+            return JSONResponse({"updates": updates})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_packages_upgrade(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        packages = body.get("packages", [])
+        if not packages:
+            return JSONResponse({"error": "packages required"}, status_code=400)
+        task_id = secrets.token_urlsafe(8)
+        t = threading.Thread(
+            target=self._run_pip_upgrade, args=(packages, task_id), daemon=True
+        )
+        t.start()
+        self._add_audit_log("package_upgrade", ", ".join(packages), request)
+        self._get_pkg_manager().invalidate_caches()
+        return JSONResponse({"success": True, "task_id": task_id})
+
+    async def _api_packages_install(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        packages = body.get("packages", [])
+        if not packages:
+            return JSONResponse({"error": "packages required"}, status_code=400)
+        task_id = secrets.token_urlsafe(8)
+        t = threading.Thread(
+            target=self._run_pip_install, args=(packages, task_id), daemon=True
+        )
+        t.start()
+        self._add_audit_log("package_install", ", ".join(packages), request)
+        self._get_pkg_manager().invalidate_caches()
+        return JSONResponse({"success": True, "task_id": task_id})
+
+    async def _api_packages_uninstall(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        package = body.get("package", "")
+        if not package:
+            return JSONResponse({"error": "package required"}, status_code=400)
+        protected = {"erispulse", "erispulse-dashboard"}
+        if package.lower().replace("-", "").replace("_", "") in {p.replace("-", "").replace("_", "") for p in protected}:
+            return JSONResponse({"error": "Cannot uninstall core package"}, status_code=400)
+        task_id = secrets.token_urlsafe(8)
+        t = threading.Thread(
+            target=self._run_pip_uninstall, args=(package, "", task_id), daemon=True
+        )
+        t.start()
+        self._add_audit_log("package_uninstall", package, request)
+        self._get_pkg_manager().invalidate_caches()
+        return JSONResponse({"success": True, "task_id": task_id})
+
+    def _run_pip_upgrade(self, packages: list[str], task_id: str):
+        cmd = [sys.executable, "-m", "pip", "install", "--upgrade"] + packages
+        self._install_tasks[task_id] = {
+            "status": "running",
+            "started_at": time.time(),
+            "packages": packages,
+        }
+        self._safe_broadcast({
+            "type": "install_progress",
+            "task_id": task_id,
+            "status": "running",
+            "packages": packages,
+        })
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                bufsize=1,
+            )
+            combined_lines = []
+
+            def read_pipe(pipe):
+                try:
+                    for line in iter(pipe.readline, ""):
+                        combined_lines.append(line.rstrip())
+                        if len(combined_lines) % 5 == 0:
+                            self._safe_broadcast({
+                                "type": "install_progress",
+                                "task_id": task_id,
+                                "status": "running",
+                                "output": combined_lines[-10:],
+                            })
+                except Exception:
+                    pass
+                pipe.close()
+
+            t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
+            t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
+            t_out.start()
+            t_err.start()
+
+            try:
+                proc.wait(timeout=300)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+                self._install_tasks[task_id]["status"] = "timeout"
+                self._safe_broadcast({
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "error",
+                    "message": "Upgrade timed out (5 min)",
+                })
+                return
+
+            t_out.join(timeout=10)
+            t_err.join(timeout=10)
+
+            if proc.returncode == 0:
+                self._install_tasks[task_id]["status"] = "success"
+                self._install_tasks[task_id]["output"] = combined_lines
+                self._safe_broadcast({
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "success",
+                    "output": combined_lines,
+                })
+                self._get_pkg_manager().invalidate_caches()
+                self._safe_broadcast({"type": "module_changed", "data": {"action": "upgraded"}})
+            else:
+                self._install_tasks[task_id]["status"] = "error"
+                self._install_tasks[task_id]["error"] = "\n".join(combined_lines[-20:])
+                self._safe_broadcast({
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "error",
+                    "output": combined_lines,
+                    "message": "\n".join(combined_lines[-10:]) if combined_lines else "Unknown error",
+                })
+        except Exception as e:
+            self._install_tasks[task_id]["status"] = "error"
+            self._install_tasks[task_id]["error"] = str(e)
+            self._safe_broadcast({
+                "type": "install_progress",
+                "task_id": task_id,
+                "status": "error",
+                "message": str(e),
+            })
 
     async def _api_store_install_status(self, request: Request) -> JSONResponse:
         tid = request.query_params.get("task_id", "")
@@ -1062,7 +1237,7 @@ class Main(BaseModule):
             }
         )
 
-        def _do_install(packages: list[str]) -> tuple[list[str], list[str], int]:
+        def _do_install(packages: list[str]) -> tuple[list[str], int]:
             proc = subprocess.Popen(
                 [sys.executable, "-m", "pip", "install"] + packages,
                 stdout=subprocess.PIPE,
@@ -1070,28 +1245,27 @@ class Main(BaseModule):
                 universal_newlines=True,
                 bufsize=1,
             )
-            stdout_lines: list[str] = []
-            stderr_lines: list[str] = []
+            combined_lines: list[str] = []
 
-            def read_pipe(pipe, lines):
+            def read_pipe(pipe):
                 try:
                     for line in iter(pipe.readline, ""):
-                        lines.append(line.rstrip())
-                        if len(lines) % 5 == 0:
+                        combined_lines.append(line.rstrip())
+                        if len(combined_lines) % 5 == 0:
                             self._safe_broadcast(
                                 {
                                     "type": "install_progress",
                                     "task_id": task_id,
                                     "status": "running",
-                                    "output": lines[-10:],
+                                    "output": combined_lines[-10:],
                                 }
                             )
                 except Exception:
                     pass
                 pipe.close()
 
-            t_out = threading.Thread(target=read_pipe, args=(proc.stdout, stdout_lines))
-            t_err = threading.Thread(target=read_pipe, args=(proc.stderr, stderr_lines))
+            t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
+            t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
             t_out.start()
             t_err.start()
             try:
@@ -1101,22 +1275,20 @@ class Main(BaseModule):
                 proc.wait()
                 t_out.join(timeout=10)
                 t_err.join(timeout=10)
-                return stdout_lines, stderr_lines, 1
+                return combined_lines, 1
             t_out.join(timeout=10)
             t_err.join(timeout=10)
-            return stdout_lines, stderr_lines, proc.returncode
+            return combined_lines, proc.returncode
 
         try:
-            stdout, stderr, rc = _do_install([file_path])
+            all_lines, rc = _do_install([file_path])
             if rc != 0 and filename.endswith(".zip"):
                 stem = os.path.splitext(os.path.basename(filename))[0]
                 extract_dir = os.path.join(tmp_dir, stem)
                 shutil.unpack_archive(file_path, extract_dir)
-                stdout2, stderr2, rc2 = _do_install([extract_dir])
-                stdout = stdout + stdout2
-                stderr = stderr + stderr2
+                more_lines, rc2 = _do_install([extract_dir])
+                all_lines = all_lines + more_lines
                 rc = rc2
-            all_lines = stdout + stderr
             if rc == 0:
                 self._install_tasks[task_id] = {
                     "status": "success",
@@ -1826,16 +1998,18 @@ class Main(BaseModule):
         for f in files:
             if not hasattr(f, 'filename') or not f.filename:
                 continue
-            filename = os.path.basename(f.filename)
-            target_path = target_dir / filename
+            rel_name = f.filename.replace("\\", "/")
+            safe_name = "/".join(rel_name.split("/"))
+            target_path = target_dir / safe_name
             resolved = self._resolve_safe_path(str(target_path.relative_to(self._get_project_root().resolve())))
             if resolved is None:
                 continue
             content = await f.read()
             if len(content) > self._MAX_UPLOAD_SIZE:
                 continue
+            resolved.parent.mkdir(parents=True, exist_ok=True)
             resolved.write_bytes(content)
-            uploaded.append({"name": filename, "size": len(content)})
+            uploaded.append({"name": safe_name, "size": len(content)})
         self._add_audit_log("file_upload", f"{dest_dir}: {len(uploaded)} files", request)
         return JSONResponse({"success": True, "uploaded": uploaded, "count": len(uploaded)})
 
@@ -2027,4 +2201,70 @@ class Main(BaseModule):
         except PermissionError:
             pass
         return JSONResponse({"results": results, "total": len(results), "pattern": pattern})
+
+    async def _api_files_compress(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        paths = body.get("paths", [])
+        archive_name = body.get("archive_name", "archive.zip")
+        if not paths:
+            return JSONResponse({"error": "paths required"}, status_code=400)
+        import zipfile
+        import io
+        buf = io.BytesIO()
+        root = self._get_project_root().resolve()
+        added = 0
+        try:
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                for p in paths:
+                    target = self._resolve_safe_path(p)
+                    if target is None or not target.exists():
+                        continue
+                    arcname = str(target.relative_to(root)).replace("\\", "/")
+                    if target.is_dir():
+                        for f in target.rglob("*"):
+                            if f.name.startswith("."):
+                                continue
+                            if f.is_file():
+                                f_rel = str(f.relative_to(root)).replace("\\", "/")
+                                zf.write(f, f_rel)
+                                added += 1
+                    else:
+                        zf.write(target, arcname)
+                        added += 1
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        buf.seek(0)
+        self._add_audit_log("file_compress", f"{len(paths)} items -> {archive_name}", request)
+        return Response(content=buf.getvalue(), media_type="application/zip",
+                        headers={"Content-Disposition": f'attachment; filename="{archive_name}"'})
+
+    async def _api_files_decompress(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        file_path = body.get("path", "")
+        if not file_path:
+            return JSONResponse({"error": "path required"}, status_code=400)
+        target = self._resolve_safe_path(file_path)
+        if target is None or not target.exists() or not target.is_file():
+            return JSONResponse({"error": "File not found"}, status_code=404)
+        import zipfile
+        import tarfile
+        dest = target.parent
+        try:
+            name_lower = target.name.lower()
+            if name_lower.endswith(".zip"):
+                with zipfile.ZipFile(target, "r") as zf:
+                    zf.extractall(dest)
+            elif name_lower.endswith((".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".tar")):
+                with tarfile.open(target, "r:*") as tf:
+                    tf.extractall(dest)
+            else:
+                return JSONResponse({"error": "Unsupported archive format. Use .zip, .tar.gz, .tgz"}, status_code=400)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        self._add_audit_log("file_decompress", file_path, request)
+        return JSONResponse({"success": True, "path": str(dest.relative_to(self._get_project_root().resolve())).replace("\\", "/")})
 

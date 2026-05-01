@@ -88,7 +88,8 @@ body {
     display: none;
     height: 100vh;
     height: 100dvh;
-    flex-direction: column
+    flex-direction: column;
+    position: relative
 }
 
 .app.authed {
@@ -2313,4 +2314,247 @@ select.form-select::-ms-expand {
     #fmEditorContainer .CodeMirror {
         height: 300px
     }
+}
+
+.pkg-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bd);
+    gap: 12px;
+    transition: background .15s
+}
+
+.pkg-row:hover {
+    background: var(--bg-s)
+}
+
+.pkg-row:last-child {
+    border-bottom: none
+}
+
+.pkg-row-update {
+    border-left: 3px solid var(--wr-c)
+}
+
+.pkg-info {
+    flex: 1;
+    min-width: 0
+}
+
+.pkg-name {
+    font-weight: 600;
+    font-size: 13px;
+    font-family: Consolas, Monaco, monospace
+}
+
+.pkg-version {
+    font-size: 12px;
+    color: var(--tx-s);
+    font-family: Consolas, Monaco, monospace;
+    white-space: nowrap
+}
+
+.pkg-version-old {
+    font-size: 12px;
+    color: var(--tx-t);
+    font-family: Consolas, Monaco, monospace;
+    text-decoration: line-through;
+    white-space: nowrap
+}
+
+.pkg-version-new {
+    font-size: 12px;
+    color: var(--ok-c);
+    font-weight: 600;
+    font-family: Consolas, Monaco, monospace;
+    white-space: nowrap
+}
+
+.store-card-update {
+    border-color: var(--wr-bd);
+    box-shadow: 0 0 0 1px var(--wr-bd)
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg) }
+    to { transform: rotate(360deg) }
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(180,180,80,.4) }
+    50% { box-shadow: 0 0 0 6px rgba(180,180,80,0) }
+}
+
+.task-badge {
+    position: relative;
+    background: none;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background .15s
+}
+
+.task-badge:hover {
+    background: var(--bg-s)
+}
+
+.task-badge.pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+    border-color: var(--wr-c)
+}
+
+.task-badge-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--tx-s)
+}
+
+.task-badge-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--wr-c);
+    min-width: 16px;
+    text-align: center
+}
+
+.task-panel {
+    display: none;
+    position: absolute;
+    top: 46px;
+    right: 12px;
+    width: 420px;
+    max-width: calc(100vw - 24px);
+    max-height: 64vh;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.2);
+    z-index: 998;
+    flex-direction: column;
+    overflow: hidden
+}
+
+.task-panel.open {
+    display: flex;
+    animation: taskSlideIn .2s ease-out
+}
+
+@keyframes taskSlideIn {
+    from { opacity: 0; transform: translateY(-8px) }
+    to { opacity: 1; transform: translateY(0) }
+}
+
+.task-panel-hd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bd);
+    font-weight: 600;
+    font-size: 14px
+}
+
+.task-panel-body {
+    overflow-y: auto;
+    max-height: calc(64vh - 46px)
+}
+
+.task-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--tx-t);
+    font-size: 13px
+}
+
+.task-item {
+    border-bottom: 1px solid var(--bd);
+    cursor: pointer
+}
+
+.task-item:last-child {
+    border-bottom: none
+}
+
+.task-item-hd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px
+}
+
+.task-item-hd:hover {
+    background: var(--bg-s)
+}
+
+.task-item.task-running .task-icon {
+    color: var(--accent)
+}
+
+.task-item.task-success .task-icon {
+    color: var(--ok-c)
+}
+
+.task-item.task-error .task-icon {
+    color: var(--er-c)
+}
+
+.task-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center
+}
+
+.task-icon svg {
+    width: 16px;
+    height: 16px
+}
+
+.task-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.task-time {
+    font-size: 11px;
+    color: var(--tx-t);
+    flex-shrink: 0
+}
+
+.task-output {
+    display: none;
+    padding: 8px 16px 12px;
+    font-size: 11px;
+    font-family: Consolas, Monaco, monospace;
+    color: var(--tx-s);
+    background: var(--bg-s);
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0
+}
+
+.task-item.task-expanded .task-output {
+    display: block
+}
+
+.task-spin {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--accent);
+    animation: spin 1s linear infinite
 }
