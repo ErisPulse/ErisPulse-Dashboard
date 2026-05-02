@@ -147,7 +147,7 @@ const I18N = {
         lifecycle_desc: '查看系统启动和运行过程',
         settings_title: '仪表盘设置',
         settings_appearance: '外观', settings_behavior: '行为',
-        settings_theme: '深色主题', settings_language: '英文界面',
+        settings_theme: '深色主题',         settings_language: '语言',
         settings_sidebar: '折叠侧边栏', settings_refresh_interval: '刷新间隔',
         settings_event_limit: '事件流数量', settings_disabled: '关闭',
         settings_restart_desc: '重新加载所有模块和适配器',
@@ -297,24 +297,496 @@ const I18N = {
         lifecycle_desc: 'View system startup and runtime process',
         settings_title: 'Dashboard Settings',
         settings_appearance: 'Appearance', settings_behavior: 'Behavior',
-        settings_theme: 'Dark Theme', settings_language: 'English UI',
+        settings_theme: 'Dark Theme',         settings_language: 'Language',
         settings_sidebar: 'Collapse Sidebar', settings_refresh_interval: 'Refresh Interval',
         settings_event_limit: 'Event Limit', settings_disabled: 'Disabled',
         settings_restart_desc: 'Reload all modules and adapters',
+    },
+    'zh-TW': {
+        dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
+        sys_logs: '系統日誌', logs: '日誌', lifecycle: '生命週期', events_stream: '事件流', events_builder: '構建器',
+        sys_logs_desc: '查看系統日誌與生命週期', logs_desc: '查看和過濾系統日誌', lifecycle_desc: '查看系統啟動和運行過程',
+        lifecycle_timeline: '生命週期時間軸', all_modules: '所有模組', search_logs: '搜尋日誌...', no_lifecycle: '暫無生命週期事件',
+        log_list: '日誌列表', api_routes: 'API 路由', api_routes_desc: '查看所有已註冊的 HTTP 和 WebSocket 路由',
+        http_routes: 'HTTP 路由', ws_routes: 'WebSocket 路由',
+        loading: '載入中...', online: '線上', offline: '離線', live: '即時',
+        adapters: '適配器', modules_label: '模組', online_bots: '線上機器人', total_events: '事件總數',
+        no_adapters: '暫無適配器', no_modules: '暫無模組', no_events: '暫無事件', no_bots: '暫無機器人',
+        no_logs: '暫無日誌', no_http_routes: '暫無 HTTP 路由', no_ws_routes: '暫無 WebSocket 路由',
+        no_data: '暫無資料', requires_auth: '需認證',
+        active: '活躍', inactive: '未活躍',
+        enable: '啟用', load: '載入', unload: '停止載入', install: '安裝',
+        search_packages: '搜尋套件...', live_events: '即時事件', waiting_events: '等待事件...',
+        bots_desc: '各平台已發現的機器人', events_desc: '事件流查看/構建',
+        modules_desc: '管理已註冊的模組和適配器', store_desc: '瀏覽並安裝套件',
+        config_desc: '查看和管理配置與儲存', configuration: '配置', storage: '儲存',
+        auth_title: '身份驗證', auth_desc_text: '請輸入訪問令牌以繼續', auth_label: '訪問令牌',
+        auth_placeholder: '請輸入令牌',
+        auth_hint: '令牌儲存在配置中的 <code>Dashboard.token</code>',
+        login: '登入', cancel: '取消', ok: '確定',
+        logged_in: '登入成功', invalid_token: '無效令牌', action_completed: '操作完成', action_failed: '操作失敗',
+        installing: '安裝中...', installed: '安裝成功，建議重啟框架', install_failed: '安裝失敗',
+        install_success: '安裝完成', install_timeout: '安裝超時', install_restart_title: '重啟載入新模組', install_restart_confirm: '模組安裝成功，是否立即重啟框架以載入新模組？', install_restart_btn: '重啟',
+        install_detail: '安裝詳情', no_token_refresh: '服務未就緒，請稍後重新整理',
+        unload_self_title: '警告', unload_self_confirm: '停止載入儀表盤模組後，你將無法再透過網頁訪問此介面。確定要繼續嗎？',
+        upload_title: '上傳安裝', upload_desc: '上傳 whl 或 zip 包直接安裝模組', upload_btn: '選擇檔案並安裝', uploading: '上傳安裝中...', upload_failed: '上傳安裝失敗',
+        restart: '重啟框架', restart_confirm: '確定要重啟框架嗎？這將重新載入所有模組和適配器。',
+        restart_success: '框架重啟中...', restart_failed: '重啟失敗',
+        clear_events: '清除事件', clear_confirm: '確定要清除所有事件日誌嗎？',
+        all_types: '所有類型', all_platforms: '所有平台',
+        no_packages: '沒有符合的套件', failed_registry: '載入註冊表失敗',
+        event_cleared: '事件已清除', empty_storage: '儲存為空',
+        message: '訊息', notice: '通知', request: '請求', meta: '元事件', platform: '平台',
+        event_builder: '事件構建器', event_builder_desc: '構建自定義事件用於除錯和測試',
+        event_type: '事件類型', detail_type: '詳情類型', platform_info: '平台資訊',
+        select_platform: '選擇平台', select_bot: '選擇 Bot', custom: '自定義',
+        select_detail_type: '請選擇詳情類型...', select_platform_placeholder: '請先選擇平台...',
+        session_type: '會話類型', session_id: '會話 ID',
+        session_private: '私聊', session_group: '群聊', session_channel: '頻道',
+        custom_platform_placeholder: '輸入自定義平台名稱', custom_bot_placeholder: '輸入自定義 Bot ID',
+        session_id_placeholder: '群號/頻道號/使用者 ID',
+        message_content: '訊息內容', optional_fields: '附加欄位', json_preview: 'JSON 預覽',
+        preview: '預覽', submit_event: '提交事件',
+        add_segment: '添加訊息段', add_field: '添加欄位', copy_json: '複製 JSON',
+        validate_error: '驗證錯誤', submit_success: '事件已提交', submit_failed: '提交失敗',
+        view_tree: '樹形', view_source: '原始碼', reload_config: '重新載入', save_config: '儲存配置',
+        config_saved: '配置已儲存', config_load_failed: '載入配置原始碼失敗',
+        read_only: '唯讀 (根配置)',
+        cpu_usage: 'CPU 使用率', process_cpu: '處理程序 CPU', memory_usage: '記憶體使用', rss_memory: 'RSS 記憶體',
+        system_memory: '系統記憶體', system_total_memory: '系統總記憶體', available_memory: '可用記憶體',
+        swap_memory: '交換記憶體', io_read: 'IO 讀取', io_write: 'IO 寫入',
+        active_connections: '活躍連線', system_details: '系統詳情',
+        websocket: 'WebSocket', message_stats: '訊息統計', message_types: '訊息類型',
+        platform_distribution: '平台分佈', last_24h_trend: '最近24小時趨勢',
+        registered_routes: '已註冊路由',
+        refresh: '重新整理', copy: '複製', auto_refresh: '自動重新整理', copy_all_logs: '複製所有日誌',
+        event_preview: '事件預覽', copied_to_clipboard: '已複製到剪貼簿', copy_failed: '複製失敗',
+        save_failed: '儲存失敗', unknown_error: '未知錯誤', validation_failed: '驗證失敗',
+        auto_refresh_off: '自動重新整理已關閉', auto_refresh_on: '自動重新整理已開啟',
+        alt_message: '備用訊息', request_comment: '請求附言',
+        field_name_placeholder: '欄位名', field_value_placeholder: '欄位值',
+        load_segments_first: '請先載入訊息段類型',
+        test: '測試', send: '傳送', query_params: 'Query 參數', request_body: '請求體', response: '回應',
+        force_refresh: '強制重新整理',
+        audit_log: '審計日誌', audit_log_desc: '查看系統操作記錄', all_actions: '所有操作',
+        backup_restore: '備份與還原', backup_desc: '匯出或匯入系統配置和儲存資料',
+        backup_export: '匯出備份', backup_import: '匯入還原',
+        backup_export_success: '備份已匯出', backup_import_confirm: '匯入將覆蓋當前配置和儲存資料（Dashboard 配置除外）。確定要繼續嗎？',
+        import_success: '還原成功', import_failed: '還原失敗', backup_failed: '備份失敗',
+        audit_clear_confirm: '確定要清空審計日誌嗎？', audit_cleared: '審計日誌已清空',
+        last_run: '上次執行', never: '從未', run_count: '執行次數',
+        action_load_module: '載入模組', action_unload_module: '卸載模組',
+        action_load_adapter: '載入適配器', action_unload_adapter: '卸載適配器',
+        action_config_update: '修改配置', action_config_source_save: '儲存配置原始碼',
+        action_storage_set: '設定儲存', action_storage_delete: '刪除儲存',
+        action_package_install: '安裝套件', action_clear_events: '清除事件',
+        action_restart_framework: '重啟框架', action_backup_import: '匯入備份',
+        files: '檔案管理', files_desc: '瀏覽和管理專案檔案',
+        search_files: '搜尋檔案...', new_file: '新建檔案', new_folder: '新建資料夾',
+        upload: '上傳', save: '儲存', upload_success: '上傳成功', upload_failed: '上傳失敗',
+        upload_drop: '拖拽檔案到此處或點擊上傳',
+        file_saved: '檔案已儲存', file_save_failed: '儲存失敗',
+        file_too_large: '檔案過大，無法編輯', binary_file: '二進制檔案，無法編輯',
+        file_not_found: '檔案未找到', folder_exists: '資料夾已存在',
+        delete_confirm: '確定要刪除選中的檔案嗎？此操作不可撤銷。',
+        delete_success: '刪除成功', delete_failed: '刪除失敗',
+        rename_label: '新名稱', rename_success: '重新命名成功', rename_failed: '重新命名失敗',
+        new_file_name: '檔案名', new_folder_name: '資料夾名',
+        enable_module: '啟用', disable_module: '禁用', reload_module: '重新載入',
+        uninstall_module: '卸載', uninstall_confirm: '確定要卸載此模組嗎？這將刪除模組包。',
+        module_uninstalling: '卸載中...', module_version: '版本',
+        module_author: '作者', module_no_desc: '無描述',
+        module_enabled_not_loaded: '已啟用未載入',
+        module_disabled: '已禁用', reload: '重新載入',
+        action_enable_module: '啟用模組', action_disable_module: '禁用模組',
+        action_reload_module: '重新載入模組', action_uninstall_module: '卸載模組',
+        search_modules: '搜尋模組...',
+        module_loaded_dynamic: '模組已動態載入',
+        installed_no_restart: '安裝完成，模組已自動載入',
+        permissions: '權限', download: '下載', chmod: '修改權限',
+        chmod_prompt: '輸入權限值（如 755、644）',
+        pkg_manager: '套件管理', pkg_manager_desc: '管理已安裝的 Python 套件，檢查更新並安裝新套件',
+        pkg_installed: '已安裝', pkg_updates: '可更新', pkg_install_new: '安裝新套件',
+        pkg_updates_available: '可用的更新', pkg_upgrade_all: '全部更新',
+        pkg_install_placeholder: '套件名（如 requests 或 numpy==1.24.0）',
+        pkg_install_hint: '支援輸入套件名、帶版本號（package==version）或多個套件用空格分隔',
+        pkg_name: '套件名', pkg_version: '版本', pkg_type: '類型', pkg_latest: '最新版本',
+        pkg_type_module: '模組', pkg_type_adapter: '適配器', pkg_type_library: '庫',
+        pkg_no_installed: '未找到已安裝的套件', pkg_no_updates: '所有套件均為最新版本',
+        pkg_checking_updates: '正在檢查更新...', pkg_upgrading: '更新中...',
+        pkg_upgrade: '更新', pkg_upgrade_confirm: '確定要更新以下套件嗎？',
+        pkg_upgrade_all_confirm: '確定要更新所有可更新的套件嗎？這可能需要一些時間。',
+        pkg_uninstall_confirm: '確定要卸載此套件嗎？這可能導致依賴問題。',
+        pkg_cannot_uninstall: '核心套件不可卸載',
+        pkg_install_success: '套件安裝完成', pkg_upgrade_success: '套件更新完成',
+        pkg_install_failed: '套件安裝失敗', pkg_upgrade_failed: '套件更新失敗',
+        store_version_current: '當前', store_version_latest: '最新',
+        store_update_available: '有更新',
+        action_package_upgrade: '更新套件', action_package_uninstall: '卸載套件',
+        upgrade_all: '全部更新',
+        module_hub: '模組中心', module_hub_desc: '管理模組、瀏覽商店、管理 Python 套件',
+        registered: '已註冊', registered_desc: '管理已註冊的模組和適配器',
+        compress: '壓縮', decompress: '解壓', upload_folder: '上傳資料夾',
+        task_list: '任務列表',
+        cmd_management: '命令管理', cmd_management_desc: '管理已註冊的命令：別名、平台過濾、啟用狀態',
+        cmd_global_settings: '全局命令設定', cmd_prefix: '命令前綴', cmd_case_sensitive: '大小寫敏感',
+        cmd_allow_space_prefix: '允許空前綴', cmd_must_at_bot: '必須@Bot',
+        cmd_list: '命令列表', cmd_enabled: '已啟用', cmd_disabled: '已禁用',
+        cmd_custom_aliases: '自定義別名', cmd_alias_placeholder: '輸入別名後回車添加',
+        cmd_allowed_platforms: '允許的平台', cmd_allowed_platforms_hint: '留空表示允許所有平台',
+        cmd_blocked_platforms: '禁止的平台', cmd_transform_to: '命令轉換',
+        cmd_transform_placeholder: '留空表示不轉換，輸入目標命令名將此命令重定向',
+        cmd_original_aliases_label: '原始別名', cmd_no_commands: '暫無已註冊的命令',
+        cmd_help: '幫助', cmd_usage: '用法', cmd_group: '命令組',
+        cmd_save_success: '命令規則已儲存', cmd_save_failed: '儲存失敗',
+        cmd_yes: '是', cmd_no: '否',
+        cmd_aliases_label: '別名',
+        group_overview: '概覽', group_events: '事件', group_extensions: '擴展', group_system: '系統', group_tools: '工具',
+        event_stream: '事件流', event_stream_desc: '即時查看系統事件流',
+        event_builder_desc: '構建自定義事件用於除錯和測試',
+        lifecycle_desc: '查看系統啟動和運行過程',
+        settings_title: '儀表盤設定',
+        settings_appearance: '外觀', settings_behavior: '行為',
+        settings_theme: '深色主題', settings_language: '語言',
+        settings_sidebar: '摺疊側邊欄', settings_refresh_interval: '重新整理間隔',
+        settings_event_limit: '事件流數量', settings_disabled: '關閉',
+        settings_restart_desc: '重新載入所有模組和適配器',
+    },
+    ja: {
+        dashboard: 'ダッシュボード', bots: 'ボット', events: 'イベント', modules: 'プラグイン', store: 'モジュールストア', config: '設定管理',
+        sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
+        sys_logs_desc: 'システムログとライフサイクルイベントを表示', logs_desc: 'システムログの表示とフィルタリング', lifecycle_desc: 'システムの起動と実行プロセスを表示',
+        lifecycle_timeline: 'ライフサイクルタイムライン', all_modules: 'すべてのモジュール', search_logs: 'ログを検索...', no_lifecycle: 'ライフサイクルイベントなし',
+        log_list: 'ログリスト', api_routes: 'APIルート', api_routes_desc: '登録済みのHTTPおよびWebSocketルートを表示',
+        http_routes: 'HTTPルート', ws_routes: 'WebSocketルート',
+        loading: '読み込み中...', online: 'オンライン', offline: 'オフライン', live: 'ライブ',
+        adapters: 'アダプタ', modules_label: 'モジュール', online_bots: 'オンラインボット', total_events: 'イベント総数',
+        no_adapters: 'アダプタなし', no_modules: 'モジュールなし', no_events: 'イベントなし', no_bots: 'ボットなし',
+        no_logs: 'ログなし', no_http_routes: 'HTTPルートなし', no_ws_routes: 'WebSocketルートなし',
+        no_data: 'データなし', requires_auth: '認証が必要',
+        active: 'アクティブ', inactive: '非アクティブ',
+        enable: '有効化', load: 'ロード', unload: 'アンロード', install: 'インストール',
+        search_packages: 'パッケージを検索...', live_events: 'ライブイベント', waiting_events: 'イベントを待機中...',
+        bots_desc: '各プラットフォームで検出されたボット', events_desc: 'イベントストリームの表示/ビルド',
+        modules_desc: '登録済みモジュールとアダプタの管理', store_desc: 'パッケージの閲覧とインストール',
+        config_desc: '設定とストレージの表示・管理', configuration: '設定', storage: 'ストレージ',
+        auth_title: '認証', auth_desc_text: 'アクセストークンを入力して続行してください', auth_label: 'アクセストークン',
+        auth_placeholder: 'トークンを入力',
+        auth_hint: 'トークンは設定の <code>Dashboard.token</code> に保存されています',
+        login: 'ログイン', cancel: 'キャンセル', ok: 'OK',
+        logged_in: 'ログイン成功', invalid_token: '無効なトークン', action_completed: '操作完了', action_failed: '操作失敗',
+        installing: 'インストール中...', installed: 'インストール完了！再起動を推奨', install_failed: 'インストール失敗',
+        install_success: 'インストール完了', install_timeout: 'インストールがタイムアウト', install_restart_title: '新モジュールを読み込むために再起動', install_restart_confirm: 'モジュールのインストールに成功しました。フレームワークを再起動して読み込みますか？', install_restart_btn: '再起動',
+        install_detail: 'インストール詳細', no_token_refresh: 'サービスの準備ができていません。後で更新してください',
+        unload_self_title: '警告', unload_self_confirm: 'ダッシュボードモジュールをアンロードすると、Webからこのインターフェースにアクセスできなくなります。続行しますか？',
+        upload_title: 'アップロードインストール', upload_desc: 'whlまたはzipパッケージをアップロードしてモジュールをインストール', upload_btn: 'ファイルを選択してインストール', uploading: 'アップロード＆インストール中...', upload_failed: 'アップロードインストール失敗',
+        restart: 'フレームワーク再起動', restart_confirm: 'フレームワークを再起動しますか？すべてのモジュールとアダプタが再読み込みされます。',
+        restart_success: 'フレームワークを再起動中...', restart_failed: '再起動失敗',
+        clear_events: 'イベントをクリア', clear_confirm: 'すべてのイベントログをクリアしますか？',
+        all_types: 'すべてのタイプ', all_platforms: 'すべてのプラットフォーム',
+        no_packages: '一致するパッケージなし', failed_registry: 'レジストリの読み込みに失敗',
+        event_cleared: 'イベントをクリアしました', empty_storage: 'ストレージは空です',
+        message: 'メッセージ', notice: '通知', request: 'リクエスト', meta: 'メタ', platform: 'プラットフォーム',
+        event_builder: 'イベントビルダー', event_builder_desc: 'デバッグとテスト用のカスタムイベントを構築',
+        event_type: 'イベントタイプ', detail_type: '詳細タイプ', platform_info: 'プラットフォーム情報',
+        select_platform: 'プラットフォームを選択', select_bot: 'Botを選択', custom: 'カスタム',
+        select_detail_type: '詳細タイプを選択...', select_platform_placeholder: '先にプラットフォームを選択...',
+        session_type: 'セッションタイプ', session_id: 'セッションID',
+        session_private: 'プライベート', session_group: 'グループ', session_channel: 'チャンネル',
+        custom_platform_placeholder: 'カスタムプラットフォーム名を入力', custom_bot_placeholder: 'カスタムBot IDを入力',
+        session_id_placeholder: 'グループ/チャンネル/ユーザーID',
+        message_content: 'メッセージ内容', optional_fields: 'オプションフィールド', json_preview: 'JSONプレビュー',
+        preview: 'プレビュー', submit_event: 'イベントを送信',
+        add_segment: 'セグメントを追加', add_field: 'フィールドを追加', copy_json: 'JSONをコピー',
+        validate_error: '検証エラー', submit_success: 'イベントを送信しました', submit_failed: '送信失敗',
+        view_tree: 'ツリー', view_source: 'ソース', reload_config: '再読込', save_config: '保存',
+        config_saved: '設定を保存しました', config_load_failed: '設定ソースの読み込みに失敗',
+        read_only: '読み取り専用（ルート設定）',
+        cpu_usage: 'CPU使用率', process_cpu: 'プロセスCPU', memory_usage: 'メモリ使用量', rss_memory: 'RSSメモリ',
+        system_memory: 'システムメモリ', system_total_memory: 'システム合計メモリ', available_memory: '利用可能メモリ',
+        swap_memory: 'スワップメモリ', io_read: 'IO読み取り', io_write: 'IO書き込み',
+        active_connections: 'アクティブ接続', system_details: 'システム詳細',
+        websocket: 'WebSocket', message_stats: 'メッセージ統計', message_types: 'メッセージタイプ',
+        platform_distribution: 'プラットフォーム分布', last_24h_trend: '過去24時間の傾向',
+        registered_routes: '登録済みルート',
+        refresh: '更新', copy: 'コピー', auto_refresh: '自動更新', copy_all_logs: 'すべてのログをコピー',
+        event_preview: 'イベントプレビュー', copied_to_clipboard: 'クリップボードにコピーしました', copy_failed: 'コピー失敗',
+        save_failed: '保存失敗', unknown_error: '不明なエラー', validation_failed: '検証失敗',
+        auto_refresh_off: '自動更新をオフにしました', auto_refresh_on: '自動更新をオンにしました',
+        alt_message: '代替メッセージ', request_comment: 'リクエストコメント',
+        field_name_placeholder: 'フィールド名', field_value_placeholder: 'フィールド値',
+        load_segments_first: '先にセグメントタイプを読み込んでください',
+        test: 'テスト', send: '送信', query_params: 'クエリパラメータ', request_body: 'リクエストボディ', response: 'レスポンス',
+        force_refresh: '強制更新',
+        audit_log: '監査ログ', audit_log_desc: 'システム操作記録を表示', all_actions: 'すべての操作',
+        backup_restore: 'バックアップと復元', backup_desc: 'システム設定とストレージデータのエクスポート/インポート',
+        backup_export: 'バックアップをエクスポート', backup_import: 'インポートで復元',
+        backup_export_success: 'バックアップをエクスポートしました', backup_import_confirm: 'インポートすると現在の設定とストレージが上書きされます（Dashboard設定を除く）。続行しますか？',
+        import_success: '復元成功', import_failed: '復元失敗', backup_failed: 'バックアップ失敗',
+        audit_clear_confirm: '監査ログをすべてクリアしますか？', audit_cleared: '監査ログをクリアしました',
+        last_run: '最終実行', never: '未実行', run_count: '実行回数',
+        action_load_module: 'モジュールをロード', action_unload_module: 'モジュールをアンロード',
+        action_load_adapter: 'アダプタをロード', action_unload_adapter: 'アダプタをアンロード',
+        action_config_update: '設定を更新', action_config_source_save: '設定ソースを保存',
+        action_storage_set: 'ストレージを設定', action_storage_delete: 'ストレージを削除',
+        action_package_install: 'パッケージをインストール', action_clear_events: 'イベントをクリア',
+        action_restart_framework: 'フレームワークを再起動', action_backup_import: 'バックアップをインポート',
+        files: 'ファイル', files_desc: 'プロジェクトファイルの閲覧と管理',
+        search_files: 'ファイルを検索...', new_file: '新規ファイル', new_folder: '新規フォルダ',
+        upload: 'アップロード', save: '保存', upload_success: 'アップロード成功', upload_failed: 'アップロード失敗',
+        upload_drop: 'ファイルをここにドラッグまたはクリックしてアップロード',
+        file_saved: 'ファイルを保存しました', file_save_failed: '保存失敗',
+        file_too_large: 'ファイルが大きすぎて編集できません', binary_file: 'バイナリファイル、編集不可',
+        file_not_found: 'ファイルが見つかりません', folder_exists: 'フォルダは既に存在します',
+        delete_confirm: '選択したファイルを削除しますか？この操作は取り消せません。',
+        delete_success: '削除しました', delete_failed: '削除失敗',
+        rename_label: '新しい名前', rename_success: '名前を変更しました', rename_failed: '名前変更失敗',
+        new_file_name: 'ファイル名', new_folder_name: 'フォルダ名',
+        enable_module: '有効化', disable_module: '無効化', reload_module: 'リロード',
+        uninstall_module: 'アンインストール', uninstall_confirm: 'このモジュールをアンインストールしますか？パッケージが削除されます。',
+        module_uninstalling: 'アンインストール中...', module_version: 'バージョン',
+        module_author: '作者', module_no_desc: '説明なし',
+        module_enabled_not_loaded: '有効化済み（未ロード）',
+        module_disabled: '無効', reload: 'リロード',
+        action_enable_module: 'モジュールを有効化', action_disable_module: 'モジュールを無効化',
+        action_reload_module: 'モジュールをリロード', action_uninstall_module: 'モジュールをアンインストール',
+        search_modules: 'モジュールを検索...',
+        module_loaded_dynamic: 'モジュールが動的にロードされました',
+        installed_no_restart: 'インストール完了、モジュールは自動ロードされました',
+        permissions: '権限', download: 'ダウンロード', chmod: '権限変更',
+        chmod_prompt: '権限値を入力（例: 755, 644）',
+        pkg_manager: 'パッケージ', pkg_manager_desc: 'インストール済みPythonパッケージの管理、更新確認、新規インストール',
+        pkg_installed: 'インストール済み', pkg_updates: '更新', pkg_install_new: '新規インストール',
+        pkg_updates_available: '利用可能な更新', pkg_upgrade_all: 'すべて更新',
+        pkg_install_placeholder: 'パッケージ名（例: requests や numpy==1.24.0）',
+        pkg_install_hint: 'パッケージ名、バージョン指定（package==version）、またはスペース区切りで複数パッケージに対応',
+        pkg_name: 'パッケージ', pkg_version: 'バージョン', pkg_type: 'タイプ', pkg_latest: '最新バージョン',
+        pkg_type_module: 'モジュール', pkg_type_adapter: 'アダプタ', pkg_type_library: 'ライブラリ',
+        pkg_no_installed: 'インストール済みパッケージなし', pkg_no_updates: 'すべてのパッケージが最新です',
+        pkg_checking_updates: '更新を確認中...', pkg_upgrading: '更新中...',
+        pkg_upgrade: '更新', pkg_upgrade_confirm: '以下のパッケージを更新しますか？',
+        pkg_upgrade_all_confirm: 'すべての古いパッケージを更新しますか？時間がかかる場合があります。',
+        pkg_uninstall_confirm: 'このパッケージをアンインストールしますか？依存関係に問題が生じる可能性があります。',
+        pkg_cannot_uninstall: 'コアパッケージはアンインストールできません',
+        pkg_install_success: 'パッケージをインストールしました', pkg_upgrade_success: 'パッケージを更新しました',
+        pkg_install_failed: 'パッケージのインストールに失敗', pkg_upgrade_failed: 'パッケージの更新に失敗',
+        store_version_current: '現在', store_version_latest: '最新',
+        store_update_available: '更新あり',
+        action_package_upgrade: 'パッケージを更新', action_package_uninstall: 'パッケージをアンインストール',
+        upgrade_all: 'すべて更新',
+        module_hub: 'モジュールハブ', module_hub_desc: 'モジュール管理、ストア閲覧、Pythonパッケージ管理',
+        registered: '登録済み', registered_desc: '登録済みモジュールとアダプタの管理',
+        compress: '圧縮', decompress: '解凍', upload_folder: 'フォルダをアップロード',
+        task_list: 'タスクリスト',
+        cmd_management: 'コマンド管理', cmd_management_desc: '登録済みコマンドの管理：エイリアス、プラットフォームフィルタ、有効/無効',
+        cmd_global_settings: 'グローバルコマンド設定', cmd_prefix: 'コマンドプレフィックス', cmd_case_sensitive: '大文字小文字を区別',
+        cmd_allow_space_prefix: 'スペースプレフィックスを許可', cmd_must_at_bot: 'Botへのメンション必須',
+        cmd_list: 'コマンドリスト', cmd_enabled: '有効', cmd_disabled: '無効',
+        cmd_custom_aliases: 'カスタムエイリアス', cmd_alias_placeholder: 'エイリアスを入力してEnter',
+        cmd_allowed_platforms: '許可プラットフォーム', cmd_allowed_platforms_hint: '空欄で全プラットフォームを許可',
+        cmd_blocked_platforms: 'ブロックプラットフォーム', cmd_transform_to: 'コマンド変換',
+        cmd_transform_placeholder: '空欄で変換なし、対象コマンド名を入力でリダイレクト',
+        cmd_original_aliases_label: 'オリジナルエイリアス', cmd_no_commands: '登録済みコマンドなし',
+        cmd_help: 'ヘルプ', cmd_usage: '使用法', cmd_group: 'コマンドグループ',
+        cmd_save_success: 'コマンドルールを保存しました', cmd_save_failed: '保存失敗',
+        cmd_yes: 'はい', cmd_no: 'いいえ',
+        cmd_aliases_label: 'エイリアス',
+        group_overview: '概要', group_events: 'イベント', group_extensions: '拡張', group_system: 'システム', group_tools: 'ツール',
+        event_stream: 'イベントストリーム', event_stream_desc: 'リアルタイムイベントストリームを表示',
+        event_builder_desc: 'デバッグとテスト用のカスタムイベントを構築',
+        lifecycle_desc: 'システムの起動と実行プロセスを表示',
+        settings_title: 'ダッシュボード設定',
+        settings_appearance: '外観', settings_behavior: '動作',
+        settings_theme: 'ダークテーマ', settings_language: '言語',
+        settings_sidebar: 'サイドバーを折りたたむ', settings_refresh_interval: '更新間隔',
+        settings_event_limit: 'イベント数制限', settings_disabled: '無効',
+        settings_restart_desc: 'すべてのモジュールとアダプタを再読込',
+    },
+    ru: {
+        dashboard: 'Панель управления', bots: 'Боты', events: 'События', modules: 'Плагины', store: 'Магазин модулей', config: 'Конфигурация',
+        sys_logs: 'Системные журналы', logs: 'Журналы', lifecycle: 'Жизненный цикл', events_stream: 'Поток', events_builder: 'Конструктор',
+        sys_logs_desc: 'Просмотр системных журналов и событий жизненного цикла', logs_desc: 'Просмотр и фильтрация системных журналов', lifecycle_desc: 'Просмотр процесса запуска и работы системы',
+        lifecycle_timeline: 'Шкала жизненного цикла', all_modules: 'Все модули', search_logs: 'Поиск в журналах...', no_lifecycle: 'Нет событий жизненного цикла',
+        log_list: 'Список журналов', api_routes: 'API маршруты', api_routes_desc: 'Просмотр всех зарегистрированных HTTP и WebSocket маршрутов',
+        http_routes: 'HTTP маршруты', ws_routes: 'WebSocket маршруты',
+        loading: 'Загрузка...', online: 'В сети', offline: 'Не в сети', live: 'В реальном времени',
+        adapters: 'Адаптеры', modules_label: 'Модули', online_bots: 'Боты в сети', total_events: 'Всего событий',
+        no_adapters: 'Нет адаптеров', no_modules: 'Нет модулей', no_events: 'Нет событий', no_bots: 'Нет ботов',
+        no_logs: 'Нет журналов', no_http_routes: 'Нет HTTP маршрутов', no_ws_routes: 'Нет WebSocket маршрутов',
+        no_data: 'Нет данных', requires_auth: 'Требуется авторизация',
+        active: 'Активен', inactive: 'Неактивен',
+        enable: 'Включить', load: 'Загрузить', unload: 'Выгрузить', install: 'Установить',
+        search_packages: 'Поиск пакетов...', live_events: 'События в реальном времени', waiting_events: 'Ожидание событий...',
+        bots_desc: 'Обнаруженные боты на платформах', events_desc: 'Просмотр/создание потока событий',
+        modules_desc: 'Управление зарегистрированными модулями и адаптерами', store_desc: 'Просмотр и установка пакетов',
+        config_desc: 'Просмотр и управление конфигурацией и хранилищем', configuration: 'Конфигурация', storage: 'Хранилище',
+        auth_title: 'Аутентификация', auth_desc_text: 'Введите токен доступа для продолжения', auth_label: 'Токен доступа',
+        auth_placeholder: 'Введите токен',
+        auth_hint: 'Токен хранится в конфигурации <code>Dashboard.token</code>',
+        login: 'Войти', cancel: 'Отмена', ok: 'OK',
+        logged_in: 'Вход выполнен', invalid_token: 'Неверный токен', action_completed: 'Действие выполнено', action_failed: 'Действие не удалось',
+        installing: 'Установка...', installed: 'Установлено! Рекомендуется перезапуск', install_failed: 'Установка не удалась',
+        install_success: 'Установка завершена', install_timeout: 'Таймаут установки', install_restart_title: 'Перезапуск для загрузки нового модуля', install_restart_confirm: 'Модуль успешно установлен. Перезапустить фреймворк для его загрузки?', install_restart_btn: 'Перезапуск',
+        install_detail: 'Детали установки', no_token_refresh: 'Сервис не готов, обновите позже',
+        unload_self_title: 'Предупреждение', unload_self_confirm: 'После выгрузки модуля панели управления вы не сможете получить доступ к этому интерфейсу через веб. Продолжить?',
+        upload_title: 'Установка из файла', upload_desc: 'Загрузите whl или zip пакет для установки модуля', upload_btn: 'Выбрать файл и установить', uploading: 'Загрузка и установка...', upload_failed: 'Ошибка загрузки и установки',
+        restart: 'Перезапуск фреймворка', restart_confirm: 'Перезапустить фреймворк? Все модули и адаптеры будут перезагружены.',
+        restart_success: 'Перезапуск фреймворка...', restart_failed: 'Ошибка перезапуска',
+        clear_events: 'Очистить события', clear_confirm: 'Очистить все журналы событий?',
+        all_types: 'Все типы', all_platforms: 'Все платформы',
+        no_packages: 'Нет подходящих пакетов', failed_registry: 'Не удалось загрузить реестр',
+        event_cleared: 'События очищены', empty_storage: 'Хранилище пусто',
+        message: 'Сообщение', notice: 'Уведомление', request: 'Запрос', meta: 'Мета', platform: 'Платформа',
+        event_builder: 'Конструктор событий', event_builder_desc: 'Создание пользовательских событий для отладки и тестирования',
+        event_type: 'Тип события', detail_type: 'Тип детали', platform_info: 'Информация о платформе',
+        select_platform: 'Выбрать платформу', select_bot: 'Выбрать бота', custom: 'Пользовательский',
+        select_detail_type: 'Выберите тип детали...', select_platform_placeholder: 'Сначала выберите платформу...',
+        session_type: 'Тип сессии', session_id: 'ID сессии',
+        session_private: 'Личный', session_group: 'Групповой', session_channel: 'Канал',
+        custom_platform_placeholder: 'Введите название платформы', custom_bot_placeholder: 'Введите пользовательский Bot ID',
+        session_id_placeholder: 'ID группы/канала/пользователя',
+        message_content: 'Содержание сообщения', optional_fields: 'Дополнительные поля', json_preview: 'Предпросмотр JSON',
+        preview: 'Предпросмотр', submit_event: 'Отправить событие',
+        add_segment: 'Добавить сегмент', add_field: 'Добавить поле', copy_json: 'Копировать JSON',
+        validate_error: 'Ошибка валидации', submit_success: 'Событие отправлено', submit_failed: 'Ошибка отправки',
+        view_tree: 'Дерево', view_source: 'Исходный код', reload_config: 'Обновить', save_config: 'Сохранить',
+        config_saved: 'Конфигурация сохранена', config_load_failed: 'Не удалось загрузить исходный код конфигурации',
+        read_only: 'Только чтение (корневая конфигурация)',
+        cpu_usage: 'Использование CPU', process_cpu: 'CPU процесса', memory_usage: 'Использование памяти', rss_memory: 'RSS память',
+        system_memory: 'Системная память', system_total_memory: 'Общая системная память', available_memory: 'Доступная память',
+        swap_memory: 'Swap память', io_read: 'IO чтение', io_write: 'IO запись',
+        active_connections: 'Активные соединения', system_details: 'Детали системы',
+        websocket: 'WebSocket', message_stats: 'Статистика сообщений', message_types: 'Типы сообщений',
+        platform_distribution: 'Распределение по платформам', last_24h_trend: 'Тренд за 24 часа',
+        registered_routes: 'Зарегистрированные маршруты',
+        refresh: 'Обновить', copy: 'Копировать', auto_refresh: 'Автообновление', copy_all_logs: 'Копировать все журналы',
+        event_preview: 'Предпросмотр события', copied_to_clipboard: 'Скопировано в буфер обмена', copy_failed: 'Ошибка копирования',
+        save_failed: 'Ошибка сохранения', unknown_error: 'Неизвестная ошибка', validation_failed: 'Ошибка валидации',
+        auto_refresh_off: 'Автообновление отключено', auto_refresh_on: 'Автообновление включено',
+        alt_message: 'Альт. сообщение', request_comment: 'Комментарий к запросу',
+        field_name_placeholder: 'Имя поля', field_value_placeholder: 'Значение поля',
+        load_segments_first: 'Сначала загрузите типы сегментов',
+        test: 'Тест', send: 'Отправить', query_params: 'Параметры запроса', request_body: 'Тело запроса', response: 'Ответ',
+        force_refresh: 'Принудительное обновление',
+        audit_log: 'Журнал аудита', audit_log_desc: 'Просмотр записей системных операций', all_actions: 'Все действия',
+        backup_restore: 'Резервное копирование', backup_desc: 'Экспорт или импорт конфигурации системы и данных хранилища',
+        backup_export: 'Экспортировать', backup_import: 'Импортировать',
+        backup_export_success: 'Резервная копия экспортирована', backup_import_confirm: 'Импорт перезапишет текущую конфигурацию и хранилище (кроме конфигурации Dashboard). Продолжить?',
+        import_success: 'Восстановление выполнено', import_failed: 'Ошибка восстановления', backup_failed: 'Ошибка резервного копирования',
+        audit_clear_confirm: 'Очистить все записи аудита?', audit_cleared: 'Журнал аудита очищен',
+        last_run: 'Последний запуск', never: 'Никогда', run_count: 'Количество запусков',
+        action_load_module: 'Загрузить модуль', action_unload_module: 'Выгрузить модуль',
+        action_load_adapter: 'Загрузить адаптер', action_unload_adapter: 'Выгрузить адаптер',
+        action_config_update: 'Обновить конфигурацию', action_config_source_save: 'Сохранить исходный код',
+        action_storage_set: 'Установить хранилище', action_storage_delete: 'Удалить хранилище',
+        action_package_install: 'Установить пакет', action_clear_events: 'Очистить события',
+        action_restart_framework: 'Перезапустить фреймворк', action_backup_import: 'Импортировать backup',
+        files: 'Файлы', files_desc: 'Просмотр и управление файлами проекта',
+        search_files: 'Поиск файлов...', new_file: 'Новый файл', new_folder: 'Новая папка',
+        upload: 'Загрузить', save: 'Сохранить', upload_success: 'Загрузка успешна', upload_failed: 'Ошибка загрузки',
+        upload_drop: 'Перетащите файлы сюда или нажмите для загрузки',
+        file_saved: 'Файл сохранён', file_save_failed: 'Ошибка сохранения',
+        file_too_large: 'Файл слишком большой для редактирования', binary_file: 'Бинарный файл, нельзя редактировать',
+        file_not_found: 'Файл не найден', folder_exists: 'Папка уже существует',
+        delete_confirm: 'Удалить выбранные файлы? Это действие нельзя отменить.',
+        delete_success: 'Удалено', delete_failed: 'Ошибка удаления',
+        rename_label: 'Новое имя', rename_success: 'Переименовано', rename_failed: 'Ошибка переименования',
+        new_file_name: 'Имя файла', new_folder_name: 'Имя папки',
+        enable_module: 'Включить', disable_module: 'Отключить', reload_module: 'Перезагрузить',
+        uninstall_module: 'Удалить', uninstall_confirm: 'Удалить этот модуль? Пакет будет удалён.',
+        module_uninstalling: 'Удаление...', module_version: 'Версия',
+        module_author: 'Автор', module_no_desc: 'Без описания',
+        module_enabled_not_loaded: 'Включён, не загружен',
+        module_disabled: 'Отключён', reload: 'Перезагрузить',
+        action_enable_module: 'Включить модуль', action_disable_module: 'Отключить модуль',
+        action_reload_module: 'Перезагрузить модуль', action_uninstall_module: 'Удалить модуль',
+        search_modules: 'Поиск модулей...',
+        module_loaded_dynamic: 'Модуль загружен динамически',
+        installed_no_restart: 'Установлено, модуль загружен автоматически',
+        permissions: 'Права доступа', download: 'Скачать', chmod: 'Изменить права',
+        chmod_prompt: 'Введите права (например, 755, 644)',
+        pkg_manager: 'Пакеты', pkg_manager_desc: 'Управление установленными Python пакетами, проверка обновлений и установка новых',
+        pkg_installed: 'Установленные', pkg_updates: 'Обновления', pkg_install_new: 'Установить новый',
+        pkg_updates_available: 'Доступные обновления', pkg_upgrade_all: 'Обновить все',
+        pkg_install_placeholder: 'Имя пакета (например, requests или numpy==1.24.0)',
+        pkg_install_hint: 'Поддерживается имя пакета, с версией (package==version) или несколько пакетов через пробел',
+        pkg_name: 'Пакет', pkg_version: 'Версия', pkg_type: 'Тип', pkg_latest: 'Последняя',
+        pkg_type_module: 'Модуль', pkg_type_adapter: 'Адаптер', pkg_type_library: 'Библиотека',
+        pkg_no_installed: 'Установленные пакеты не найдены', pkg_no_updates: 'Все пакеты актуальны',
+        pkg_checking_updates: 'Проверка обновлений...', pkg_upgrading: 'Обновление...',
+        pkg_upgrade: 'Обновить', pkg_upgrade_confirm: 'Обновить следующие пакеты?',
+        pkg_upgrade_all_confirm: 'Обновить все устаревшие пакеты? Это может занять некоторое время.',
+        pkg_uninstall_confirm: 'Удалить этот пакет? Это может вызвать проблемы с зависимостями.',
+        pkg_cannot_uninstall: 'Нельзя удалить базовый пакет',
+        pkg_install_success: 'Пакет установлен', pkg_upgrade_success: 'Пакет обновлён',
+        pkg_install_failed: 'Ошибка установки пакета', pkg_upgrade_failed: 'Ошибка обновления пакета',
+        store_version_current: 'Текущая', store_version_latest: 'Последняя',
+        store_update_available: 'Доступно обновление',
+        action_package_upgrade: 'Обновить пакет', action_package_uninstall: 'Удалить пакет',
+        upgrade_all: 'Обновить все',
+        module_hub: 'Центр модулей', module_hub_desc: 'Управление модулями, магазин, управление Python пакетами',
+        registered: 'Зарегистрированные', registered_desc: 'Управление зарегистрированными модулями и адаптерами',
+        compress: 'Сжать', decompress: 'Распаковать', upload_folder: 'Загрузить папку',
+        task_list: 'Список задач',
+        cmd_management: 'Управление командами', cmd_management_desc: 'Управление командами: псевдонимы, фильтры платформ, вкл/выкл',
+        cmd_global_settings: 'Глобальные настройки команд', cmd_prefix: 'Префикс команд', cmd_case_sensitive: 'Чувствительность к регистру',
+        cmd_allow_space_prefix: 'Разрешить пробел как префикс', cmd_must_at_bot: 'Обязательно @Bot',
+        cmd_list: 'Список команд', cmd_enabled: 'Включена', cmd_disabled: 'Отключена',
+        cmd_custom_aliases: 'Пользовательские псевдонимы', cmd_alias_placeholder: 'Введите псевдоним и нажмите Enter',
+        cmd_allowed_platforms: 'Разрешённые платформы', cmd_allowed_platforms_hint: 'Оставьте пустым для всех платформ',
+        cmd_blocked_platforms: 'Заблокированные платформы', cmd_transform_to: 'Преобразование команды',
+        cmd_transform_placeholder: 'Оставьте пустым для отсутствия преобразования, введите имя целевой команды для перенаправления',
+        cmd_original_aliases_label: 'Оригинальные псевдонимы', cmd_no_commands: 'Нет зарегистрированных команд',
+        cmd_help: 'Справка', cmd_usage: 'Использование', cmd_group: 'Группа команд',
+        cmd_save_success: 'Правило команды сохранено', cmd_save_failed: 'Ошибка сохранения',
+        cmd_yes: 'Да', cmd_no: 'Нет',
+        cmd_aliases_label: 'Псевдонимы',
+        group_overview: 'Обзор', group_events: 'События', group_extensions: 'Расширения', group_system: 'Система', group_tools: 'Инструменты',
+        event_stream: 'Поток событий', event_stream_desc: 'Просмотр потока событий в реальном времени',
+        event_builder_desc: 'Создание пользовательских событий для отладки и тестирования',
+        lifecycle_desc: 'Просмотр процесса запуска и работы системы',
+        settings_title: 'Настройки панели',
+        settings_appearance: 'Внешний вид', settings_behavior: 'Поведение',
+        settings_theme: 'Тёмная тема', settings_language: 'Язык',
+        settings_sidebar: 'Свернуть боковую панель', settings_refresh_interval: 'Интервал обновления',
+        settings_event_limit: 'Лимит событий', settings_disabled: 'Отключено',
+        settings_restart_desc: 'Перезагрузить все модули и адаптеры',
     }
 };
-let lang = localStorage.getItem('ep_lang') || 'zh';
+function detectLang() {
+    const saved = localStorage.getItem('ep_lang');
+    if (saved) return saved;
+    const bl = (navigator.language || (navigator.languages && navigator.languages[0]) || '').toLowerCase();
+    if (bl.startsWith('zh-tw') || bl.startsWith('zh-hk') || bl.startsWith('zh-hant')) return 'zh-TW';
+    if (bl.startsWith('zh')) return 'zh';
+    if (bl.startsWith('ja')) return 'ja';
+    if (bl.startsWith('ru')) return 'ru';
+    return 'en';
+}
+function getLocale() {
+    const m = { 'zh': 'zh-CN', 'zh-TW': 'zh-TW', 'ja': 'ja-JP', 'ru': 'ru-RU' };
+    return m[lang] || 'en-US';
+}
+let lang = detectLang();
 function t(k) { return I18N[lang]?.[k] || k }
-function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem('ep_lang', lang); applyI18n(); loadAll() }
+function toggleLang() {
+    const langs = ['en', 'zh', 'zh-TW', 'ja', 'ru'];
+    lang = langs[(langs.indexOf(lang) + 1) % langs.length];
+    localStorage.setItem('ep_lang', lang); applyI18n(); loadAll();
+}
 function applyI18n() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const k = el.getAttribute('data-i18n-placeholder'); if (I18N[lang][k]) el.placeholder = I18N[lang][k] });
     document.querySelectorAll('[data-i18n-option]').forEach(el => { const k = el.getAttribute('data-i18n-option'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
     document.querySelectorAll('[data-i18n-title]').forEach(el => { const k = el.getAttribute('data-i18n-title'); if (I18N[lang][k]) el.title = I18N[lang][k] });
     const ah = document.getElementById('authHint'); if (ah && I18N[lang].auth_hint) ah.innerHTML = I18N[lang].auth_hint;
-    document.title = lang === 'zh' ? 'ErisPulse \u4eea\u8868\u76d8' : 'ErisPulse Dashboard';
+    const titles = { 'zh': 'ErisPulse 仪表盘', 'zh-TW': 'ErisPulse 儀表盤', 'ja': 'ErisPulse ダッシュボード', 'ru': 'ErisPulse Панель управления' };
+    document.title = titles[lang] || 'ErisPulse Dashboard';
     const wsEl = document.getElementById('wsText');
     if (wsEl) wsEl.textContent = document.getElementById('wsBadge').classList.contains('on') ? t('live') : t('offline');
+    const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang;
+    const htmlLangMap = { 'zh': 'zh-CN', 'zh-TW': 'zh-TW', 'ja': 'ja', 'ru': 'ru' };
+    document.documentElement.lang = htmlLangMap[lang] || 'en';
 }
 
 function getTheme() {
@@ -423,7 +895,7 @@ function toast(msg, type) {
     setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 200) }, 2500);
 }
 
-function showLogin() { document.querySelector('.app').classList.remove('authed'); document.getElementById('loginOv').classList.add('show'); document.getElementById('loginInput').focus() }
+function showLogin() { document.querySelector('.app').classList.remove('authed'); document.getElementById('loginOv').classList.add('show'); const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang; document.getElementById('loginInput').focus() }
 function closeLogin() { document.getElementById('loginOv').classList.remove('show') }
 let _loginLock = false;
 async function doLogin() {
@@ -447,7 +919,7 @@ async function doLogin() {
 }
 
 function evHtml(e) {
-    const tm = new Date(e.time * 1000).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const tm = new Date(e.time * 1000).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     return '<div class="ev-item"><span class="ev-badge ' + e.type + '">' + esc(e.type) + '</span><div style="flex:1;min-width:0"><div>' + esc(e.alt_message || e.detail_type || '-') + '</div>' + (e.user_id ? '<div style="font-size:11px;color:var(--tx-s)">user: ' + esc(e.user_id) + '</div>' : '') + '</div><span style="font-size:11px;color:var(--tx-s);flex-shrink:0">' + esc(e.platform) + '</span><span style="font-size:11px;color:var(--tx-t);flex-shrink:0">' + tm + '</span></div>';
 }
 
@@ -512,7 +984,7 @@ async function loadBots() {
     const b = d.bots || [];
     document.getElementById('botGrid').innerHTML = b.length ? b.map(x => {
         const i = x.info || {}, nm = i.user_name || i.nickname || x.bot_id, av = i.avatar;
-        const la = x.last_active ? new Date(x.last_active * 1000).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US') : 'Never';
+        const la = x.last_active ? new Date(x.last_active * 1000).toLocaleString(getLocale()) : 'Never';
         const on = x.status === 'online';
         return '<div class="bot-card"><div class="bot-avatar">' + (av ? '<img src="' + esc(av) + '" onerror="this.outerHTML=\'<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; style=&quot;width:24px;height:24px;opacity:.7&quot;><rect x=&quot;5&quot; y=&quot;8&quot; width=&quot;14&quot; height=&quot;10&quot; rx=&quot;2&quot;/><circle cx=&quot;9&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/><circle cx=&quot;15&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/></svg>\'">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>') + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' + esc(nm) + '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(x.platform) + ' / ' + esc(x.bot_id) + '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span><span style="font-size:12px;font-weight:500;color:' + (on ? 'var(--ok-c)' : 'var(--tx-s)') + '">' + (on ? t('online') : t('offline')) + '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' + esc(la) + '</div></div></div>';
     }).join('') : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' + t('no_bots') + '</h3></div>';
@@ -729,7 +1201,7 @@ function setSetting(key, val) {
 
 function showSettings() {
     document.getElementById('settingsTheme').checked = getTheme() === 'dark';
-    document.getElementById('settingsLang').checked = lang === 'en';
+    document.getElementById('settingsLang').value = lang;
     document.getElementById('settingsSidebar').checked = document.getElementById('sidebar').classList.contains('collapsed');
     document.getElementById('settingsRefresh').value = getSetting('refresh_interval', '5000');
     document.getElementById('settingsEventLimit').value = getSetting('event_limit', '100');
@@ -744,8 +1216,8 @@ function applySettingTheme(dark) {
     localStorage.setItem('ep_theme', th);
     applyTheme(th);
 }
-function applySettingLang(en) {
-    lang = en ? 'en' : 'zh';
+function applySettingLang(v) {
+    lang = v;
     localStorage.setItem('ep_lang', lang);
     applyI18n(); loadAll();
 }
@@ -1805,7 +2277,7 @@ async function loadAuditLog() {
         return;
     }
     const html = logs.slice().reverse().map(log => {
-        const tm = new Date(log.timestamp * 1000).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US');
+        const tm = new Date(log.timestamp * 1000).toLocaleString(getLocale());
         const actionKey = 'action_' + log.action;
         const actionLabel = t(actionKey) !== actionKey ? t(actionKey) : esc(log.action);
         const actionClass = {
@@ -1914,7 +2386,7 @@ function fmFormatSize(bytes) {
 
 function fmFormatTime(ts) {
     if (!ts) return '';
-    return new Date(ts * 1000).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US', {
+    return new Date(ts * 1000).toLocaleString(getLocale(), {
         month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
     });
 }
@@ -2383,7 +2855,7 @@ function renderTaskPanel() {
             '<div class="task-item-hd">' +
                 '<span class="task-icon">' + statusIcon + '</span>' +
                 '<span class="task-name">' + esc(t.name) + '</span>' +
-                '<span class="task-time">' + new Date(t.startedAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en-US') + '</span>' +
+                '<span class="task-time">' + new Date(t.startedAt).toLocaleTimeString(getLocale()) + '</span>' +
                 '<button class="btn-icon" onclick="event.stopPropagation();removeTask(\'' + esc(t.id) + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
             '</div>' +
             '<pre class="task-output">' + esc(output + detail) + '</pre>' +

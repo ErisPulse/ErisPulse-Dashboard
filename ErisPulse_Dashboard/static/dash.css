@@ -1014,6 +1014,10 @@ body {
     display: flex
 }
 
+#modalOv, #outputOv {
+    z-index: 1050
+}
+
 .modal-box {
     background: var(--bg-t);
     padding: 24px;
@@ -1724,6 +1728,35 @@ select.form-select::-ms-expand {
     display: flex;
     gap: 8px;
     justify-content: flex-end
+}
+
+.login-lang-select {
+    padding: 4px 24px 4px 8px;
+    border: 1px solid var(--bd);
+    border-radius: 6px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 12px;
+    transition: border-color .2s;
+    flex-shrink: 0
+}
+
+.login-lang-select:hover {
+    border-color: var(--accent);
+    color: var(--tx-p)
+}
+
+.login-lang-select:focus {
+    border-color: var(--accent)
 }
 
 .empty-state {
@@ -2907,6 +2940,16 @@ select.form-select::-ms-expand {
 
 .settings-select:focus {
     border-color: var(--accent)
+}
+
+.settings-select option {
+    background: var(--bg-t);
+    color: var(--tx-p)
+}
+
+.login-lang-select option {
+    background: var(--bg-t);
+    color: var(--tx-p)
 }
 
  
