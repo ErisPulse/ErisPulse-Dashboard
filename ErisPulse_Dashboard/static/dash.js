@@ -769,6 +769,21 @@ function getLocale() {
 }
 let lang = detectLang();
 function t(k) { return I18N[lang]?.[k] || k }
+function cmpVer(a, b) {
+    const pa = a.replace(/^v/, '').split(/[-.]/), pb = b.replace(/^v/, '').split(/[-.]/);
+    const num = s => /^\d+$/.test(s) ? parseInt(s, 10) : -1;
+    const pre = s => { if (s === 'dev' || s === 'alpha' || s === 'a') return -4; if (s === 'beta' || s === 'b') return -3; if (s === 'rc' || s === 'c') return -2; return 0 };
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        let va = i < pa.length ? pa[i] : '', vb = i < pb.length ? pb[i] : '';
+        const na = num(va), nb = num(vb);
+        if (na >= 0 && nb >= 0) { if (na !== nb) return na > nb ? 1 : -1; continue }
+        if (na >= 0) return 1; if (nb >= 0) return -1;
+        const la = va.toLowerCase(), lb = vb.toLowerCase();
+        if (la === lb) continue;
+        return la > lb ? 1 : -1;
+    }
+    return 0;
+}
 function toggleLang() {
     const langs = ['en', 'zh', 'zh-TW', 'ja', 'ru'];
     lang = langs[(langs.indexOf(lang) + 1) % langs.length];
@@ -1073,7 +1088,7 @@ async function loadStore(forceRefresh) {
         const pkgLower = (i.package || '').toLowerCase();
         const installedVer = installedVersions[pkgLower] || '';
         const isInstalled = !!installedVer;
-        const hasUpdate = isInstalled && installedVer !== i.version;
+        const hasUpdate = isInstalled && cmpVer(i.version, installedVer) > 0;
         let statusBadge = '';
         let actionBtn = '';
         if (hasUpdate) {
