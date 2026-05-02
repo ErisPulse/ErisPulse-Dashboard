@@ -34,6 +34,8 @@ class Main(BaseModule):
         self._max_lifecycle_log = 200
         self._audit_log: list[dict] = []
         self._max_audit_log = 500
+        self._command_rules: dict[str, dict] = {}
+        self._command_middleware_func = None
         self._register_routes()
 
     @staticmethod
@@ -52,7 +54,9 @@ class Main(BaseModule):
         self._loop = asyncio.get_running_loop()
         self._restore_persisted_data()
         self._restore_audit_data()
+        self._load_command_rules()
         self._setup_event_interceptors()
+        self._setup_command_middleware()
         self.logger.info("WebUI module loaded")
         if getattr(self, "_token_new", False):
             self.logger.warning("┌──────────────────────────────────────────────┐")
@@ -97,6 +101,158 @@ class Main(BaseModule):
         if not provided:
             return False
         return secrets.compare_digest(str(provided), self._token)
+
+    def _load_command_rules(self):
+        try:
+            rules = self.storage.get("__ep_command_rules__")
+            if isinstance(rules, dict):
+                self._command_rules = rules
+        except Exception:
+            pass
+        self._sync_command_aliases()
+
+    def _save_command_rules(self):
+        try:
+            self.storage.set("__ep_command_rules__", self._command_rules)
+        except Exception:
+            pass
+
+    def _sync_command_aliases(self):
+        try:
+            cmd_handler = self.sdk.Event.command
+            for tag in list(getattr(cmd_handler, '_dashboard_aliases', set())):
+                cmd_handler.aliases.pop(tag, None)
+            dashboard_tags = set()
+            for main_name, rule in self._command_rules.items():
+                for alias in rule.get("aliases", []):
+                    if alias and alias != main_name:
+                        cmd_handler.aliases[alias] = main_name
+                        dashboard_tags.add(alias)
+            cmd_handler._dashboard_aliases = dashboard_tags
+        except Exception:
+            pass
+
+    def _get_all_commands_info(self) -> list[dict]:
+        try:
+            cmd_handler = self.sdk.Event.command
+            commands = cmd_handler.get_commands()
+        except Exception:
+            return []
+
+        result = []
+        for name, info in commands.items():
+            if name != info.get("main_name", name):
+                continue
+            main_name = info.get("main_name", name)
+            original_aliases = [
+                a for a, m in cmd_handler.aliases.items() if m == main_name
+            ]
+            rule = self._command_rules.get(main_name, {})
+            result.append({
+                "name": main_name,
+                "help": info.get("help"),
+                "usage": info.get("usage"),
+                "group": info.get("group"),
+                "hidden": info.get("hidden", False),
+                "original_aliases": original_aliases,
+                "custom_aliases": rule.get("aliases", []),
+                "enabled": rule.get("enabled", True),
+                "allowed_platforms": rule.get("allowed_platforms", []),
+                "blocked_platforms": rule.get("blocked_platforms", []),
+                "transform_to": rule.get("transform_to"),
+            })
+        return result
+
+    def _setup_command_middleware(self):
+        @self.sdk.adapter.middleware
+        async def _command_middleware(data: dict):
+            if data.get("type") != "message":
+                return data
+
+            platform = data.get("platform", "unknown")
+
+            message_segments = data.get("message", [])
+            message_text = ""
+            for segment in message_segments:
+                if segment.get("type") == "text":
+                    message_text = segment.get("data", {}).get("text", "")
+                    break
+
+            alt_message = data.get("alt_message", "")
+            text = message_text or alt_message
+            if not text:
+                return data
+
+            try:
+                from ErisPulse.runtime import get_event_config
+                event_config = get_event_config()
+                command_config = event_config.get("command", {})
+                prefix = command_config.get("prefix", "/")
+                case_sensitive = command_config.get("case_sensitive", True)
+            except Exception:
+                prefix = "/"
+                case_sensitive = True
+
+            check_text = text if case_sensitive else text.lower()
+            check_prefix = prefix if case_sensitive else prefix.lower()
+
+            if not check_text.startswith(check_prefix):
+                return data
+
+            command_part = check_text[len(check_prefix):].strip()
+            parts = command_part.split()
+            if not parts:
+                return data
+
+            cmd_name = parts[0]
+            if not case_sensitive:
+                cmd_name = cmd_name.lower()
+
+            rule_main_name = cmd_name
+            rule = self._command_rules.get(cmd_name)
+
+            if rule is None:
+                try:
+                    cmd_handler = self.sdk.Event.command
+                    actual = cmd_handler.aliases.get(cmd_name, cmd_name)
+                    if actual != cmd_name:
+                        rule_main_name = actual
+                        rule = self._command_rules.get(actual)
+                except Exception:
+                    pass
+
+            if rule is None:
+                return data
+
+            if not rule.get("enabled", True):
+                data["_processed"] = True
+                return data
+
+            allowed = rule.get("allowed_platforms", [])
+            if allowed and platform not in allowed:
+                data["_processed"] = True
+                return data
+
+            blocked = rule.get("blocked_platforms", [])
+            if platform in blocked:
+                data["_processed"] = True
+                return data
+
+            transform_to = rule.get("transform_to")
+            if transform_to:
+                new_cmd_text = check_prefix + transform_to + " " + " ".join(parts[1:])
+                new_cmd_text = new_cmd_text.strip()
+                for i, segment in enumerate(message_segments):
+                    if segment.get("type") == "text":
+                        message_segments[i] = {"type": "text", "data": {"text": new_cmd_text}}
+                        break
+                data["message"] = message_segments
+                if alt_message and alt_message == text:
+                    data["alt_message"] = new_cmd_text
+
+            return data
+
+        self._command_middleware_func = _command_middleware
 
     def _setup_event_interceptors(self):
         @self.sdk.adapter.on("*")
@@ -615,6 +771,9 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/files/compress", handler=self._api_files_compress, methods=["POST"])
         r.register_http_route(mn, "/api/files/decompress", handler=self._api_files_decompress, methods=["POST"])
         
+        r.register_http_route(mn, "/api/commands", handler=self._api_commands, methods=["GET"])
+        r.register_http_route(mn, "/api/commands/{name}", handler=self._api_command_update, methods=["PUT"])
+        
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -675,6 +834,8 @@ class Main(BaseModule):
             "/api/files/search",
             "/api/files/compress",
             "/api/files/decompress",
+            "/api/commands",
+            "/api/commands/{name}",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -2267,4 +2428,84 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e)}, status_code=500)
         self._add_audit_log("file_decompress", file_path, request)
         return JSONResponse({"success": True, "path": str(dest.relative_to(self._get_project_root().resolve())).replace("\\", "/")})
+
+     
+
+    async def _api_commands(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        commands = self._get_all_commands_info()
+        try:
+            from ErisPulse.runtime import get_event_config
+            event_config = get_event_config()
+            command_config = event_config.get("command", {})
+        except Exception:
+            command_config = {}
+        global_settings = {
+            "prefix": command_config.get("prefix", "/"),
+            "case_sensitive": command_config.get("case_sensitive", True),
+            "allow_space_prefix": command_config.get("allow_space_prefix", False),
+            "must_at_bot": command_config.get("must_at_bot", False),
+        }
+        registered_platforms = self.sdk.adapter.list_registered()
+        return JSONResponse({
+            "commands": commands,
+            "global_settings": global_settings,
+            "platforms": registered_platforms,
+            "total": len(commands),
+        })
+
+    async def _api_command_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        cmd_name = request.path_params.get("name", "") if request.path_params else ""
+        if not cmd_name:
+            path = request.scope.get("path", "")
+            import re as _re
+            m = _re.search(r"/api/commands/([^/]+)", path)
+            cmd_name = m.group(1) if m else ""
+        if not cmd_name:
+            return JSONResponse({"error": "command name required"}, status_code=400)
+
+        try:
+            cmd_handler = self.sdk.Event.command
+            commands = cmd_handler.get_commands()
+            main_names = {info.get("main_name", n) for n, info in commands.items()}
+            if cmd_name not in main_names:
+                actual = cmd_handler.aliases.get(cmd_name, cmd_name)
+                if actual not in main_names:
+                    return JSONResponse({"error": f"command '{cmd_name}' not found"}, status_code=404)
+                cmd_name = actual
+        except Exception:
+            return JSONResponse({"error": "failed to access command registry"}, status_code=500)
+
+        rule = self._command_rules.get(cmd_name, {})
+
+        if "enabled" in body:
+            rule["enabled"] = bool(body["enabled"])
+        if "aliases" in body:
+            aliases = body["aliases"]
+            if not isinstance(aliases, list):
+                return JSONResponse({"error": "aliases must be a list"}, status_code=400)
+            rule["aliases"] = [str(a) for a in aliases if a]
+        if "allowed_platforms" in body:
+            platforms = body["allowed_platforms"]
+            if not isinstance(platforms, list):
+                return JSONResponse({"error": "allowed_platforms must be a list"}, status_code=400)
+            rule["allowed_platforms"] = [str(p) for p in platforms if p]
+        if "blocked_platforms" in body:
+            platforms = body["blocked_platforms"]
+            if not isinstance(platforms, list):
+                return JSONResponse({"error": "blocked_platforms must be a list"}, status_code=400)
+            rule["blocked_platforms"] = [str(p) for p in platforms if p]
+        if "transform_to" in body:
+            val = body["transform_to"]
+            rule["transform_to"] = str(val) if val else None
+
+        self._command_rules[cmd_name] = rule
+        self._save_command_rules()
+        self._sync_command_aliases()
+        self._add_audit_log("command_update", cmd_name, request)
+        return JSONResponse({"success": True, "rule": rule})
 

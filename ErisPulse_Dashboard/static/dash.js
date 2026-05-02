@@ -128,6 +128,19 @@ const I18N = {
         registered: '已注册', registered_desc: '管理已注册的模块和适配器',
         compress: '压缩', decompress: '解压', upload_folder: '上传文件夹',
         task_list: '任务列表',
+        cmd_management: '命令管理', cmd_management_desc: '管理已注册的命令：别名、平台过滤、启用状态',
+        cmd_global_settings: '全局命令设置', cmd_prefix: '命令前缀', cmd_case_sensitive: '大小写敏感',
+        cmd_allow_space_prefix: '允许空前缀', cmd_must_at_bot: '必须@Bot',
+        cmd_list: '命令列表', cmd_enabled: '已启用', cmd_disabled: '已禁用',
+        cmd_custom_aliases: '自定义别名', cmd_alias_placeholder: '输入别名后回车添加',
+        cmd_allowed_platforms: '允许的平台', cmd_allowed_platforms_hint: '留空表示允许所有平台',
+        cmd_blocked_platforms: '禁止的平台', cmd_transform_to: '命令转换',
+        cmd_transform_placeholder: '留空表示不转换，输入目标命令名将此命令重定向',
+        cmd_original_aliases_label: '原始别名', cmd_no_commands: '暂无已注册的命令',
+        cmd_help: '帮助', cmd_usage: '用法', cmd_group: '命令组',
+        cmd_save_success: '命令规则已保存', cmd_save_failed: '保存失败',
+        cmd_yes: '是', cmd_no: '否',
+        cmd_aliases_label: '别名',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -255,6 +268,19 @@ const I18N = {
         registered: 'Registered', registered_desc: 'Manage registered modules and adapters',
         compress: 'Compress', decompress: 'Decompress', upload_folder: 'Upload Folder',
         task_list: 'Task List',
+        cmd_management: 'Commands', cmd_management_desc: 'Manage registered commands: aliases, platform filters, enable/disable',
+        cmd_global_settings: 'Global Command Settings', cmd_prefix: 'Command Prefix', cmd_case_sensitive: 'Case Sensitive',
+        cmd_allow_space_prefix: 'Allow Space Prefix', cmd_must_at_bot: 'Must @Bot',
+        cmd_list: 'Command List', cmd_enabled: 'Enabled', cmd_disabled: 'Disabled',
+        cmd_custom_aliases: 'Custom Aliases', cmd_alias_placeholder: 'Enter alias and press Enter',
+        cmd_allowed_platforms: 'Allowed Platforms', cmd_allowed_platforms_hint: 'Leave empty to allow all platforms',
+        cmd_blocked_platforms: 'Blocked Platforms', cmd_transform_to: 'Command Transform',
+        cmd_transform_placeholder: 'Leave empty for no transform, enter target command name to redirect',
+        cmd_original_aliases_label: 'Original Aliases', cmd_no_commands: 'No registered commands',
+        cmd_help: 'Help', cmd_usage: 'Usage', cmd_group: 'Group',
+        cmd_save_success: 'Command rule saved', cmd_save_failed: 'Save failed',
+        cmd_yes: 'Yes', cmd_no: 'No',
+        cmd_aliases_label: 'Aliases',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -330,6 +356,7 @@ function go(name, el) {
         if (btn) btn.style.opacity = '0.5';
     }
     if (name === 'api-routes') loadApiRoutes();
+    if (name === 'commands') loadCommands();
     if (name === 'files') fmBrowse('.');
 }
 
@@ -2507,6 +2534,172 @@ async function uninstallPkg(pkgName) {
         toast(t('pkg_cannot_uninstall'), 'er');
     } else {
         toast(d?.error || t('action_failed'), 'er');
+    }
+}
+
+let _cmdData = null, _editCmdName = '', _editAliases = [], _editAllowed = [], _editBlocked = [], _cmdPlatforms = [];
+
+async function loadCommands() {
+    const d = await api('/api/commands'); if (!d) return;
+    _cmdData = d;
+    _cmdPlatforms = d.platforms || [];
+    const gs = d.global_settings || {};
+    document.getElementById('cmdPrefix').textContent = gs.prefix || '/';
+    document.getElementById('cmdCaseSensitive').textContent = gs.case_sensitive ? t('cmd_yes') : t('cmd_no');
+    document.getElementById('cmdAllowSpace').textContent = gs.allow_space_prefix ? t('cmd_yes') : t('cmd_no');
+    document.getElementById('cmdMustAtBot').textContent = gs.must_at_bot ? t('cmd_yes') : t('cmd_no');
+    document.getElementById('cmdCount').textContent = d.total || 0;
+    const cmds = d.commands || [];
+    if (!cmds.length) {
+        document.getElementById('cmdListBody').innerHTML = '<div style="padding:32px 18px;text-align:center;color:var(--tx-t);font-size:13px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.3;margin-bottom:8px"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><div>' + t('cmd_no_commands') + '</div></div>';
+        return;
+    }
+    let html = '';
+    for (const c of cmds) {
+        const enabled = c.enabled !== false;
+        const dotClass = enabled ? 'enabled' : 'disabled';
+        const statusText = enabled ? t('cmd_enabled') : t('cmd_disabled');
+        let aliasesHtml = '';
+        for (const a of (c.original_aliases || [])) {
+            aliasesHtml += '<span class="cmd-alias-chip original">' + esc(a) + '</span>';
+        }
+        for (const a of (c.custom_aliases || [])) {
+            aliasesHtml += '<span class="cmd-alias-chip custom">' + esc(a) + '</span>';
+        }
+        let metaParts = [];
+        if (!aliasesHtml) aliasesHtml = '';
+        if (aliasesHtml) metaParts.push('<span>' + t('cmd_aliases_label') + ': ' + aliasesHtml + '</span>');
+        if (c.help) metaParts.push('<span>' + esc(c.help) + '</span>');
+        if (c.group) metaParts.push('<span>' + t('cmd_group') + ': ' + esc(c.group) + '</span>');
+        if (c.usage) metaParts.push('<span style="font-family:Consolas,Monaco,monospace;font-size:11px">' + esc(c.usage) + '</span>');
+        let platformBadges = '';
+        for (const p of (c.allowed_platforms || [])) {
+            platformBadges += '<span class="cmd-platform-chip allowed">' + esc(p) + '</span>';
+        }
+        for (const p of (c.blocked_platforms || [])) {
+            platformBadges += '<span class="cmd-platform-chip blocked">' + esc(p) + '</span>';
+        }
+        let transformBadge = '';
+        if (c.transform_to) {
+            transformBadge = '<span class="cmd-transform">&rarr; ' + esc(c.transform_to) + '</span>';
+        }
+        let badges = platformBadges + transformBadge;
+        html += '<div class="cmd-row">' +
+            '<span class="cmd-status-dot ' + dotClass + '"></span>' +
+            '<div class="cmd-info">' +
+                '<div class="cmd-name-row">' +
+                    '<span class="cmd-name">' + esc(c.name) + '</span>' +
+                    (badges ? '<span class="cmd-badges">' + badges + '</span>' : '') +
+                '</div>' +
+                '<div class="cmd-meta">' + (metaParts.length ? metaParts.join('') : '<span style="color:var(--tx-t)">' + t('module_no_desc') + '</span>') + '</div>' +
+            '</div>' +
+            '<div class="cmd-actions">' +
+                '<button class="btn btn-secondary btn-xs" onclick="openCmdEdit(\'' + esc(c.name).replace(/'/g, "\\'") + '\')">' + t('config') + '</button>' +
+            '</div>' +
+            '</div>';
+    }
+    document.getElementById('cmdListBody').innerHTML = html;
+}
+
+function openCmdEdit(name) {
+    if (!_cmdData) return;
+    const cmd = (_cmdData.commands || []).find(c => c.name === name);
+    if (!cmd) return;
+    _editCmdName = name;
+    _editAliases = [...(cmd.custom_aliases || [])];
+    _editAllowed = [...(cmd.allowed_platforms || [])];
+    _editBlocked = [...(cmd.blocked_platforms || [])];
+    document.getElementById('cmdEditTitle').textContent = '/' + name;
+    document.getElementById('cmdEnabled').checked = cmd.enabled !== false;
+    document.getElementById('cmdTransformTo').value = cmd.transform_to || '';
+    let origHtml = '';
+    if ((cmd.original_aliases || []).length) {
+        origHtml = '<span style="color:var(--tx-t);font-size:12px">' + t('cmd_original_aliases_label') + ': ' + cmd.original_aliases.map(a => esc(a)).join(', ') + '</span>';
+    }
+    if (cmd.help) origHtml += '<span style="margin-left:12px;color:var(--tx-s);font-size:12px">' + t('cmd_help') + ': ' + esc(cmd.help) + '</span>';
+    if (cmd.group) origHtml += '<span style="margin-left:12px;color:var(--tx-s);font-size:12px">' + t('cmd_group') + ': ' + esc(cmd.group) + '</span>';
+    document.getElementById('cmdOriginalAliases').innerHTML = origHtml;
+    renderCmdAliasTags();
+    renderCmdPlatformToggles();
+    document.getElementById('cmdAliasInput').value = '';
+    document.getElementById('cmdEditOverlay').style.display = 'flex';
+}
+
+function renderCmdAliasTags() {
+    const container = document.getElementById('cmdAliasTags');
+    if (!_editAliases.length) { container.innerHTML = ''; return; }
+    container.innerHTML = _editAliases.map((a, i) =>
+        '<span class="cmd-tag">' + esc(a) + '<span class="cmd-tag-remove" onclick="removeCmdAlias(' + i + ')">&times;</span></span>'
+    ).join('');
+}
+
+function addCmdAlias() {
+    const input = document.getElementById('cmdAliasInput');
+    const val = input.value.trim();
+    if (!val || _editAliases.includes(val)) { input.value = ''; return; }
+    _editAliases.push(val);
+    input.value = '';
+    renderCmdAliasTags();
+}
+
+function removeCmdAlias(index) {
+    _editAliases.splice(index, 1);
+    renderCmdAliasTags();
+}
+
+function renderCmdPlatformToggles() {
+    const allowedContainer = document.getElementById('cmdAllowedPlatforms');
+    const blockedContainer = document.getElementById('cmdBlockedPlatforms');
+    if (!_cmdPlatforms.length) {
+        allowedContainer.innerHTML = '<span style="font-size:12px;color:var(--tx-t)">' + t('no_adapters') + '</span>';
+        blockedContainer.innerHTML = '<span style="font-size:12px;color:var(--tx-t)">' + t('no_adapters') + '</span>';
+        return;
+    }
+    allowedContainer.innerHTML = _cmdPlatforms.map(p => {
+        const active = _editAllowed.includes(p);
+        return '<span class="cmd-platform-toggle' + (active ? ' active' : '') + '" onclick="toggleCmdPlatform(\'allowed\',\'' + esc(p) + '\')">' + esc(p) + '</span>';
+    }).join('');
+    blockedContainer.innerHTML = _cmdPlatforms.map(p => {
+        const active = _editBlocked.includes(p);
+        return '<span class="cmd-platform-toggle' + (active ? ' blocked' : '') + '" onclick="toggleCmdPlatform(\'blocked\',\'' + esc(p) + '\')">' + esc(p) + '</span>';
+    }).join('');
+}
+
+function toggleCmdPlatform(type, platform) {
+    if (type === 'allowed') {
+        const idx = _editAllowed.indexOf(platform);
+        if (idx >= 0) _editAllowed.splice(idx, 1);
+        else _editAllowed.push(platform);
+    } else {
+        const idx = _editBlocked.indexOf(platform);
+        if (idx >= 0) _editBlocked.splice(idx, 1);
+        else _editBlocked.push(platform);
+    }
+    renderCmdPlatformToggles();
+}
+
+function closeCmdEdit() {
+    document.getElementById('cmdEditOverlay').style.display = 'none';
+}
+
+async function saveCmdEdit() {
+    const body = {
+        enabled: document.getElementById('cmdEnabled').checked,
+        aliases: _editAliases,
+        allowed_platforms: _editAllowed,
+        blocked_platforms: _editBlocked,
+        transform_to: document.getElementById('cmdTransformTo').value.trim() || null,
+    };
+    const d = await api('/api/commands/' + encodeURIComponent(_editCmdName), {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+    if (d && d.success) {
+        toast(t('cmd_save_success'), 'ok');
+        closeCmdEdit();
+        loadCommands();
+    } else {
+        toast(d?.error || t('cmd_save_failed'), 'er');
     }
 }
 

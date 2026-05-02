@@ -110,6 +110,14 @@
                         </svg>
                         <span data-i18n="api_routes"></span>
                     </a>
+                    <a class="nav-item" data-page="commands" onclick="go('commands',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 17 10 11 4 5" />
+                            <line x1="12" y1="19" x2="20" y2="19" />
+                        </svg>
+                        <span data-i18n="cmd_management"></span>
+                    </a>
                     <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -833,6 +841,39 @@
                         </div>
                     </div>
                 </div>
+                <div class="page" id="p-commands">
+                    <h1 class="page-title" data-i18n="cmd_management"></h1>
+                    <p class="page-desc" data-i18n="cmd_management_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                            <span data-i18n="cmd_global_settings"></span>
+                        </div>
+                        <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px">
+                            <span style="color:var(--tx-s)" data-i18n="cmd_prefix"></span><span id="cmdPrefix" style="font-weight:600">/</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_case_sensitive"></span><span id="cmdCaseSensitive">--</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_allow_space_prefix"></span><span id="cmdAllowSpace">--</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_must_at_bot"></span><span id="cmdMustAtBot">--</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                            <span data-i18n="cmd_list"></span>
+                            <span class="chip chip-pr" id="cmdCount" style="margin-left:8px"></span>
+                            <div class="header-actions">
+                                <button class="btn-icon" onclick="loadCommands()" title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                            </div>
+                        </div>
+                        <div id="cmdListBody"></div>
+                    </div>
+                </div>
                 <div class="page" id="p-config">
                     <h1 class="page-title" data-i18n="config"></h1>
                     <p class="page-desc" data-i18n="config_desc"></p>
@@ -966,6 +1007,48 @@
             <div class="login-actions">
                 <button class="btn btn-secondary" onclick="closeLogin()" data-i18n="cancel"></button>
                 <button class="btn btn-primary" onclick="doLogin()" data-i18n="login"></button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="cmdEditOverlay" style="display:none" onclick="if(event.target===this)closeCmdEdit()">
+        <div class="modal-box" style="max-width:600px;max-height:85vh;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <h3 style="flex:1;margin:0;font-size:16px" id="cmdEditTitle"></h3>
+                <button class="btn-icon" onclick="closeCmdEdit()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div style="flex:1;overflow-y:auto;min-height:0">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                    <span style="font-size:13px;color:var(--tx-s)" data-i18n="cmd_enabled"></span>
+                    <label class="switch"><input type="checkbox" id="cmdEnabled" checked><span class="switch-slider"></span></label>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_custom_aliases"></label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="cmdAliasTags"></div>
+                    <div style="display:flex;gap:6px">
+                        <input type="text" id="cmdAliasInput" class="input" style="flex:1" data-i18n-placeholder="cmd_alias_placeholder" onkeydown="if(event.key==='Enter'){event.preventDefault();addCmdAlias()}">
+                        <button class="btn btn-secondary btn-sm" onclick="addCmdAlias()">+</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_allowed_platforms"></label>
+                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="cmd_allowed_platforms_hint"></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap" id="cmdAllowedPlatforms"></div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_blocked_platforms"></label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap" id="cmdBlockedPlatforms"></div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_transform_to"></label>
+                    <input type="text" id="cmdTransformTo" class="input" style="width:100%" data-i18n-placeholder="cmd_transform_placeholder">
+                </div>
+                <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px" id="cmdOriginalAliases"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                <button class="btn btn-secondary" onclick="closeCmdEdit()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" onclick="saveCmdEdit()" data-i18n="save"></button>
             </div>
         </div>
     </div>
