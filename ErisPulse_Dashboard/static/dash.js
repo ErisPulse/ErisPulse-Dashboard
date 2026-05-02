@@ -141,6 +141,16 @@ const I18N = {
         cmd_save_success: '命令规则已保存', cmd_save_failed: '保存失败',
         cmd_yes: '是', cmd_no: '否',
         cmd_aliases_label: '别名',
+        group_overview: '概览', group_events: '事件', group_extensions: '扩展', group_system: '系统', group_tools: '工具',
+        event_stream: '事件流', event_stream_desc: '实时查看系统事件流',
+        event_builder_desc: '构建自定义事件用于调试和测试',
+        lifecycle_desc: '查看系统启动和运行过程',
+        settings_title: '仪表盘设置',
+        settings_appearance: '外观', settings_behavior: '行为',
+        settings_theme: '深色主题', settings_language: '英文界面',
+        settings_sidebar: '折叠侧边栏', settings_refresh_interval: '刷新间隔',
+        settings_event_limit: '事件流数量', settings_disabled: '关闭',
+        settings_restart_desc: '重新加载所有模块和适配器',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -281,6 +291,16 @@ const I18N = {
         cmd_save_success: 'Command rule saved', cmd_save_failed: 'Save failed',
         cmd_yes: 'Yes', cmd_no: 'No',
         cmd_aliases_label: 'Aliases',
+        group_overview: 'Overview', group_events: 'Events', group_extensions: 'Extensions', group_system: 'System', group_tools: 'Tools',
+        event_stream: 'Event Stream', event_stream_desc: 'View real-time event stream',
+        event_builder_desc: 'Build custom events for debugging and testing',
+        lifecycle_desc: 'View system startup and runtime process',
+        settings_title: 'Dashboard Settings',
+        settings_appearance: 'Appearance', settings_behavior: 'Behavior',
+        settings_theme: 'Dark Theme', settings_language: 'English UI',
+        settings_sidebar: 'Collapse Sidebar', settings_refresh_interval: 'Refresh Interval',
+        settings_event_limit: 'Event Limit', settings_disabled: 'Disabled',
+        settings_restart_desc: 'Reload all modules and adapters',
     }
 };
 let lang = localStorage.getItem('ep_lang') || 'zh';
@@ -292,7 +312,6 @@ function applyI18n() {
     document.querySelectorAll('[data-i18n-option]').forEach(el => { const k = el.getAttribute('data-i18n-option'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
     document.querySelectorAll('[data-i18n-title]').forEach(el => { const k = el.getAttribute('data-i18n-title'); if (I18N[lang][k]) el.title = I18N[lang][k] });
     const ah = document.getElementById('authHint'); if (ah && I18N[lang].auth_hint) ah.innerHTML = I18N[lang].auth_hint;
-    document.getElementById('langBtn').textContent = lang === 'zh' ? 'EN' : '\u4e2d\u6587';
     document.title = lang === 'zh' ? 'ErisPulse \u4eea\u8868\u76d8' : 'ErisPulse Dashboard';
     const wsEl = document.getElementById('wsText');
     if (wsEl) wsEl.textContent = document.getElementById('wsBadge').classList.contains('on') ? t('live') : t('offline');
@@ -305,10 +324,6 @@ function getTheme() {
 }
 function applyTheme(th) {
     document.documentElement.setAttribute('data-theme', th);
-    const sun = document.querySelector('#themeBtn .icon-sun');
-    const moon = document.querySelector('#themeBtn .icon-moon');
-    if (th === 'dark') { sun.style.display = 'block'; moon.style.display = 'none' }
-    else { sun.style.display = 'none'; moon.style.display = 'block' }
 }
 function toggleTheme() { const th = getTheme() === 'dark' ? 'light' : 'dark'; localStorage.setItem('ep_theme', th); applyTheme(th) }
 
@@ -331,33 +346,35 @@ function go(name, el) {
     if (!authed) { showLogin(); return }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('p-' + name).classList.add('active');
+    const page = document.getElementById('p-' + name);
+    if (page) page.classList.add('active');
     if (el) el.classList.add('active');
     closeSidebar();
-    if (name === 'events') {
-        loadEvents();
-        switchEventsTab('ev-stream', document.querySelector('[data-tab="ev-stream"]'));
-    }
-    if (name === 'config') loadConfig();
-    if (name === 'bots') loadBots();
-    if (name === 'modules') {
-        loadModules();
-        loadStore();
-        loadPackages();
-        switchModuleTab('mh-registered', document.querySelector('[data-tab="mh-registered"]'));
-    }
-    if (name === 'logs') {
-        loadLogs();
-        switchLogsTab('log-list', document.querySelector('[data-tab="log-list"]'));
-    } else if (_logAutoRefreshTimer) {
+
+    const loaders = {
+        'dashboard': refreshDashboard,
+        'bots': loadBots,
+        'event-stream': loadEvents,
+        'event-builder': initEventBuilder,
+        'modules': loadModules,
+        'store': loadStore,
+        'packages': function() { loadPackages(); loadPackageUpdates(); },
+        'logs': loadLogs,
+        'lifecycle': loadLifecycle,
+        'audit': loadAuditLog,
+        'api-routes': loadApiRoutes,
+        'commands': loadCommands,
+        'files': function() { fmBrowse('.'); },
+        'config': loadConfig,
+    };
+    if (loaders[name]) loaders[name]();
+
+    if (name !== 'logs' && _logAutoRefreshTimer) {
         clearInterval(_logAutoRefreshTimer);
         _logAutoRefreshTimer = null;
         const btn = document.getElementById('logAutoRefreshBtn');
         if (btn) btn.style.opacity = '0.5';
     }
-    if (name === 'api-routes') loadApiRoutes();
-    if (name === 'commands') loadCommands();
-    if (name === 'files') fmBrowse('.');
 }
 
 function showModal(title, text, actions) {
@@ -419,7 +436,7 @@ async function doLogin() {
     if (d && d.success) {
         localStorage.setItem(TK, v); authed = true; closeLogin();
         document.querySelector('.app').classList.add('authed');
-        loadAll(); wsConnect(); setInterval(refreshDashboard, 5000);
+        loadAll(); wsConnect(); restartRefreshTimer();
         toast(t('logged_in'), 'ok');
     } else {
         if (!authed) localStorage.removeItem(TK);
@@ -470,7 +487,8 @@ function statCard(v, label) {
 async function loadEvents() {
     const tf = document.getElementById('eTypeFilter')?.value || '';
     const pf = document.getElementById('ePlatFilter')?.value || '';
-    const u = new URLSearchParams({ limit: '100' }); if (tf) u.set('type', tf); if (pf) u.set('platform', pf);
+    const limit = getSetting('event_limit', '100');
+    const u = new URLSearchParams({ limit }); if (tf) u.set('type', tf); if (pf) u.set('platform', pf);
     const d = await api('/api/events?' + u); if (!d) return;
     allEvents = d.events || [];
     document.getElementById('eventList').innerHTML = allEvents.length ? allEvents.slice().reverse().map(evHtml).join('') : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><p>' + t('no_events') + '</p></div>';
@@ -701,28 +719,62 @@ function switchConfigView(view, btn) {
     }
 }
 
-function switchEventsTab(tab, btn) {
-    document.querySelectorAll('#p-events .view-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('evStreamTab').style.display = tab === 'ev-stream' ? 'block' : 'none';
-    document.getElementById('evBuilderTab').style.display = tab === 'ev-builder' ? 'block' : 'none';
-    if (tab === 'ev-builder') initEventBuilder();
+function getSetting(key, def) {
+    const v = localStorage.getItem('ep_setting_' + key);
+    return v !== null ? v : def;
+}
+function setSetting(key, val) {
+    localStorage.setItem('ep_setting_' + key, val);
 }
 
-function switchLogsTab(tab, btn) {
-    document.querySelectorAll('#p-logs .view-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('logListTab').style.display = tab === 'log-list' ? 'block' : 'none';
-    document.getElementById('logLifecycleTab').style.display = tab === 'log-lifecycle' ? 'block' : 'none';
-    document.getElementById('logAuditTab').style.display = tab === 'log-audit' ? 'block' : 'none';
-    if (tab === 'log-lifecycle') loadLifecycle();
-    if (tab === 'log-audit') loadAuditLog();
-    if (tab !== 'log-list' && _logAutoRefreshTimer) {
-        clearInterval(_logAutoRefreshTimer);
-        _logAutoRefreshTimer = null;
-        const btn2 = document.getElementById('logAutoRefreshBtn');
-        if (btn2) btn2.style.opacity = '0.5';
+function showSettings() {
+    document.getElementById('settingsTheme').checked = getTheme() === 'dark';
+    document.getElementById('settingsLang').checked = lang === 'en';
+    document.getElementById('settingsSidebar').checked = document.getElementById('sidebar').classList.contains('collapsed');
+    document.getElementById('settingsRefresh').value = getSetting('refresh_interval', '5000');
+    document.getElementById('settingsEventLimit').value = getSetting('event_limit', '100');
+    document.getElementById('settingsOv').classList.add('show');
+}
+function closeSettings() {
+    document.getElementById('settingsOv').classList.remove('show');
+}
+
+function applySettingTheme(dark) {
+    const th = dark ? 'dark' : 'light';
+    localStorage.setItem('ep_theme', th);
+    applyTheme(th);
+}
+function applySettingLang(en) {
+    lang = en ? 'en' : 'zh';
+    localStorage.setItem('ep_lang', lang);
+    applyI18n(); loadAll();
+}
+function applySettingSidebar(collapsed) {
+    document.getElementById('sidebar').classList.toggle('collapsed', collapsed);
+    localStorage.setItem('ep_sidebar_collapsed', collapsed);
+}
+function applySettingRefresh(val) {
+    setSetting('refresh_interval', val);
+    restartRefreshTimer();
+}
+function applySettingEventLimit(val) {
+    setSetting('event_limit', val);
+}
+
+let _refreshTimer = null;
+function restartRefreshTimer() {
+    if (_refreshTimer) clearInterval(_refreshTimer);
+    const interval = parseInt(getSetting('refresh_interval', '5000'));
+    if (interval > 0 && authed) {
+        _refreshTimer = setInterval(refreshDashboard, interval);
     }
+}
+
+function toggleSidebarCollapse() {
+    const sb = document.getElementById('sidebar');
+    sb.classList.toggle('collapsed');
+    localStorage.setItem('ep_sidebar_collapsed', sb.classList.contains('collapsed'));
+    document.getElementById('settingsSidebar').checked = sb.classList.contains('collapsed');
 }
 
 function kvRow(k, v, mode, fk) {
@@ -848,7 +900,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates() }
+function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
 
 // ========== 事件构建器相关 ==========
 
@@ -2253,18 +2305,6 @@ async function fmDecompress(path) {
     }
 }
 
-// ========== 模块中心 Tab 切换 ==========
-
-function switchModuleTab(tab, btn) {
-    document.querySelectorAll('#p-modules > .view-toggle .view-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('mhRegisteredTab').style.display = tab === 'mh-registered' ? 'block' : 'none';
-    document.getElementById('mhStoreTab').style.display = tab === 'mh-store' ? 'block' : 'none';
-    document.getElementById('mhPackagesTab').style.display = tab === 'mh-packages' ? 'block' : 'none';
-    if (tab === 'mh-store') loadStore();
-    if (tab === 'mh-packages') { loadPackages(); switchPkgTab('pk-installed', document.querySelector('[data-tab="pk-installed"]')); }
-}
-
 // ========== 任务列表系统 ==========
 
 let _tasks = [];
@@ -2369,7 +2409,7 @@ let _pkgDebounceTimer;
 function debouncePkgs() { clearTimeout(_pkgDebounceTimer); _pkgDebounceTimer = setTimeout(renderPkgInstalled, 300) }
 
 function switchPkgTab(tab, btn) {
-    btn.parentElement.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.closest('.view-toggle').querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('pkInstalledTab').style.display = tab === 'pk-installed' ? 'block' : 'none';
     document.getElementById('pkUpdatesTab').style.display = tab === 'pk-updates' ? 'block' : 'none';
@@ -2705,14 +2745,15 @@ async function saveCmdEdit() {
 
 (function () {
     applyTheme(getTheme()); applyI18n();
+    const collapsed = localStorage.getItem('ep_sidebar_collapsed') === 'true';
+    if (collapsed) document.getElementById('sidebar').classList.add('collapsed');
     const tk = localStorage.getItem(TK);
     if (tk) {
         fetch(API + '/api/auth/status', { headers: { 'Authorization': 'Bearer ' + tk } }).then(r => r.json()).then(d => {
             if (d && d.authenticated) {
                 authed = true;
                 document.querySelector('.app').classList.add('authed');
-                loadAll(); wsConnect();
-                setInterval(refreshDashboard, 5000);
+                loadAll(); wsConnect(); restartRefreshTimer();
             } else { localStorage.removeItem(TK); showLogin() }
         }).catch(() => { showLogin() });
     } else { showLogin() }

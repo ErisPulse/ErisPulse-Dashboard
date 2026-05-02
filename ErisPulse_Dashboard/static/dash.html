@@ -32,24 +32,9 @@
                     <span class="task-badge-count" id="taskCount">0</span>
                 </button>
                 <div class="ws-badge" id="wsBadge"><span class="dot"></span><span id="wsText">Offline</span></div>
-                <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">
-                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                    </svg>
-                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        style="display:none">
-                        <circle cx="12" cy="12" r="5" />
-                        <line x1="12" y1="1" x2="12" y2="3" />
-                        <line x1="12" y1="21" x2="12" y2="23" />
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                        <line x1="1" y1="12" x2="3" y2="12" />
-                        <line x1="21" y1="12" x2="23" y2="12" />
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                    </svg>
+                <button class="btn-icon" onclick="showSettings()" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
                 </button>
-                <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
             </div>
         </header>
         <div class="task-panel" id="taskPanel">
@@ -60,98 +45,84 @@
         <div class="main">
             <nav class="sidebar" id="sidebar">
                 <div class="sidebar-nav">
-                    <a class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                        </svg>
-                        <span data-i18n="dashboard"></span>
-                    </a>
-                    <a class="nav-item" data-page="bots" onclick="go('bots',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="5" y="8" width="14" height="10" rx="2" />
-                            <circle cx="9" cy="13" r="1" fill="currentColor" />
-                            <circle cx="15" cy="13" r="1" fill="currentColor" />
-                            <line x1="12" y1="4" x2="12" y2="8" />
-                            <circle cx="9" cy="4" r="1.5" fill="currentColor" />
-                            <circle cx="15" cy="4" r="1.5" fill="currentColor" />
-                        </svg>
-                        <span data-i18n="bots"></span>
-                    </a>
-                    <a class="nav-item" data-page="events" onclick="go('events',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 01-3.46 0" />
-                        </svg>
-                        <span data-i18n="events"></span>
-                    </a>
-                    <a class="nav-item" data-page="logs" onclick="go('logs',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10 9 9 9 8 9" />
-                        </svg>
-                        <span data-i18n="sys_logs"></span>
-                    </a>
-                    <a class="nav-item" data-page="api-routes" onclick="go('api-routes',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="2" y1="12" x2="22" y2="12" />
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                        </svg>
-                        <span data-i18n="api_routes"></span>
-                    </a>
-                    <a class="nav-item" data-page="commands" onclick="go('commands',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="4 17 10 11 4 5" />
-                            <line x1="12" y1="19" x2="20" y2="19" />
-                        </svg>
-                        <span data-i18n="cmd_management"></span>
-                    </a>
-                    <a class="nav-item" data-page="modules" onclick="go('modules',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                            <line x1="12" y1="22.08" x2="12" y2="12" />
-                        </svg>
-                        <span data-i18n="module_hub"></span>
-                    </a>
-                    <a class="nav-item" data-page="files" onclick="go('files',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
-                        </svg>
-                        <span data-i18n="files"></span>
-                    </a>
-                    <a class="nav-item" data-page="config" onclick="go('config',this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3" />
-                            <path
-                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z" />
-                        </svg>
-                        <span data-i18n="config"></span>
-                    </a>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_overview"></div>
+                        <a class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                            <span data-i18n="dashboard"></span>
+                        </a>
+                        <a class="nav-item" data-page="bots" onclick="go('bots',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/></svg>
+                            <span data-i18n="bots"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_events"></div>
+                        <a class="nav-item" data-page="event-stream" onclick="go('event-stream',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                            <span data-i18n="event_stream"></span>
+                        </a>
+                        <a class="nav-item" data-page="event-builder" onclick="go('event-builder',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <span data-i18n="event_builder"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_extensions"></div>
+                        <a class="nav-item" data-page="modules" onclick="go('modules',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span data-i18n="registered"></span>
+                        </a>
+                        <a class="nav-item" data-page="store" onclick="go('store',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                            <span data-i18n="store"></span>
+                        </a>
+                        <a class="nav-item" data-page="packages" onclick="go('packages',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                            <span data-i18n="pkg_manager"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_system"></div>
+                        <a class="nav-item" data-page="logs" onclick="go('logs',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span data-i18n="sys_logs"></span>
+                        </a>
+                        <a class="nav-item" data-page="lifecycle" onclick="go('lifecycle',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 16"/></svg>
+                            <span data-i18n="lifecycle"></span>
+                        </a>
+                        <a class="nav-item" data-page="audit" onclick="go('audit',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span data-i18n="audit_log"></span>
+                        </a>
+                        <a class="nav-item" data-page="api-routes" onclick="go('api-routes',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            <span data-i18n="api_routes"></span>
+                        </a>
+                        <a class="nav-item" data-page="commands" onclick="go('commands',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                            <span data-i18n="cmd_management"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_tools"></div>
+                        <a class="nav-item" data-page="files" onclick="go('files',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span data-i18n="files"></span>
+                        </a>
+                        <a class="nav-item" data-page="config" onclick="go('config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                            <span data-i18n="config"></span>
+                        </a>
+                    </div>
                 </div>
-                <div class="sidebar-footer"><span class="fw-ver" id="fwInfo">Loading...</span><button
-                        class="restart-btn" onclick="restartFramework()" title="Restart"><svg viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <polyline points="23 4 23 10 17 10" />
-                            <polyline points="1 20 1 14 7 14" />
-                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-                        </svg><span data-i18n="restart"></span></button></div>
+                <div class="sidebar-footer">
+                    <span class="fw-ver" id="fwInfo">Loading...</span>
+                    <div class="footer-btns">
+                        <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+                    </div>
+                </div>
             </nav>
             <div class="content">
                 <div class="page active" id="p-dashboard">
@@ -278,24 +249,9 @@
                     <p class="page-desc" data-i18n="bots_desc"></p>
                     <div class="grid-3" style="margin-top:16px" id="botGrid"></div>
                 </div>
-                <div class="page" id="p-events">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-                        <div>
-                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="events"></h1>
-                            <p class="page-desc" data-i18n="events_desc"></p>
-                        </div>
-                        <div class="view-toggle">
-                            <button class="view-btn active" data-tab="ev-stream" onclick="switchEventsTab('ev-stream',this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-                                <span data-i18n="events_stream"></span>
-                            </button>
-                            <button class="view-btn" data-tab="ev-builder" onclick="switchEventsTab('ev-builder',this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                                <span data-i18n="event_builder"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="evStreamTab">
+                <div class="page" id="p-event-stream">
+                    <h1 class="page-title" data-i18n="event_stream"></h1>
+                    <p class="page-desc" data-i18n="event_stream_desc"></p>
                     <div class="filter-bar">
                         <select id="eTypeFilter" onchange="loadEvents()">
                             <option value="">--</option>
@@ -324,9 +280,10 @@
                     <div class="card">
                         <div id="eventList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
                     </div>
-                    </div>
-                    <div id="evBuilderTab" style="display:none">
-                    
+                </div>
+                <div class="page" id="p-event-builder">
+                    <h1 class="page-title" data-i18n="event_builder"></h1>
+                    <p class="page-desc" data-i18n="event_builder_desc"></p>
                     <div class="builder-toolbar">
                         <div style="flex:1"></div>
                         <button class="btn btn-secondary btn-sm" onclick="previewEvent()">
@@ -488,30 +445,10 @@
                             </div>
                         </div>
                     </div>
-                    </div>
                 </div>
                 <div class="page" id="p-logs">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-                        <div>
-                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="sys_logs"></h1>
-                            <p class="page-desc" data-i18n="sys_logs_desc"></p>
-                        </div>
-                        <div class="view-toggle">
-                            <button class="view-btn active" data-tab="log-list" onclick="switchLogsTab('log-list',this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                <span data-i18n="logs"></span>
-                            </button>
-                            <button class="view-btn" data-tab="log-lifecycle" onclick="switchLogsTab('log-lifecycle',this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 16"/></svg>
-                                <span data-i18n="lifecycle"></span>
-                            </button>
-                            <button class="view-btn" data-tab="log-audit" onclick="switchLogsTab('log-audit',this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                <span data-i18n="audit_log"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="logListTab">
+                    <h1 class="page-title" data-i18n="sys_logs"></h1>
+                    <p class="page-desc" data-i18n="sys_logs_desc"></p>
                     <div class="filter-bar">
                         <select id="logModuleFilter" onchange="loadLogs()">
                             <option value="" data-i18n-option="all_modules"></option>
@@ -552,8 +489,10 @@
                         </div>
                         <div id="logList" style="max-height:calc(100vh - 260px);overflow-y:auto;font-family:'Cascadia Code','Fira Code',Consolas,Monospace;font-size:12px;line-height:1.6"></div>
                     </div>
-                    </div>
-                    <div id="logLifecycleTab" style="display:none">
+                </div>
+                <div class="page" id="p-lifecycle">
+                    <h1 class="page-title" data-i18n="lifecycle"></h1>
+                    <p class="page-desc" data-i18n="lifecycle_desc"></p>
                     <div class="card">
                         <div class="card-header">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -570,10 +509,12 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="lifecycleTimeline" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                        <div id="lifecycleTimeline" style="max-height:calc(100vh - 200px);overflow-y:auto"></div>
                     </div>
-                    </div>
-                    <div id="logAuditTab" style="display:none">
+                </div>
+                <div class="page" id="p-audit">
+                    <h1 class="page-title" data-i18n="audit_log"></h1>
+                    <p class="page-desc" data-i18n="audit_log_desc"></p>
                     <div class="filter-bar">
                         <select id="auditActionFilter" onchange="loadAuditLog()">
                             <option value="" data-i18n="all_actions"></option>
@@ -601,7 +542,6 @@
                             <span class="chip chip-pr" id="auditCount" style="margin-left:8px">0</span>
                         </div>
                         <div id="auditList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
-                    </div>
                     </div>
                 </div>
                 <div class="page" id="p-api-routes">
@@ -635,30 +575,9 @@
                     </div>
                 </div>
                 <div class="page" id="p-modules">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-                        <div>
-                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="module_hub"></h1>
-                            <p class="page-desc" data-i18n="module_hub_desc"></p>
-                        </div>
-                    </div>
-                    <div class="view-toggle" style="margin-bottom:16px">
-                        <button class="view-btn active" data-tab="mh-registered" onclick="switchModuleTab('mh-registered',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            <span data-i18n="registered"></span>
-                        </button>
-                        <button class="view-btn" data-tab="mh-store" onclick="switchModuleTab('mh-store',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                            <span data-i18n="store"></span>
-                        </button>
-                        <button class="view-btn" data-tab="mh-packages" onclick="switchModuleTab('mh-packages',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-                            <span data-i18n="pkg_manager"></span>
-                        </button>
-                    </div>
-
-                    <!-- Tab: 已注册 -->
-                    <div id="mhRegisteredTab">
-                        <div class="card">
+                    <h1 class="page-title" data-i18n="registered"></h1>
+                    <p class="page-desc" data-i18n="registered_desc"></p>
+                    <div class="card" style="margin-top:16px">
                             <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10" />
@@ -694,70 +613,69 @@
                             </div>
                             <div id="moduleList"></div>
                         </div>
+                </div>
+                <div class="page" id="p-store">
+                    <h1 class="page-title" data-i18n="store"></h1>
+                    <p class="page-desc" data-i18n="store_desc"></p>
+                    <div class="filter-bar" style="margin-top:16px">
+                        <input type="text" id="storeSearch" data-i18n-placeholder="search_packages" oninput="debounceStore()">
+                        <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
                     </div>
-
-                    <!-- Tab: 商店 -->
-                    <div id="mhStoreTab" style="display:none">
-                        <div class="filter-bar" style="margin-top:0">
-                            <input type="text" id="storeSearch" data-i18n-placeholder="search_packages" oninput="debounceStore()">
-                            <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
-                        </div>
-                        <div class="card" style="margin-top:12px;margin-bottom:16px">
-                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_title"></span></div>
-                            <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
-                                <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
-                                <div style="flex:1"></div>
-                                <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none" onchange="uploadModule(this)">
-                                <button class="btn btn-primary btn-sm" onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
-                            </div>
-                        </div>
-                        <div class="grid-3" id="storeGrid"></div>
-                    </div>
-
-                    <!-- Tab: 包管理 -->
-                    <div id="mhPackagesTab" style="display:none">
-                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
-                            <input type="text" id="pkgSearch" data-i18n-placeholder="search_packages" oninput="debouncePkgs()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:200px">
-                            <button class="btn btn-secondary btn-sm" onclick="loadPackages(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                    <div class="card" style="margin-top:12px;margin-bottom:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_title"></span></div>
+                        <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
+                            <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
                             <div style="flex:1"></div>
-                            <div class="view-toggle" style="margin:0">
-                                <button class="view-btn active" data-tab="pk-installed" onclick="switchPkgTab('pk-installed',this)">
-                                    <span data-i18n="pkg_installed"></span>
-                                    <span class="chip chip-sc" id="pkgInstalledCount" style="margin-left:4px;font-size:11px;padding:1px 6px">0</span>
-                                </button>
-                                <button class="view-btn" data-tab="pk-updates" onclick="switchPkgTab('pk-updates',this)">
-                                    <span data-i18n="pkg_updates"></span>
-                                    <span class="chip chip-wr" id="pkgUpdateCount" style="margin-left:4px;font-size:11px;padding:1px 6px;display:none">0</span>
-                                </button>
-                                <button class="view-btn" data-tab="pk-install-new" onclick="switchPkgTab('pk-install-new',this)">
-                                    <span data-i18n="pkg_install_new"></span>
-                                </button>
-                            </div>
+                            <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none" onchange="uploadModule(this)">
+                            <button class="btn btn-primary btn-sm" onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
                         </div>
-                        <div id="pkInstalledTab">
-                            <div class="card">
-                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span data-i18n="pkg_installed"></span></div>
-                                <div id="pkgInstalledList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
-                            </div>
+                    </div>
+                    <div class="grid-3" id="storeGrid"></div>
+                </div>
+                <div class="page" id="p-packages">
+                    <h1 class="page-title" data-i18n="pkg_manager"></h1>
+                    <p class="page-desc" data-i18n="pkg_manager_desc"></p>
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:16px;margin-bottom:16px;flex-wrap:wrap">
+                        <input type="text" id="pkgSearch" data-i18n-placeholder="search_packages" oninput="debouncePkgs()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:200px">
+                        <button class="btn btn-secondary btn-sm" onclick="loadPackages(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                        <div style="flex:1"></div>
+                        <div class="view-toggle" style="margin:0">
+                            <button class="view-btn active" data-tab="pk-installed" onclick="switchPkgTab('pk-installed',this)">
+                                <span data-i18n="pkg_installed"></span>
+                                <span class="chip chip-sc" id="pkgInstalledCount" style="margin-left:4px;font-size:11px;padding:1px 6px">0</span>
+                            </button>
+                            <button class="view-btn" data-tab="pk-updates" onclick="switchPkgTab('pk-updates',this)">
+                                <span data-i18n="pkg_updates"></span>
+                                <span class="chip chip-wr" id="pkgUpdateCount" style="margin-left:4px;font-size:11px;padding:1px 6px;display:none">0</span>
+                            </button>
+                            <button class="view-btn" data-tab="pk-install-new" onclick="switchPkgTab('pk-install-new',this)">
+                                <span data-i18n="pkg_install_new"></span>
+                            </button>
                         </div>
-                        <div id="pkUpdatesTab" style="display:none">
-                            <div class="card">
-                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><span data-i18n="pkg_updates_available"></span><span class="chip chip-wr" id="pkgUpdateCountInner" style="margin-left:6px">0</span>
-                                    <div class="header-actions"><button class="btn btn-primary btn-xs" onclick="upgradeAllPkgs()" data-i18n="pkg_upgrade_all"></button></div>
+                    </div>
+                    <div id="pkInstalledTab">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span data-i18n="pkg_installed"></span></div>
+                            <div id="pkgInstalledList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div id="pkUpdatesTab" style="display:none">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><span data-i18n="pkg_updates_available"></span><span class="chip chip-wr" id="pkgUpdateCountInner" style="margin-left:6px">0</span>
+                                <div class="header-actions"><button class="btn btn-primary btn-xs" onclick="upgradeAllPkgs()" data-i18n="pkg_upgrade_all"></button></div>
+                            </div>
+                            <div id="pkgUpdateList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div id="pkInstallNewTab" style="display:none">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="pkg_install_new"></span></div>
+                            <div style="padding:16px">
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                                    <input type="text" id="pkgInstallInput" data-i18n-placeholder="pkg_install_placeholder" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);font-family:Consolas,Monaco,monospace">
+                                    <button class="btn btn-primary btn-sm" onclick="installNewPkg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="install"></span></button>
                                 </div>
-                                <div id="pkgUpdateList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
-                            </div>
-                        </div>
-                        <div id="pkInstallNewTab" style="display:none">
-                            <div class="card">
-                                <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="pkg_install_new"></span></div>
-                                <div style="padding:16px">
-                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                                        <input type="text" id="pkgInstallInput" data-i18n-placeholder="pkg_install_placeholder" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);font-family:Consolas,Monaco,monospace">
-                                        <button class="btn btn-primary btn-sm" onclick="installNewPkg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="install"></span></button>
-                                    </div>
-                                    <div style="font-size:12px;color:var(--tx-t);margin-top:8px" data-i18n="pkg_install_hint"></div>
-                                </div>
+                                <div style="font-size:12px;color:var(--tx-t);margin-top:8px" data-i18n="pkg_install_hint"></div>
                             </div>
                         </div>
                     </div>
@@ -991,6 +909,84 @@
             <div class="modal-title" id="outputTitle"></div>
             <pre class="output-pre" id="outputPre"></pre>
             <div class="modal-actions" id="outputActions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="settingsOv" onclick="if(event.target===this)closeSettings()">
+        <div class="modal-box" style="max-width:440px">
+            <div class="modal-title" data-i18n="settings_title"></div>
+            <div style="margin-bottom:20px">
+                <div class="settings-section-title" data-i18n="settings_appearance"></div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_theme"></div>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch"><input type="checkbox" id="settingsTheme" onchange="applySettingTheme(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_language"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsLang" onchange="applySettingLang(this.value)">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_sidebar"></div>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch"><input type="checkbox" id="settingsSidebar" onchange="applySettingSidebar(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-bottom:20px">
+                <div class="settings-section-title" data-i18n="settings_behavior"></div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_refresh_interval"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsRefresh" onchange="applySettingRefresh(this.value)">
+                            <option value="3000">3s</option>
+                            <option value="5000" selected>5s</option>
+                            <option value="10000">10s</option>
+                            <option value="30000">30s</option>
+                            <option value="0" data-i18n="settings_disabled"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_event_limit"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsEventLimit" onchange="applySettingEventLimit(this.value)">
+                            <option value="50">50</option>
+                            <option value="100" selected>100</option>
+                            <option value="200">200</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="restart"></div>
+                        <div class="settings-desc" data-i18n="settings_restart_desc"></div>
+                    </div>
+                    <div class="settings-control">
+                        <button class="btn btn-danger btn-sm" onclick="restartFramework()" data-i18n="restart"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeSettings()" data-i18n="ok"></button>
+            </div>
         </div>
     </div>
 
