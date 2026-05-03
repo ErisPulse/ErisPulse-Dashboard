@@ -626,11 +626,14 @@
                         <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
                             <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
                             <div style="flex:1"></div>
-                            <input type="file" id="uploadFileInput" accept=".whl,.zip" style="display:none" onchange="uploadModule(this)">
-                            <button class="btn btn-primary btn-sm" onclick="document.getElementById('uploadFileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
+                            <button class="btn btn-primary btn-sm" onclick="openUploadModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
                         </div>
                     </div>
                     <div class="grid-3" id="storeGrid"></div>
+                    <div class="store-batch-bar" id="storeBatchBar" style="display:none">
+                        <span id="storeBatchCount"></span>
+                        <button class="btn btn-primary btn-sm" onclick="batchInstall()" data-i18n="batch_install"></button>
+                    </div>
                 </div>
                 <div class="page" id="p-packages">
                     <h1 class="page-title" data-i18n="pkg_manager"></h1>
@@ -909,6 +912,74 @@
             <div class="modal-title" id="outputTitle"></div>
             <pre class="output-pre" id="outputPre"></pre>
             <div class="modal-actions" id="outputActions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="uploadOv" onclick="if(event.target===this)closeUploadModal()">
+        <div class="modal-box" style="max-width:520px">
+            <div class="modal-title" data-i18n="upload_modal_title"></div>
+            <div class="upload-drop-zone" id="uploadDropZone" onclick="document.getElementById('uploadModalFileInput').click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:40px;height:40px;color:var(--tx-t);margin-bottom:8px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p style="font-size:13px;color:var(--tx-s)" data-i18n="upload_drop_hint"></p>
+                <p class="upload-file-info" id="uploadFileInfo"></p>
+            </div>
+            <input type="file" id="uploadModalFileInput" accept=".whl,.zip" style="display:none" onchange="handleUploadFileSelect(this)">
+            <div class="upload-progress-section" id="uploadProgressSection" style="display:none">
+                <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+                <span class="upload-progress-text" id="uploadProgressText">0%</span>
+            </div>
+            <div class="upload-options">
+                <div class="upload-option-row">
+                    <div>
+                        <div class="upload-option-label" data-i18n="force_install"></div>
+                        <div class="upload-option-desc" data-i18n="force_install_desc"></div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="uploadForceInstall"><span class="switch-slider"></span></label>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="pip_mirror"></div></div>
+                    <select class="upload-select" id="uploadMirrorSelect"></select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeUploadModal()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" id="uploadInstallBtn" disabled onclick="startUploadInstall()" data-i18n="start_install"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pkgDetailOv" onclick="if(event.target===this)closePkgDetail()">
+        <div class="modal-box" style="max-width:560px;max-height:80vh;overflow-y:auto">
+            <div class="modal-title" id="pkgDetailTitle"></div>
+            <div class="pkg-detail-meta">
+                <span class="chip chip-pr" id="pkgDetailType"></span>
+                <span class="pkg-detail-version" id="pkgDetailVersion"></span>
+            </div>
+            <div class="pkg-detail-desc" id="pkgDetailDesc"></div>
+            <div class="pkg-detail-info-grid" id="pkgDetailInfoGrid"></div>
+            <div class="pkg-detail-section" id="pkgDetailDepsSection" style="display:none">
+                <div class="pkg-detail-section-title" data-i18n="dependencies"></div>
+                <div class="pkg-detail-deps" id="pkgDetailDeps"></div>
+            </div>
+            <div class="pkg-detail-section" id="pkgDetailVersionsSection" style="display:none">
+                <div class="pkg-detail-section-title" data-i18n="version_history"></div>
+                <div id="pkgDetailVersions" style="max-height:120px;overflow-y:auto;font-size:12px;color:var(--tx-s);line-height:1.8"></div>
+            </div>
+            <div class="upload-options">
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="force_install"></div></div>
+                    <label class="switch"><input type="checkbox" id="detailForceInstall"><span class="switch-slider"></span></label>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="pip_mirror"></div></div>
+                    <select class="upload-select" id="detailMirrorSelect"></select>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="install_version"></div></div>
+                    <select class="upload-select" id="detailVersionSelect"><option value="" data-i18n="latest_version"></option></select>
+                </div>
+            </div>
+            <div class="modal-actions" id="pkgDetailActions"></div>
         </div>
     </div>
 
