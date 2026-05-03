@@ -151,6 +151,16 @@ const I18N = {
         settings_sidebar: '折叠侧边栏', settings_refresh_interval: '刷新间隔',
         settings_event_limit: '事件流数量', settings_disabled: '关闭',
         settings_restart_desc: '重新加载所有模块和适配器',
+        upload_modal_title: '上传安装', upload_drop_hint: '拖拽文件到此处或点击选择',
+        force_install: '强制安装', force_install_desc: '忽略版本号强制重新安装 (--force-reinstall)',
+        start_install: '开始安装', pip_mirror: 'pip 镜像源',
+        install_version: '安装版本', latest_version: '最新版本',
+        batch_install: '批量安装', batch_install_count: '已选择 {n} 个包',
+        dependencies: '依赖项', version_history: '版本历史',
+        no_dependencies: '无外部依赖', pkg_detail_loading: '加载详情中...',
+        pkg_detail_failed: '加载详情失败', view_detail: '详情',
+        upload_complete: '上传完成', upload_file_too_large: '文件过大',
+        install_with_options: '安装选项',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -301,6 +311,16 @@ const I18N = {
         settings_sidebar: 'Collapse Sidebar', settings_refresh_interval: 'Refresh Interval',
         settings_event_limit: 'Event Limit', settings_disabled: 'Disabled',
         settings_restart_desc: 'Reload all modules and adapters',
+        upload_modal_title: 'Upload & Install', upload_drop_hint: 'Drop file here or click to select',
+        force_install: 'Force Install', force_install_desc: 'Force reinstall regardless of version (--force-reinstall)',
+        start_install: 'Start Install', pip_mirror: 'pip Mirror',
+        install_version: 'Install Version', latest_version: 'Latest',
+        batch_install: 'Batch Install', batch_install_count: '{n} packages selected',
+        dependencies: 'Dependencies', version_history: 'Version History',
+        no_dependencies: 'No external dependencies', pkg_detail_loading: 'Loading details...',
+        pkg_detail_failed: 'Failed to load details', view_detail: 'Details',
+        upload_complete: 'Upload Complete', upload_file_too_large: 'File too large',
+        install_with_options: 'Install Options',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -451,9 +471,18 @@ const I18N = {
         settings_sidebar: '摺疊側邊欄', settings_refresh_interval: '重新整理間隔',
         settings_event_limit: '事件流數量', settings_disabled: '關閉',
         settings_restart_desc: '重新載入所有模組和適配器',
+        upload_modal_title: '上傳安裝', upload_drop_hint: '拖拽檔案到此處或點擊選擇',
+        force_install: '強制安裝', force_install_desc: '忽略版本號強制重新安裝 (--force-reinstall)',
+        start_install: '開始安裝', pip_mirror: 'pip 鏡像源',
+        install_version: '安裝版本', latest_version: '最新版本',
+        batch_install: '批量安裝', batch_install_count: '已選擇 {n} 個套件',
+        dependencies: '依賴項', version_history: '版本歷史',
+        no_dependencies: '無外部依賴', pkg_detail_loading: '載入詳情中...',
+        pkg_detail_failed: '載入詳情失敗', view_detail: '詳情',
+        upload_complete: '上傳完成', upload_file_too_large: '檔案過大',
+        install_with_options: '安裝選項',
     },
     ja: {
-        dashboard: 'ダッシュボード', bots: 'ボット', events: 'イベント', modules: 'プラグイン', store: 'モジュールストア', config: '設定管理',
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
         sys_logs_desc: 'システムログとライフサイクルイベントを表示', logs_desc: 'システムログの表示とフィルタリング', lifecycle_desc: 'システムの起動と実行プロセスを表示',
         lifecycle_timeline: 'ライフサイクルタイムライン', all_modules: 'すべてのモジュール', search_logs: 'ログを検索...', no_lifecycle: 'ライフサイクルイベントなし',
@@ -601,7 +630,18 @@ const I18N = {
         settings_sidebar: 'サイドバーを折りたたむ', settings_refresh_interval: '更新間隔',
         settings_event_limit: 'イベント数制限', settings_disabled: '無効',
         settings_restart_desc: 'すべてのモジュールとアダプタを再読込',
-    },
+        upload_modal_title: 'アップロードインストール', upload_drop_hint: 'ファイルをここにドラッグまたはクリックして選択',
+        force_install: '強制インストール', force_install_desc: 'バージョンを無視して強制再インストール (--force-reinstall)',
+        start_install: 'インストール開始', pip_mirror: 'pip ミラー',
+        install_version: 'インストールバージョン', latest_version: '最新',
+        batch_install: '一括インストール', batch_install_count: '{n}個選択中',
+        dependencies: '依存関係', version_history: 'バージョン履歴',
+        no_dependencies: '外部依存なし', pkg_detail_loading: '詳細を読み込み中...',
+        pkg_detail_failed: '詳細の読み込みに失敗', view_detail: '詳細',
+        upload_complete: 'アップロード完了', upload_file_too_large: 'ファイルが大きすぎます',
+        install_with_options: 'インストールオプション',
+    }, 
+    
     ru: {
         dashboard: 'Панель управления', bots: 'Боты', events: 'События', modules: 'Плагины', store: 'Магазин модулей', config: 'Конфигурация',
         sys_logs: 'Системные журналы', logs: 'Журналы', lifecycle: 'Жизненный цикл', events_stream: 'Поток', events_builder: 'Конструктор',
@@ -751,6 +791,16 @@ const I18N = {
         settings_sidebar: 'Свернуть боковую панель', settings_refresh_interval: 'Интервал обновления',
         settings_event_limit: 'Лимит событий', settings_disabled: 'Отключено',
         settings_restart_desc: 'Перезагрузить все модули и адаптеры',
+        upload_modal_title: 'Загрузка и установка', upload_drop_hint: 'Перетащите файл или нажмите для выбора',
+        force_install: 'Принудительная установка', force_install_desc: 'Принудительная переустановка независимо от версии (--force-reinstall)',
+        start_install: 'Начать установку', pip_mirror: 'pip зеркало',
+        install_version: 'Версия установки', latest_version: 'Последняя',
+        batch_install: 'Пакетная установка', batch_install_count: 'Выбрано: {n}',
+        dependencies: 'Зависимости', version_history: 'История версий',
+        no_dependencies: 'Нет внешних зависимостей', pkg_detail_loading: 'Загрузка деталей...',
+        pkg_detail_failed: 'Не удалось загрузить детали', view_detail: 'Детали',
+        upload_complete: 'Загрузка завершена', upload_file_too_large: 'Файл слишком большой',
+        install_with_options: 'Параметры установки',
     }
 };
 function detectLang() {
@@ -1069,6 +1119,19 @@ async function moduleAction(name, action, type, pkg) {
 let _storeTimer;
 function debounceStore() { clearTimeout(_storeTimer); _storeTimer = setTimeout(loadStore, 300) }
 const STORE_CACHE_KEY = '__ep_store__', STORE_CACHE_TTL = 4 * 3600 * 1000;
+function mirrorOptionsHtml() {
+    return '<option value="">PyPI (Default)</option>' +
+        '<option value="https://pypi.tuna.tsinghua.edu.cn/simple">Tsinghua</option>' +
+        '<option value="https://mirrors.aliyun.com/pypi/simple/">Aliyun</option>' +
+        '<option value="https://pypi.doubanio.com/simple/">Douban</option>' +
+        '<option value="https://repo.huaweicloud.com/repository/pypi/simple">Huawei</option>';
+}
+function initMirrorSelects() {
+    ['uploadMirrorSelect', 'detailMirrorSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.children.length) el.innerHTML = mirrorOptionsHtml();
+    });
+}
 async function loadStore(forceRefresh) {
     const q = document.getElementById('storeSearch')?.value?.toLowerCase() || '';
     let d = null;
@@ -1093,21 +1156,45 @@ async function loadStore(forceRefresh) {
         let actionBtn = '';
         if (hasUpdate) {
             statusBadge = '<span class="chip chip-wr" style="margin-left:4px;font-size:10px">' + t('store_update_available') + '</span>';
-            actionBtn = '<button class="btn btn-primary btn-sm" onclick="upgradePkg(\'' + esc(i.package) + '\')">' + t('pkg_upgrade') + '</button>';
+            actionBtn = '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();upgradePkg(\'' + esc(i.package) + '\')">' + t('pkg_upgrade') + '</button>';
         } else if (isInstalled) {
             statusBadge = '<span class="chip chip-ok" style="margin-left:4px;font-size:10px">v' + esc(installedVer) + '</span>';
             actionBtn = '<span style="font-size:12px;color:var(--ok-c);font-weight:500">' + t('active') + '</span>';
         } else {
-            actionBtn = '<button class="btn btn-primary btn-sm" onclick="installPkg(\'' + esc(i.package) + '\')">' + t('install') + '</button>';
+            actionBtn = '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();installPkg(\'' + esc(i.package) + '\')">' + t('install') + '</button>';
         }
-        return '<div class="store-card' + (hasUpdate ? ' store-card-update' : '') + '"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600">' + esc(i.name) + '</span><span class="chip chip-pr">' + esc(i.type) + '</span>' + statusBadge + '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' + esc(i.package) + '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' + esc(i.description || '-') + '</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' + esc(i.version || '?') + (hasUpdate ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' + t('store_version_current') + ' v' + esc(installedVer) : '') + '</span>' + actionBtn + '</div></div>';
+        return '<div class="store-card' + (hasUpdate ? ' store-card-update' : '') + '" onclick="openPkgDetail(\'' + esc(i.name) + '\',\'' + esc(i.package) + '\',\'' + esc(i.type) + '\')"><div style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="store-card-check" data-pkg="' + esc(i.package) + '" onclick="event.stopPropagation();updateBatchBar()"><span style="font-size:14px;font-weight:600">' + esc(i.name) + '</span><span class="chip chip-pr">' + esc(i.type) + '</span>' + statusBadge + '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' + esc(i.package) + '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' + esc(i.description || '-') + '</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' + esc(i.version || '?') + (hasUpdate ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' + t('store_version_current') + ' v' + esc(installedVer) : '') + '</span><div style="display:flex;align-items:center;gap:6px">' + actionBtn + '<button class="store-card-detail-btn" onclick="event.stopPropagation();openPkgDetail(\'' + esc(i.name) + '\',\'' + esc(i.package) + '\',\'' + esc(i.type) + '\')" title="' + t('view_detail') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button></div></div></div>';
     }).join('') : '<div class="empty-state" style="grid-column:span 3"><p>' + t('no_packages') + '</p></div>';
 }
 let _installTaskIds = new Map();
+function showInstallConfirm(pkg, isBatch) {
+    return new Promise(r => {
+        const ov = document.getElementById('modalOv');
+        document.getElementById('modalTitle').textContent = t('install');
+        const label = isBatch ? esc(pkg) : 'Install <strong>' + esc(pkg) + '</strong>?';
+        document.getElementById('modalText').innerHTML = label +
+            '<div class="install-confirm-options">' +
+            '<div class="install-confirm-option"><div><div class="install-confirm-option-label">' + t('force_install') + '</div><div style="font-size:11px;color:var(--tx-t)">' + t('force_install_desc') + '</div></div><label class="switch"><input type="checkbox" id="installConfirmForce"><span class="switch-slider"></span></label></div>' +
+            '<div class="install-confirm-option"><div class="install-confirm-option-label">' + t('pip_mirror') + '</div><select class="upload-select" id="installConfirmMirror" style="width:160px">' + mirrorOptionsHtml() + '</select></div>' +
+            '</div>';
+        const ac = document.getElementById('modalActions'); ac.innerHTML = '';
+        const b1 = document.createElement('button'); b1.className = 'btn btn-secondary'; b1.textContent = t('cancel'); b1.onclick = () => { ov.classList.remove('show'); r(null) };
+        const b2 = document.createElement('button'); b2.className = 'btn btn-primary'; b2.textContent = t('install'); b2.onclick = () => {
+            const force = document.getElementById('installConfirmForce')?.checked || false;
+            const mirror = document.getElementById('installConfirmMirror')?.value || '';
+            ov.classList.remove('show'); r({ force, index_url: mirror });
+        };
+        ac.append(b1, b2);
+        ov.classList.add('show');
+    });
+}
 async function installPkg(pkg) {
     if (!authed) return showLogin();
-    const ok = await confirm2(t('install'), 'Install <strong>' + esc(pkg) + '</strong>?'); if (!ok) return;
-    const d = await api('/api/store/install', { method: 'POST', body: JSON.stringify({ packages: [pkg] }) });
+    const opts = await showInstallConfirm(pkg); if (!opts) return;
+    const body = { packages: [pkg] };
+    if (opts.force) body.force = true;
+    if (opts.index_url) body.index_url = opts.index_url;
+    const d = await api('/api/store/install', { method: 'POST', body: JSON.stringify(body) });
     if (d && d.success && d.task_id) {
         _installTaskIds.set(d.task_id, pkg);
         toast(t('installing'), '');
@@ -1115,23 +1202,224 @@ async function installPkg(pkg) {
         toast(t('install_failed'), 'er');
     }
 }
-async function uploadModule(input) {
+
+// ========== 上传安装模态窗 ==========
+let _uploadState = { file: null, taskId: null, uploaded: false };
+function openUploadModal() {
     if (!authed) return showLogin();
+    _uploadState = { file: null, taskId: null, uploaded: false };
+    initMirrorSelects();
+    const ov = document.getElementById('uploadOv');
+    document.getElementById('uploadProgressSection').style.display = 'none';
+    document.getElementById('uploadProgressFill').style.width = '0%';
+    document.getElementById('uploadProgressText').textContent = '0%';
+    document.getElementById('uploadFileInfo').textContent = '';
+    document.getElementById('uploadInstallBtn').disabled = true;
+    document.getElementById('uploadForceInstall').checked = false;
+    const ms = document.getElementById('uploadMirrorSelect');
+    if (ms) ms.value = '';
+    document.getElementById('uploadDropZone').classList.remove('drag-over');
+    ov.classList.add('show');
+}
+function closeUploadModal() { document.getElementById('uploadOv').classList.remove('show') }
+function handleUploadDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over') }
+function handleUploadDragLeave(e) { e.currentTarget.classList.remove('drag-over') }
+function handleUploadDrop(e) {
+    e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) processUploadFile(file);
+}
+function handleUploadFileSelect(input) {
     const file = input.files && input.files[0];
-    if (!file) return;
+    if (file) processUploadFile(file);
+    input.value = '';
+}
+function processUploadFile(file) {
     const ext = file.name.split('.').pop().toLowerCase();
-    if (ext !== 'whl' && ext !== 'zip') { toast(t('upload_failed'), 'er'); input.value = ''; return }
+    if (ext !== 'whl' && ext !== 'zip') { toast(t('upload_failed'), 'er'); return }
+    if (file.size > 50 * 1024 * 1024) { toast(t('upload_file_too_large'), 'er'); return }
+    _uploadState.file = file;
+    _uploadState.uploaded = false;
+    document.getElementById('uploadFileInfo').textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+    doUpload(file);
+}
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const u = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+}
+function doUpload(file) {
     const fd = new FormData();
     fd.append('file', file);
-    const ok = await confirm2(t('upload_title'), 'Upload <strong>' + esc(file.name) + '</strong>?'); if (!ok) { input.value = ''; return }
-    const d = await api('/api/store/upload', { method: 'POST', body: fd });
-    if (d && d.success && d.task_id) {
-        _installTaskIds.set(d.task_id, file.name);
-        toast(t('uploading'), '');
-    } else {
-        toast(t('upload_failed'), 'er');
+    const force = document.getElementById('uploadForceInstall').checked;
+    const mirror = document.getElementById('uploadMirrorSelect')?.value || '';
+    if (force) fd.append('force', 'true');
+    if (mirror) fd.append('index_url', mirror);
+    const xhr = new XMLHttpRequest();
+    document.getElementById('uploadProgressSection').style.display = 'flex';
+    document.getElementById('uploadInstallBtn').disabled = true;
+    xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+            const pct = Math.round(e.loaded / e.total * 100);
+            document.getElementById('uploadProgressFill').style.width = pct + '%';
+            document.getElementById('uploadProgressText').textContent = pct + '%';
+        }
+    };
+    xhr.onload = () => {
+        try {
+            const d = JSON.parse(xhr.responseText);
+            if (d && d.success && d.task_id) {
+                _uploadState.taskId = d.task_id;
+                _uploadState.uploaded = true;
+                _installTaskIds.set(d.task_id, file.name);
+                document.getElementById('uploadProgressFill').style.width = '100%';
+                document.getElementById('uploadProgressText').textContent = t('upload_complete');
+                document.getElementById('uploadInstallBtn').disabled = false;
+            } else {
+                toast(d?.error || t('upload_failed'), 'er'); closeUploadModal();
+            }
+        } catch (err) { toast(t('upload_failed'), 'er'); closeUploadModal(); }
+    };
+    xhr.onerror = () => { toast(t('upload_failed'), 'er'); closeUploadModal() };
+    xhr.open('POST', API + '/api/store/upload');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem(TK));
+    xhr.send(fd);
+}
+function startUploadInstall() { closeUploadModal(); toast(t('installing'), '') }
+
+// ========== 包详情弹窗 ==========
+let _pkgDetailCache = {};
+async function openPkgDetail(name, pkg, type) {
+    if (!authed) return showLogin();
+    initMirrorSelects();
+    const ov = document.getElementById('pkgDetailOv');
+    document.getElementById('pkgDetailTitle').textContent = name;
+    document.getElementById('pkgDetailType').textContent = type;
+    document.getElementById('pkgDetailVersion').innerHTML = '';
+    document.getElementById('pkgDetailDesc').innerHTML = '<p style="color:var(--tx-t)">' + t('pkg_detail_loading') + '</p>';
+    document.getElementById('pkgDetailInfoGrid').innerHTML = '';
+    document.getElementById('pkgDetailDepsSection').style.display = 'none';
+    document.getElementById('pkgDetailVersionsSection').style.display = 'none';
+    document.getElementById('detailForceInstall').checked = false;
+    const ms = document.getElementById('detailMirrorSelect');
+    if (ms) ms.value = '';
+    const vs = document.getElementById('detailVersionSelect');
+    vs.innerHTML = '<option value="">' + t('latest_version') + '</option>';
+    const ac = document.getElementById('pkgDetailActions'); ac.innerHTML = '';
+    ov.classList.add('show');
+
+    const cacheKey = pkg.toLowerCase();
+    let d = _pkgDetailCache[cacheKey];
+    if (!d) {
+        d = await api('/api/store/package/detail?package=' + encodeURIComponent(pkg));
+        if (d && !d.error) _pkgDetailCache[cacheKey] = d;
     }
-    input.value = '';
+    if (!d || d.error) {
+        document.getElementById('pkgDetailDesc').innerHTML = '<p style="color:var(--er-c)">' + t('pkg_detail_failed') + '</p>';
+        return;
+    }
+
+    let verHtml = '';
+    if (d.installed_version) verHtml += '<span class="chip chip-ok" style="font-size:11px">v' + esc(d.installed_version) + ' ' + t('store_version_current') + '</span> ';
+    if (d.latest_version) verHtml += '<span class="chip chip-pr" style="font-size:11px">v' + esc(d.latest_version) + ' ' + t('store_version_latest') + '</span>';
+    document.getElementById('pkgDetailVersion').innerHTML = verHtml;
+
+    const descText = d.description || d.summary || '-';
+    const cleanDesc = descText.replace(/<[^>]*>/g, '').substring(0, 2000);
+    document.getElementById('pkgDetailDesc').innerHTML = '<p style="white-space:pre-wrap">' + esc(cleanDesc) + '</p>';
+
+    let infoHtml = '';
+    if (d.author) infoHtml += '<dt style="color:var(--tx-t);font-weight:500">Author</dt><dd style="color:var(--tx-s);margin:0">' + esc(d.author) + '</dd>';
+    if (d.license) infoHtml += '<dt style="color:var(--tx-t);font-weight:500">License</dt><dd style="color:var(--tx-s);margin:0">' + esc(d.license) + '</dd>';
+    if (d.home_page) infoHtml += '<dt style="color:var(--tx-t);font-weight:500">Homepage</dt><dd style="color:var(--tx-s);margin:0"><a href="' + esc(d.home_page) + '" target="_blank" style="color:var(--accent)">' + esc(d.home_page) + '</a></dd>';
+    if (infoHtml) document.getElementById('pkgDetailInfoGrid').innerHTML = infoHtml;
+
+    const deps = (d.requires_dist || []).filter(dep => !dep.includes('; extra ==') && !dep.includes(':'));
+    if (deps.length) {
+        document.getElementById('pkgDetailDepsSection').style.display = '';
+        document.getElementById('pkgDetailDeps').innerHTML = deps.map(dep => '<span class="chip" style="margin:2px;font-size:11px;padding:2px 8px">' + esc(dep) + '</span>').join('');
+    }
+
+    const versions = d.versions || [];
+    if (versions.length) {
+        document.getElementById('pkgDetailVersionsSection').style.display = '';
+        document.getElementById('pkgDetailVersions').innerHTML = versions.slice(0, 20).map(v =>
+            '<span style="display:inline-block;margin:2px 6px;cursor:pointer;color:var(--tx-s)" onclick="document.getElementById(\'detailVersionSelect\').value=\'' + esc(v) + '\'">' + esc(v) + '</span>'
+        ).join('');
+        vs.innerHTML = '<option value="">' + t('latest_version') + ' (' + esc(d.latest_version || '') + ')</option>' +
+            versions.slice(0, 30).map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join('');
+    }
+
+    ac.innerHTML = '';
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-secondary'; closeBtn.textContent = t('cancel');
+    closeBtn.onclick = () => ov.classList.remove('show');
+
+    const actionBtn = document.createElement('button');
+    actionBtn.className = 'btn btn-primary';
+    if (d.installed_version && d.latest_version && cmpVer(d.latest_version, d.installed_version) > 0) {
+        actionBtn.textContent = t('pkg_upgrade');
+        actionBtn.onclick = () => { ov.classList.remove('show'); doInstallWithOptions(pkg, false, true) };
+    } else if (!d.installed_version) {
+        actionBtn.textContent = t('install');
+        actionBtn.onclick = () => { ov.classList.remove('show'); doInstallWithOptions(pkg) };
+    } else {
+        actionBtn.textContent = t('force_install');
+        actionBtn.onclick = () => { ov.classList.remove('show'); doInstallWithOptions(pkg, true) };
+    }
+    ac.append(closeBtn, actionBtn);
+}
+function closePkgDetail() { document.getElementById('pkgDetailOv').classList.remove('show') }
+async function doInstallWithOptions(pkg, defaultForce, isUpgrade) {
+    const force = defaultForce !== undefined ? defaultForce : document.getElementById('detailForceInstall')?.checked || false;
+    const mirror = document.getElementById('detailMirrorSelect')?.value || '';
+    const version = document.getElementById('detailVersionSelect')?.value || '';
+    const pkgSpec = version ? pkg + '==' + version : pkg;
+    const body = { packages: [pkgSpec] };
+    if (force) body.force = true;
+    if (mirror) body.index_url = mirror;
+    if (isUpgrade) {
+        const d = await api('/api/packages/upgrade', { method: 'POST', body: JSON.stringify({ packages: [pkgSpec], index_url: mirror || undefined }) });
+        if (d && d.success && d.task_id) { _installTaskIds.set(d.task_id, pkg); toast(t('installing'), '') }
+        else toast(t('install_failed'), 'er');
+    } else {
+        const d = await api('/api/store/install', { method: 'POST', body: JSON.stringify(body) });
+        if (d && d.success && d.task_id) { _installTaskIds.set(d.task_id, pkg); toast(t('installing'), '') }
+        else toast(t('install_failed'), 'er');
+    }
+}
+
+// ========== 批量安装 ==========
+function updateBatchBar() {
+    const checked = document.querySelectorAll('.store-card-check:checked');
+    const bar = document.getElementById('storeBatchBar');
+    if (checked.length > 0) {
+        bar.style.display = 'flex';
+        document.getElementById('storeBatchCount').textContent = t('batch_install_count').replace('{n}', checked.length);
+    } else {
+        bar.style.display = 'none';
+    }
+}
+async function batchInstall() {
+    if (!authed) return showLogin();
+    const checked = document.querySelectorAll('.store-card-check:checked');
+    const pkgs = Array.from(checked).map(c => c.dataset.pkg);
+    if (!pkgs.length) return;
+    const opts = await showInstallConfirm(pkgs.join(', '), true);
+    if (!opts) return;
+    const body = { packages: pkgs };
+    if (opts.force) body.force = true;
+    if (opts.index_url) body.index_url = opts.index_url;
+    const d = await api('/api/store/install', { method: 'POST', body: JSON.stringify(body) });
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, pkgs.join(', '));
+        toast(t('installing'), '');
+    } else {
+        toast(t('install_failed'), 'er');
+    }
+    document.querySelectorAll('.store-card-check').forEach(c => c.checked = false);
+    updateBatchBar();
 }
 async function restartFramework() {
     if (!authed) return showLogin();
@@ -1387,7 +1675,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
+function loadAll() { initMirrorSelects(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
 
 // ========== 事件构建器相关 ==========
 
@@ -3244,4 +3532,11 @@ async function saveCmdEdit() {
             } else { localStorage.removeItem(TK); showLogin() }
         }).catch(() => { showLogin() });
     } else { showLogin() }
+    initMirrorSelects();
+    const dz = document.getElementById('uploadDropZone');
+    if (dz) {
+        dz.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over') });
+        dz.addEventListener('dragleave', function(e) { this.classList.remove('drag-over') });
+        dz.addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('drag-over'); if (e.dataTransfer.files[0]) processUploadFile(e.dataTransfer.files[0]) });
+    }
 })();

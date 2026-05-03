@@ -377,8 +377,13 @@ class Main(BaseModule):
         if self._loop and not self._loop.is_closed():
             asyncio.run_coroutine_threadsafe(self._broadcast(msg), self._loop)
 
-    def _run_pip_install(self, packages: list[str], task_id: str):
-        cmd = [sys.executable, "-m", "pip", "install"] + packages
+    def _run_pip_install(self, packages: list[str], task_id: str, force: bool = False, index_url: str = None):
+        cmd = [sys.executable, "-m", "pip", "install"]
+        if force:
+            cmd.append("--force-reinstall")
+        if index_url:
+            cmd.extend(["--index-url", index_url])
+        cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",
             "started_at": time.time(),
@@ -719,6 +724,7 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/store/install", handler=self._api_store_install, methods=["POST"])
         r.register_http_route(mn, "/api/store/upload", handler=self._api_store_upload, methods=["POST"])
         r.register_http_route(mn, "/api/store/install/status", handler=self._api_store_install_status, methods=["GET"])
+        r.register_http_route(mn, "/api/store/package/detail", handler=self._api_package_detail, methods=["GET"])
         
         r.register_http_route(mn, "/api/packages", handler=self._api_packages, methods=["GET"])
         r.register_http_route(mn, "/api/packages/updates", handler=self._api_packages_updates, methods=["GET"])
@@ -801,6 +807,7 @@ class Main(BaseModule):
             "/api/store/install",
             "/api/store/upload",
             "/api/store/install/status",
+            "/api/store/package/detail",
             "/api/packages",
             "/api/packages/updates",
             "/api/packages/upgrade",
@@ -1178,9 +1185,11 @@ class Main(BaseModule):
         packages = body.get("packages", [])
         if not packages:
             return JSONResponse({"error": "packages required"}, status_code=400)
+        force = body.get("force", False)
+        index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_install, args=(packages, task_id), daemon=True
+            target=self._run_pip_install, args=(packages, task_id, force, index_url), daemon=True
         )
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
@@ -1213,9 +1222,10 @@ class Main(BaseModule):
         packages = body.get("packages", [])
         if not packages:
             return JSONResponse({"error": "packages required"}, status_code=400)
+        index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_upgrade, args=(packages, task_id), daemon=True
+            target=self._run_pip_upgrade, args=(packages, task_id, index_url), daemon=True
         )
         t.start()
         self._add_audit_log("package_upgrade", ", ".join(packages), request)
@@ -1229,9 +1239,11 @@ class Main(BaseModule):
         packages = body.get("packages", [])
         if not packages:
             return JSONResponse({"error": "packages required"}, status_code=400)
+        force = body.get("force", False)
+        index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_install, args=(packages, task_id), daemon=True
+            target=self._run_pip_install, args=(packages, task_id, force, index_url), daemon=True
         )
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
@@ -1257,8 +1269,11 @@ class Main(BaseModule):
         self._get_pkg_manager().invalidate_caches()
         return JSONResponse({"success": True, "task_id": task_id})
 
-    def _run_pip_upgrade(self, packages: list[str], task_id: str):
-        cmd = [sys.executable, "-m", "pip", "install", "--upgrade"] + packages
+    def _run_pip_upgrade(self, packages: list[str], task_id: str, index_url: str = None):
+        cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
+        if index_url:
+            cmd.extend(["--index-url", index_url])
+        cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",
             "started_at": time.time(),
@@ -1355,6 +1370,18 @@ class Main(BaseModule):
             return JSONResponse({"error": "task not found"}, status_code=404)
         return JSONResponse(info)
 
+    async def _api_package_detail(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        package = request.query_params.get("package", "")
+        if not package:
+            return JSONResponse({"error": "package parameter required"}, status_code=400)
+        try:
+            detail = await self._get_pkg_manager().get_package_detail(package)
+            return JSONResponse(detail)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
     async def _api_store_upload(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
@@ -1367,6 +1394,8 @@ class Main(BaseModule):
             return JSONResponse(
                 {"error": "only .whl and .zip files are supported"}, status_code=400
             )
+        force = str(form.get("force", "false")).lower() == "true"
+        index_url = str(form.get("index_url", "")) or None
         tmp_dir = tempfile.mkdtemp(prefix="ep_upload_")
         task_id = secrets.token_urlsafe(8)
         file_path = os.path.join(tmp_dir, os.path.basename(filename))
@@ -1375,14 +1404,14 @@ class Main(BaseModule):
             f.write(content)
         t = threading.Thread(
             target=self._run_pip_install_file,
-            args=(file_path, filename, tmp_dir, task_id),
+            args=(file_path, filename, tmp_dir, task_id, force, index_url),
             daemon=True,
         )
         t.start()
         return JSONResponse({"success": True, "task_id": task_id})
 
     def _run_pip_install_file(
-        self, file_path: str, filename: str, tmp_dir: str, task_id: str
+        self, file_path: str, filename: str, tmp_dir: str, task_id: str, force: bool = False, index_url: str = None
     ):
         self._install_tasks[task_id] = {
             "status": "running",
@@ -1399,8 +1428,14 @@ class Main(BaseModule):
         )
 
         def _do_install(packages: list[str]) -> tuple[list[str], int]:
+            pip_cmd = [sys.executable, "-m", "pip", "install"]
+            if force:
+                pip_cmd.append("--force-reinstall")
+            if index_url:
+                pip_cmd.extend(["--index-url", index_url])
+            pip_cmd.extend(packages)
             proc = subprocess.Popen(
-                [sys.executable, "-m", "pip", "install"] + packages,
+                pip_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 universal_newlines=True,

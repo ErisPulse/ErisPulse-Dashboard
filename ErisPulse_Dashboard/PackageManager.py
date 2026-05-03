@@ -28,6 +28,7 @@ class DashboardPackageManager:
         self._updates_cache: Optional[list] = None
         self._updates_cache_ts: float = 0
         self._pypi_cache: dict[str, tuple[str, float]] = {}
+        self._pypi_detail_cache: dict[str, tuple[dict, float]] = {}
         self._module_finder = ModuleFinder()
         self._adapter_finder = AdapterFinder()
 
@@ -234,3 +235,77 @@ class DashboardPackageManager:
         remote = await self.get_remote_packages(force)
         installed_versions = self.get_installed_versions()
         return {"packages": remote, "installed_versions": installed_versions}
+
+    async def get_package_detail(self, package_name: str) -> dict:
+        import asyncio
+
+        cache_key = package_name.lower()
+        if cache_key in self._pypi_detail_cache:
+            data, ts = self._pypi_detail_cache[cache_key]
+            if time.time() - ts < 300:
+                return data
+
+        def _fetch():
+            url = f"https://pypi.org/pypi/{package_name}/json"
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    return json.loads(resp.read().decode("utf-8"))
+            except Exception:
+                return None
+
+        pypi_data = await asyncio.get_event_loop().run_in_executor(None, _fetch)
+
+        installed_versions = self.get_installed_versions()
+        installed_version = installed_versions.get(package_name.lower(), "")
+
+        remote = self._remote_cache or {}
+        registry_info = None
+        for pkg_type in ("modules", "adapters"):
+            for name, info in remote.get(pkg_type, {}).items():
+                if info.get("package", "").lower() == package_name.lower():
+                    registry_info = info
+                    registry_info["registry_type"] = pkg_type.rstrip("s")
+                    break
+            if registry_info:
+                break
+
+        if not pypi_data:
+            result = {
+                "name": package_name,
+                "summary": registry_info.get("description", "") if registry_info else "",
+                "description": registry_info.get("description", "") if registry_info else "",
+                "requires_dist": [],
+                "versions": [],
+                "installed_version": installed_version,
+                "latest_version": "",
+                "home_page": "",
+                "registry_info": registry_info,
+            }
+            return result
+
+        info = pypi_data.get("info", {})
+        releases = pypi_data.get("releases", {})
+        versions = sorted(
+            releases.keys(),
+            key=lambda v: self._compare_versions(v, "0.0.0"),
+            reverse=True,
+        )
+
+        result = {
+            "name": info.get("name", package_name),
+            "summary": info.get("summary", ""),
+            "description": info.get("description", "") or info.get("summary", ""),
+            "requires_dist": info.get("requires_dist") or [],
+            "versions": versions[:30],
+            "installed_version": installed_version,
+            "latest_version": info.get("version", ""),
+            "home_page": info.get("home_page", "") or info.get("project_url", ""),
+            "project_urls": info.get("project_urls") or {},
+            "license": info.get("license", ""),
+            "author": info.get("author", ""),
+            "registry_info": registry_info,
+        }
+
+        self._pypi_detail_cache[cache_key] = (result, time.time())
+        return result

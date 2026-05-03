@@ -1018,6 +1018,10 @@ body {
     z-index: 1050
 }
 
+#uploadOv, #pkgDetailOv {
+    z-index: 1060
+}
+
 .modal-box {
     background: var(--bg-t);
     padding: 24px;
@@ -3097,4 +3101,247 @@ select.form-select::-ms-expand {
         gap: 2px;
         padding-bottom: 16px
     }
+}
+
+/* ========== 上传安装模态窗 ========== */
+.upload-drop-zone {
+    border: 2px dashed var(--bd);
+    border-radius: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 16px
+}
+
+.upload-drop-zone:hover,
+.upload-drop-zone.drag-over {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 6%, transparent)
+}
+
+.upload-drop-zone svg {
+    width: 40px;
+    height: 40px;
+    color: var(--tx-t);
+    margin-bottom: 8px
+}
+
+.upload-drop-zone p {
+    font-size: 13px;
+    color: var(--tx-s);
+    margin: 4px 0
+}
+
+.upload-file-info {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 8px
+}
+
+.upload-progress-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px
+}
+
+.upload-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-s);
+    border-radius: 3px;
+    overflow: hidden
+}
+
+.upload-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 0%;
+    transition: width .3s
+}
+
+.upload-progress-text {
+    font-size: 12px;
+    color: var(--tx-s);
+    min-width: 36px;
+    text-align: right
+}
+
+.upload-options {
+    border-top: 1px solid var(--bd);
+    padding-top: 12px;
+    margin-bottom: 16px
+}
+
+.upload-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0
+}
+
+.upload-option-label {
+    font-size: 13px;
+    font-weight: 500
+}
+
+.upload-option-desc {
+    font-size: 11px;
+    color: var(--tx-t);
+    margin-top: 2px
+}
+
+.upload-select {
+    padding: 4px 8px;
+    border: 1px solid var(--bd);
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    max-width: 180px;
+    outline: none
+}
+
+.upload-select:focus {
+    border-color: var(--accent)
+}
+
+/* ========== 包详情模态窗 ========== */
+.pkg-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px
+}
+
+.pkg-detail-version {
+    font-size: 13px;
+    color: var(--tx-s)
+}
+
+.pkg-detail-desc {
+    font-size: 14px;
+    color: var(--tx-s);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    word-break: break-word
+}
+
+.pkg-detail-section {
+    margin-bottom: 16px
+}
+
+.pkg-detail-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--tx-p)
+}
+
+.pkg-detail-deps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px
+}
+
+.pkg-detail-deps .chip {
+    font-size: 11px;
+    padding: 2px 8px
+}
+
+.pkg-detail-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    font-size: 13px
+}
+
+.pkg-detail-info-grid dt {
+    color: var(--tx-t);
+    font-weight: 500
+}
+
+.pkg-detail-info-grid dd {
+    color: var(--tx-s);
+    margin: 0
+}
+
+/* ========== 批量安装浮动栏 ========== */
+.store-batch-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+    z-index: 900;
+    animation: scaleIn .2s ease-out
+}
+
+.store-batch-bar span {
+    font-size: 13px;
+    color: var(--tx-s)
+}
+
+/* ========== 商店卡片 checkbox ========== */
+.store-card-check {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    flex-shrink: 0
+}
+
+.store-card {
+    cursor: pointer;
+    position: relative
+}
+
+.store-card-detail-btn {
+    background: none;
+    border: none;
+    color: var(--tx-t);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    transition: color .2s
+}
+
+.store-card-detail-btn:hover {
+    color: var(--accent)
+}
+
+/* ========== 安装确认选项 ========== */
+.install-confirm-options {
+    margin-top: 12px
+}
+
+.install-confirm-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-top: 1px solid var(--bd)
+}
+
+.install-confirm-option-label {
+    font-size: 13px;
+    font-weight: 500
+}
+
+.install-confirm-option-desc {
+    font-size: 11px;
+    color: var(--tx-t);
+    margin-top: 2px
 }
