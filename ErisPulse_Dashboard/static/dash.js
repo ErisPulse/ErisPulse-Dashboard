@@ -161,6 +161,8 @@ const I18N = {
         pkg_detail_failed: '加载详情失败', view_detail: '详情',
         upload_complete: '上传完成', upload_file_too_large: '文件过大',
         install_with_options: '安装选项',
+        status_icons_conn: '连接状态',
+        status_conn_disconnected: '未连接', status_conn_connected: '已连接', status_conn_error: '连接异常',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -321,6 +323,8 @@ const I18N = {
         pkg_detail_failed: 'Failed to load details', view_detail: 'Details',
         upload_complete: 'Upload Complete', upload_file_too_large: 'File too large',
         install_with_options: 'Install Options',
+        status_icons_conn: 'Connection',
+        status_conn_disconnected: 'Disconnected', status_conn_connected: 'Connected', status_conn_error: 'Connection Error',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -481,6 +485,8 @@ const I18N = {
         pkg_detail_failed: '載入詳情失敗', view_detail: '詳情',
         upload_complete: '上傳完成', upload_file_too_large: '檔案過大',
         install_with_options: '安裝選項',
+        status_icons_conn: '連線狀態',
+        status_conn_disconnected: '未連線', status_conn_connected: '已連線', status_conn_error: '連線異常',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -640,7 +646,9 @@ const I18N = {
         pkg_detail_failed: '詳細の読み込みに失敗', view_detail: '詳細',
         upload_complete: 'アップロード完了', upload_file_too_large: 'ファイルが大きすぎます',
         install_with_options: 'インストールオプション',
-    }, 
+        status_icons_conn: '接続状態',
+        status_conn_disconnected: '未接続', status_conn_connected: '接続済み', status_conn_error: '接続エラー',
+    },
     
     ru: {
         dashboard: 'Панель управления', bots: 'Боты', events: 'События', modules: 'Плагины', store: 'Магазин модулей', config: 'Конфигурация',
@@ -801,8 +809,270 @@ const I18N = {
         pkg_detail_failed: 'Не удалось загрузить детали', view_detail: 'Детали',
         upload_complete: 'Загрузка завершена', upload_file_too_large: 'Файл слишком большой',
         install_with_options: 'Параметры установки',
+        status_icons_conn: 'Соединение',
+        status_conn_disconnected: 'Отключено', status_conn_connected: 'Подключено', status_conn_error: 'Ошибка соединения',
     }
 };
+
+const STATUS_FRAMES = {
+    conn: [
+        'Disconnected.png',
+        'Connected.png',
+        'Connection Error  Broken.png'
+    ]
+};
+
+const STATUS_STATE_KEYS = {
+    conn: ['status_conn_disconnected', 'status_conn_connected', 'status_conn_error']
+};
+
+const _statusRegistry = {};
+
+function createStatusIcon(container, config) {
+    const group = config.group;
+    const size = config.size || 'lg';
+    const showLabel = config.showLabel !== false;
+    const frames = STATUS_FRAMES[group];
+    if (!frames) return null;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'status-icon-container';
+
+    const framesDiv = document.createElement('div');
+    framesDiv.className = 'status-icon-frames size-' + size;
+
+    frames.forEach(function(src, i) {
+        var img = document.createElement('img');
+        img.src = '/Dashboard/static/res/' + group + '/' + encodeURIComponent(src);
+        img.alt = src.replace(/\.png$/, '');
+        img.dataset.frame = String(i);
+        if (i === 0) img.classList.add('active');
+        framesDiv.appendChild(img);
+    });
+
+    wrapper.appendChild(framesDiv);
+
+    var labelEl = null, stateEl = null;
+    if (showLabel) {
+        labelEl = document.createElement('div');
+        labelEl.className = 'status-icon-label';
+        labelEl.textContent = t('status_icons_' + group) || group;
+        wrapper.appendChild(labelEl);
+
+        stateEl = document.createElement('div');
+        stateEl.className = 'status-icon-state';
+        stateEl.textContent = t(STATUS_STATE_KEYS[group][0]) || '';
+        wrapper.appendChild(stateEl);
+    }
+
+    container.appendChild(wrapper);
+
+    var instance = {
+        id: 'si_' + group + '_' + Math.random().toString(36).substr(2, 6),
+        group: group,
+        container: container,
+        wrapper: wrapper,
+        framesDiv: framesDiv,
+        stateEl: stateEl,
+        currentFrame: 0,
+        animating: false,
+        _timers: [],
+        destroy: function() {
+            instance._timers.forEach(clearTimeout);
+            instance._timers = [];
+            if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+            delete _statusRegistry[instance.id];
+        },
+        setState: function(frameIndex, animate) {
+            if (frameIndex < 0 || frameIndex >= frames.length) return;
+            if (frameIndex === instance.currentFrame && !instance.animating) return;
+            instance._timers.forEach(clearTimeout);
+            instance._timers = [];
+            instance.animating = false;
+
+            if (animate) {
+                _crtTransition(instance, frameIndex);
+            } else {
+                _setFrameDirect(instance, frameIndex);
+            }
+        }
+    };
+
+    _statusRegistry[instance.id] = instance;
+    return instance;
+}
+
+function _setFrameDirect(inst, frameIndex) {
+    var imgs = inst.framesDiv.querySelectorAll('img');
+    imgs.forEach(function(img) {
+        img.classList.remove('active', 'crt-out', 'crt-in');
+        img.style.clipPath = '';
+    });
+    if (imgs[frameIndex]) imgs[frameIndex].classList.add('active');
+
+    var beam = inst.framesDiv.querySelector('.scanline-beam');
+    if (beam) beam.remove();
+    inst.framesDiv.classList.remove('scanning');
+
+    inst.currentFrame = frameIndex;
+    if (inst.stateEl) {
+        var key = STATUS_STATE_KEYS[inst.group] && STATUS_STATE_KEYS[inst.group][frameIndex];
+        if (key) inst.stateEl.textContent = t(key) || '';
+    }
+}
+
+function _crtTransition(inst, newFrame) {
+    if (inst.animating) {
+        inst._timers.forEach(clearTimeout);
+        inst._timers = [];
+        var oldImgs = inst.framesDiv.querySelectorAll('img');
+        oldImgs.forEach(function(img) {
+            img.classList.remove('active', 'crt-out', 'crt-in');
+            img.style.clipPath = '';
+        });
+        var oldBeam = inst.framesDiv.querySelector('.scanline-beam');
+        if (oldBeam) oldBeam.remove();
+        inst.framesDiv.classList.remove('scanning');
+    }
+
+    inst.animating = true;
+    inst.framesDiv.classList.add('scanning');
+
+    var imgs = inst.framesDiv.querySelectorAll('img');
+    var oldFrame = inst.currentFrame;
+    var oldImg = imgs[oldFrame];
+    var newImg = imgs[newFrame];
+
+    var sameFrame = (oldImg === newImg);
+
+    if (oldImg && !sameFrame) {
+        oldImg.classList.remove('active', 'crt-in');
+        oldImg.classList.add('crt-out');
+    }
+
+    var beamOut = document.createElement('div');
+    beamOut.className = 'scanline-beam sweep-up';
+    inst.framesDiv.appendChild(beamOut);
+
+    inst._timers.push(setTimeout(function() {
+        if (oldImg && !sameFrame) {
+            oldImg.classList.remove('crt-out');
+            oldImg.style.clipPath = 'inset(100% 0 0 0)';
+        }
+        beamOut.remove();
+
+        if (newImg) {
+            newImg.classList.remove('crt-out');
+            newImg.style.clipPath = '';
+            newImg.classList.add('crt-in');
+        }
+
+        var beamIn = document.createElement('div');
+        beamIn.className = 'scanline-beam sweep-down';
+        inst.framesDiv.appendChild(beamIn);
+
+        inst._timers.push(setTimeout(function() {
+            imgs.forEach(function(img) {
+                img.classList.remove('crt-out', 'crt-in', 'active');
+                img.style.clipPath = '';
+            });
+            if (imgs[newFrame]) imgs[newFrame].classList.add('active');
+
+            beamIn.remove();
+            inst.framesDiv.classList.remove('scanning');
+            inst.currentFrame = newFrame;
+            inst.animating = false;
+
+            if (inst.stateEl) {
+                var key = STATUS_STATE_KEYS[inst.group] && STATUS_STATE_KEYS[inst.group][newFrame];
+                if (key) inst.stateEl.textContent = t(key) || '';
+            }
+        }, 280));
+    }, 280));
+}
+
+function updateStatusGroup(group, frameIndex, animate) {
+    Object.keys(_statusRegistry).forEach(function(id) {
+        var inst = _statusRegistry[id];
+        if (inst.group === group) {
+            inst.setState(frameIndex, animate !== false);
+        }
+    });
+}
+
+var _badgeInst = null, _panelInst = null, _collapseTimer = null;
+
+function initHeaderStatusIcon() {
+    var badgeContainer = document.getElementById('status-badge-icon');
+    var panelContainer = document.getElementById('status-panel-icon');
+    if (!badgeContainer || !panelContainer || badgeContainer.dataset.init === '1') return;
+    badgeContainer.dataset.init = '1';
+
+    _badgeInst = createStatusIcon(badgeContainer, { group: 'conn', size: 'custom', showLabel: false });
+    _panelInst = createStatusIcon(panelContainer, { group: 'conn', size: 'custom', showLabel: false });
+
+    _badgeInst.setState(0, false);
+    _panelInst.setState(0, false);
+}
+
+function showConnPanel(title, desc) {
+    var panel = document.getElementById('connPanel');
+    var titleEl = document.getElementById('connPanelTitle');
+    var descEl = document.getElementById('connPanelDesc');
+    if (titleEl) titleEl.textContent = title || '';
+    if (descEl) descEl.textContent = desc || '';
+    if (panel) panel.classList.add('expanded');
+
+    if (_collapseTimer) clearTimeout(_collapseTimer);
+    _collapseTimer = setTimeout(function() {
+        if (panel) panel.classList.remove('expanded');
+    }, 2600);
+}
+
+function updateConnBadge(state) {
+    var badge = document.getElementById('connBadge');
+    var text = document.getElementById('connBadgeText');
+    if (badge) {
+        badge.classList.remove('connected', 'disconnected');
+        if (state === 1) badge.classList.add('connected');
+        else if (state === 0) badge.classList.add('disconnected');
+    }
+    if (text) {
+        var labels = [
+            t('status_conn_disconnected'),
+            t('status_conn_connected'),
+            t('status_conn_error')
+        ];
+        text.textContent = labels[state] || '';
+    }
+}
+
+function connStateChange(state, animate) {
+    if (_badgeInst) _badgeInst.setState(state, false);
+    updateConnBadge(state);
+
+    if (animate) {
+        var titleKey = STATUS_STATE_KEYS.conn[state];
+        showConnPanel(t(titleKey), t('status_icons_conn'));
+
+        if (_panelInst) {
+            _panelInst.setState(_panelInst.currentFrame, false);
+            setTimeout(function() {
+                if (_panelInst) _panelInst.setState(state, true);
+            }, 400);
+        }
+    } else {
+        if (_panelInst) _panelInst.setState(state, false);
+    }
+}
+
+function createBotStatusIcon(botCard) {
+    var container = document.createElement('div');
+    container.className = 'bot-card-status';
+    botCard.appendChild(container);
+    return createStatusIcon(container, { group: 'conn', size: 'bot', showLabel: false });
+}
+
 function detectLang() {
     const saved = localStorage.getItem('ep_lang');
     if (saved) return saved;
@@ -847,11 +1117,19 @@ function applyI18n() {
     const ah = document.getElementById('authHint'); if (ah && I18N[lang].auth_hint) ah.innerHTML = I18N[lang].auth_hint;
     const titles = { 'zh': 'ErisPulse 仪表盘', 'zh-TW': 'ErisPulse 儀表盤', 'ja': 'ErisPulse ダッシュボード', 'ru': 'ErisPulse Панель управления' };
     document.title = titles[lang] || 'ErisPulse Dashboard';
-    const wsEl = document.getElementById('wsText');
-    if (wsEl) wsEl.textContent = document.getElementById('wsBadge').classList.contains('on') ? t('live') : t('offline');
-    const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang;
     const htmlLangMap = { 'zh': 'zh-CN', 'zh-TW': 'zh-TW', 'ja': 'ja', 'ru': 'ru' };
     document.documentElement.lang = htmlLangMap[lang] || 'en';
+    refreshConnBadgeText();
+}
+
+function refreshConnBadgeText() {
+    var badge = document.getElementById('connBadge');
+    var text = document.getElementById('connBadgeText');
+    if (!badge || !text) return;
+    var state = 0;
+    if (badge.classList.contains('connected')) state = 1;
+    else if (badge.classList.contains('disconnected')) state = 0;
+    text.textContent = t(STATUS_STATE_KEYS.conn[state]);
 }
 
 function getTheme() {
@@ -1051,8 +1329,15 @@ async function loadBots() {
         const i = x.info || {}, nm = i.user_name || i.nickname || x.bot_id, av = i.avatar;
         const la = x.last_active ? new Date(x.last_active * 1000).toLocaleString(getLocale()) : 'Never';
         const on = x.status === 'online';
-        return '<div class="bot-card"><div class="bot-avatar">' + (av ? '<img src="' + esc(av) + '" onerror="this.outerHTML=\'<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; style=&quot;width:24px;height:24px;opacity:.7&quot;><rect x=&quot;5&quot; y=&quot;8&quot; width=&quot;14&quot; height=&quot;10&quot; rx=&quot;2&quot;/><circle cx=&quot;9&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/><circle cx=&quot;15&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/></svg>\'">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>') + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' + esc(nm) + '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(x.platform) + ' / ' + esc(x.bot_id) + '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span><span style="font-size:12px;font-weight:500;color:' + (on ? 'var(--ok-c)' : 'var(--tx-s)') + '">' + (on ? t('online') : t('offline')) + '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' + esc(la) + '</div></div></div>';
+        return '<div class="bot-card" data-bot-status="' + (on ? 'online' : 'offline') + '"><div class="bot-avatar">' + (av ? '<img src="' + esc(av) + '" onerror="this.outerHTML=\'<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; style=&quot;width:24px;height:24px;opacity:.7&quot;><rect x=&quot;5&quot; y=&quot;8&quot; width=&quot;14&quot; height=&quot;10&quot; rx=&quot;2&quot;/><circle cx=&quot;9&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/><circle cx=&quot;15&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/></svg>\'">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>') + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' + esc(nm) + '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(x.platform) + ' / ' + esc(x.bot_id) + '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span><span style="font-size:12px;font-weight:500;color:' + (on ? 'var(--ok-c)' : 'var(--tx-s)') + '">' + (on ? t('online') : t('offline')) + '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' + esc(la) + '</div></div></div>';
     }).join('') : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' + t('no_bots') + '</h3></div>';
+
+    var botCards = document.querySelectorAll('.bot-card[data-bot-status]');
+    botCards.forEach(function(card) {
+        var isOnline = card.dataset.botStatus === 'online';
+        var inst = createBotStatusIcon(card);
+        if (inst) inst.setState(isOnline ? 1 : 0, false);
+    });
 }
 
 async function loadModules() {
@@ -1632,8 +1917,8 @@ function wsConnect() {
     const p = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const u = p + '//' + location.host + API + '/ws?token=' + encodeURIComponent(localStorage.getItem(TK) || '');
     ws = new WebSocket(u);
-    ws.onopen = () => { document.getElementById('wsBadge').classList.add('on'); document.getElementById('wsText').textContent = t('live') };
-    ws.onclose = () => { document.getElementById('wsBadge').classList.remove('on'); document.getElementById('wsText').textContent = t('offline'); setTimeout(wsConnect, 3000) };
+    ws.onopen = () => { connStateChange(1, true) };
+    ws.onclose = () => { connStateChange(0, true); setTimeout(wsConnect, 3000) };
     ws.onerror = () => ws.close();
     ws.onmessage = e => {
         try {
@@ -1675,7 +1960,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { initMirrorSelects(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
+function loadAll() { initMirrorSelects(); initHeaderStatusIcon(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
 
  
 
@@ -3084,6 +3369,7 @@ async function fmDecompress(path) {
 
 let _tasks = [];
 let _taskPanelOpen = false;
+let _expandedTasks = new Set();
 
 function addOrUpdateTask(id, name, status, outputLines, errorMsg) {
     let task = _tasks.find(t => t.id === id);
@@ -3100,6 +3386,7 @@ function addOrUpdateTask(id, name, status, outputLines, errorMsg) {
 
 function removeTask(id) {
     _tasks = _tasks.filter(t => t.id !== id);
+    _expandedTasks.delete(id);
     renderTaskPanel();
     renderTaskBadge();
 }
@@ -3111,6 +3398,8 @@ function toggleTaskPanel() {
 }
 
 function clearAllTasks() {
+    var removedIds = _tasks.filter(t => t.status !== 'running').map(t => t.id);
+    removedIds.forEach(function(id) { _expandedTasks.delete(id) });
     _tasks = _tasks.filter(t => t.status === 'running');
     renderTaskPanel();
     renderTaskBadge();
@@ -3134,7 +3423,14 @@ function renderTaskBadge() {
 
 function renderTaskPanel() {
     if (!_taskPanelOpen) return;
-    const container = document.getElementById('taskList');
+    var container = document.getElementById('taskList');
+
+    var items = container.querySelectorAll('.task-item.task-expanded');
+    _expandedTasks.clear();
+    items.forEach(function(item) {
+        if (item.dataset.taskId) _expandedTasks.add(item.dataset.taskId);
+    });
+
     if (_tasks.length === 0) {
         container.innerHTML = '<div class="task-empty">' + t('no_data') + '</div>';
         return;
@@ -3152,9 +3448,10 @@ function renderTaskPanel() {
             statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
             statusClass = 'task-error';
         }
-        const output = (t.output || []).slice(-20).join('\n');
-        const detail = t.status === 'error' && t.errorMsg ? '\n' + t.errorMsg : '';
-        return '<div class="task-item ' + statusClass + '" onclick="this.classList.toggle(\'task-expanded\')">' +
+        var output = (t.output || []).slice(-20).join('\n');
+        var detail = t.status === 'error' && t.errorMsg ? '\n' + t.errorMsg : '';
+        var expanded = _expandedTasks.has(t.id) ? ' task-expanded' : '';
+        return '<div class="task-item ' + statusClass + expanded + '" data-task-id="' + esc(t.id) + '" onclick="toggleTaskExpand(this)">' +
             '<div class="task-item-hd">' +
                 '<span class="task-icon">' + statusIcon + '</span>' +
                 '<span class="task-name">' + esc(t.name) + '</span>' +
@@ -3166,10 +3463,23 @@ function renderTaskPanel() {
     }).join('');
 }
 
+function toggleTaskExpand(el) {
+    el.classList.toggle('task-expanded');
+    var taskId = el.dataset.taskId;
+    if (!taskId) return;
+    if (el.classList.contains('task-expanded')) {
+        _expandedTasks.add(taskId);
+    } else {
+        _expandedTasks.delete(taskId);
+    }
+}
+
  
 setInterval(function() {
     const now = Date.now();
     const before = _tasks.length;
+    var removed = _tasks.filter(t => t.status !== 'running' && now - t.startedAt >= 30000);
+    removed.forEach(function(t) { _expandedTasks.delete(t.id) });
     _tasks = _tasks.filter(t => t.status === 'running' || now - t.startedAt < 30000);
     if (_tasks.length !== before) renderTaskBadge();
     if (_taskPanelOpen) renderTaskPanel();

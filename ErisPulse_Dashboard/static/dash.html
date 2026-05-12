@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>ErisPulse Dashboard</title>
+    <link rel="icon" href="/Dashboard/static/res/erispulse_logo_hp.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -26,16 +27,28 @@
                 </button>
                 <h1 id="appTitle">ErisPulse Dashboard</h1>
             </div>
-            <div class="header-right">
-                <button class="task-badge" id="taskBadge" onclick="toggleTaskPanel()" style="display:none">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="task-badge-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    <span class="task-badge-count" id="taskCount">0</span>
-                </button>
-                <div class="ws-badge" id="wsBadge"><span class="dot"></span><span id="wsText">Offline</span></div>
-                <button class="btn-icon" onclick="showSettings()" title="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
-                </button>
-            </div>
+                <div class="header-right">
+                    <button class="task-badge" id="taskBadge" onclick="toggleTaskPanel()" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="task-badge-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span class="task-badge-count" id="taskCount">0</span>
+                    </button>
+                    <div class="conn-badge-wrapper">
+                        <div class="conn-badge disconnected" id="connBadge">
+                            <div id="status-badge-icon"></div>
+                            <span class="conn-badge-text" id="connBadgeText" data-i18n="status_conn_disconnected"></span>
+                        </div>
+                        <div class="conn-panel" id="connPanel">
+                            <div id="status-panel-icon"></div>
+                            <div class="conn-panel-info">
+                                <div class="conn-panel-title" id="connPanelTitle"></div>
+                                <div class="conn-panel-desc" id="connPanelDesc"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-icon" onclick="showSettings()" title="Settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                    </button>
+                </div>
         </header>
         <div class="task-panel" id="taskPanel">
             <div class="task-panel-hd"><span data-i18n="task_list"></span><button class="btn-icon" onclick="clearAllTasks()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>
@@ -985,6 +998,9 @@
 
     <div class="modal-overlay" id="settingsOv" onclick="if(event.target===this)closeSettings()">
         <div class="modal-box" style="max-width:440px">
+            <div style="text-align:center;margin-bottom:16px">
+                <img src="/Dashboard/static/res/erispulse_logo_hp.png" alt="ErisPulse" style="height:120px">
+            </div>
             <div class="modal-title" data-i18n="settings_title"></div>
             <div style="margin-bottom:20px">
                 <div class="settings-section-title" data-i18n="settings_appearance"></div>

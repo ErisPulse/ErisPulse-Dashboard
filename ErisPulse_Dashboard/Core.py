@@ -702,7 +702,21 @@ class Main(BaseModule):
         
         r.register_http_route(mn, "/", handler=_html, methods=["GET"])
         r.register_http_route(mn, "/static/dash.css", handler=_css, methods=["GET"])
-        r.register_http_route(mn, "/static/dash.js", handler=_js, methods=["GET"])   
+        r.register_http_route(mn, "/static/dash.js", handler=_js, methods=["GET"])
+
+        import mimetypes as _mimetypes
+        async def _static_res(request: Request):
+            subpath = request.path_params.get("path", "")
+            file_path = static_dir / "res" / subpath
+            if file_path.exists() and file_path.is_file() and ".." not in subpath:
+                ct, _ = _mimetypes.guess_type(str(file_path))
+                return Response(
+                    content=file_path.read_bytes(),
+                    media_type=ct or "application/octet-stream"
+                )
+            return JSONResponse({"error": "Not found"}, status_code=404)
+
+        r.register_http_route(mn, "/static/res/{path:path}", handler=_static_res, methods=["GET"])
         
          
         r.register_http_route(mn, "/api/auth", handler=self._api_auth, methods=["POST"])
@@ -789,6 +803,7 @@ class Main(BaseModule):
             "/",
             "/static/dash.css",
             "/static/dash.js",
+            "/static/res/{path:path}",
             "/api/auth",
             "/api/auth/status",
             "/api/status",
