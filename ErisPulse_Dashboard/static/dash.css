@@ -66,6 +66,69 @@
     --lk: #64B5F6;
 }
 
+ 
+[data-ui-style="eris"] {
+    --bg-p: #F9F8F4;
+    --bg-s: #F0EFE9;
+    --bg-t: #FFFFFF;
+    --tx-p: #2C3E50;
+    --tx-s: #5A6C7D;
+    --tx-t: #A0B0C0;
+    --bd: #E8E6DF;
+    --bd-h: #D0CDC4;
+    --accent: #4A9CD8;
+    --accent-h: #3B86BF;
+    --sh: rgba(44, 62, 80, .06);
+    --modal: rgba(44, 62, 80, .45);
+    --ok-bg: #E8F5E9;
+    --ok-c: #2E7D32;
+    --ok-bd: #C8E6C9;
+    --er-bg: #FFEBEE;
+    --er-c: #C62828;
+    --er-bd: #FFCDD2;
+    --wr-bg: #FFF3E0;
+    --wr-c: #E65100;
+    --wr-bd: #FFE0B2;
+    --pr-bg: #E3F2FD;
+    --pr-c: #1565C0;
+    --pr-bd: #BBDEFB;
+    --sc-bg: #E0F2F1;
+    --sc-c: #00695C;
+    --sc-bd: #B2DFDB;
+    --lk: #4A9CD8
+}
+
+[data-theme="dark"][data-ui-style="eris"] {
+    --bg-p: #0D1117;
+    --bg-s: #161B22;
+    --bg-t: #1C2128;
+    --tx-p: #E2E8F0;
+    --tx-s: #A0B0C0;
+    --tx-t: #5A6C7D;
+    --bd: #2A3441;
+    --bd-h: #3A4A5A;
+    --accent: #5BADE0;
+    --accent-h: #4A9CD8;
+    --sh: rgba(0, 0, 0, .25);
+    --modal: rgba(0, 0, 0, .6);
+    --ok-bg: #1B5E20;
+    --ok-c: #A5D6A7;
+    --ok-bd: #2E7D32;
+    --er-bg: #B71C1C;
+    --er-c: #FFCDD2;
+    --er-bd: #C62828;
+    --wr-bg: #4E342E;
+    --wr-c: #FFCC80;
+    --wr-bd: #5D4037;
+    --pr-bg: #0D2137;
+    --pr-c: #90CAF9;
+    --pr-bd: #1565C0;
+    --sc-bg: #0D2926;
+    --sc-c: #80CBC4;
+    --sc-bd: #00695C;
+    --lk: #5BADE0
+}
+
 html {
     height: -webkit-fill-available
 }
@@ -910,6 +973,20 @@ body {
     object-fit: cover
 }
 
+.bot-avatar.has-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    background: var(--bg-s)
+}
+
+.bot-avatar.has-logo img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: contain
+}
+
 .bot-avatar svg {
     width: 24px;
     height: 24px;
@@ -1228,6 +1305,415 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 8px
+}
+
+ 
+.login-avatar {
+    display: none
+}
+
+.login-decor {
+    display: none
+}
+
+.login-bg-loader {
+    display: none
+}
+
+[data-ui-style="eris"] .login-overlay {
+    background: #F9F8F4;
+    backdrop-filter: none;
+    overflow: hidden;
+    padding: 0;
+    justify-content: flex-end
+}
+
+[data-ui-style="eris"] .login-bg-loader {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    justify-content: center;
+    align-items: center;
+    z-index: 0;
+    transition: opacity .6s
+}
+
+[data-ui-style="eris"] .login-bg-loader.loaded {
+    opacity: 0;
+    pointer-events: none
+}
+
+[data-ui-style="eris"] .login-bg-loader::after {
+    content: '';
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(74, 156, 216, .2);
+    border-top-color: #4A9CD8;
+    border-radius: 50%;
+    animation: erisSpin .8s linear infinite
+}
+
+@keyframes erisSpin {
+    to { transform: rotate(360deg) }
+}
+
+[data-ui-style="eris"] .login-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/Dashboard/static/res/login/Login Background.png');
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1s ease;
+    z-index: 0
+}
+
+[data-ui-style="eris"] .login-overlay.bg-ready::before {
+    opacity: 1
+}
+
+[data-ui-style="eris"] .login-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(249, 248, 244, .05) 0%, rgba(249, 248, 244, .25) 45%, rgba(249, 248, 244, .88) 62%, #F9F8F4 100%);
+    z-index: 1
+}
+
+[data-ui-style="eris"] .login-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, .82);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(232, 230, 223, .6);
+    border-radius: 20px;
+    max-width: 420px;
+    width: 100%;
+    margin-right: 6%;
+    padding: 0 36px 36px;
+    box-shadow: 0 8px 32px rgba(44, 62, 80, .08), 0 1px 4px rgba(44, 62, 80, .04);
+    animation: erisCardIn .5s cubic-bezier(.23, 1, .32, 1)
+}
+
+@keyframes erisCardIn {
+    from { opacity: 0; transform: translateX(24px) scale(.97) }
+    to { opacity: 1; transform: translateX(0) scale(1) }
+}
+
+[data-ui-style="eris"] .login-avatar {
+    display: block;
+    text-align: center;
+    margin-bottom: 4px;
+    padding-top: 8px
+}
+
+[data-ui-style="eris"] .login-avatar img {
+    width: 200px;
+    max-width: 70%;
+    height: auto;
+    object-fit: contain;
+    animation: erisAvatarBounce .6s cubic-bezier(.23, 1, .32, 1) .2s both;
+    filter: drop-shadow(0 2px 6px rgba(74, 156, 216, .12))
+}
+
+@keyframes erisAvatarBounce {
+    from { opacity: 0; transform: translateY(-12px) scale(.92) }
+    to { opacity: 1; transform: translateY(0) scale(1) }
+}
+
+[data-ui-style="eris"] .login-card h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C3E50;
+    margin-bottom: 4px;
+    text-align: center
+}
+
+[data-ui-style="eris"] .login-card p {
+    color: #5A6C7D;
+    text-align: center;
+    margin-bottom: 20px
+}
+
+[data-ui-style="eris"] .login-card .form-group input {
+    border-color: rgba(74, 156, 216, .25);
+    background: rgba(249, 248, 244, .6);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    transition: all .25s cubic-bezier(.4, 0, .2, 1)
+}
+
+[data-ui-style="eris"] .login-card .form-group input:focus {
+    border-color: #4A9CD8;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(74, 156, 216, .1)
+}
+
+[data-ui-style="eris"] .login-card .form-group input::placeholder {
+    color: #A0B0C0
+}
+
+[data-ui-style="eris"] .login-card .btn-primary {
+    background: #4A9CD8 100%;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 28px;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(74, 156, 216, .22);
+    transition: all .25s cubic-bezier(.4, 0, .2, 1)
+}
+
+[data-ui-style="eris"] .login-card .btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(74, 156, 216, .32);
+    transform: translateY(-1px)
+}
+
+[data-ui-style="eris"] .login-card .btn-primary:active {
+    transform: scale(.98);
+    box-shadow: 0 1px 4px rgba(74, 156, 216, .2)
+}
+
+[data-ui-style="eris"] .login-card .btn-secondary {
+    background: rgba(249, 248, 244, .5);
+    border: 1px solid rgba(74, 156, 216, .2);
+    color: #5A6C7D;
+    border-radius: 50px;
+    transition: all .25s cubic-bezier(.4, 0, .2, 1)
+}
+
+[data-ui-style="eris"] .login-card .btn-secondary:hover {
+    background: #fff;
+    border-color: rgba(74, 156, 216, .35);
+    color: #2C3E50
+}
+
+[data-ui-style="eris"] .login-hint {
+    color: #A0B0C0
+}
+
+[data-ui-style="eris"] .login-hint code {
+    background: rgba(74, 156, 216, .06);
+    border-color: rgba(74, 156, 216, .15);
+    color: #4A9CD8
+}
+
+[data-ui-style="eris"] .login-lang-select {
+    background-color: rgba(249, 248, 244, .5);
+    border-color: rgba(74, 156, 216, .2);
+    color: #5A6C7D
+}
+
+[data-ui-style="eris"] .login-lang-select:hover {
+    border-color: #4A9CD8;
+    background-color: #fff;
+    color: #2C3E50
+}
+
+[data-ui-style="eris"] .login-actions {
+    justify-content: center;
+    gap: 10px
+}
+
+.login-footer {
+    display: none
+}
+
+[data-ui-style="eris"] .login-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(232, 230, 223, .4)
+}
+
+[data-ui-style="eris"] .login-globe-icon {
+    width: 14px;
+    height: 14px;
+    color: #A0B0C0;
+    flex-shrink: 0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-footer {
+    border-top-color: rgba(42, 52, 65, .4)
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-globe-icon {
+    color: #5A6C7D
+}
+
+[data-ui-style="eris"] .login-decor {
+    display: block;
+    position: absolute;
+    pointer-events: none
+}
+
+[data-ui-style="eris"] .login-decor-star {
+    position: absolute;
+    pointer-events: none;
+    opacity: .3;
+    color: #4A9CD8;
+    animation: erisStarTwinkle 3s ease-in-out infinite
+}
+
+[data-ui-style="eris"] .login-decor-star:nth-child(1) { top: 12px; left: 16px; animation-delay: 0s }
+[data-ui-style="eris"] .login-decor-star:nth-child(2) { top: 8px; right: 20px; animation-delay: .8s }
+[data-ui-style="eris"] .login-decor-star:nth-child(3) { bottom: 16px; left: 24px; animation-delay: 1.6s }
+[data-ui-style="eris"] .login-decor-star:nth-child(4) { bottom: 12px; right: 14px; animation-delay: 2.2s }
+
+@keyframes erisStarTwinkle {
+    0%, 100% { opacity: .15; transform: scale(.85) }
+    50% { opacity: .45; transform: scale(1.1) }
+}
+
+[data-ui-style="eris"] .login-decor-cloud {
+    position: absolute;
+    bottom: -8px;
+    pointer-events: none;
+    opacity: .12;
+    color: #7CC4A8
+}
+
+[data-ui-style="eris"] .login-decor-cloud:nth-child(5) { left: -10px }
+[data-ui-style="eris"] .login-decor-cloud:nth-child(6) { right: -6px }
+
+ 
+[data-theme="dark"][data-ui-style="eris"] .login-overlay {
+    background: #131a24
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-overlay::after {
+    background: linear-gradient(90deg, rgba(19, 26, 36, .03) 0%, rgba(19, 26, 36, .18) 45%, rgba(19, 26, 36, .55) 62%, #131a24 100%)
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card {
+    background: rgba(22, 27, 34, .88);
+    border-color: rgba(42, 52, 65, .6)
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card h2 {
+    color: #E2E8F0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card p {
+    color: #A0B0C0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card .form-group input {
+    background: rgba(13, 17, 23, .5);
+    border-color: rgba(91, 173, 224, .15);
+    color: #E2E8F0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card .form-group input:focus {
+    background: rgba(13, 17, 23, .7);
+    border-color: rgba(91, 173, 224, .4);
+    box-shadow: 0 0 0 3px rgba(91, 173, 224, .08)
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card .form-group input::placeholder {
+    color: #5A6C7D
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card .btn-secondary {
+    background: rgba(22, 27, 34, .5);
+    border-color: rgba(91, 173, 224, .15);
+    color: #A0B0C0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-card .btn-secondary:hover {
+    background: rgba(22, 27, 34, .8);
+    border-color: rgba(91, 173, 224, .3);
+    color: #E2E8F0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-hint {
+    color: #5A6C7D
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-hint code {
+    background: rgba(91, 173, 224, .06);
+    border-color: rgba(91, 173, 224, .12);
+    color: #5BADE0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-lang-select {
+    background-color: rgba(22, 27, 34, .5);
+    border-color: rgba(91, 173, 224, .15);
+    color: #A0B0C0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-lang-select:hover {
+    background-color: rgba(22, 27, 34, .8);
+    border-color: rgba(91, 173, 224, .3);
+    color: #E2E8F0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-lang-select option {
+    background: #161B22;
+    color: #E2E8F0
+}
+
+[data-theme="dark"][data-ui-style="eris"] .login-decor-star {
+    color: #5BADE0
+}
+
+ 
+@media (max-width: 768px) {
+    [data-ui-style="eris"] .login-overlay {
+        justify-content: center;
+        align-items: flex-end;
+        padding: 0
+    }
+
+    [data-ui-style="eris"] .login-overlay::before {
+        background-position: left center;
+        background-size: cover
+    }
+
+    [data-ui-style="eris"] .login-overlay::after {
+        background: linear-gradient(180deg, rgba(249, 248, 244, .2) 0%, rgba(249, 248, 244, .75) 35%, rgba(249, 248, 244, .95) 55%, #F9F8F4 100%)
+    }
+
+    [data-theme="dark"][data-ui-style="eris"] .login-overlay::after {
+        background: linear-gradient(180deg, rgba(19, 26, 36, .08) 0%, rgba(19, 26, 36, .35) 35%, rgba(19, 26, 36, .6) 55%, #131a24 100%)
+    }
+
+    [data-ui-style="eris"] .login-card {
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        border-radius: 20px 20px 0 0;
+        padding: 0 28px 28px;
+        max-height: 85vh;
+        overflow-y: auto
+    }
+
+    [data-ui-style="eris"] .login-avatar img {
+        width: 160px
+    }
+}
+
+@media (max-width: 480px) {
+    [data-ui-style="eris"] .login-card {
+        padding: 0 20px 20px;
+        border-radius: 16px 16px 0 0
+    }
+
+    [data-ui-style="eris"] .login-avatar img {
+        width: 140px
+    }
+
+    [data-ui-style="eris"] .login-card h2 {
+        font-size: 18px
+    }
 }
 
 .builder-toolbar {

@@ -1,5 +1,5 @@
 const API = '/Dashboard', TK = '__ep_tk__';
-let ws = null, allEvents = [], platforms = [], authed = false;
+let ws = null, allEvents = [], platforms = [], authed = false, _adapterLogos = {};
 
 const I18N = {
     zh: {
@@ -148,9 +148,11 @@ const I18N = {
         settings_title: '仪表盘设置',
         settings_appearance: '外观', settings_behavior: '行为',
         settings_theme: '深色主题',         settings_language: '语言',
+        settings_ui_style: '界面风格',
         settings_sidebar: '折叠侧边栏', settings_refresh_interval: '刷新间隔',
         settings_event_limit: '事件流数量', settings_disabled: '关闭',
         settings_restart_desc: '重新加载所有模块和适配器',
+        settings_logout: '退出登录', settings_logout_desc: '清除令牌并返回登录页',
         upload_modal_title: '上传安装', upload_drop_hint: '拖拽文件到此处或点击选择',
         force_install: '强制安装', force_install_desc: '忽略版本号强制重新安装 (--force-reinstall)',
         start_install: '开始安装', pip_mirror: 'pip 镜像源',
@@ -310,9 +312,11 @@ const I18N = {
         settings_title: 'Dashboard Settings',
         settings_appearance: 'Appearance', settings_behavior: 'Behavior',
         settings_theme: 'Dark Theme',         settings_language: 'Language',
+        settings_ui_style: 'UI Style',
         settings_sidebar: 'Collapse Sidebar', settings_refresh_interval: 'Refresh Interval',
         settings_event_limit: 'Event Limit', settings_disabled: 'Disabled',
         settings_restart_desc: 'Reload all modules and adapters',
+        settings_logout: 'Sign Out', settings_logout_desc: 'Clear token and return to login',
         upload_modal_title: 'Upload & Install', upload_drop_hint: 'Drop file here or click to select',
         force_install: 'Force Install', force_install_desc: 'Force reinstall regardless of version (--force-reinstall)',
         start_install: 'Start Install', pip_mirror: 'pip Mirror',
@@ -472,9 +476,11 @@ const I18N = {
         settings_title: '儀表盤設定',
         settings_appearance: '外觀', settings_behavior: '行為',
         settings_theme: '深色主題', settings_language: '語言',
+        settings_ui_style: '介面風格',
         settings_sidebar: '摺疊側邊欄', settings_refresh_interval: '重新整理間隔',
         settings_event_limit: '事件流數量', settings_disabled: '關閉',
         settings_restart_desc: '重新載入所有模組和適配器',
+        settings_logout: '登出', settings_logout_desc: '清除令牌並返回登入頁',
         upload_modal_title: '上傳安裝', upload_drop_hint: '拖拽檔案到此處或點擊選擇',
         force_install: '強制安裝', force_install_desc: '忽略版本號強制重新安裝 (--force-reinstall)',
         start_install: '開始安裝', pip_mirror: 'pip 鏡像源',
@@ -633,9 +639,11 @@ const I18N = {
         settings_title: 'ダッシュボード設定',
         settings_appearance: '外観', settings_behavior: '動作',
         settings_theme: 'ダークテーマ', settings_language: '言語',
+        settings_ui_style: 'UIスタイル',
         settings_sidebar: 'サイドバーを折りたたむ', settings_refresh_interval: '更新間隔',
         settings_event_limit: 'イベント数制限', settings_disabled: '無効',
         settings_restart_desc: 'すべてのモジュールとアダプタを再読込',
+        settings_logout: 'ログアウト', settings_logout_desc: 'トークンを消去してログインページに戻る',
         upload_modal_title: 'アップロードインストール', upload_drop_hint: 'ファイルをここにドラッグまたはクリックして選択',
         force_install: '強制インストール', force_install_desc: 'バージョンを無視して強制再インストール (--force-reinstall)',
         start_install: 'インストール開始', pip_mirror: 'pip ミラー',
@@ -796,9 +804,11 @@ const I18N = {
         settings_title: 'Настройки панели',
         settings_appearance: 'Внешний вид', settings_behavior: 'Поведение',
         settings_theme: 'Тёмная тема', settings_language: 'Язык',
+        settings_ui_style: 'Стиль интерфейса',
         settings_sidebar: 'Свернуть боковую панель', settings_refresh_interval: 'Интервал обновления',
         settings_event_limit: 'Лимит событий', settings_disabled: 'Отключено',
         settings_restart_desc: 'Перезагрузить все модули и адаптеры',
+        settings_logout: 'Выйти', settings_logout_desc: 'Очистить токен и вернуться к входу',
         upload_modal_title: 'Загрузка и установка', upload_drop_hint: 'Перетащите файл или нажмите для выбора',
         force_install: 'Принудительная установка', force_install_desc: 'Принудительная переустановка независимо от версии (--force-reinstall)',
         start_install: 'Начать установку', pip_mirror: 'pip зеркало',
@@ -1142,6 +1152,17 @@ function applyTheme(th) {
 }
 function toggleTheme() { const th = getTheme() === 'dark' ? 'light' : 'dark'; localStorage.setItem('ep_theme', th); applyTheme(th) }
 
+function getUiStyle() {
+    return localStorage.getItem('ep_ui_style') || 'eris';
+}
+function applyUiStyle(style) {
+    document.documentElement.setAttribute('data-ui-style', style);
+}
+function applySettingUiStyle(val) {
+    localStorage.setItem('ep_ui_style', val);
+    applyUiStyle(val);
+}
+
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show') }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show') }
 
@@ -1155,6 +1176,43 @@ function api(path, opts) {
         if (r.status === 401) { authed = false; localStorage.removeItem(TK); document.querySelector('.app').classList.remove('authed'); showLogin(); return null }
         return r.json()
     }).catch(() => null);
+}
+
+async function fetchAdapterLogos() {
+    const d = await api('/api/adapter-logos');
+    if (d && d.logos) _adapterLogos = d.logos;
+}
+
+function getAdapterLogo(name) {
+    if (!name) return null;
+    var low = name.toLowerCase(), best = null, bestLen = 0;
+    for (var k in _adapterLogos) {
+        if (low.indexOf(k.toLowerCase()) !== -1 && k.length > bestLen) {
+            best = _adapterLogos[k]; bestLen = k.length;
+        }
+    }
+    return best;
+}
+
+function adapterLogoImg(name, size) {
+    var s = size || 20;
+    var src = getAdapterLogo(name);
+    if (!src) return '';
+    return '<img src="' + esc(src) + '" style="width:' + s + 'px;height:' + s + 'px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.remove()">';
+}
+
+function _botAvatarFallback(el) {
+    var logo = el.getAttribute('data-logo');
+    if (logo && el.src !== logo) {
+        el.removeAttribute('data-logo');
+        el.src = logo;
+        var container = el.parentElement;
+        if (container) { container.classList.add('has-logo'); container.classList.remove('bot-avatar'); container.classList.add('bot-avatar'); }
+        return;
+    }
+    var container = el.parentElement;
+    if (container) { container.classList.remove('has-logo'); }
+    el.outerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>';
 }
 
 function go(name, el) {
@@ -1238,8 +1296,32 @@ function toast(msg, type) {
     setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 200) }, 2500);
 }
 
-function showLogin() { document.querySelector('.app').classList.remove('authed'); document.getElementById('loginOv').classList.add('show'); const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang; document.getElementById('loginInput').focus() }
+function showLogin() {
+    document.querySelector('.app').classList.remove('authed');
+    document.getElementById('loginOv').classList.add('show');
+    const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang;
+    preloadLoginBg();
+    document.getElementById('loginInput').focus()
+}
 function closeLogin() { document.getElementById('loginOv').classList.remove('show') }
+
+let _loginBgLoaded = false;
+function preloadLoginBg() {
+    if (getUiStyle() !== 'eris' || _loginBgLoaded) return;
+    const overlay = document.getElementById('loginOv');
+    const loader = document.getElementById('loginBgLoader');
+    if (!overlay || !loader) return;
+    const img = new Image();
+    img.onload = function () {
+        _loginBgLoaded = true;
+        overlay.classList.add('bg-ready');
+        loader.classList.add('loaded');
+    };
+    img.onerror = function () {
+        loader.classList.add('loaded');
+    };
+    img.src = '/Dashboard/static/res/login/Login Background.png';
+}
 let _loginLock = false;
 async function doLogin() {
     if (_loginLock) return; _loginLock = true;
@@ -1259,6 +1341,14 @@ async function doLogin() {
         inp.select();
     }
     btn.disabled = false; btn.style.opacity = ''; _loginLock = false;
+}
+
+function doLogout() {
+    localStorage.removeItem(TK);
+    authed = false;
+    closeSettings();
+    document.querySelector('.app').classList.remove('authed');
+    showLogin();
 }
 
 function evHtml(e) {
@@ -1283,7 +1373,7 @@ async function refreshDashboard() {
 
     let aH = ''; Object.entries(ad).forEach(([n, i]) => {
         const on = i.status === 'started';
-        aH += '<div class="list-row"><span class="chip ' + (on ? 'chip-ok' : 'chip-er') + '" style="min-width:60px;justify-content:center">' + esc(i.status) + '</span><span style="flex:1;font-weight:500">' + esc(n) + '</span><span style="font-size:12px;color:var(--tx-s)">' + Object.keys(i.bots || {}).length + ' bots</span></div>';
+        aH += '<div class="list-row">' + adapterLogoImg(n, 20) + '<span class="chip ' + (on ? 'chip-ok' : 'chip-er') + '" style="min-width:60px;justify-content:center">' + esc(i.status) + '</span><span style="flex:1;font-weight:500">' + esc(n) + '</span><span style="font-size:12px;color:var(--tx-s)">' + Object.keys(i.bots || {}).length + ' bots</span></div>';
     });
     document.getElementById('dashAdapters').innerHTML = aH || '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' + t('no_adapters') + '</div>';
 
@@ -1329,15 +1419,19 @@ async function loadBots() {
         const i = x.info || {}, nm = i.user_name || i.nickname || x.bot_id, av = i.avatar;
         const la = x.last_active ? new Date(x.last_active * 1000).toLocaleString(getLocale()) : 'Never';
         const on = x.status === 'online';
-        return '<div class="bot-card" data-bot-status="' + (on ? 'online' : 'offline') + '"><div class="bot-avatar">' + (av ? '<img src="' + esc(av) + '" onerror="this.outerHTML=\'<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; style=&quot;width:24px;height:24px;opacity:.7&quot;><rect x=&quot;5&quot; y=&quot;8&quot; width=&quot;14&quot; height=&quot;10&quot; rx=&quot;2&quot;/><circle cx=&quot;9&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/><circle cx=&quot;15&quot; cy=&quot;13&quot; r=&quot;1&quot; fill=&quot;currentColor&quot;/></svg>\'">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>') + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' + esc(nm) + '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(x.platform) + ' / ' + esc(x.bot_id) + '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span><span style="font-size:12px;font-weight:500;color:' + (on ? 'var(--ok-c)' : 'var(--tx-s)') + '">' + (on ? t('online') : t('offline')) + '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' + esc(la) + '</div></div></div>';
+        const logoSrc = getAdapterLogo(x.platform);
+        const useLogo = !av && logoSrc;
+        const avCls = useLogo ? 'bot-avatar has-logo' : 'bot-avatar';
+        let avatarHtml;
+        if (av) {
+            avatarHtml = '<img src="' + esc(av) + '" data-logo="' + (logoSrc ? esc(logoSrc) : '') + '" onerror="_botAvatarFallback(this)">';
+        } else if (logoSrc) {
+            avatarHtml = '<img src="' + esc(logoSrc) + '" onerror="_botAvatarFallback(this)">';
+        } else {
+            avatarHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>';
+        }
+        return '<div class="bot-card" data-bot-status="' + (on ? 'online' : 'offline') + '"><div class="' + avCls + '">' + avatarHtml + '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' + esc(nm) + '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' + esc(x.platform) + ' / ' + esc(x.bot_id) + '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span><span style="font-size:12px;font-weight:500;color:' + (on ? 'var(--ok-c)' : 'var(--tx-s)') + '">' + (on ? t('online') : t('offline')) + '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' + esc(la) + '</div></div></div>';
     }).join('') : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' + t('no_bots') + '</h3></div>';
-
-    var botCards = document.querySelectorAll('.bot-card[data-bot-status]');
-    botCards.forEach(function(card) {
-        var isOnline = card.dataset.botStatus === 'online';
-        var inst = createBotStatusIcon(card);
-        if (inst) inst.setState(isOnline ? 1 : 0, false);
-    });
 }
 
 async function loadModules() {
@@ -1378,7 +1472,8 @@ function renderPluginRow(m, isAd) {
         acts += '<button class="btn btn-danger btn-xs" onclick="moduleAction(\'' + esc(m.name) + '\',\'uninstall\',\'' + esc(m.type) + '\',\'' + esc(m.package) + '\')">' + t('uninstall_module') + '</button> ';
     }
 
-    return '<div class="module-row"><span class="module-status-dot ' + statusDot + '"></span><div class="module-info"><div class="module-name">' + esc(m.name) + '</div><div class="module-meta">' + meta + '</div></div><div class="module-actions">' + acts + '</div></div>';
+    const adLogo = isAd ? adapterLogoImg(m.name, 20) : '';
+    return '<div class="module-row"><span class="module-status-dot ' + statusDot + '"></span>' + adLogo + '<div class="module-info"><div class="module-name">' + esc(m.name) + '</div><div class="module-meta">' + meta + '</div></div><div class="module-actions">' + acts + '</div></div>';
 }
 async function moduleAction(name, action, type, pkg) {
     if (!authed) return showLogin();
@@ -1789,6 +1884,7 @@ function setSetting(key, val) {
 
 function showSettings() {
     document.getElementById('settingsTheme').checked = getTheme() === 'dark';
+    document.getElementById('settingsUiStyle').value = getUiStyle();
     document.getElementById('settingsLang').value = lang;
     document.getElementById('settingsSidebar').checked = document.getElementById('sidebar').classList.contains('collapsed');
     document.getElementById('settingsRefresh').value = getSetting('refresh_interval', '5000');
@@ -1960,7 +2056,7 @@ function wsConnect() {
     };
 }
 
-function loadAll() { initMirrorSelects(); initHeaderStatusIcon(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
+function loadAll() { initMirrorSelects(); initHeaderStatusIcon(); fetchAdapterLogos(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
 
  
 
@@ -3829,7 +3925,7 @@ async function saveCmdEdit() {
 }
 
 (function () {
-    applyTheme(getTheme()); applyI18n();
+    applyTheme(getTheme()); applyUiStyle(getUiStyle()); applyI18n();
     const collapsed = localStorage.getItem('ep_sidebar_collapsed') === 'true';
     if (collapsed) document.getElementById('sidebar').classList.add('collapsed');
     const tk = localStorage.getItem(TK);

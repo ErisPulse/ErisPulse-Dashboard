@@ -723,6 +723,7 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/auth/status", handler=self._api_auth_status, methods=["GET"])
         r.register_http_route(mn, "/api/status", handler=self._api_status, methods=["GET"])
         r.register_http_route(mn, "/api/system", handler=self._api_system, methods=["GET"])
+        r.register_http_route(mn, "/api/adapter-logos", handler=self._api_adapter_logos, methods=["GET"])
         r.register_http_route(mn, "/api/adapters", handler=self._api_adapters, methods=["GET"])
         r.register_http_route(mn, "/api/modules", handler=self._api_modules, methods=["GET"])
         r.register_http_route(mn, "/api/modules/action", handler=self._api_modules_action, methods=["POST"])
@@ -928,6 +929,17 @@ class Main(BaseModule):
                 )
             adapters.append(info)
         return JSONResponse({"adapters": adapters})
+
+    async def _api_adapter_logos(self, request: Request) -> JSONResponse:
+        import os as _os
+        logo_dir = Path(__file__).parent / "static" / "res" / "adapter_logo"
+        logos = {}
+        if logo_dir.exists() and logo_dir.is_dir():
+            for f in _os.listdir(str(logo_dir)):
+                if f.lower().endswith('.png'):
+                    name = f[:-4]
+                    logos[name] = "/Dashboard/static/res/adapter_logo/" + f
+        return JSONResponse({"logos": logos})
 
     async def _api_modules_action(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
