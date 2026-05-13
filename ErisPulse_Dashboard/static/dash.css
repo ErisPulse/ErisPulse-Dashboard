@@ -2641,6 +2641,42 @@ select.form-select::-ms-expand {
     color: var(--sc-c)
 }
 
+/* ========== API 路由分组样式 ========== */
+.route-group-card .card-header {
+    cursor: pointer;
+    user-select: none
+}
+
+.route-group-card .card-header:hover {
+    background: var(--bg-s)
+}
+
+.route-group-card .route-group-chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform .2s
+}
+
+.route-group-card.collapsed .route-group-chevron {
+    transform: rotate(0deg)
+}
+
+.route-group-body .route-item {
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--bd);
+    font-size: 13px;
+    transition: background .2s
+}
+
+.route-group-body .route-item:last-child {
+    border-bottom: none
+}
+
+.route-group-body .route-item:hover {
+    background: var(--bg-s)
+}
+
 .btn-danger:hover {
     background: var(--er-c);
     color: white

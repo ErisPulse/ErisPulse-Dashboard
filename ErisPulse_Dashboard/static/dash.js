@@ -165,6 +165,7 @@ const I18N = {
         install_with_options: '安装选项',
         status_icons_conn: '连接状态',
         status_conn_disconnected: '未连接', status_conn_connected: '已连接', status_conn_error: '连接异常',
+        expand_all: '展开全部', collapse_all: '收起全部',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -329,6 +330,7 @@ const I18N = {
         install_with_options: 'Install Options',
         status_icons_conn: 'Connection',
         status_conn_disconnected: 'Disconnected', status_conn_connected: 'Connected', status_conn_error: 'Connection Error',
+        expand_all: 'Expand All', collapse_all: 'Collapse All',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -493,6 +495,7 @@ const I18N = {
         install_with_options: '安裝選項',
         status_icons_conn: '連線狀態',
         status_conn_disconnected: '未連線', status_conn_connected: '已連線', status_conn_error: '連線異常',
+        expand_all: '展開全部', collapse_all: '收起全部',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -656,6 +659,7 @@ const I18N = {
         install_with_options: 'インストールオプション',
         status_icons_conn: '接続状態',
         status_conn_disconnected: '未接続', status_conn_connected: '接続済み', status_conn_error: '接続エラー',
+        expand_all: 'すべて展開', collapse_all: 'すべて折り畳む',
     },
     
     ru: {
@@ -821,6 +825,7 @@ const I18N = {
         install_with_options: 'Параметры установки',
         status_icons_conn: 'Соединение',
         status_conn_disconnected: 'Отключено', status_conn_connected: 'Подключено', status_conn_error: 'Ошибка соединения',
+        expand_all: 'Развернуть всё', collapse_all: 'Свернуть всё',
     }
 };
 
@@ -2760,47 +2765,109 @@ async function loadApiRoutes() {
     document.getElementById('httpRouteCount').textContent = httpRoutes.length;
     document.getElementById('wsRouteCount').textContent = wsRoutes.length;
     
-    if (httpRoutes.length === 0) {
-        document.getElementById('httpRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_http_routes') + '</div>';
-    } else {
-        const httpHtml = httpRoutes.map(route => {
-            const methodColor = {
-                'GET': 'method-get', 'POST': 'method-post', 'PUT': 'method-put',
-                'DELETE': 'method-delete', 'PATCH': 'method-patch', 'OPTIONS': 'method-options', 'HEAD': 'method-head'
-            }[route.method] || 'method-get';
-            const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
-            const apiPath = route.path;
-            return `<div class="route-item" style="padding:12px 16px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    <span class="method-badge ${methodColor}">${route.method}</span>
-                    ${moduleBadge}
-                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(apiPath)}</code>
-                    <div style="margin-left:auto">
-                        <button class="btn btn-secondary btn-xs" onclick="openRouteTest('${esc(route.method)}','${esc(route.full_path)}')">${t('test')}</button>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('httpRouteList').innerHTML = httpHtml;
-    }
+    var groups = {};
     
-    if (wsRoutes.length === 0) {
-        document.getElementById('wsRouteList').innerHTML = '<div style="padding:16px;font-size:13px;color:var(--tx-s)">' + t('no_ws_routes') + '</div>';
+    httpRoutes.forEach(function(r) {
+        var m = r.module || 'System';
+        if (!groups[m]) groups[m] = { http: [], ws: [] };
+        groups[m].http.push(r);
+    });
+    
+    wsRoutes.forEach(function(r) {
+        var m = r.module || 'System';
+        if (!groups[m]) groups[m] = { http: [], ws: [] };
+        groups[m].ws.push(r);
+    });
+    
+    var moduleNames = Object.keys(groups).sort(function(a, b) {
+        if (a === 'System') return 1;
+        if (b === 'System') return -1;
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+    
+    var methodColor = {
+        'GET': 'method-get', 'POST': 'method-post', 'PUT': 'method-put',
+        'DELETE': 'method-delete', 'PATCH': 'method-patch', 'OPTIONS': 'method-options', 'HEAD': 'method-head'
+    };
+    
+    var html = '';
+    
+    moduleNames.forEach(function(mod) {
+        var g = groups[mod];
+        var totalRoutes = g.http.length + g.ws.length;
+        if (totalRoutes === 0) return;
+        
+        html += '<div class="card route-group-card collapsed" style="margin-bottom:12px">';
+        html += '<div class="card-header" style="cursor:pointer;user-select:none" onclick="toggleRouteGroup(this)">';
+        html += '<svg class="route-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;transition:transform .2s">';
+        html += '<polyline points="6 9 12 15 18 9"/></svg>';
+        html += '<span style="flex:1;font-size:14px">' + esc(mod) + '</span>';
+        html += '<span class="chip chip-sc" style="margin:0">' + totalRoutes + ' routes</span>';
+        if (g.http.length > 0) html += '<span class="chip chip-pr" style="margin:0;margin-left:4px">' + g.http.length + ' HTTP</span>';
+        if (g.ws.length > 0) html += '<span class="chip chip-sc" style="margin:0;margin-left:4px">' + g.ws.length + ' WS</span>';
+        html += '</div>';
+        html += '<div class="route-group-body" style="display:none">';
+        
+        g.http.forEach(function(r) {
+            var mc = methodColor[r.method] || 'method-get';
+            html += '<div class="route-item">';
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+            html += '<span class="method-badge ' + mc + '">' + r.method + '</span>';
+            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.path) + '</code>';
+            html += '<div style="margin-left:auto">';
+            html += '<button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' + esc(r.method) + '\',\'' + esc(r.full_path) + '\')">' + t('test') + '</button>';
+            html += '</div></div></div>';
+        });
+        
+        g.ws.forEach(function(r) {
+            var authBadge = r.has_auth ? '<span class="chip chip-wr" style="margin:0">' + t('requires_auth') + '</span>' : '';
+            html += '<div class="route-item">';
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+            html += '<span class="method-badge method-ws">WS</span>';
+            html += authBadge;
+            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.path) + '</code>';
+            html += '</div></div>';
+        });
+        
+        html += '</div></div>';
+    });
+    
+    document.getElementById('routeModulesContainer').innerHTML = html || '<div style="padding:16px;font-size:13px;color:var(--tx-s);text-align:center">' + t('no_data') + '</div>';
+}
+
+function toggleRouteGroup(hd) {
+    var card = hd.parentElement;
+    var body = card.querySelector('.route-group-body');
+    var chevron = card.querySelector('.route-group-chevron');
+    var collapsed = card.classList.contains('collapsed');
+    
+    if (collapsed) {
+        body.style.display = 'block';
+        chevron.style.transform = 'rotate(180deg)';
+        card.classList.remove('collapsed');
     } else {
-        const wsHtml = wsRoutes.map(route => {
-            const moduleBadge = route.module ? `<span class="chip chip-sc" style="margin-right:8px">${esc(route.module)}</span>` : '';
-            const authBadge = route.has_auth ? `<span class="chip chip-wr" style="margin-right:8px">${t('requires_auth')}</span>` : '';
-            return `<div class="route-item" style="padding:12px 16px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    <span class="method-badge method-ws">WS</span>
-                    ${moduleBadge}
-                    ${authBadge}
-                    <code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">${esc(route.path)}</code>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('wsRouteList').innerHTML = wsHtml;
+        body.style.display = 'none';
+        chevron.style.transform = 'rotate(0deg)';
+        card.classList.add('collapsed');
     }
+}
+
+function expandAllRouteGroups() {
+    var cards = document.querySelectorAll('.route-group-card');
+    cards.forEach(function(card) {
+        card.classList.remove('collapsed');
+        card.querySelector('.route-group-body').style.display = 'block';
+        card.querySelector('.route-group-chevron').style.transform = 'rotate(180deg)';
+    });
+}
+
+function collapseAllRouteGroups() {
+    var cards = document.querySelectorAll('.route-group-card');
+    cards.forEach(function(card) {
+        card.classList.add('collapsed');
+        card.querySelector('.route-group-body').style.display = 'none';
+        card.querySelector('.route-group-chevron').style.transform = 'rotate(0deg)';
+    });
 }
 
 // ========== 消息统计功能 ==========
