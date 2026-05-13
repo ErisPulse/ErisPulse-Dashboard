@@ -36,13 +36,14 @@ class Main(BaseModule):
         self._max_audit_log = 500
         self._command_rules: dict[str, dict] = {}
         self._command_middleware_func = None
+        self._registered_views: dict[str, dict] = {}
         self._register_routes()
 
     @staticmethod
     def get_load_strategy():
         from ErisPulse.loaders import ModuleLoadStrategy
 
-        return ModuleLoadStrategy(lazy_load=False, priority=100)
+        return ModuleLoadStrategy(lazy_load=False, priority=99999)
 
     def _get_pkg_manager(self):
         if self._pkg_manager is None:
@@ -101,6 +102,47 @@ class Main(BaseModule):
         if not provided:
             return False
         return secrets.compare_digest(str(provided), self._token)
+
+    def register_view(self, *, id: str, title: str = "", title_en: str = "",
+                      icon_svg: str = "", html_content: str = "",
+                      js_content: str = "", css_content: str = "",
+                      iframe_url: str = "", loader: str = "",
+                      group: str = "group_extensions",
+                      group_title: str = "", group_title_en: str = "") -> bool:
+        if not id:
+            self.logger.warning("register_view: id is required")
+            return False
+        if id in self._registered_views:
+            self.logger.warning(f"register_view: view '{id}' already registered, overwriting")
+        view_data = {
+            "id": id,
+            "title": title or id,
+            "title_en": title_en or title or id,
+            "icon_svg": icon_svg,
+            "html_content": html_content,
+            "js_content": js_content,
+            "css_content": css_content,
+            "iframe_url": iframe_url,
+            "loader": loader,
+            "group": group,
+            "group_title": group_title,
+            "group_title_en": group_title_en,
+        }
+        self._registered_views[id] = view_data
+        self.logger.info(f"Module view registered: {id}")
+        self._safe_broadcast({"type": "views_changed", "data": {"action": "register", "id": id}})
+        return True
+
+    def unregister_view(self, id: str) -> bool:
+        if id not in self._registered_views:
+            return False
+        del self._registered_views[id]
+        self.logger.info(f"Module view unregistered: {id}")
+        self._safe_broadcast({"type": "views_changed", "data": {"action": "unregister", "id": id}})
+        return True
+
+    def get_registered_views(self) -> list[dict]:
+        return list(self._registered_views.values())
 
     def _load_command_rules(self):
         try:
@@ -537,13 +579,56 @@ class Main(BaseModule):
             
             new_adapter_map = af.get_entry_point_map()
             existing_adapters = set(self.sdk.adapter.list_registered())
+            new_adapter_names = []
             for ep_name, ep in new_adapter_map.items():
                 if ep_name not in existing_adapters:
-                    self.logger.info(f"Found new adapter: {ep_name} (requires restart)")
-                    self._safe_broadcast({
-                        "type": "module_changed",
-                        "data": {"name": ep_name, "action": "installed_adapter"},
-                    })
+                    self.logger.info(f"Dynamic loading new adapter: {ep_name}")
+                    try:
+                        adapter_class = ep.load()
+                        import importlib.metadata as imd
+                        import sys
+                        adapter_obj = sys.modules.get(adapter_class.__module__)
+                        dist = imd.distribution(ep.dist.name) if ep.dist else None
+                        adapter_info = {
+                            "meta": {
+                                "name": ep_name,
+                                "version": getattr(adapter_obj, "__version__", dist.version if dist else "1.0.0"),
+                                "description": getattr(adapter_obj, "__description__", ""),
+                                "author": getattr(adapter_obj, "__author__", ""),
+                                "license": getattr(adapter_obj, "__license__", ""),
+                                "package": ep.dist.name if ep.dist else "",
+                                "top_level": af.get_top_level_modules(ep.dist.name) if ep.dist else [],
+                            },
+                            "adapter_class": adapter_class,
+                        }
+                        if adapter_obj is not None:
+                            if not hasattr(adapter_obj, "adapterInfo"):
+                                setattr(adapter_obj, "adapterInfo", {})
+                            adapter_obj.adapterInfo[ep_name] = adapter_info
+
+                        self.sdk.adapter._config_register(ep_name, True)
+                        self.sdk.adapter.register(ep_name, adapter_class, adapter_info)
+                        new_adapter_names.append(ep_name)
+                        self.logger.info(f"Adapter {ep_name} registered successfully")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to dynamic load adapter {ep_name}: {e}")
+
+            if new_adapter_names and self._loop and not self._loop.is_closed():
+                async def _startup_new_adapters():
+                    for platform in new_adapter_names:
+                        try:
+                            await self.sdk.adapter.startup(platform)
+                            self.logger.info(f"Adapter {platform} started successfully")
+                        except Exception as e:
+                            self.logger.warning(f"Failed to startup adapter {platform}: {e}")
+
+                asyncio.run_coroutine_threadsafe(_startup_new_adapters(), self._loop)
+
+            for ep_name in new_adapter_names:
+                self._safe_broadcast({
+                    "type": "module_changed",
+                    "data": {"name": ep_name, "action": "installed_adapter"},
+                })
         except Exception as e:
             self.logger.warning(f"Dynamic module loading failed: {e}")
 
@@ -795,6 +880,8 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/commands", handler=self._api_commands, methods=["GET"])
         r.register_http_route(mn, "/api/commands/{name}", handler=self._api_command_update, methods=["PUT"])
         
+        r.register_http_route(mn, "/api/views", handler=self._api_views, methods=["GET"])
+        
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -859,6 +946,7 @@ class Main(BaseModule):
             "/api/files/decompress",
             "/api/commands",
             "/api/commands/{name}",
+            "/api/views",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -2570,4 +2658,11 @@ class Main(BaseModule):
         self._sync_command_aliases()
         self._add_audit_log("command_update", cmd_name, request)
         return JSONResponse({"success": True, "rule": rule})
+
+    # ========== 模块视窗 API ==========
+
+    async def _api_views(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        return JSONResponse({"views": self.get_registered_views()})
 

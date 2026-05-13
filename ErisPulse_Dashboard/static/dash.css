@@ -68,18 +68,18 @@
 
 /* ========== ErisPulse Global Theme ========== */
 [data-ui-style="eris"] {
-    --bg-p: #F9F8F4;
-    --bg-s: #F0EFE9;
+    --bg-p: #F4F7FB;
+    --bg-s: #EBF0F7;
     --bg-t: #FFFFFF;
     --tx-p: #2C3E50;
     --tx-s: #5A6C7D;
     --tx-t: #A0B0C0;
-    --bd: #E8E6DF;
-    --bd-h: #D0CDC4;
-    --accent: #4A9CD8;
-    --accent-h: #3B86BF;
-    --sh: rgba(44, 62, 80, .06);
-    --modal: rgba(44, 62, 80, .45);
+    --bd: #DDE3EC;
+    --bd-h: #CDD5E0;
+    --accent: #7EB8D8;
+    --accent-h: #6AA8CA;
+    --sh: rgba(100, 130, 160, .06);
+    --modal: rgba(100, 130, 160, .45);
     --ok-bg: #E8F5E9;
     --ok-c: #2E7D32;
     --ok-bd: #C8E6C9;
@@ -95,20 +95,20 @@
     --sc-bg: #E0F2F1;
     --sc-c: #00695C;
     --sc-bd: #B2DFDB;
-    --lk: #4A9CD8
+    --lk: #7EB8D8
 }
 
 [data-theme="dark"][data-ui-style="eris"] {
-    --bg-p: #0D1117;
-    --bg-s: #161B22;
-    --bg-t: #1C2128;
+    --bg-p: #0E1520;
+    --bg-s: #151C28;
+    --bg-t: #1A2230;
     --tx-p: #E2E8F0;
     --tx-s: #A0B0C0;
     --tx-t: #5A6C7D;
-    --bd: #2A3441;
-    --bd-h: #3A4A5A;
-    --accent: #5BADE0;
-    --accent-h: #4A9CD8;
+    --bd: #283545;
+    --bd-h: #384D62;
+    --accent: #7DBFE0;
+    --accent-h: #6AB0D4;
     --sh: rgba(0, 0, 0, .25);
     --modal: rgba(0, 0, 0, .6);
     --ok-bg: #1B5E20;
@@ -126,7 +126,7 @@
     --sc-bg: #0D2926;
     --sc-c: #80CBC4;
     --sc-bd: #00695C;
-    --lk: #5BADE0
+    --lk: #7DBFE0
 }
 
 html {
@@ -1321,7 +1321,7 @@ body {
 }
 
 [data-ui-style="eris"] .login-overlay {
-    background: #F9F8F4;
+    background: #F4F7FB;
     backdrop-filter: none;
     overflow: hidden;
     padding: 0;
@@ -1347,8 +1347,8 @@ body {
     content: '';
     width: 36px;
     height: 36px;
-    border: 3px solid rgba(74, 156, 216, .2);
-    border-top-color: #4A9CD8;
+    border: 3px solid rgba(126, 184, 216, .2);
+    border-top-color: #7EB8D8;
     border-radius: 50%;
     animation: erisSpin .8s linear infinite
 }
@@ -1378,7 +1378,7 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(249, 248, 244, .05) 0%, rgba(249, 248, 244, .25) 45%, rgba(249, 248, 244, .88) 62%, #F9F8F4 100%);
+    background: linear-gradient(90deg, rgba(244, 247, 251, .05) 0%, rgba(244, 247, 251, .25) 45%, rgba(244, 247, 251, .88) 62%, #F4F7FB 100%);
     z-index: 1
 }
 
@@ -1388,13 +1388,13 @@ body {
     background: rgba(255, 255, 255, .82);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid rgba(232, 230, 223, .6);
+    border: 1px solid rgba(221, 227, 236, .6);
     border-radius: 20px;
     max-width: 420px;
     width: 100%;
     margin-right: 6%;
     padding: 0 36px 36px;
-    box-shadow: 0 8px 32px rgba(44, 62, 80, .08), 0 1px 4px rgba(44, 62, 80, .04);
+    box-shadow: 0 8px 32px rgba(100, 130, 160, .08), 0 1px 4px rgba(100, 130, 160, .04);
     animation: erisCardIn .5s cubic-bezier(.23, 1, .32, 1)
 }
 
@@ -1416,7 +1416,7 @@ body {
     height: auto;
     object-fit: contain;
     animation: erisAvatarBounce .6s cubic-bezier(.23, 1, .32, 1) .2s both;
-    filter: drop-shadow(0 2px 6px rgba(74, 156, 216, .12))
+    filter: drop-shadow(0 2px 6px rgba(126, 184, 216, .12))
 }
 
 @keyframes erisAvatarBounce {
@@ -1439,8 +1439,8 @@ body {
 }
 
 [data-ui-style="eris"] .login-card .form-group input {
-    border-color: rgba(74, 156, 216, .25);
-    background: rgba(249, 248, 244, .6);
+    border-color: rgba(126, 184, 216, .25);
+    background: rgba(244, 247, 251, .6);
     border-radius: 12px;
     padding: 14px 18px;
     font-size: 14px;
@@ -1448,9 +1448,9 @@ body {
 }
 
 [data-ui-style="eris"] .login-card .form-group input:focus {
-    border-color: #4A9CD8;
+    border-color: #7EB8D8;
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(74, 156, 216, .1)
+    box-shadow: 0 0 0 3px rgba(126, 184, 216, .1)
 }
 
 [data-ui-style="eris"] .login-card .form-group input::placeholder {
@@ -1458,30 +1458,30 @@ body {
 }
 
 [data-ui-style="eris"] .login-card .btn-primary {
-    background: #4A9CD8 100%;
+    background: #7EB8D8 100%;
     color: #fff;
     border: none;
     border-radius: 50px;
     padding: 12px 28px;
     font-weight: 600;
     font-size: 15px;
-    box-shadow: 0 2px 8px rgba(74, 156, 216, .22);
+    box-shadow: 0 2px 8px rgba(126, 184, 216, .22);
     transition: all .25s cubic-bezier(.4, 0, .2, 1)
 }
 
 [data-ui-style="eris"] .login-card .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(74, 156, 216, .32);
+    box-shadow: 0 4px 16px rgba(126, 184, 216, .32);
     transform: translateY(-1px)
 }
 
 [data-ui-style="eris"] .login-card .btn-primary:active {
     transform: scale(.98);
-    box-shadow: 0 1px 4px rgba(74, 156, 216, .2)
+    box-shadow: 0 1px 4px rgba(126, 184, 216, .2)
 }
 
 [data-ui-style="eris"] .login-card .btn-secondary {
-    background: rgba(249, 248, 244, .5);
-    border: 1px solid rgba(74, 156, 216, .2);
+    background: rgba(244, 247, 251, .5);
+    border: 1px solid rgba(126, 184, 216, .2);
     color: #5A6C7D;
     border-radius: 50px;
     transition: all .25s cubic-bezier(.4, 0, .2, 1)
@@ -1489,7 +1489,7 @@ body {
 
 [data-ui-style="eris"] .login-card .btn-secondary:hover {
     background: #fff;
-    border-color: rgba(74, 156, 216, .35);
+    border-color: rgba(126, 184, 216, .35);
     color: #2C3E50
 }
 
@@ -1498,19 +1498,19 @@ body {
 }
 
 [data-ui-style="eris"] .login-hint code {
-    background: rgba(74, 156, 216, .06);
-    border-color: rgba(74, 156, 216, .15);
-    color: #4A9CD8
+    background: rgba(126, 184, 216, .06);
+    border-color: rgba(126, 184, 216, .15);
+    color: #7EB8D8
 }
 
 [data-ui-style="eris"] .login-lang-select {
-    background-color: rgba(249, 248, 244, .5);
-    border-color: rgba(74, 156, 216, .2);
+    background-color: rgba(244, 247, 251, .5);
+    border-color: rgba(126, 184, 216, .2);
     color: #5A6C7D
 }
 
 [data-ui-style="eris"] .login-lang-select:hover {
-    border-color: #4A9CD8;
+    border-color: #7EB8D8;
     background-color: #fff;
     color: #2C3E50
 }
@@ -1531,7 +1531,7 @@ body {
     gap: 6px;
     margin-top: 16px;
     padding-top: 12px;
-    border-top: 1px solid rgba(232, 230, 223, .4)
+    border-top: 1px solid rgba(221, 227, 236, .4)
 }
 
 [data-ui-style="eris"] .login-globe-icon {
@@ -1542,7 +1542,7 @@ body {
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-footer {
-    border-top-color: rgba(42, 52, 65, .4)
+    border-top-color: rgba(40, 53, 69, .4)
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-globe-icon {
@@ -1559,7 +1559,7 @@ body {
     position: absolute;
     pointer-events: none;
     opacity: .3;
-    color: #4A9CD8;
+    color: #7EB8D8;
     animation: erisStarTwinkle 3s ease-in-out infinite
 }
 
@@ -1586,16 +1586,16 @@ body {
 
 /* ========== Eris Login: Dark Theme ========== */
 [data-theme="dark"][data-ui-style="eris"] .login-overlay {
-    background: #131a24
+    background: #0E1520
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-overlay::after {
-    background: linear-gradient(90deg, rgba(19, 26, 36, .03) 0%, rgba(19, 26, 36, .18) 45%, rgba(19, 26, 36, .55) 62%, #131a24 100%)
+    background: linear-gradient(90deg, rgba(14, 21, 32, .03) 0%, rgba(14, 21, 32, .18) 45%, rgba(14, 21, 32, .55) 62%, #0E1520 100%)
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card {
-    background: rgba(22, 27, 34, .88);
-    border-color: rgba(42, 52, 65, .6)
+    background: rgba(21, 28, 40, .88);
+    border-color: rgba(40, 53, 69, .6)
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card h2 {
@@ -1607,15 +1607,15 @@ body {
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card .form-group input {
-    background: rgba(13, 17, 23, .5);
-    border-color: rgba(91, 173, 224, .15);
+    background: rgba(14, 21, 32, .5);
+    border-color: rgba(125, 191, 224, .15);
     color: #E2E8F0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card .form-group input:focus {
-    background: rgba(13, 17, 23, .7);
-    border-color: rgba(91, 173, 224, .4);
-    box-shadow: 0 0 0 3px rgba(91, 173, 224, .08)
+    background: rgba(14, 21, 32, .7);
+    border-color: rgba(125, 191, 224, .4);
+    box-shadow: 0 0 0 3px rgba(125, 191, 224, .08)
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card .form-group input::placeholder {
@@ -1623,14 +1623,14 @@ body {
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card .btn-secondary {
-    background: rgba(22, 27, 34, .5);
-    border-color: rgba(91, 173, 224, .15);
+    background: rgba(21, 28, 40, .5);
+    border-color: rgba(125, 191, 224, .15);
     color: #A0B0C0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-card .btn-secondary:hover {
-    background: rgba(22, 27, 34, .8);
-    border-color: rgba(91, 173, 224, .3);
+    background: rgba(21, 28, 40, .8);
+    border-color: rgba(125, 191, 224, .3);
     color: #E2E8F0
 }
 
@@ -1639,30 +1639,30 @@ body {
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-hint code {
-    background: rgba(91, 173, 224, .06);
-    border-color: rgba(91, 173, 224, .12);
-    color: #5BADE0
+    background: rgba(125, 191, 224, .06);
+    border-color: rgba(125, 191, 224, .12);
+    color: #7DBFE0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-lang-select {
-    background-color: rgba(22, 27, 34, .5);
-    border-color: rgba(91, 173, 224, .15);
+    background-color: rgba(21, 28, 40, .5);
+    border-color: rgba(125, 191, 224, .15);
     color: #A0B0C0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-lang-select:hover {
-    background-color: rgba(22, 27, 34, .8);
-    border-color: rgba(91, 173, 224, .3);
+    background-color: rgba(21, 28, 40, .8);
+    border-color: rgba(125, 191, 224, .3);
     color: #E2E8F0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-lang-select option {
-    background: #161B22;
+    background: #151C28;
     color: #E2E8F0
 }
 
 [data-theme="dark"][data-ui-style="eris"] .login-decor-star {
-    color: #5BADE0
+    color: #7DBFE0
 }
 
 /* ========== Eris Login: Responsive ========== */
@@ -1679,11 +1679,11 @@ body {
     }
 
     [data-ui-style="eris"] .login-overlay::after {
-        background: linear-gradient(180deg, rgba(249, 248, 244, .2) 0%, rgba(249, 248, 244, .75) 35%, rgba(249, 248, 244, .95) 55%, #F9F8F4 100%)
+        background: linear-gradient(180deg, rgba(244, 247, 251, .2) 0%, rgba(244, 247, 251, .75) 35%, rgba(244, 247, 251, .95) 55%, #F4F7FB 100%)
     }
 
     [data-theme="dark"][data-ui-style="eris"] .login-overlay::after {
-        background: linear-gradient(180deg, rgba(19, 26, 36, .08) 0%, rgba(19, 26, 36, .35) 35%, rgba(19, 26, 36, .6) 55%, #131a24 100%)
+        background: linear-gradient(180deg, rgba(14, 21, 32, .08) 0%, rgba(14, 21, 32, .35) 35%, rgba(14, 21, 32, .6) 55%, #0E1520 100%)
     }
 
     [data-ui-style="eris"] .login-card {
@@ -3832,6 +3832,14 @@ select.form-select::-ms-expand {
         gap: 2px;
         padding-bottom: 16px
     }
+
+    .filter-spacer {
+        display: none
+    }
+
+    .filter-bar .btn-sm .btn-label {
+        display: none
+    }
 }
 
 /* ========== 上传安装模态窗 ========== */
@@ -4245,4 +4253,13 @@ select.form-select::-ms-expand {
         width: 56px;
         height: 56px
     }
+}
+
+/* 模块视窗 iframe 样式 */
+.module-view-iframe {
+    width: 100%;
+    height: calc(100vh - 120px);
+    border: none;
+    border-radius: 8px;
+    background: var(--bg-s)
 }

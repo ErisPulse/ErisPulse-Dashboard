@@ -166,6 +166,8 @@ const I18N = {
         status_icons_conn: '连接状态',
         status_conn_disconnected: '未连接', status_conn_connected: '已连接', status_conn_error: '连接异常',
         expand_all: '展开全部', collapse_all: '收起全部',
+        group_module_views: '模块视窗',
+        module_view_load_error: '模块视窗加载失败',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -331,6 +333,8 @@ const I18N = {
         status_icons_conn: 'Connection',
         status_conn_disconnected: 'Disconnected', status_conn_connected: 'Connected', status_conn_error: 'Connection Error',
         expand_all: 'Expand All', collapse_all: 'Collapse All',
+        group_module_views: 'Module Views',
+        module_view_load_error: 'Failed to load module view',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -496,6 +500,8 @@ const I18N = {
         status_icons_conn: '連線狀態',
         status_conn_disconnected: '未連線', status_conn_connected: '已連線', status_conn_error: '連線異常',
         expand_all: '展開全部', collapse_all: '收起全部',
+        group_module_views: '模組視窗',
+        module_view_load_error: '模組視窗載入失敗',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -660,6 +666,8 @@ const I18N = {
         status_icons_conn: '接続状態',
         status_conn_disconnected: '未接続', status_conn_connected: '接続済み', status_conn_error: '接続エラー',
         expand_all: 'すべて展開', collapse_all: 'すべて折り畳む',
+        group_module_views: 'モジュールビュー',
+        module_view_load_error: 'モジュールビューの読み込みに失敗しました',
     },
     
     ru: {
@@ -826,6 +834,8 @@ const I18N = {
         status_icons_conn: 'Соединение',
         status_conn_disconnected: 'Отключено', status_conn_connected: 'Подключено', status_conn_error: 'Ошибка соединения',
         expand_all: 'Развернуть всё', collapse_all: 'Свернуть всё',
+        group_module_views: 'Представления модулей',
+        module_view_load_error: 'Не удалось загрузить представление модуля',
     }
 };
 
@@ -1245,7 +1255,11 @@ function go(name, el) {
         'files': function() { fmBrowse('.'); },
         'config': loadConfig,
     };
-    if (loaders[name]) loaders[name]();
+    if (loaders[name]) {
+        loaders[name]();
+    } else if (_moduleViewLoaders && _moduleViewLoaders[name]) {
+        _moduleViewLoaders[name]();
+    }
 
     if (name !== 'logs' && _logAutoRefreshTimer) {
         clearInterval(_logAutoRefreshTimer);
@@ -1253,6 +1267,157 @@ function go(name, el) {
         const btn = document.getElementById('logAutoRefreshBtn');
         if (btn) btn.style.opacity = '0.5';
     }
+}
+
+let _moduleViewLoaders = {};
+let _moduleViewsLoaded = false;
+
+async function loadModuleViews() {
+    try {
+        const d = await api('/api/views');
+        if (!d || !d.views) return;
+        _renderModuleViews(d.views);
+    } catch (e) { console.error('loadModuleViews error', e) }
+}
+
+function _renderModuleViews(views) {
+    const sidebarNav = document.querySelector('.sidebar-nav');
+    if (!sidebarNav) return;
+    const contentDiv = document.querySelector('.content');
+    if (!contentDiv) return;
+
+    document.querySelectorAll('.nav-item[data-module-view]').forEach(el => el.remove());
+    document.querySelectorAll('.page[data-module-view]').forEach(el => el.remove());
+    document.querySelectorAll('.module-view-style').forEach(el => el.remove());
+    document.querySelectorAll('.module-view-script').forEach(el => el.remove());
+    document.querySelectorAll('.nav-group.module-view-group').forEach(el => el.remove());
+
+    _moduleViewLoaders = {};
+
+    const groups = {};
+    views.forEach(function(v) {
+        const g = v.group || 'group_extensions';
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(v);
+    });
+
+    views.forEach(function(v) {
+        if (v.css_content) {
+            const style = document.createElement('style');
+            style.className = 'module-view-style';
+            style.setAttribute('data-view-id', v.id);
+            style.textContent = v.css_content;
+            document.head.appendChild(style);
+        }
+    });
+
+    views.forEach(function(v) {
+        if (v.js_content) {
+            const script = document.createElement('script');
+            script.className = 'module-view-script';
+            script.setAttribute('data-view-id', v.id);
+            script.textContent = v.js_content;
+            document.body.appendChild(script);
+        }
+    });
+
+    views.forEach(function(v) {
+        const pageId = 'ext-' + v.id;
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        pageDiv.id = 'p-' + pageId;
+        pageDiv.setAttribute('data-module-view', v.id);
+
+        if (v.iframe_url) {
+            const sep = v.iframe_url.indexOf('?') === -1 ? '?' : '&';
+            pageDiv.innerHTML = '<iframe src="' + esc(v.iframe_url) +
+                sep + 'token=' + encodeURIComponent(localStorage.getItem(TK) || '') +
+                '" class="module-view-iframe" frameborder="0"></iframe>';
+        } else if (v.html_content) {
+            pageDiv.innerHTML = v.html_content;
+        }
+
+        contentDiv.appendChild(pageDiv);
+
+        if (v.loader && typeof window[v.loader] === 'function') {
+            _moduleViewLoaders[pageId] = window[v.loader];
+        }
+    });
+
+    Object.keys(groups).forEach(function(groupKey) {
+        const firstView = groups[groupKey][0];
+
+        let navGroup;
+        if (groupKey.startsWith('group_')) {
+            const existingTitle = sidebarNav.querySelector('.nav-group-title[data-i18n="' + groupKey + '"]');
+            if (existingTitle) {
+                navGroup = existingTitle.closest('.nav-group');
+            }
+        }
+
+        if (!navGroup) {
+            navGroup = document.createElement('div');
+            navGroup.className = 'nav-group module-view-group';
+            const groupTitle = document.createElement('div');
+            groupTitle.className = 'nav-group-title';
+            if (groupKey.startsWith('group_') && firstView.group_title) {
+                groupTitle.textContent = firstView.group_title;
+                groupTitle.setAttribute('data-i18n', groupKey);
+            } else if (groupKey.startsWith('group_')) {
+                groupTitle.setAttribute('data-i18n', groupKey);
+            } else {
+                const locale = lang;
+                if (locale === 'zh' || locale === 'zh-TW') {
+                    groupTitle.textContent = firstView.group_title || firstView.group_title_en || groupKey;
+                } else {
+                    groupTitle.textContent = firstView.group_title_en || firstView.group_title || groupKey;
+                }
+            }
+            navGroup.appendChild(groupTitle);
+            sidebarNav.insertBefore(navGroup, sidebarNav.querySelector('.sidebar-footer'));
+        }
+
+        groups[groupKey].forEach(function(v) {
+            const pageId = 'ext-' + v.id;
+            const navItem = document.createElement('a');
+            navItem.className = 'nav-item';
+            navItem.setAttribute('data-page', pageId);
+            navItem.setAttribute('data-module-view', v.id);
+            navItem.onclick = function() { go(pageId, this) };
+
+            const iconSvg = v.icon_svg || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>';
+            navItem.innerHTML = iconSvg;
+
+            const span = document.createElement('span');
+            const locale = lang;
+            if (locale === 'zh' || locale === 'zh-TW') {
+                span.textContent = v.title || v.title_en || v.id;
+            } else {
+                span.textContent = v.title_en || v.title || v.id;
+            }
+            navItem.appendChild(span);
+            navGroup.appendChild(navItem);
+        });
+    });
+
+    _moduleViewsLoaded = true;
+}
+
+function _removeModuleView(viewId) {
+    const pageId = 'ext-' + viewId;
+    const page = document.getElementById('p-' + pageId);
+    if (page) page.remove();
+    const navItem = document.querySelector('.nav-item[data-module-view="' + viewId + '"]');
+    if (navItem) {
+        const group = navItem.closest('.nav-group');
+        navItem.remove();
+        if (group && group.classList.contains('module-view-group') && group.querySelectorAll('.nav-item').length === 0) {
+            group.remove();
+        }
+    }
+    document.querySelectorAll('.module-view-style[data-view-id="' + viewId + '"]').forEach(function(el) { el.remove() });
+    document.querySelectorAll('.module-view-script[data-view-id="' + viewId + '"]').forEach(function(el) { el.remove() });
+    delete _moduleViewLoaders[pageId];
 }
 
 function showModal(title, text, actions) {
@@ -2059,12 +2224,18 @@ function wsConnect() {
                     loadPackages(true);
                 }
                 loadModules();
+            } else if (m.type === 'views_changed') {
+                if (m.data && m.data.action === 'unregister' && m.data.id) {
+                    _removeModuleView(m.data.id);
+                } else {
+                    loadModuleViews();
+                }
             }
         } catch (err) { }
     };
 }
 
-function loadAll() { initMirrorSelects(); initHeaderStatusIcon(); fetchAdapterLogos(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); restartRefreshTimer() }
+function loadAll() { initMirrorSelects(); initHeaderStatusIcon(); fetchAdapterLogos(); refreshDashboard(); loadEvents(); loadBots(); loadModules(); loadConfig(); loadStore(); loadMessageStats(); loadAuditLog(); loadPerformance(); loadPackages(); loadPackageUpdates(); loadModuleViews(); restartRefreshTimer() }
 
 // ========== 事件构建器相关 ==========
 
