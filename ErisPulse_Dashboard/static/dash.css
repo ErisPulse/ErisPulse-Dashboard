@@ -3544,6 +3544,108 @@ select.form-select::-ms-expand {
     color: var(--tx-p)
 }
 
+ 
+ 
+.settings-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    z-index: 1100;
+    opacity: 0;
+    transition: opacity .25s
+}
+
+.settings-backdrop.show {
+    display: block;
+    opacity: 1
+}
+
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1101;
+    background: var(--bg-t);
+    border-left: 1px solid var(--bd);
+    box-shadow: -8px 0 30px rgba(0, 0, 0, .12);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1)
+}
+
+.settings-panel.open {
+    transform: translateX(0)
+}
+
+.settings-panel-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0
+}
+
+.settings-panel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tx-p)
+}
+
+.settings-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
+    -webkit-overflow-scrolling: touch
+}
+
+.settings-panel-body::-webkit-scrollbar {
+    width: 4px
+}
+
+.settings-panel-body::-webkit-scrollbar-track {
+    background: transparent
+}
+
+.settings-panel-body::-webkit-scrollbar-thumb {
+    background: var(--bd);
+    border-radius: 2px
+}
+
+@media (max-width: 768px) {
+    .settings-panel {
+        width: 100%;
+        max-width: 100%
+    }
+
+    .settings-panel-body {
+        padding: 16px
+    }
+
+    .settings-row {
+        gap: 8px
+    }
+
+    .settings-label {
+        font-size: 13px
+    }
+
+    .settings-desc {
+        font-size: 11px
+    }
+
+    .settings-select {
+        max-width: 140px
+    }
+}
+
 .login-lang-select option {
     background: var(--bg-t);
     color: var(--tx-p)

@@ -1883,16 +1883,19 @@ function setSetting(key, val) {
 }
 
 function showSettings() {
+    closeSidebar();
     document.getElementById('settingsTheme').checked = getTheme() === 'dark';
     document.getElementById('settingsUiStyle').value = getUiStyle();
     document.getElementById('settingsLang').value = lang;
     document.getElementById('settingsSidebar').checked = document.getElementById('sidebar').classList.contains('collapsed');
     document.getElementById('settingsRefresh').value = getSetting('refresh_interval', '5000');
     document.getElementById('settingsEventLimit').value = getSetting('event_limit', '100');
-    document.getElementById('settingsOv').classList.add('show');
+    document.getElementById('settingsPanel').classList.add('open');
+    document.getElementById('settingsBackdrop').classList.add('show');
 }
 function closeSettings() {
-    document.getElementById('settingsOv').classList.remove('show');
+    document.getElementById('settingsPanel').classList.remove('open');
+    document.getElementById('settingsBackdrop').classList.remove('show');
 }
 
 function applySettingTheme(dark) {

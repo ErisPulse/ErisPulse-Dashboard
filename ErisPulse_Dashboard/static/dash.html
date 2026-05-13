@@ -988,13 +988,21 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="settingsOv" onclick="if(event.target===this)closeSettings()">
-        <div class="modal-box" style="max-width:440px">
-            <div style="text-align:center;margin-bottom:16px">
-                <img src="/Dashboard/static/res/erispulse_logo_hp.png" alt="ErisPulse" style="height:120px">
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-panel-hd">
+            <div style="display:flex;align-items:center;gap:8px">
+                <img src="/Dashboard/static/res/erispulse_logo_hp.png" alt="ErisPulse" style="height:28px">
+                <span class="settings-panel-title" data-i18n="settings_title"></span>
             </div>
-            <div class="modal-title" data-i18n="settings_title"></div>
-            <div style="margin-bottom:20px">
+            <button class="btn-icon" onclick="closeSettings()" style="width:32px;height:32px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="settings-panel-body">
+            <div style="text-align:center;margin-bottom:12px">
+                <img src="/Dashboard/static/res/erispulse_logo_hp.png" alt="ErisPulse" style="height:64px">
+            </div>
+            <div style="margin-bottom:8px">
                 <div class="settings-section-title" data-i18n="settings_appearance"></div>
                 <div class="settings-row">
                     <div>
@@ -1038,7 +1046,7 @@
                     </div>
                 </div>
             </div>
-            <div style="margin-bottom:20px">
+            <div style="margin-bottom:8px">
                 <div class="settings-section-title" data-i18n="settings_behavior"></div>
                 <div class="settings-row">
                     <div>
@@ -1086,11 +1094,9 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-primary" onclick="closeSettings()" data-i18n="ok"></button>
-            </div>
         </div>
     </div>
+    <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
 
     <div class="login-overlay" id="loginOv">
         <div class="login-bg-loader" id="loginBgLoader"></div>
