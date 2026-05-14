@@ -2,6 +2,8 @@
 
 # ErisPulse Dashboard
 
+![alt text](.github/dash_bot.png)
+
 **ErisPulse Web 管理面板模块**
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse-Dashboard?style=flat-square)](https://pypi.org/project/ErisPulse-Dashboard/)
