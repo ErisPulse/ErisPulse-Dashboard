@@ -1,8 +1,8 @@
 <div align="center">
 
-# ErisPulse Dashboard
+![](.github/dash_bot.png)
 
-![alt text](.github/dash_bot.png)
+# ErisPulse Dashboard
 
 **ErisPulse Web 管理面板模块**
 
