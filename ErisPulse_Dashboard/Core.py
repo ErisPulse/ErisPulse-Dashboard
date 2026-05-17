@@ -1308,6 +1308,7 @@ class Main(BaseModule):
         )
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
+        self._get_pkg_manager().invalidate_caches()
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_packages(self, request: Request) -> JSONResponse:
@@ -1523,6 +1524,7 @@ class Main(BaseModule):
             daemon=True,
         )
         t.start()
+        self._get_pkg_manager().invalidate_caches()
         return JSONResponse({"success": True, "task_id": task_id})
 
     def _run_pip_install_file(

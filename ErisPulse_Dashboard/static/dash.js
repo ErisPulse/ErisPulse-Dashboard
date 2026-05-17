@@ -168,6 +168,25 @@ const I18N = {
         expand_all: '展开全部', collapse_all: '收起全部',
         group_module_views: '模块视窗',
         module_view_load_error: '模块视窗加载失败',
+        framework_config: '框架配置',
+        framework_config_desc: '查看和修改 ErisPulse 框架的核心配置',
+        restart_required_hint: '⚠ 更新配置后需要重启框架以生效',
+        fw_section_server: '服务器',
+        fw_section_logger: '日志',
+        fw_section_storage: '存储',
+        fw_section_event_message: '事件 › 消息',
+        fw_section_event_command: '事件 › 命令',
+        fw_section_framework: '框架',
+        fw_section_config_audit: '配置审计',
+        fw_section_metrics: '指标监控',
+        fw_section_router_cors: '路由 › CORS',
+        fw_section_router_security: '路由 › 安全',
+        fw_section_router_security_headers: '路由 › 安全 › 标头',
+        fw_section_adapters_status: '适配器状态',
+        fw_section_modules_status: '模块状态',
+        fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
+        fw_server_warn_title: '⚠ 确认修改服务器配置',
+        fw_server_warn_text: '您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -335,6 +354,25 @@ const I18N = {
         expand_all: 'Expand All', collapse_all: 'Collapse All',
         group_module_views: 'Module Views',
         module_view_load_error: 'Failed to load module view',
+        framework_config: 'Framework Config',
+        framework_config_desc: 'View and modify ErisPulse framework core configuration',
+        restart_required_hint: '⚠ Changes require a framework restart to take effect',
+        fw_section_server: 'Server',
+        fw_section_logger: 'Logger',
+        fw_section_storage: 'Storage',
+        fw_section_event_message: 'Event › Message',
+        fw_section_event_command: 'Event › Command',
+        fw_section_framework: 'Framework',
+        fw_section_config_audit: 'Config Audit',
+        fw_section_metrics: 'Metrics',
+        fw_section_router_cors: 'Router › CORS',
+        fw_section_router_security: 'Router › Security',
+        fw_section_router_security_headers: 'Router › Security › Headers',
+        fw_section_adapters_status: 'Adapter Status',
+        fw_section_modules_status: 'Module Status',
+        fw_version_note: 'Note: Some options may not take effect on older ErisPulse versions',
+        fw_server_warn_title: '⚠ Confirm Server Config Change',
+        fw_server_warn_text: 'You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -502,6 +540,25 @@ const I18N = {
         expand_all: '展開全部', collapse_all: '收起全部',
         group_module_views: '模組視窗',
         module_view_load_error: '模組視窗載入失敗',
+        framework_config: '框架配置',
+        framework_config_desc: '查看和修改 ErisPulse 框架的核心配置',
+        restart_required_hint: '⚠ 更新配置後需要重啟框架以生效',
+        fw_section_server: '伺服器',
+        fw_section_logger: '日誌',
+        fw_section_storage: '儲存',
+        fw_section_event_message: '事件 › 訊息',
+        fw_section_event_command: '事件 › 指令',
+        fw_section_framework: '框架',
+        fw_section_config_audit: '配置稽核',
+        fw_section_metrics: '指標監控',
+        fw_section_router_cors: '路由 › CORS',
+        fw_section_router_security: '路由 › 安全',
+        fw_section_router_security_headers: '路由 › 安全 › 標頭',
+        fw_section_adapters_status: '適配器狀態',
+        fw_section_modules_status: '模組狀態',
+        fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
+        fw_server_warn_title: '⚠ 確認修改伺服器配置',
+        fw_server_warn_text: '您正在修改 ErisPulse 伺服器連接配置（host/port/ssl）。請確定您在幹什麼，否則不要修改此處！\n\n在 Docker 容器中操作此項可能導致您無法外部存取 ErisPulse 的 routers。',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -668,6 +725,25 @@ const I18N = {
         expand_all: 'すべて展開', collapse_all: 'すべて折り畳む',
         group_module_views: 'モジュールビュー',
         module_view_load_error: 'モジュールビューの読み込みに失敗しました',
+        framework_config: 'フレームワーク設定',
+        framework_config_desc: 'ErisPulseフレームワークのコア設定を表示・変更',
+        restart_required_hint: '⚠ 設定を更新後、フレームワークの再起動が必要です',
+        fw_section_server: 'サーバー',
+        fw_section_logger: 'ロガー',
+        fw_section_storage: 'ストレージ',
+        fw_section_event_message: 'イベント › メッセージ',
+        fw_section_event_command: 'イベント › コマンド',
+        fw_section_framework: 'フレームワーク',
+        fw_section_config_audit: '構成監査',
+        fw_section_metrics: 'メトリクス',
+        fw_section_router_cors: 'ルーター › CORS',
+        fw_section_router_security: 'ルーター › セキュリティ',
+        fw_section_router_security_headers: 'ルーター › セキュリティ › ヘッダー',
+        fw_section_adapters_status: 'アダプター状態',
+        fw_section_modules_status: 'モジュール状態',
+        fw_version_note: '注意: 一部の設定は古いバージョンのErisPulseでは無効な場合があります',
+        fw_server_warn_title: '⚠ サーバー設定変更の確認',
+        fw_server_warn_text: 'ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。',
     },
     
     ru: {
@@ -836,6 +912,25 @@ const I18N = {
         expand_all: 'Развернуть всё', collapse_all: 'Свернуть всё',
         group_module_views: 'Представления модулей',
         module_view_load_error: 'Не удалось загрузить представление модуля',
+        framework_config: 'Конфигурация фреймворка',
+        framework_config_desc: 'Просмотр и изменение основной конфигурации ErisPulse',
+        restart_required_hint: '⚠ Для применения изменений требуется перезапуск фреймворка',
+        fw_section_server: 'Сервер',
+        fw_section_logger: 'Логгер',
+        fw_section_storage: 'Хранилище',
+        fw_section_event_message: 'Событие › Сообщение',
+        fw_section_event_command: 'Событие › Команда',
+        fw_section_framework: 'Фреймворк',
+        fw_section_config_audit: 'Аудит конфигурации',
+        fw_section_metrics: 'Метрики',
+        fw_section_router_cors: 'Маршрут › CORS',
+        fw_section_router_security: 'Маршрут › Безопасность',
+        fw_section_router_security_headers: 'Маршрут › Безопасность › Заголовки',
+        fw_section_adapters_status: 'Статус адаптеров',
+        fw_section_modules_status: 'Статус модулей',
+        fw_version_note: 'Примечание: некоторые опции могут не работать в старых версиях ErisPulse',
+        fw_server_warn_title: '⚠ Подтвердите изменение конфигурации сервера',
+        fw_server_warn_text: 'Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.',
     }
 };
 
@@ -1254,6 +1349,7 @@ function go(name, el) {
         'commands': loadCommands,
         'files': function() { fmBrowse('.'); },
         'config': loadConfig,
+        'framework-config': loadFrameworkConfig,
     };
     if (loaders[name]) {
         loaders[name]();
@@ -1983,7 +2079,13 @@ async function loadConfig() {
     const c = await api('/api/config');
     if (c && c.config) { 
         window._kvData = c.config; 
-        document.getElementById('configBodyTree').innerHTML = kvTree(c.config, 'config', ''); 
+        window._fwData = c.config['ErisPulse'] || {};
+         
+        const treeData = {};
+        for (const [k, v] of Object.entries(c.config)) {
+            if (k !== 'ErisPulse') treeData[k] = v;
+        }
+        document.getElementById('configBodyTree').innerHTML = kvTree(treeData, 'config', ''); 
     }
     const s = await api('/api/storage');
     if (s) {
@@ -2142,6 +2244,114 @@ function kvTree(obj, mode, pfx, dep) {
         }
     }
     return h;
+}
+
+const _fwDefaults = {
+    server: { host: '0.0.0.0', port: 8000, ssl_certfile: null, ssl_keyfile: null },
+    logger: { level: 'INFO', log_files: [], memory_limit: 1000 },
+    storage: { use_global_db: false },
+    event: {
+        message: { ignore_self: true },
+        command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
+    },
+    framework: { enable_lazy_loading: true },
+    'config.audit': { enabled: false, max_entries: 1000 },
+    metrics: { enabled: false },
+    router: {
+        cors: { enabled: false, allow_origins: ['*'], allow_methods: ['*'], allow_headers: ['*'], allow_credentials: false, max_age: 600 },
+        security: { enabled: false, headers: { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' } },
+    },
+    'adapters.status': {},
+    'modules.status': {},
+};
+
+function deepMerge(target, source) {
+    const r = {};
+    for (const k of Object.keys(source)) {
+        if (k in target && target[k] !== null && typeof target[k] === 'object' && !Array.isArray(target[k]) && typeof source[k] === 'object' && !Array.isArray(source[k])) {
+            r[k] = deepMerge(target[k], source[k]);
+        } else {
+            r[k] = k in target ? target[k] : source[k];
+        }
+    }
+    for (const k of Object.keys(target)) {
+        if (!(k in source)) r[k] = target[k];
+    }
+    return r;
+}
+
+function fwSectionI18nKey(key) {
+    const i18nKey = 'fw_section_' + key.replace(/\./g, '_');
+    const label = t(i18nKey);
+    return label !== i18nKey ? label : key.replace(/\./g, ' › ');
+}
+
+async function loadFrameworkConfig() {
+    const c = await api('/api/config');
+    if (!c || !c.config) return;
+    const live = c.config['ErisPulse'] || {};
+    const merged = deepMerge(live, _fwDefaults);
+    window._fwData = merged;
+    const body = document.getElementById('fwConfigBody');
+    if (!body) return;
+    const sections = flattenFwSections(merged);
+    body.innerHTML = sections.map(s => renderFwSection(s)).join('');
+}
+
+function flattenFwSections(obj, prefix) {
+    prefix = prefix || '';
+    const sections = [];
+    for (const [k, v] of Object.entries(obj)) {
+        if (k === 'ErisPulse') continue;
+        const key = prefix ? prefix + '.' + k : k;
+        if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+            const allLeaf = Object.values(v).every(x => x === null || typeof x !== 'object' || Array.isArray(x));
+            if (allLeaf) {
+                sections.push({ key, values: v });
+            } else {
+                sections.push(...flattenFwSections(v, key));
+            }
+        }
+    }
+    return sections;
+}
+
+function renderFwSection(s) {
+    const displayName = fwSectionI18nKey(s.key);
+    const rows = Object.entries(s.values).map(([field, val]) => {
+        const fk = 'ErisPulse.' + s.key + '.' + field;
+        const tp = val === null ? 'null' : Array.isArray(val) ? 'object' : typeof val;
+        let ctrl = '';
+        if (tp === 'boolean') {
+            ctrl = '<label class="switch"><input type="checkbox" ' + (val ? 'checked' : '') + ' data-fk="' + esc(fk) + '" data-tp="' + tp + '" onchange="saveFwConfig(this)"><span class="switch-slider"></span></label>';
+        } else if (tp === 'number') {
+            ctrl = '<input class="fw-input" type="number" value="' + esc(String(val)) + '" data-fk="' + esc(fk) + '" data-tp="' + tp + '">';
+        } else if (tp === 'object') {
+            ctrl = '<textarea class="fw-input fw-textarea" rows="2" data-fk="' + esc(fk) + '" data-tp="' + tp + '">' + esc(JSON.stringify(val)) + '</textarea>';
+        } else {
+            ctrl = '<input class="fw-input" type="text" value="' + esc(String(val)) + '" data-fk="' + esc(fk) + '" data-tp="' + tp + '">';
+        }
+        const saveBtn = tp === 'boolean' ? '' : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
+        return '<div class="fw-row"><div class="fw-label">' + esc(field) + '</div><div class="fw-control">' + ctrl + saveBtn + '</div></div>';
+    }).join('');
+    return '<div class="fw-section"><div class="fw-section-title">' + esc(displayName) + '</div><div class="fw-section-body">' + rows + '</div></div>';
+}
+
+async function saveFwConfig(el) {
+    const fk = el.dataset.fk;
+    if (fk.startsWith('ErisPulse.server.')) {
+        const ok = await confirm2(t('fw_server_warn_title'), t('fw_server_warn_text'));
+        if (!ok) return;
+    }
+    const tp = el.dataset.tp;
+    let v = el.type === 'checkbox' ? el.checked : el.value;
+    if (tp === 'number') v = Number(v);
+    else if (tp === 'object') { try { v = JSON.parse(v) } catch(e) { return toast(t('validation_failed'), 'er') } }
+    const d = await api('/api/config', { method: 'PUT', body: JSON.stringify({ key: fk, value: v }) });
+    el.style.border = d && d.success ? '2px solid var(--ok-c)' : '2px solid var(--er-c)';
+    setTimeout(() => el.style.border = '', 1200);
+    if (d && d.success) toast(t('config_saved'), 'ok');
+    else toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
 }
 
 function toggleKvGroup(hd) {

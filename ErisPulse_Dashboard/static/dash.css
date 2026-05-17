@@ -4263,3 +4263,106 @@ select.form-select::-ms-expand {
     border-radius: 8px;
     background: var(--bg-s)
 }
+
+ 
+.restart-banner {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #856404;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.version-note {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--bg-s);
+    border-radius: 8px;
+    border: 1px solid var(--bd)
+}
+
+[data-theme="dark"] .restart-banner {
+    background: #3d3200;
+    border-color: #665500;
+    color: #ffd970
+}
+
+.fw-section {
+    background: var(--bg-t);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--sh);
+    margin-bottom: 12px;
+    overflow: hidden
+}
+
+.fw-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--tx-t);
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--bd)
+}
+
+.fw-section-body {
+    padding: 4px 16px
+}
+
+.fw-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0
+}
+
+.fw-row + .fw-row {
+    border-top: 1px solid var(--bd)
+}
+
+.fw-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tx-p);
+    flex-shrink: 0
+}
+
+.fw-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0
+}
+
+.fw-input {
+    padding: 5px 10px;
+    border: 1px solid var(--bd);
+    border-radius: 6px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 180px;
+    transition: border-color .2s
+}
+
+.fw-input:focus {
+    border-color: var(--accent)
+}
+
+.fw-textarea {
+    resize: vertical;
+    min-height: 32px;
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    font-size: 12px
+}
