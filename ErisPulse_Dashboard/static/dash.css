@@ -4333,7 +4333,8 @@ select.form-select::-ms-expand {
     font-size: 13px;
     font-weight: 500;
     color: var(--tx-p);
-    flex-shrink: 0
+    flex: 1;
+    min-width: 0
 }
 
 .fw-control {
@@ -4365,4 +4366,11 @@ select.form-select::-ms-expand {
     min-height: 32px;
     font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
     font-size: 12px
+}
+
+.fw-desc {
+    font-size: 11px;
+    color: var(--tx-s);
+    margin-top: 2px;
+    line-height: 1.4
 }

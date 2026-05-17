@@ -831,6 +831,8 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/packages/upgrade", handler=self._api_packages_upgrade, methods=["POST"])
         r.register_http_route(mn, "/api/packages/install", handler=self._api_packages_install, methods=["POST"])
         r.register_http_route(mn, "/api/packages/uninstall", handler=self._api_packages_uninstall, methods=["POST"])
+        r.register_http_route(mn, "/api/framework/versions", handler=self._api_framework_versions, methods=["GET"])
+        r.register_http_route(mn, "/api/framework/update", handler=self._api_framework_update, methods=["POST"])
         r.register_http_route(mn, "/api/restart", handler=self._api_restart, methods=["POST"])
         
         # 事件构建器相关 API
@@ -916,6 +918,8 @@ class Main(BaseModule):
             "/api/packages/upgrade",
             "/api/packages/install",
             "/api/packages/uninstall",
+            "/api/framework/versions",
+            "/api/framework/update",
             "/api/restart",
             "/api/builder/validate",
             "/api/builder/submit",
@@ -1855,6 +1859,55 @@ class Main(BaseModule):
                 ]
             }
         })
+
+    # ========== 框架版本/更新相关 API ==========
+
+    async def _api_framework_versions(self, request: Request) -> JSONResponse:
+        pre = request.query_params.get("pre", "") == "true"
+        current = self._get_framework_info()["version"]
+        versions = await self._fetch_pypi_versions("ErisPulse", pre)
+        can_update = sys.platform != "win32"
+        return JSONResponse({"current": current, "versions": versions, "can_update": can_update})
+
+    async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
+        import urllib.request
+        import re
+        try:
+            url = f"https://pypi.org/pypi/{package}/json"
+            req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except Exception:
+            return []
+        releases = data.get("releases", {})
+        all_versions = []
+        for ver, files in releases.items():
+            if not files:
+                continue
+            if not pre and re.search(r'(a|alpha|b|beta|rc|dev|preview)', ver, re.I):
+                continue
+            all_versions.append(ver)
+        try:
+            from packaging.version import parse as vp
+            all_versions.sort(key=lambda v: vp(v), reverse=True)
+        except Exception:
+            all_versions.sort(reverse=True)
+        return all_versions[:50]
+
+    async def _api_framework_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        version = body.get("version", "")
+        if not version:
+            return JSONResponse({"error": "version required"}, status_code=400)
+        task_id = secrets.token_urlsafe(8)
+        t = threading.Thread(
+            target=self._run_pip_install, args=([f"ErisPulse=={version}"], task_id, True, None), daemon=True
+        )
+        t.start()
+        self._add_audit_log("framework_update", f"ErisPulse=={version}", request)
+        return JSONResponse({"success": True, "task_id": task_id})
 
     # ========== 配置源码相关 API ==========
 

@@ -907,6 +907,34 @@
                     <p class="page-desc" data-i18n="framework_config_desc"></p>
                     <div class="restart-banner" data-i18n="restart_required_hint"></div>
                     <div class="version-note" data-i18n="fw_version_note"></div>
+                    <div class="fw-section" id="fwUpdateSection" style="margin-top:16px">
+                        <div class="fw-section-title" data-i18n="fw_update_title"></div>
+                        <div class="fw-section-body">
+                            <div class="fw-row">
+                                <div class="fw-label" data-i18n="fw_current_version"></div>
+                                <div class="fw-control"><span id="fwCurrentVer" style="font-weight:500">-</span></div>
+                            </div>
+                            <div class="fw-row">
+                                <div class="fw-label" data-i18n="fw_latest_version"></div>
+                                <div class="fw-control"><span id="fwLatestVer" style="font-weight:600;color:var(--accent)">-</span></div>
+                            </div>
+                            <div class="fw-row" id="fwVersionRow" style="display:none">
+                                <div class="fw-label" data-i18n="fw_select_version"></div>
+                                <div class="fw-control" style="display:flex;align-items:center;gap:6px">
+                                    <select id="fwVersionSelect" class="settings-select" style="width:auto;min-width:160px"></select>
+                                    <label class="switch" title="Include pre-release versions">
+                                        <input type="checkbox" id="fwPreRelease" onchange="loadFrameworkVersions()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                    <span style="font-size:11px;color:var(--tx-s)">--pre</span>
+                                </div>
+                            </div>
+                            <div class="fw-row" style="justify-content:flex-end;border:none;padding-top:12px">
+                                <button class="btn btn-primary btn-sm" id="fwUpdateBtn" onclick="doFrameworkUpdate()" disabled><span data-i18n="fw_install_update"></span></button>
+                                <button class="btn btn-secondary btn-sm" onclick="loadFrameworkVersions()"><span data-i18n="fw_check_updates"></span></button>
+                            </div>
+                        </div>
+                    </div>
                     <div id="fwConfigBody" style="margin-top:16px"></div>
                     <div style="margin-top:16px;display:flex;justify-content:flex-end">
                         <button class="btn btn-danger" onclick="restartFramework()"><span data-i18n="restart"></span></button>

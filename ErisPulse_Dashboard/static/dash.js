@@ -187,6 +187,16 @@ const I18N = {
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 确认修改服务器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。',
+        fw_update_title: '框架更新',
+        fw_current_version: '当前版本',
+        fw_latest_version: '最新版本',
+        fw_select_version: '选择版本',
+        fw_check_updates: '检查更新',
+        fw_install_update: '安装更新',
+        fw_latest_already: '已是最新',
+        fw_current: '当前',
+        fw_downgrade_title: '⚠ 降级确认',
+        fw_downgrade_text: '您正在将 ErisPulse 降级到 {v}。降级可能导致兼容性问题。确定要继续吗？',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -373,6 +383,42 @@ const I18N = {
         fw_version_note: 'Note: Some options may not take effect on older ErisPulse versions',
         fw_server_warn_title: '⚠ Confirm Server Config Change',
         fw_server_warn_text: 'You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.',
+        fw_update_title: 'Framework Update',
+        fw_current_version: 'Current Version',
+        fw_latest_version: 'Latest Version',
+        fw_select_version: 'Select Version',
+        fw_check_updates: 'Check Updates',
+        fw_install_update: 'Install Update',
+        fw_latest_already: 'Up to date',
+        fw_current: 'current',
+        fw_downgrade_title: '⚠ Downgrade Confirmation',
+        fw_downgrade_text: 'You are about to downgrade ErisPulse to {v}. Downgrading may cause compatibility issues. Continue?',
+        fw_field_server_host: 'Listen address',
+        fw_field_server_port: 'Listen port',
+        fw_field_server_ssl_certfile: 'SSL certificate path, set null to disable SSL',
+        fw_field_server_ssl_keyfile: 'SSL private key path',
+        fw_field_logger_level: 'Log level: DEBUG / INFO / WARNING / ERROR',
+        fw_field_logger_log_files: 'Log file paths, e.g. ["logs/app.log"]',
+        fw_field_logger_memory_limit: 'Max in-memory log entries',
+        fw_field_storage_use_global_db: 'Use a global database shared across modules',
+        fw_field_event_message_ignore_self: 'Ignore messages sent by the bot itself',
+        fw_field_event_command_prefix: 'Command trigger prefix',
+        fw_field_event_command_case_sensitive: 'Whether commands are case-sensitive',
+        fw_field_event_command_allow_space_prefix: 'Allow spaces before the command prefix',
+        fw_field_event_command_must_at_bot: 'Require @bot to trigger commands',
+        fw_field_framework_enable_lazy_loading: 'Enable lazy-loading of modules',
+        fw_field_config_audit_enabled: 'Enable config change audit logging',
+        fw_field_config_audit_max_entries: 'Max audit log entries to retain',
+        fw_field_metrics_enabled: 'Enable system metrics collection',
+        fw_field_router_cors_enabled: 'Enable CORS cross-origin support',
+        fw_field_router_cors_allow_origins: 'Allowed origins, ["*"] allows all',
+        fw_field_router_cors_allow_methods: 'Allowed HTTP methods',
+        fw_field_router_cors_allow_headers: 'Allowed HTTP request headers',
+        fw_field_router_cors_allow_credentials: 'Allow cross-origin credentials (cookies etc.)',
+        fw_field_router_cors_max_age: 'Preflight cache duration in seconds',
+        fw_field_router_security_enabled: 'Enable security response headers',
+        fw_field_router_security_headers_X_Content_Type_Options: 'Disable MIME type sniffing',
+        fw_field_router_security_headers_X_Frame_Options: 'Prevent clickjacking (DENY = block iframe embed)',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -559,6 +605,16 @@ const I18N = {
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 確認修改伺服器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 伺服器連接配置（host/port/ssl）。請確定您在幹什麼，否則不要修改此處！\n\n在 Docker 容器中操作此項可能導致您無法外部存取 ErisPulse 的 routers。',
+        fw_update_title: '框架更新',
+        fw_current_version: '當前版本',
+        fw_latest_version: '最新版本',
+        fw_select_version: '選擇版本',
+        fw_check_updates: '檢查更新',
+        fw_install_update: '安裝更新',
+        fw_latest_already: '已是最新',
+        fw_current: '當前',
+        fw_downgrade_title: '⚠ 降級確認',
+        fw_downgrade_text: '您正在將 ErisPulse 降級到 {v}。降級可能導致相容性問題。確定要繼續嗎？',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -744,6 +800,16 @@ const I18N = {
         fw_version_note: '注意: 一部の設定は古いバージョンのErisPulseでは無効な場合があります',
         fw_server_warn_title: '⚠ サーバー設定変更の確認',
         fw_server_warn_text: 'ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。',
+        fw_update_title: 'フレームワーク更新',
+        fw_current_version: '現在のバージョン',
+        fw_latest_version: '最新バージョン',
+        fw_select_version: 'バージョン選択',
+        fw_check_updates: '更新を確認',
+        fw_install_update: '更新をインストール',
+        fw_latest_already: '最新です',
+        fw_current: '現在',
+        fw_downgrade_title: '⚠ ダウングレード確認',
+        fw_downgrade_text: 'ErisPulseを {v} にダウングレードしようとしています。互換性の問題が発生する可能性があります。続行しますか？',
     },
     
     ru: {
@@ -931,6 +997,16 @@ const I18N = {
         fw_version_note: 'Примечание: некоторые опции могут не работать в старых версиях ErisPulse',
         fw_server_warn_title: '⚠ Подтвердите изменение конфигурации сервера',
         fw_server_warn_text: 'Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.',
+        fw_update_title: 'Обновление фреймворка',
+        fw_current_version: 'Текущая версия',
+        fw_latest_version: 'Последняя версия',
+        fw_select_version: 'Выберите версию',
+        fw_check_updates: 'Проверить обновления',
+        fw_install_update: 'Установить обновление',
+        fw_latest_already: 'Уже актуально',
+        fw_current: 'текущая',
+        fw_downgrade_title: '⚠ Подтверждение даунгрейда',
+        fw_downgrade_text: 'Вы собираетесь понизить ErisPulse до {v}. Это может вызвать проблемы совместимости. Продолжить?',
     }
 };
 
@@ -2265,6 +2341,43 @@ const _fwDefaults = {
     'modules.status': {},
 };
 
+const _fwFieldDescs = {
+    'server.host': '监听地址',
+    'server.port': '监听端口',
+    'server.ssl_certfile': 'SSL 证书路径，设为 null 则不使用 SSL',
+    'server.ssl_keyfile': 'SSL 密钥路径',
+    'logger.level': '日志级别: DEBUG / INFO / WARNING / ERROR',
+    'logger.log_files': '日志文件列表，如 ["logs/app.log"]',
+    'logger.memory_limit': '内存日志条数上限',
+    'storage.use_global_db': '是否使用全局数据库（跨模块共享）',
+    'event.message.ignore_self': '忽略机器人自身发出的消息',
+    'event.command.prefix': '命令触发前缀',
+    'event.command.case_sensitive': '命令是否区分大小写',
+    'event.command.allow_space_prefix': '是否允许命令前缀前有空格',
+    'event.command.must_at_bot': '是否必须 @Bot 才能触发命令',
+    'framework.enable_lazy_loading': '是否启用模块懒加载（按需加载）',
+    'config.audit.enabled': '是否启用配置变更审计日志',
+    'config.audit.max_entries': '审计日志最大保留条数',
+    'metrics.enabled': '是否启用系统指标采集',
+    'router.cors.enabled': '是否启用 CORS 跨域支持',
+    'router.cors.allow_origins': '允许的跨域来源，["*"] 表示允许所有',
+    'router.cors.allow_methods': '允许的 HTTP 方法',
+    'router.cors.allow_headers': '允许的 HTTP 请求头',
+    'router.cors.allow_credentials': '是否允许跨域携带凭据（cookie 等）',
+    'router.cors.max_age': '预检请求缓存时间（秒）',
+    'router.security.enabled': '是否启用安全响应头',
+    'router.security.headers.X-Content-Type-Options': '禁用 MIME 类型嗅探',
+    'router.security.headers.X-Frame-Options': '防止点击劫持（DENY=禁止嵌入 iframe）',
+};
+
+function fwFieldDesc(fullKey) {
+    const desc = _fwFieldDescs[fullKey];
+    if (desc) return desc;
+    const enKey = 'fw_field_' + fullKey.replace(/\./g, '_');
+    const en = t(enKey);
+    return en !== enKey ? en : '';
+}
+
 function deepMerge(target, source) {
     const r = {};
     for (const k of Object.keys(source)) {
@@ -2296,6 +2409,7 @@ async function loadFrameworkConfig() {
     if (!body) return;
     const sections = flattenFwSections(merged);
     body.innerHTML = sections.map(s => renderFwSection(s)).join('');
+    loadFrameworkVersions();
 }
 
 function flattenFwSections(obj, prefix) {
@@ -2320,6 +2434,8 @@ function renderFwSection(s) {
     const displayName = fwSectionI18nKey(s.key);
     const rows = Object.entries(s.values).map(([field, val]) => {
         const fk = 'ErisPulse.' + s.key + '.' + field;
+        const descKey = s.key + '.' + field;
+        const desc = fwFieldDesc(descKey);
         const tp = val === null ? 'null' : Array.isArray(val) ? 'object' : typeof val;
         let ctrl = '';
         if (tp === 'boolean') {
@@ -2332,7 +2448,8 @@ function renderFwSection(s) {
             ctrl = '<input class="fw-input" type="text" value="' + esc(String(val)) + '" data-fk="' + esc(fk) + '" data-tp="' + tp + '">';
         }
         const saveBtn = tp === 'boolean' ? '' : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
-        return '<div class="fw-row"><div class="fw-label">' + esc(field) + '</div><div class="fw-control">' + ctrl + saveBtn + '</div></div>';
+        const descHtml = desc ? '<div class="fw-desc">' + esc(desc) + '</div>' : '';
+        return '<div class="fw-row"><div class="fw-label">' + esc(field) + descHtml + '</div><div class="fw-control">' + ctrl + saveBtn + '</div></div>';
     }).join('');
     return '<div class="fw-section"><div class="fw-section-title">' + esc(displayName) + '</div><div class="fw-section-body">' + rows + '</div></div>';
 }
@@ -2352,6 +2469,84 @@ async function saveFwConfig(el) {
     setTimeout(() => el.style.border = '', 1200);
     if (d && d.success) toast(t('config_saved'), 'ok');
     else toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
+}
+
+let _fwVersions = [];
+let _fwCurrentVer = '';
+
+async function loadFrameworkVersions() {
+    const d = await api('/api/framework/versions?pre=' + (document.getElementById('fwPreRelease')?.checked || false));
+    if (!d) return;
+    
+    const section = document.getElementById('fwUpdateSection');
+    if (section && d.can_update === false) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    _fwCurrentVer = d.current;
+    _fwVersions = d.versions || [];
+    document.getElementById('fwCurrentVer').textContent = d.current;
+    
+    const sel = document.getElementById('fwVersionSelect');
+    const updateBtn = document.getElementById('fwUpdateBtn');
+    const versionRow = document.getElementById('fwVersionRow');
+    if (!sel || !updateBtn || !versionRow) return;
+    
+    if (_fwVersions.length === 0) {
+        document.getElementById('fwLatestVer').textContent = '-';
+        versionRow.style.display = 'none';
+        updateBtn.disabled = true;
+        return;
+    }
+    
+    const latest = _fwVersions[0];
+    const hasUpdate = cmpVer(latest, d.current) > 0;
+    const latestEl = document.getElementById('fwLatestVer');
+    if (hasUpdate) {
+        latestEl.textContent = latest;
+        latestEl.style.color = '';
+    } else {
+        latestEl.textContent = latest + ' (' + t('fw_latest_already') + ')';
+        latestEl.style.color = 'var(--ok-c)';
+    }
+    
+    sel.innerHTML = _fwVersions.map(v => {
+        const isCurrent = v === d.current;
+        return '<option value="' + esc(v) + '"' + (v === latest ? ' selected' : '') + '>' + esc(v) + (isCurrent ? ' (' + t('fw_current') + ')' : '') + '</option>';
+    }).join('');
+    
+    versionRow.style.display = 'flex';
+    updateBtn.disabled = false;
+}
+
+async function doFrameworkUpdate() {
+    const sel = document.getElementById('fwVersionSelect');
+    const version = sel?.value;
+    if (!version) return;
+    
+    if (_fwCurrentVer && cmpVer(version, _fwCurrentVer) < 0) {
+        const ok = await confirm2(t('fw_downgrade_title'), t('fw_downgrade_text').replace('{v}', version));
+        if (!ok) return;
+    }
+    
+    const btn = document.getElementById('fwUpdateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span>' + t('installing') + '</span>';
+    
+    const d = await api('/api/framework/update', {
+        method: 'POST',
+        body: JSON.stringify({ version })
+    });
+    
+    if (d && d.success && d.task_id) {
+        _installTaskIds.set(d.task_id, 'ErisPulse==' + version);
+        toast(t('installing'), '');
+    } else {
+        toast(t('install_failed'), 'er');
+        btn.disabled = false;
+        btn.innerHTML = '<span data-i18n="fw_install_update">' + t('fw_install_update') + '</span>';
+    }
 }
 
 function toggleKvGroup(hd) {
@@ -4021,14 +4216,15 @@ function toggleTaskExpand(el) {
     }
 }
 
-// 30秒后自动清理已完成任务
+// 已完成任务不自动清理，由用户手动清除
 setInterval(function() {
-    const now = Date.now();
-    const before = _tasks.length;
-    var removed = _tasks.filter(t => t.status !== 'running' && now - t.startedAt >= 30000);
-    removed.forEach(function(t) { _expandedTasks.delete(t.id) });
-    _tasks = _tasks.filter(t => t.status === 'running' || now - t.startedAt < 30000);
-    if (_tasks.length !== before) renderTaskBadge();
+    // 原自动清理逻辑
+    // const now = Date.now();
+    // const before = _tasks.length;
+    // var removed = _tasks.filter(t => t.status !== 'running' && now - t.startedAt >= 30000);
+    // removed.forEach(function(t) { _expandedTasks.delete(t.id) });
+    // _tasks = _tasks.filter(t => t.status === 'running' || now - t.startedAt < 30000);
+    // if (_tasks.length !== before) renderTaskBadge();
     if (_taskPanelOpen) renderTaskPanel();
 }, 5000);
 
