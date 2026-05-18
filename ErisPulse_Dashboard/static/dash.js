@@ -2629,6 +2629,8 @@ function wsConnect() {
                     loadPackages(true);
                 }
                 loadModules();
+            } else if (m.type === 'ping') {
+                ws.send(JSON.stringify({type: 'pong'}));
             } else if (m.type === 'views_changed') {
                 if (m.data && m.data.action === 'unregister' && m.data.id) {
                     _removeModuleView(m.data.id);

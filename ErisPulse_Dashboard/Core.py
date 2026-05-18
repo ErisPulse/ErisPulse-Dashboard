@@ -28,6 +28,9 @@ class Main(BaseModule):
         self._max_log = 500
         self._start_time = time.time()
         self._install_tasks: dict[str, dict] = {}
+        self._login_fails = 0
+        self._last_login_fail = 0.0
+        self._events_dirty = False
         self._pkg_manager = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._lifecycle_log: list[dict] = []
@@ -58,6 +61,7 @@ class Main(BaseModule):
         self._load_command_rules()
         self._setup_event_interceptors()
         self._setup_command_middleware()
+        asyncio.create_task(self._events_flush_loop())
         self.logger.info("WebUI module loaded")
         if getattr(self, "_token_new", False):
             self.logger.warning("┌──────────────────────────────────────────────┐")
@@ -143,6 +147,14 @@ class Main(BaseModule):
 
     def get_registered_views(self) -> list[dict]:
         return list(self._registered_views.values())
+
+    def verify_token(self, token: str) -> bool:
+        if not token:
+            return False
+        return secrets.compare_digest(str(token), self._token)
+
+    def verify_request(self, request: Request) -> bool:
+        return self.verify_token(self._get_token_from_request(request))
 
     def _load_command_rules(self):
         try:
@@ -329,7 +341,7 @@ class Main(BaseModule):
         self._event_log.append(entry)
         if len(self._event_log) > self._max_log:
             self._event_log = self._event_log[-self._max_log :]
-        self._persist_events()
+        self._events_dirty = True
         asyncio.ensure_future(self._broadcast_event(entry))
     
     def _add_lifecycle_log(self, data: dict):
@@ -360,8 +372,15 @@ class Main(BaseModule):
     def _persist_events(self):
         try:
             self.storage.set("__ep_events__", self._event_log[-self._max_log:])
+            self._events_dirty = False
         except Exception:
             pass
+
+    async def _events_flush_loop(self):
+        while True:
+            await asyncio.sleep(5)
+            if self._events_dirty:
+                self._persist_events()
 
     def _restore_persisted_data(self):
         try:
@@ -644,7 +663,7 @@ class Main(BaseModule):
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
         }
 
-    def _get_system_status(self) -> dict:
+    async def _get_system_status(self) -> dict:
         import platform as pf
 
         uptime = time.time() - self._start_time
@@ -656,44 +675,38 @@ class Main(BaseModule):
 
             proc = psutil.Process(os.getpid())
             
-            # 内存信息
             mem_info_rss = proc.memory_info()
             mem["rss_mb"] = round(mem_info_rss.rss / 1024 / 1024, 1)
             mem["vms_mb"] = round(mem_info_rss.vms / 1024 / 1024, 1)
             
-            # CPU 使用率使用间隔测量
             try:
-                mem["cpu_percent"] = round(proc.cpu_percent(interval=1.0), 1)
+                loop = asyncio.get_event_loop()
+                cpu_val = await loop.run_in_executor(None, lambda: proc.cpu_percent(interval=1.0))
+                mem["cpu_percent"] = round(cpu_val, 1)
             except Exception as e:
-                # 如果间隔测量失败，尝试非阻塞方式
-                self.logger.debug(f"CPU interval measurement failed: {e}")
+                self.logger.debug(f"CPU measurement failed: {e}")
                 try:
                     mem["cpu_percent"] = round(proc.cpu_percent(interval=None), 1)
                 except Exception as e2:
-                    self.logger.debug(f"CPU non-interval measurement failed: {e2}")
+                    self.logger.debug(f"CPU fallback failed: {e2}")
                     mem["cpu_percent"] = 0.0
             
-            # 系统内存
             vm = psutil.virtual_memory()
             mem["system_percent"] = round(vm.percent, 1)
             mem["system_total_gb"] = round(vm.total / 1024 / 1024 / 1024, 2)
             mem["system_available_gb"] = round(vm.available / 1024 / 1024 / 1024, 2)
             
-            # 交换内存
             swap = psutil.swap_memory()
             mem["swap_percent"] = round(swap.percent, 1)
             mem["swap_used_mb"] = round(swap.used / 1024 / 1024, 1)
             
-            # 进程信息
             proc_info["threads"] = proc.num_threads()
             proc_info["open_files"] = len(proc.open_files())
             
-            # CPU 时间
             cpu_times = proc.cpu_times()
             proc_info["cpu_user"] = round(cpu_times.user, 2)
             proc_info["cpu_system"] = round(cpu_times.system, 2)
             
-            # IO 计数器
             try:
                 io_counters = proc.io_counters()
                 proc_info["read_bytes_mb"] = round(io_counters.read_bytes / 1024 / 1024, 1)
@@ -701,7 +714,6 @@ class Main(BaseModule):
             except Exception:
                 pass
             
-            # 网络连接
             try:
                 connections = proc.connections()
                 proc_info["connections"] = len(connections)
@@ -709,7 +721,6 @@ class Main(BaseModule):
             except Exception:
                 pass
             
-            # 创建时间
             proc_info["created"] = proc.create_time()
             
         except ImportError:
@@ -968,10 +979,19 @@ class Main(BaseModule):
         return request.query_params.get("token")
 
     async def _api_auth(self, request: Request) -> JSONResponse:
+        if self._login_fails >= 10 and time.time() - self._last_login_fail > 60:
+            self._login_fails = 0
+        if self._login_fails >= 10:
+            return JSONResponse(
+                {"success": False, "error": "Too many attempts, try again later"}, status_code=429
+            )
         body = await request.json()
         token = body.get("token", "")
         if self._verify_token(token):
+            self._login_fails = 0
             return JSONResponse({"success": True})
+        self._login_fails += 1
+        self._last_login_fail = time.time()
         return JSONResponse(
             {"success": False, "error": "Invalid token"}, status_code=401
         )
@@ -983,6 +1003,8 @@ class Main(BaseModule):
         return JSONResponse({"authenticated": False}, status_code=401)
 
     async def _api_status(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         fw = self._get_framework_info()
         return JSONResponse(
             {
@@ -998,9 +1020,11 @@ class Main(BaseModule):
     async def _api_system(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        return JSONResponse(self._get_system_status())
+        return JSONResponse(await self._get_system_status())
 
     async def _api_adapters(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         adapters = []
         for platform in self.sdk.adapter.list_registered():
             info = {
@@ -1212,6 +1236,8 @@ class Main(BaseModule):
             })
 
     async def _api_bots(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         bots = []
         for p, bs in self.sdk.adapter.list_bots().items():
             for bid, bd in bs.items():
@@ -1227,6 +1253,8 @@ class Main(BaseModule):
         return JSONResponse({"bots": bots})
 
     async def _api_events(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         limit = int(request.query_params.get("limit", "50"))
         et = request.query_params.get("type")
         ep = request.query_params.get("platform")
@@ -1246,6 +1274,8 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         config = dict(self.sdk.config._cache)
         return JSONResponse({"config": config})
 
@@ -1261,6 +1291,8 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_storage(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         keys = self.storage.get_all_keys()
         data = {}
         for k in keys[:200]:
@@ -1290,6 +1322,8 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_store_remote(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         try:
             force = request.query_params.get("force", "") == "true"
             data = await self._get_pkg_manager().get_store_data(force)
@@ -1672,6 +1706,8 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_modules(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         modules = []
         for name in self.sdk.module.list_registered():
             info = self.sdk.module.get_info(name) or {}
@@ -1705,8 +1741,19 @@ class Main(BaseModule):
             return
         self._ws_clients.append(websocket)
         try:
-            while True:
-                await websocket.receive_text()
+            async def _heartbeat():
+                while websocket in self._ws_clients:
+                    await asyncio.sleep(30)
+                    try:
+                        await websocket.send_json({"type": "ping"})
+                    except Exception:
+                        break
+            hb = asyncio.create_task(_heartbeat())
+            try:
+                while True:
+                    await websocket.receive_text()
+            finally:
+                hb.cancel()
         except WebSocketDisconnect:
             pass
         finally:
@@ -1863,6 +1910,8 @@ class Main(BaseModule):
     # ========== 框架版本/更新相关 API ==========
 
     async def _api_framework_versions(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         pre = request.query_params.get("pre", "") == "true"
         current = self._get_framework_info()["version"]
         versions = await self._fetch_pypi_versions("ErisPulse", pre)
