@@ -2089,7 +2089,7 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         
-        system_status = self._get_system_status()
+        system_status = await self._get_system_status()
         
         # 添加 WebSocket 连接统计
         ws_stats = {
