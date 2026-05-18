@@ -408,3 +408,206 @@ async def on_unload(self, event):
 5. **SVG 图标** — `icon_svg` 应为完整的 `<svg>` 标签，建议尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 继承 Dashboard 主题色
 6. **JS 函数命名** — `js_content` 中的函数名应具有唯一性（如 `loadWeatherView`），避免与其他模块冲突
 7. **动态更新** — 模块注册/注销视窗后，Dashboard 前端会通过 WebSocket 实时更新侧边栏，无需刷新页面
+
+---
+
+## 多平台支持（Adapter API）
+
+ErisPulse 支持多个聊天平台同时运行。模块如果需要跨平台推送消息，应使用 `sdk.adapter` API 动态获取可用平台列表。
+
+### 核心 API
+
+| 方法 | 说明 |
+|------|------|
+| `sdk.adapter.list_registered()` | 返回所有已注册平台名称列表，如 `["qq", "telegram"]` |
+| `sdk.adapter.is_running(name)` | 判断指定平台是否正在运行 |
+| `sdk.adapter.get(name)` | 获取平台适配器实例，用于发送消息 |
+| `sdk.adapter.list_sends(name)` | 返回该平台支持的发送方法列表，如 `["Text", "Markdown", "Html", "Image"]` |
+
+### 使用 Dashboard 已有的平台列表 API
+
+Dashboard 已内置 `/Dashboard/api/adapters` 端点，返回所有已注册平台的详细信息。模块无需自行创建平台列表端点，直接在前端调用即可：
+
+**API 响应示例** (`GET /Dashboard/api/adapters`)：
+
+```json
+{
+    "adapters": [
+        {
+            "platform": "qq",
+            "enabled": true,
+            "running": true,
+            "bots": [
+                {"bot_id": "12345", "status": "online", "last_active": 1700000000, "info": {}}
+            ]
+        },
+        {
+            "platform": "telegram",
+            "enabled": true,
+            "running": false,
+            "bots": []
+        }
+    ]
+}
+```
+
+### 前端动态加载平台下拉框
+
+直接调用 Dashboard 已有的 API，无需模块自行实现端点：
+
+```javascript
+function loadPlatforms() {
+    fetch('/Dashboard/api/adapters', {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        var sel = document.getElementById('platform-select');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- 请选择平台 --</option>';
+        (data.adapters || []).forEach(function(a) {
+            var opt = document.createElement('option');
+            opt.value = a.platform;
+            opt.textContent = a.platform + (a.running ? '' : ' (未运行)');
+            sel.appendChild(opt);
+        });
+    });
+}
+```
+
+### 目标类型
+
+ErisPulse 支持以下目标类型（`target_type`）：
+
+| 值 | 说明 |
+|------|------|
+| `user` | 私聊 |
+| `group` | 群组 |
+| `channel` | 频道 |
+| `guild` | 服务器 |
+| `thread` | 话题 |
+
+在 HTML 下拉框中：
+
+```html
+<select id="target-type">
+    <option value="global">全局</option>
+    <option value="user">私聊 (user)</option>
+    <option value="group">群组 (group)</option>
+    <option value="channel">频道 (channel)</option>
+    <option value="guild">服务器 (guild)</option>
+    <option value="thread">话题 (thread)</option>
+</select>
+```
+
+### 跨平台消息发送
+
+发送消息时应根据目标平台选择最佳的发送格式。ErisPulse 的 SendDSL 支持链式调用：
+
+```python
+async def _send_to_target(self, platform: str, target_type: str, target_id: str, templates: dict, bot_id: str = None):
+    try:
+        adapter = sdk.adapter.get(platform)
+        if not adapter:
+            return
+        send = adapter.Send
+        if bot_id:
+            send = send.Using(bot_id)
+        send = send.To(target_type, target_id)
+        try:
+            methods = sdk.adapter.list_sends(platform)
+            if "Html" in methods:
+                await send.Html(templates["html"])
+            elif "Markdown" in methods:
+                await send.Markdown(templates["markdown"])
+            else:
+                await send.Text(templates["text"])
+        except Exception:
+            await send.Text(templates.get("text", ""))
+    except Exception as e:
+        self.logger.error(f"Send to {platform}/{target_type}/{target_id}: {e}")
+```
+
+### 多 Bot 发送（Using）
+
+同一平台可能有多个 Bot 实例，使用 `.Using(bot_id)` 指定发送账号：
+
+```python
+adapter = sdk.adapter.get("onebot11")
+
+# 默认 Bot 发送
+await adapter.Send.To("group", "G1001").Text("Hello")
+
+# 指定 Bot 发送
+await adapter.Send.Using("bot1").To("group", "G1001").Text("Hello from bot1")
+await adapter.Send.Using("bot2").To("user", "U1001").Text("Hello from bot2")
+```
+
+`/Dashboard/api/adapters` 的响应中包含每个平台的 `bots` 列表，前端可据此构建 Bot 选择下拉框：
+
+```javascript
+// 加载平台和 Bot 列表
+fetch('/Dashboard/api/adapters', {
+    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+}).then(function(r) { return r.json(); }).then(function(data) {
+    var sel = document.getElementById('bot-select');
+    (data.adapters || []).forEach(function(a) {
+        var optGroup = document.createElement('optgroup');
+        optGroup.label = a.platform;
+        (a.bots || []).forEach(function(b) {
+            var opt = document.createElement('option');
+            opt.value = a.platform + ':' + b.bot_id;
+            opt.textContent = a.platform + ' / ' + b.bot_id;
+            optGroup.appendChild(opt);
+        });
+        sel.appendChild(optGroup);
+    });
+});
+```
+
+---
+
+## HTTP 路由注册
+
+模块通过 `sdk.router` 注册 HTTP API 路由，供 Dashboard 前端或外部调用。
+
+### 注册路由
+
+```python
+def _register_routes(self):
+    r = self.sdk.router
+    r.register_http_route("ModuleName", "/api/data",
+                          handler=self._api_data, methods=["GET"])
+    r.register_http_route("ModuleName", "/api/data",
+                          handler=self._api_create, methods=["POST"])
+    r.register_http_route("ModuleName", "/api/items/{item_id}",
+                          handler=self._api_item, methods=["PUT"])
+    r.register_http_route("ModuleName", "/api/items/{item_id}",
+                          handler=self._api_delete, methods=["DELETE"])
+```
+
+> 同一路径可以注册不同 HTTP 方法，分别指向不同 handler。
+
+### 路由参数
+
+路径参数使用 `{param_name}` 语法（FastAPI 风格），在 handler 中通过 `request.path_params` 获取：
+
+```python
+async def _api_item(self, request: Request) -> JSONResponse:
+    item_id = int(request.path_params.get("item_id", 0))
+    return JSONResponse({"id": item_id})
+```
+
+### 注销路由
+
+模块卸载时应注销所有已注册的路由：
+
+```python
+def _unregister_routes(self):
+    r = self.sdk.router
+    for path in ["/api/data", "/api/items/{item_id}"]:
+        try:
+            r.unregister_http_route("ModuleName", path)
+        except Exception:
+            pass
+```
+
+> 对于带路径参数的路由（如 `{item_id}`），注销时使用模板路径而非具体值。
