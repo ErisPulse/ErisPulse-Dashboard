@@ -229,6 +229,9 @@ const I18N = {
         node_url_placeholder: 'http://192.168.1.100:8000',
         node_token_placeholder: '远程 Dashboard 的 Token',
         node_add_success: '节点添加成功',
+        handshake_success: '已自动在远端注册本节点',
+        remote_unauthorized: '远端节点认证失败，请检查节点 Token',
+        toggle_url_visibility: '显示/隐藏地址',
         node_add_failed: '节点添加失败',
         node_remove_confirm: '确定要移除此节点吗？',
         node_ping_success: '连接成功',
@@ -515,6 +518,9 @@ const I18N = {
         node_url_placeholder: 'http://192.168.1.100:8000',
         node_token_placeholder: 'Remote Dashboard Token',
         node_add_success: 'Node added',
+        handshake_success: 'Auto-registered this node on remote',
+        remote_unauthorized: 'Remote node auth failed, check node Token',
+        toggle_url_visibility: 'Show/Hide URL',
         node_add_failed: 'Failed to add node',
         node_remove_confirm: 'Remove this node?',
         node_ping_success: 'Connected',
@@ -775,6 +781,9 @@ const I18N = {
         node_url_placeholder: 'http://192.168.1.100:8000',
         node_token_placeholder: '遠端 Dashboard 的 Token',
         node_add_success: '節點新增成功',
+        handshake_success: '已自動在遠端註冊本節點',
+        remote_unauthorized: '遠端節點認證失敗，請檢查節點 Token',
+        toggle_url_visibility: '顯示/隱藏位址',
         node_add_failed: '節點新增失敗',
         node_remove_confirm: '確定要移除此節點嗎？',
         node_ping_success: '連接成功',
@@ -1034,6 +1043,9 @@ const I18N = {
         node_url_placeholder: 'http://192.168.1.100:8000',
         node_token_placeholder: 'リモート Dashboard のトークン',
         node_add_success: 'ノードを追加しました',
+        handshake_success: 'リモート側にも自動登録しました',
+        remote_unauthorized: 'リモートノードの認証に失敗、Token を確認してください',
+        toggle_url_visibility: 'URLを表示/非表示',
         node_add_failed: 'ノードの追加に失敗しました',
         node_remove_confirm: 'このノードを削除しますか？',
         node_ping_success: '接続成功',
@@ -1648,12 +1660,25 @@ function closeSidebar() { document.getElementById('sidebar').classList.remove('o
 
 function esc(s) { if (s == null) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
 
+let _remoteAuthToastTs = 0;
 function api(path, opts) {
     const tk = localStorage.getItem(TK);
     const headers = { ...(opts?.headers || {}), ...(tk ? { 'Authorization': 'Bearer ' + tk } : {}) };
     if (opts?.body && !(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
     return fetch(API + path, { ...opts, headers }).then(r => {
         if (r.status === 401) { authed = false; localStorage.removeItem(TK); document.querySelector('.app').classList.remove('authed'); showLogin(); return null }
+        if (r.status === 502) {
+            return r.json().then(d => {
+                if (d && d.error === 'remote_unauthorized' && currentNode !== 'local') {
+                    var now = Date.now();
+                    if (now - _remoteAuthToastTs > 5000) {
+                        _remoteAuthToastTs = now;
+                        toast(t('remote_unauthorized'), 'er');
+                    }
+                }
+                return d;
+            });
+        }
         return r.json()
     }).catch(() => null);
 }
@@ -1934,13 +1959,13 @@ function showOutputModal(title, lines, actions) {
 
 function toast(msg, type) {
     const el = document.createElement('div');
-    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:8px;font-size:14px;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);padding:10px 24px;border-radius:8px;font-size:14px;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;opacity:0;transition:opacity .25s ease,transform .25s cubic-bezier(.4,0,.2,1);pointer-events:none';
     if (type === 'ok') { el.style.background = 'var(--ok-bg)'; el.style.color = 'var(--ok-c)'; el.style.border = '1px solid var(--ok-bd)' }
     else if (type === 'er') { el.style.background = 'var(--er-bg)'; el.style.color = 'var(--er-c)'; el.style.border = '1px solid var(--er-bd)' }
     else { el.style.background = 'var(--bg-t)'; el.style.color = 'var(--tx-p)'; el.style.border = '1px solid var(--bd)' }
     el.textContent = msg; document.body.appendChild(el);
-    requestAnimationFrame(() => el.style.opacity = '1');
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 200) }, 2500);
+    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateX(-50%) translateY(0)'; });
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(-50%) translateY(12px)'; setTimeout(() => el.remove(), 250) }, 2500);
 }
 
 function showLogin() {
@@ -5064,7 +5089,7 @@ var _capKeys = [
     'event_builder','config_source','module_views','performance','routes','message_stats','framework_update'
 ];
 
-function _clusterNodeCardHtml(n, overviewData) {
+function _clusterNodeCardHtml(n) {
     var info = nodeRuntimeInfo[n.id] || {};
     var online = info.online;
     var dotClass = online ? 'node-dot-online' : 'node-dot-offline';
@@ -5077,40 +5102,6 @@ function _clusterNodeCardHtml(n, overviewData) {
         if (c && c.supported) supportedCaps.push(k);
         else if (c && c.supported === false) unsupportedCaps.push(k);
     });
-
-    var statsHtml = '';
-    if (overviewData && !overviewData._error) {
-        var mem = overviewData.memory || {};
-        var status = overviewData.status || {};
-        var system = overviewData.system || {};
-        var proc = system.process || {};
-        var stats = [];
-        if (mem.cpu_percent !== undefined) stats.push({ l: 'CPU', v: (typeof mem.cpu_percent === 'number' ? mem.cpu_percent.toFixed(1) : '-') + '%', c: _colorForUsage(mem.cpu_percent, 50, 80) });
-        if (mem.system_percent !== undefined) stats.push({ l: 'RAM', v: mem.system_percent.toFixed(1) + '%', c: _colorForUsage(mem.system_percent, 60, 85) });
-        if (mem.rss_mb !== undefined) stats.push({ l: t('process_memory'), v: mem.rss_mb + 'MB' });
-        var aCount;
-        if (status.adapters_count !== undefined) aCount = status.adapters_count;
-        else if (status.adapters && typeof status.adapters === 'object' && !status.adapters.error) aCount = Object.keys(status.adapters).length;
-        if (aCount !== undefined) stats.push({ l: t('adapters') || 'Adapters', v: aCount });
-        var mCount;
-        if (status.modules_count !== undefined) mCount = status.modules_count;
-        else if (status.modules && typeof status.modules === 'object' && !status.modules.error) mCount = Object.values(status.modules).filter(function(v) { return v; }).length;
-        if (mCount !== undefined) stats.push({ l: t('registered') || 'Modules', v: mCount });
-        var eCount;
-        if (status.events_count !== undefined) eCount = status.events_count;
-        else if (system.total_events !== undefined) eCount = system.total_events;
-        if (eCount !== undefined) stats.push({ l: t('events') || 'Events', v: eCount });
-        if (system.uptime_human) stats.push({ l: t('lifecycle') || 'Uptime', v: system.uptime_human, c: 'var(--tx-s)' });
-        if (proc.threads !== undefined) stats.push({ l: t('threads'), v: proc.threads });
-        if (proc.connections !== undefined) stats.push({ l: t('connections'), v: proc.connections });
-        if (stats.length > 0) {
-            statsHtml = '<div class="cluster-card-stats">';
-            stats.forEach(function(s) {
-                statsHtml += '<div class="cluster-card-stat"><span class="cluster-stat-val"' + (s.c ? ' style="color:' + s.c + '"' : '') + '>' + esc(s.v) + '</span><span class="cluster-stat-label">' + esc(s.l) + '</span></div>';
-            });
-            statsHtml += '</div>';
-        }
-    }
 
     var capsHtml = '';
     if (supportedCaps.length > 0 || unsupportedCaps.length > 0) {
@@ -5140,22 +5131,54 @@ function _clusterNodeCardHtml(n, overviewData) {
     h += '<button class="btn-icon-sm" onclick="probeClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_probe')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>';
     h += '<button class="btn-icon-sm btn-icon-danger" onclick="removeClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_delete')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
     h += '</div></div>';
-    h += '<div class="cluster-node-url">' + esc(n.url) + '</div>';
+    var maskedUrl = _maskUrl(n.url);
+    h += '<div class="cluster-node-url-wrap">';
+    h += '<span class="cluster-node-url" id="' + cardId + '-url" data-full-url="' + esc(n.url) + '" data-masked-url="' + esc(maskedUrl) + '">' + esc(maskedUrl) + '</span>';
+    h += '<button class="btn-icon-sm cluster-url-eye" id="' + cardId + '-eye" onclick="_toggleUrlVisibility(\'' + cardId + '\')" title="' + esc(t('toggle_url_visibility') || 'Show/Hide') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>';
+    h += '</div>';
     if (meta) h += '<div class="cluster-node-meta">' + meta + '</div>';
 
-    if (statsHtml || capsHtml) {
-        h += '<button class="cluster-card-toggle" onclick="toggleClusterCardDetail(\'' + cardId + '\')">';
-        h += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-arrow"><polyline points="6 9 12 15 18 9"/></svg>';
-        h += '<span>' + esc(t('cluster_card_detail') || 'Details') + '</span>';
-        if (supportedCaps.length > 0) h += '<span class="cluster-cap-count">' + supportedCaps.length + '/' + capKeys.length + '</span>';
-        h += '</button>';
-        h += '<div class="cluster-card-detail">';
-        h += statsHtml + capsHtml;
-        h += '</div>';
-    }
+    h += '<button class="cluster-card-toggle" onclick="toggleClusterCardDetail(\'' + cardId + '\')">';
+    h += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-arrow"><polyline points="6 9 12 15 18 9"/></svg>';
+    h += '<span>' + esc(t('cluster_card_detail') || 'Details') + '</span>';
+    if (supportedCaps.length > 0) h += '<span class="cluster-cap-count">' + supportedCaps.length + '/' + capKeys.length + '</span>';
+    h += '</button>';
+    h += '<div class="cluster-card-detail" id="' + cardId + '-detail">';
+    h += '<div class="cluster-card-stats-loading"><div class="cluster-spinner"></div></div>';
+    h += '</div>';
 
     h += '</div>';
     return h;
+}
+
+function _maskUrl(url) {
+    if (!url) return '';
+    try {
+        var u = new URL(url);
+        var host = u.host;
+        if (host.length <= 6) return u.protocol + '//' + '*'.repeat(host.length) + u.pathname;
+        var visible = host.substring(0, 3);
+        var masked = '*'.repeat(Math.min(host.length - 6, 12));
+        var end = host.substring(host.length - 3);
+        return u.protocol + '//' + visible + masked + end + u.pathname;
+    } catch (e) {
+        return url.substring(0, 4) + '***';
+    }
+}
+
+function _toggleUrlVisibility(cardId) {
+    var el = document.getElementById(cardId + '-url');
+    var btn = document.getElementById(cardId + '-eye');
+    if (!el || !btn) return;
+    var full = el.getAttribute('data-full-url');
+    var masked = el.getAttribute('data-masked-url');
+    if (el.textContent === masked) {
+        el.textContent = full;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    } else {
+        el.textContent = masked;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    }
 }
 
 function toggleClusterCardDetail(cardId) {
@@ -5182,25 +5205,75 @@ function _clusterFormHtml(formId, title, fields, submitText, submitFn) {
     return h;
 }
 
+function _buildStatsHtml(overviewData) {
+    if (!overviewData || overviewData._error) return '';
+    var mem = overviewData.memory || {};
+    var status = overviewData.status || {};
+    var system = overviewData.system || {};
+    var proc = system.process || {};
+    var stats = [];
+    if (mem.cpu_percent !== undefined) stats.push({ l: 'CPU', v: (typeof mem.cpu_percent === 'number' ? mem.cpu_percent.toFixed(1) : '-') + '%', c: _colorForUsage(mem.cpu_percent, 50, 80) });
+    if (mem.system_percent !== undefined) stats.push({ l: 'RAM', v: mem.system_percent.toFixed(1) + '%', c: _colorForUsage(mem.system_percent, 60, 85) });
+    if (mem.rss_mb !== undefined) stats.push({ l: t('process_memory'), v: mem.rss_mb + 'MB' });
+    var aCount;
+    if (status.adapters_count !== undefined) aCount = status.adapters_count;
+    else if (status.adapters && typeof status.adapters === 'object' && !status.adapters.error) aCount = Object.keys(status.adapters).length;
+    if (aCount !== undefined) stats.push({ l: t('adapters') || 'Adapters', v: aCount });
+    var mCount;
+    if (status.modules_count !== undefined) mCount = status.modules_count;
+    else if (status.modules && typeof status.modules === 'object' && !status.modules.error) mCount = Object.values(status.modules).filter(function(v) { return v; }).length;
+    if (mCount !== undefined) stats.push({ l: t('registered') || 'Modules', v: mCount });
+    var eCount;
+    if (status.events_count !== undefined) eCount = status.events_count;
+    else if (system.total_events !== undefined) eCount = system.total_events;
+    if (eCount !== undefined) stats.push({ l: t('events') || 'Events', v: eCount });
+    if (system.uptime_human) stats.push({ l: t('lifecycle') || 'Uptime', v: system.uptime_human, c: 'var(--tx-s)' });
+    if (proc.threads !== undefined) stats.push({ l: t('threads'), v: proc.threads });
+    if (proc.connections !== undefined) stats.push({ l: t('connections'), v: proc.connections });
+    if (stats.length === 0) return '';
+    var h = '<div class="cluster-card-stats">';
+    stats.forEach(function(s) {
+        h += '<div class="cluster-card-stat"><span class="cluster-stat-val"' + (s.c ? ' style="color:' + s.c + '"' : '') + '>' + esc(s.v) + '</span><span class="cluster-stat-label">' + esc(s.l) + '</span></div>';
+    });
+    h += '</div>';
+    return h;
+}
+
+function _fillClusterCardDetail(nodeId, overviewData) {
+    var el = document.getElementById('clusterCard-' + nodeId + '-detail');
+    if (!el) return;
+    var info = nodeRuntimeInfo[nodeId] || {};
+    var caps = info.capabilities || {};
+    var capKeys = _capKeys;
+    var statsHtml = _buildStatsHtml(overviewData);
+    var capsHtml = '';
+    var supportedCaps = 0;
+    capKeys.forEach(function(k) {
+        var c = caps[k];
+        if (c && c.supported) {
+            supportedCaps++;
+            capsHtml += '<span class="cluster-cap-tag cap-supported" title="' + esc(t('cap_' + k + '_desc')) + '">' + esc(t('cap_' + k)) + '</span>';
+        } else if (c && c.supported === false) {
+            capsHtml += '<span class="cluster-cap-tag cap-unsupported" title="' + esc(t('cap_' + k + '_desc')) + '">' + esc(t('cap_' + k)) + '</span>';
+        }
+    });
+    var h = '';
+    if (capsHtml) h += '<div class="cluster-card-caps">' + capsHtml + '</div>';
+    h = statsHtml + h;
+    el.innerHTML = h || '<div style="font-size:12px;color:var(--tx-t);padding:4px 0">-</div>';
+    var countEl = el.parentElement.querySelector('.cluster-cap-count');
+    if (countEl && capKeys.length > 0) countEl.textContent = supportedCaps + '/' + capKeys.length;
+}
+
 async function loadClusterPage() {
     var container = document.getElementById('clusterContent');
     if (!container) return;
-    container.innerHTML = '<div class="cluster-loading"><div class="cluster-spinner"></div></div>';
 
     await loadClusterNodes();
     var d = await api('/api/cluster/nodes');
     var nodes = (d && d.nodes) ? d.nodes : [];
 
-    var overviewMap = {};
-    var od = await api('/api/cluster/overview');
-    if (od && od.nodes) {
-        Object.keys(od.nodes).forEach(function(nid) {
-            if (nid !== 'local') overviewMap[nid] = od.nodes[nid];
-        });
-    }
-
     var html = '';
-
     html += '<div class="cluster-toolbar">';
     html += '<div class="cluster-toolbar-info">' + nodes.length + ' ' + esc(t('cluster_node_count') || (t('node_local') === '本地实例' ? '个节点' : 'node(s)')) + '</div>';
     html += '<button class="btn btn-primary btn-sm" onclick="showAddNodeForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' + esc(t('node_add')) + '</button>';
@@ -5225,12 +5298,21 @@ async function loadClusterPage() {
     } else {
         html += '<div class="cluster-node-list">';
         nodes.forEach(function(n) {
-            html += _clusterNodeCardHtml(n, overviewMap[n.id]);
+            html += _clusterNodeCardHtml(n);
         });
         html += '</div>';
     }
 
     container.innerHTML = html;
+
+    if (nodes.length > 0) {
+        api('/api/cluster/overview').then(function(od) {
+            if (!od || !od.nodes) return;
+            nodes.forEach(function(n) {
+                if (od.nodes[n.id]) _fillClusterCardDetail(n.id, od.nodes[n.id]);
+            });
+        });
+    }
 }
 
 function showAddNodeForm() {
