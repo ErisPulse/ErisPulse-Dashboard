@@ -1,5 +1,18 @@
 const API = '/Dashboard', TK = '__ep_tk__';
-let ws = null, allEvents = [], platforms = [], authed = false, _adapterLogos = {};
+let ws = null, allEvents = [], _totalEventCount = 0, platforms = [], authed = false, _adapterLogos = {};
+let currentNode = 'local';
+let nodeCapabilities = {};
+let nodeRuntimeInfo = {};
+
+const _realFetch = window.fetch;
+window.fetch = function(input, init) {
+    if (currentNode !== 'local' && typeof input === 'string' && input.charAt(0) === '/' && input.charAt(1) !== '/') {
+        if (!input.startsWith(API + '/api/cluster/')) {
+            input = API + '/api/cluster/proxy/' + currentNode + input;
+        }
+    }
+    return _realFetch.call(this, input, init);
+};
 
 const I18N = {
     zh: {
@@ -197,6 +210,70 @@ const I18N = {
         fw_current: '当前',
         fw_downgrade_title: '⚠ 降级确认',
         fw_downgrade_text: '您正在将 ErisPulse 降级到 {v}。降级可能导致兼容性问题。确定要继续吗？',
+        cluster_management: '集群管理',
+        cluster_desc: '添加、编辑、删除远程节点，查看能力对比',
+        cluster_overview: '聚合视图',
+        cluster_overview_desc: '同时查看所有节点的运行状态',
+        node_local: '本地实例',
+        node_online: '在线',
+        node_offline: '离线',
+        node_add: '添加节点',
+        node_edit: '编辑',
+        node_delete: '删除',
+        node_ping: '测试连通',
+        node_probe: '重新探测',
+        node_id: '节点 ID',
+        node_name: '节点名称',
+        node_url: '节点地址',
+        node_token: '访问令牌',
+        node_url_placeholder: 'http://192.168.1.100:8000',
+        node_token_placeholder: '远程 Dashboard 的 Token',
+        node_add_success: '节点添加成功',
+        node_add_failed: '节点添加失败',
+        node_remove_confirm: '确定要移除此节点吗？',
+        node_ping_success: '连接成功',
+        node_ping_failed: '连接失败',
+        node_probing: '正在探测节点能力...',
+        node_probe_complete: '能力探测完成',
+        unsupported_on_node: '该节点不支持此功能',
+        unsupported_features: '不支持的功能',
+        capability_matrix: '功能对比',
+        cluster_card_detail: '详细信息',
+        cluster_node_count: '个节点',
+        process_memory: '进程内存', threads: '线程', connections: '连接',
+        cap_status: '运行状态', cap_status_desc: '查看节点运行状态信息',
+        cap_system: '系统信息', cap_system_desc: '查看系统资源使用情况',
+        cap_adapters: '适配器', cap_adapters_desc: '管理和查看消息适配器',
+        cap_modules: '模块', cap_modules_desc: '查看已注册的功能模块',
+        cap_bots: '机器人', cap_bots_desc: '管理和查看 Bot 实例',
+        cap_events: '事件流', cap_events_desc: '实时事件流监控',
+        cap_config: '配置', cap_config_desc: '查看和修改模块配置',
+        cap_storage: '存储', cap_storage_desc: '访问键值存储数据',
+        cap_store: '商店', cap_store_desc: '浏览和安装扩展模块',
+        cap_packages: '包管理', cap_packages_desc: '管理 Python 依赖包',
+        cap_logs: '日志', cap_logs_desc: '查看系统和模块日志',
+        cap_lifecycle: '生命周期', cap_lifecycle_desc: '控制模块启停和重载',
+        cap_audit: '审计日志', cap_audit_desc: '查看 API 调用审计记录',
+        cap_files: '文件管理', cap_files_desc: '浏览和管理服务器文件',
+        cap_commands: '指令管理', cap_commands_desc: '查看和管理注册的指令',
+        cap_event_builder: '事件构造器', cap_event_builder_desc: '构建和发送自定义事件',
+        cap_config_source: '配置来源', cap_config_source_desc: '查看配置文件来源',
+        cap_module_views: '模块视图', cap_module_views_desc: '模块提供的自定义页面',
+        cap_performance: '性能', cap_performance_desc: '查看性能监控指标',
+        cap_routes: '路由', cap_routes_desc: '查看已注册的 API 路由',
+        cap_message_stats: '消息统计', cap_message_stats_desc: '查看消息收发统计',
+        cap_framework_update: '框架更新', cap_framework_update_desc: '检查和更新 ErisPulse 框架',
+        cluster_sync: '事件同步',
+        cluster_sync_desc: '将事件从一个节点转发到另一个节点',
+        sync_source: '源节点',
+        sync_target: '目标节点',
+        sync_start: '开始同步',
+        sync_success: '同步完成',
+        sync_failed: '同步失败',
+        latency: '延迟',
+        dashboard_version: 'Dashboard 版本',
+        node_already_exists: '节点 ID 已存在',
+        node_not_found: '节点未找到',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -419,6 +496,70 @@ const I18N = {
         fw_field_router_security_enabled: 'Enable security response headers',
         fw_field_router_security_headers_X_Content_Type_Options: 'Disable MIME type sniffing',
         fw_field_router_security_headers_X_Frame_Options: 'Prevent clickjacking (DENY = block iframe embed)',
+        cluster_management: 'Cluster',
+        cluster_desc: 'Add, edit, remove remote nodes, view capability comparison',
+        cluster_overview: 'Overview',
+        cluster_overview_desc: 'View all nodes status at a glance',
+        node_local: 'Local',
+        node_online: 'Online',
+        node_offline: 'Offline',
+        node_add: 'Add Node',
+        node_edit: 'Edit',
+        node_delete: 'Delete',
+        node_ping: 'Test Connection',
+        node_probe: 'Re-probe',
+        node_id: 'Node ID',
+        node_name: 'Node Name',
+        node_url: 'Node URL',
+        node_token: 'Access Token',
+        node_url_placeholder: 'http://192.168.1.100:8000',
+        node_token_placeholder: 'Remote Dashboard Token',
+        node_add_success: 'Node added',
+        node_add_failed: 'Failed to add node',
+        node_remove_confirm: 'Remove this node?',
+        node_ping_success: 'Connected',
+        node_ping_failed: 'Connection failed',
+        node_probing: 'Probing capabilities...',
+        node_probe_complete: 'Probe complete',
+        unsupported_on_node: 'Not supported on this node',
+        unsupported_features: 'Unsupported features',
+        capability_matrix: 'Capability Matrix',
+        cluster_card_detail: 'Details',
+        cluster_node_count: 'node(s)',
+        process_memory: 'Process', threads: 'Threads', connections: 'Conns',
+        cap_status: 'Status', cap_status_desc: 'View node runtime status',
+        cap_system: 'System', cap_system_desc: 'View system resource usage',
+        cap_adapters: 'Adapters', cap_adapters_desc: 'Manage message adapters',
+        cap_modules: 'Modules', cap_modules_desc: 'View registered modules',
+        cap_bots: 'Bots', cap_bots_desc: 'Manage bot instances',
+        cap_events: 'Events', cap_events_desc: 'Real-time event stream',
+        cap_config: 'Config', cap_config_desc: 'View and edit module config',
+        cap_storage: 'Storage', cap_storage_desc: 'Access key-value storage',
+        cap_store: 'Store', cap_store_desc: 'Browse and install extensions',
+        cap_packages: 'Packages', cap_packages_desc: 'Manage Python packages',
+        cap_logs: 'Logs', cap_logs_desc: 'View system and module logs',
+        cap_lifecycle: 'Lifecycle', cap_lifecycle_desc: 'Control module start/stop/reload',
+        cap_audit: 'Audit', cap_audit_desc: 'View API call audit trail',
+        cap_files: 'Files', cap_files_desc: 'Browse and manage server files',
+        cap_commands: 'Commands', cap_commands_desc: 'View and manage registered commands',
+        cap_event_builder: 'Event Builder', cap_event_builder_desc: 'Build and send custom events',
+        cap_config_source: 'Config Source', cap_config_source_desc: 'View config file sources',
+        cap_module_views: 'Module Views', cap_module_views_desc: 'Custom pages from modules',
+        cap_performance: 'Performance', cap_performance_desc: 'View performance metrics',
+        cap_routes: 'Routes', cap_routes_desc: 'View registered API routes',
+        cap_message_stats: 'Message Stats', cap_message_stats_desc: 'View message statistics',
+        cap_framework_update: 'Framework Update', cap_framework_update_desc: 'Check and update ErisPulse',
+        cluster_sync: 'Event Sync',
+        cluster_sync_desc: 'Forward events between nodes',
+        sync_source: 'Source',
+        sync_target: 'Target',
+        sync_start: 'Start Sync',
+        sync_success: 'Sync completed',
+        sync_failed: 'Sync failed',
+        latency: 'Latency',
+        dashboard_version: 'Dashboard Version',
+        node_already_exists: 'Node ID already exists',
+        node_not_found: 'Node not found',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -615,6 +756,70 @@ const I18N = {
         fw_current: '當前',
         fw_downgrade_title: '⚠ 降級確認',
         fw_downgrade_text: '您正在將 ErisPulse 降級到 {v}。降級可能導致相容性問題。確定要繼續嗎？',
+        cluster_management: '集群管理',
+        cluster_desc: '新增、編輯、刪除遠端節點，查看能力對比',
+        cluster_overview: '聚合視圖',
+        cluster_overview_desc: '同時查看所有節點的運行狀態',
+        node_local: '本地實例',
+        node_online: '在線',
+        node_offline: '離線',
+        node_add: '新增節點',
+        node_edit: '編輯',
+        node_delete: '刪除',
+        node_ping: '測試連通',
+        node_probe: '重新探測',
+        node_id: '節點 ID',
+        node_name: '節點名稱',
+        node_url: '節點地址',
+        node_token: '存取令牌',
+        node_url_placeholder: 'http://192.168.1.100:8000',
+        node_token_placeholder: '遠端 Dashboard 的 Token',
+        node_add_success: '節點新增成功',
+        node_add_failed: '節點新增失敗',
+        node_remove_confirm: '確定要移除此節點嗎？',
+        node_ping_success: '連接成功',
+        node_ping_failed: '連接失敗',
+        node_probing: '正在探測節點能力...',
+        node_probe_complete: '能力探測完成',
+        unsupported_on_node: '該節點不支持此功能',
+        unsupported_features: '不支持的功能',
+        capability_matrix: '功能對比',
+        cluster_card_detail: '詳細資訊',
+        cluster_node_count: '個節點',
+        process_memory: '處理序記憶體', threads: '執行緒', connections: '連線',
+        cap_status: '運行狀態', cap_status_desc: '查看節點運行狀態資訊',
+        cap_system: '系統資訊', cap_system_desc: '查看系統資源使用情況',
+        cap_adapters: '適配器', cap_adapters_desc: '管理和查看訊息適配器',
+        cap_modules: '模組', cap_modules_desc: '查看已註冊的功能模組',
+        cap_bots: '機器人', cap_bots_desc: '管理和查看 Bot 實例',
+        cap_events: '事件流', cap_events_desc: '即時事件流監控',
+        cap_config: '配置', cap_config_desc: '查看和修改模組配置',
+        cap_storage: '儲存', cap_storage_desc: '存取鍵值儲存資料',
+        cap_store: '商店', cap_store_desc: '瀏覽和安裝擴展模組',
+        cap_packages: '套件管理', cap_packages_desc: '管理 Python 依賴套件',
+        cap_logs: '日誌', cap_logs_desc: '查看系統和模組日誌',
+        cap_lifecycle: '生命週期', cap_lifecycle_desc: '控制模組啟停和重載',
+        cap_audit: '審計日誌', cap_audit_desc: '查看 API 呼叫審計記錄',
+        cap_files: '檔案管理', cap_files_desc: '瀏覽和管理伺服器檔案',
+        cap_commands: '指令管理', cap_commands_desc: '查看和管理註冊的指令',
+        cap_event_builder: '事件建構器', cap_event_builder_desc: '建構和發送自訂事件',
+        cap_config_source: '配置來源', cap_config_source_desc: '查看配置檔案來源',
+        cap_module_views: '模組視圖', cap_module_views_desc: '模組提供的自訂頁面',
+        cap_performance: '效能', cap_performance_desc: '查看效能監控指標',
+        cap_routes: '路由', cap_routes_desc: '查看已註冊的 API 路由',
+        cap_message_stats: '訊息統計', cap_message_stats_desc: '查看訊息收發統計',
+        cap_framework_update: '框架更新', cap_framework_update_desc: '檢查和更新 ErisPulse 框架',
+        cluster_sync: '事件同步',
+        cluster_sync_desc: '將事件從一個節點轉發到另一個節點',
+        sync_source: '源節點',
+        sync_target: '目標節點',
+        sync_start: '開始同步',
+        sync_success: '同步完成',
+        sync_failed: '同步失敗',
+        latency: '延遲',
+        dashboard_version: 'Dashboard 版本',
+        node_already_exists: '節點 ID 已存在',
+        node_not_found: '節點未找到',
     },
     ja: {
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
@@ -810,6 +1015,70 @@ const I18N = {
         fw_current: '現在',
         fw_downgrade_title: '⚠ ダウングレード確認',
         fw_downgrade_text: 'ErisPulseを {v} にダウングレードしようとしています。互換性の問題が発生する可能性があります。続行しますか？',
+        cluster_management: 'クラスタ管理',
+        cluster_desc: 'リモートノードの追加・編集・削除、機能比較の確認',
+        cluster_overview: '概要ビュー',
+        cluster_overview_desc: '全ノードの稼働状態を一覧表示',
+        node_local: 'ローカル',
+        node_online: 'オンライン',
+        node_offline: 'オフライン',
+        node_add: 'ノード追加',
+        node_edit: '編集',
+        node_delete: '削除',
+        node_ping: '接続テスト',
+        node_probe: '再プローブ',
+        node_id: 'ノード ID',
+        node_name: 'ノード名',
+        node_url: 'ノード URL',
+        node_token: 'アクセストークン',
+        node_url_placeholder: 'http://192.168.1.100:8000',
+        node_token_placeholder: 'リモート Dashboard のトークン',
+        node_add_success: 'ノードを追加しました',
+        node_add_failed: 'ノードの追加に失敗しました',
+        node_remove_confirm: 'このノードを削除しますか？',
+        node_ping_success: '接続成功',
+        node_ping_failed: '接続失敗',
+        node_probing: 'ノード機能をプローブ中...',
+        node_probe_complete: 'プローブ完了',
+        unsupported_on_node: 'このノードではサポートされていません',
+        unsupported_features: '未サポート機能',
+        capability_matrix: '機能マトリクス',
+        cluster_card_detail: '詳細',
+        cluster_node_count: 'ノード',
+        process_memory: 'プロセス', threads: 'スレッド', connections: '接続',
+        cap_status: 'ステータス', cap_status_desc: 'ノードの実行状態を表示',
+        cap_system: 'システム', cap_system_desc: 'システムリソース使用状況を表示',
+        cap_adapters: 'アダプタ', cap_adapters_desc: 'メッセージアダプタの管理',
+        cap_modules: 'モジュール', cap_modules_desc: '登録済みモジュールを表示',
+        cap_bots: 'ボット', cap_bots_desc: 'Botインスタンスの管理',
+        cap_events: 'イベント', cap_events_desc: 'リアルタイムイベントストリーム',
+        cap_config: '設定', cap_config_desc: 'モジュール設定の閲覧・編集',
+        cap_storage: 'ストレージ', cap_storage_desc: 'キーバリューストレージにアクセス',
+        cap_store: 'ストア', cap_store_desc: '拡張モジュールの閲覧・インストール',
+        cap_packages: 'パッケージ', cap_packages_desc: 'Pythonパッケージの管理',
+        cap_logs: 'ログ', cap_logs_desc: 'システム・モジュールログの表示',
+        cap_lifecycle: 'ライフサイクル', cap_lifecycle_desc: 'モジュールの開始/停止/リロード',
+        cap_audit: '監査ログ', cap_audit_desc: 'API呼び出しの監査記録を表示',
+        cap_files: 'ファイル', cap_files_desc: 'サーバーファイルの閲覧・管理',
+        cap_commands: 'コマンド', cap_commands_desc: '登録済みコマンドの管理',
+        cap_event_builder: 'イベントビルダー', cap_event_builder_desc: 'カスタムイベントの作成・送信',
+        cap_config_source: '設定ソース', cap_config_source_desc: '設定ファイルのソースを表示',
+        cap_module_views: 'モジュールビュー', cap_module_views_desc: 'モジュール提供のカスタムページ',
+        cap_performance: 'パフォーマンス', cap_performance_desc: 'パフォーマンス指標を表示',
+        cap_routes: 'ルート', cap_routes_desc: '登録済みAPIルートを表示',
+        cap_message_stats: 'メッセージ統計', cap_message_stats_desc: 'メッセージ統計を表示',
+        cap_framework_update: 'フレームワーク更新', cap_framework_update_desc: 'ErisPulseの確認・更新',
+        cluster_sync: 'イベント同期',
+        cluster_sync_desc: 'ノード間でイベントを転送',
+        sync_source: '送信元',
+        sync_target: '送信先',
+        sync_start: '同期開始',
+        sync_success: '同期完了',
+        sync_failed: '同期失敗',
+        latency: 'レイテンシ',
+        dashboard_version: 'Dashboard バージョン',
+        node_already_exists: 'ノード ID は既に存在します',
+        node_not_found: 'ノードが見つかりません',
     },
     
     ru: {
@@ -1304,6 +1573,31 @@ function toggleLang() {
     const langs = ['en', 'zh', 'zh-TW', 'ja', 'ru'];
     lang = langs[(langs.indexOf(lang) + 1) % langs.length];
     localStorage.setItem('ep_lang', lang); applyI18n(); loadAll();
+    var activePage = document.querySelector('.page.active');
+    if (activePage) {
+        var pageId = activePage.id.replace('p-', '');
+        var loaders = {
+            'dashboard': refreshDashboard,
+            'bots': loadBots,
+            'event-stream': loadEvents,
+            'event-builder': initEventBuilder,
+            'modules': loadModules,
+            'store': loadStore,
+            'packages': function() { loadPackages(); loadPackageUpdates(); },
+            'logs': loadLogs,
+            'lifecycle': loadLifecycle,
+            'audit': loadAuditLog,
+            'api-routes': loadApiRoutes,
+            'commands': loadCommands,
+            'files': function() { fmBrowse('.'); },
+            'config': loadConfig,
+            'framework-config': loadFrameworkConfig,
+            'cluster': loadClusterPage,
+        };
+        if (loaders[pageId]) loaders[pageId]();
+        else if (_moduleViewLoaders && _moduleViewLoaders[pageId]) _moduleViewLoaders[pageId]();
+    }
+    updateNodeSelectorUI();
 }
 function applyI18n() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (I18N[lang][k]) el.textContent = I18N[lang][k] });
@@ -1403,6 +1697,11 @@ function _botAvatarFallback(el) {
 
 function go(name, el) {
     if (!authed) { showLogin(); return }
+    var requiredCap = _PAGE_CAPABILITY_MAP[name];
+    if (requiredCap && !isCapabilitySupported(requiredCap)) {
+        toast(t('unsupported_on_node') + ': ' + t(name), 'wr');
+        return;
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const page = document.getElementById('p-' + name);
@@ -1426,6 +1725,7 @@ function go(name, el) {
         'files': function() { fmBrowse('.'); },
         'config': loadConfig,
         'framework-config': loadFrameworkConfig,
+        'cluster': loadClusterPage,
     };
     if (loaders[name]) {
         loaders[name]();
@@ -1501,9 +1801,14 @@ function _renderModuleViews(views) {
         pageDiv.setAttribute('data-module-view', v.id);
 
         if (v.iframe_url) {
-            const sep = v.iframe_url.indexOf('?') === -1 ? '?' : '&';
-            pageDiv.innerHTML = '<iframe src="' + esc(v.iframe_url) +
-                sep + 'token=' + encodeURIComponent(localStorage.getItem(TK) || '') +
+            var iframeSrc = v.iframe_url;
+            if (currentNode !== 'local' && iframeSrc.charAt(0) === '/') {
+                var nInfo = nodeRuntimeInfo[currentNode] || {};
+                if (nInfo.url) iframeSrc = nInfo.url + iframeSrc;
+            }
+            const sep = iframeSrc.indexOf('?') === -1 ? '?' : '&';
+            pageDiv.innerHTML = '<iframe src="' + esc(iframeSrc) +
+                sep + 'token=' + encodeURIComponent(currentNode !== 'local' ? (nodeRuntimeInfo[currentNode] || {}).token || '' : localStorage.getItem(TK) || '') +
                 '" class="module-view-iframe" frameborder="0"></iframe>';
         } else if (v.html_content) {
             pageDiv.innerHTML = v.html_content;
@@ -1676,6 +1981,7 @@ async function doLogin() {
         localStorage.setItem(TK, v); authed = true; closeLogin();
         document.querySelector('.app').classList.add('authed');
         loadAll(); wsConnect(); restartRefreshTimer();
+        loadClusterNodes();
         toast(t('logged_in'), 'ok');
     } else {
         if (!authed) localStorage.removeItem(TK);
@@ -1710,7 +2016,7 @@ async function refreshDashboard() {
         statCard(Object.keys(ad).length, t('adapters')) +
         statCard(Object.keys(mo).filter(k => mo[k]).length, t('modules_label')) +
         statCard(ob, t('online_bots')) +
-        statCard(allEvents.length, t('total_events')) +
+        statCard(_totalEventCount, t('total_events')) +
         '</div></div>';
 
     let aH = ''; Object.entries(ad).forEach(([n, i]) => {
@@ -1738,6 +2044,7 @@ async function loadEvents() {
     const u = new URLSearchParams({ limit }); if (tf) u.set('type', tf); if (pf) u.set('platform', pf);
     const d = await api('/api/events?' + u); if (!d) return;
     allEvents = d.events || [];
+    if (d.total_count !== undefined) _totalEventCount = d.total_count;
     document.getElementById('eventList').innerHTML = allEvents.length ? allEvents.slice().reverse().map(evHtml).join('') : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><p>' + t('no_events') + '</p></div>';
     document.getElementById('dashEvents').innerHTML = allEvents.slice(-20).reverse().map(evHtml).join('') || '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' + t('waiting_events') + '</div>';
     const ps = document.getElementById('ePlatFilter');
@@ -1751,7 +2058,7 @@ async function clearEvents() {
     if (!authed) return showLogin();
     const ok = await confirm2(t('clear_events'), t('clear_confirm')); if (!ok) return;
     await api('/api/events/clear', { method: 'POST' });
-    allEvents = []; loadEvents();
+    allEvents = []; _totalEventCount = 0; loadEvents();
 }
 
 async function loadBots() {
@@ -2588,8 +2895,24 @@ async function delStorage(k, btn) {
 }
 
 function wsConnect() {
-    const p = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const u = p + '//' + location.host + API + '/ws?token=' + encodeURIComponent(localStorage.getItem(TK) || '');
+    if (ws) {
+        ws.onclose = null;
+        ws.onerror = null;
+        try { ws.close() } catch(e) {}
+        ws = null;
+    }
+    var u;
+    if (currentNode === 'local') {
+        const p = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        u = p + '//' + location.host + API + '/ws?token=' + encodeURIComponent(localStorage.getItem(TK) || '');
+    } else {
+        var info = nodeRuntimeInfo[currentNode] || {};
+        var nodeUrl = info.url || '';
+        if (!nodeUrl) { connStateChange(0, false); return; }
+        var wsProto = nodeUrl.startsWith('https') ? 'wss:' : 'ws:';
+        var wsHost = nodeUrl.replace(/^https?:\/\//, '');
+        u = wsProto + '//' + wsHost + '/Dashboard/ws?token=' + encodeURIComponent(info.token || '');
+    }
     ws = new WebSocket(u);
     ws.onopen = () => { connStateChange(1, true) };
     ws.onclose = () => { connStateChange(0, true); setTimeout(wsConnect, 3000) };
@@ -2598,10 +2921,10 @@ function wsConnect() {
         try {
             const m = JSON.parse(e.data);
             if (m.type === 'event') {
-                allEvents.push(m.data); if (allEvents.length > 500) allEvents.shift();
+                allEvents.push(m.data); _totalEventCount++; if (allEvents.length > 500) allEvents.shift();
                 const sv = document.getElementById('statGrid');
                 const statCards = sv?.querySelectorAll('.stat-val');
-                if (statCards && statCards[3]) statCards[3].textContent = allEvents.length;
+                if (statCards && statCards[3]) statCards[3].textContent = _totalEventCount;
                 if (document.querySelector('.page.active')?.id === 'p-dashboard') {
                     const dh = document.getElementById('dashEvents'); const em = dh?.querySelector('.empty-state');
                     if (em) em.remove(); dh?.insertAdjacentHTML('afterbegin', evHtml(m.data));
@@ -4575,6 +4898,7 @@ async function saveCmdEdit() {
 
 (function () {
     applyTheme(getTheme()); applyUiStyle(getUiStyle()); applyI18n();
+    updateNodeSelectorUI();
     const collapsed = localStorage.getItem('ep_sidebar_collapsed') === 'true';
     if (collapsed) document.getElementById('sidebar').classList.add('collapsed');
     const tk = localStorage.getItem(TK);
@@ -4584,6 +4908,7 @@ async function saveCmdEdit() {
                 authed = true;
                 document.querySelector('.app').classList.add('authed');
                 loadAll(); wsConnect(); restartRefreshTimer();
+                loadClusterNodes();
             } else { localStorage.removeItem(TK); showLogin() }
         }).catch(() => { showLogin() });
     } else { showLogin() }
@@ -4595,3 +4920,421 @@ async function saveCmdEdit() {
         dz.addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('drag-over'); if (e.dataTransfer.files[0]) processUploadFile(e.dataTransfer.files[0]) });
     }
 })();
+
+// ========== 集群管理 ==========
+
+var _PAGE_CAPABILITY_MAP = {
+    'bots': 'bots',
+    'event-stream': 'events',
+    'event-builder': 'event_builder',
+    'commands': 'commands',
+    'modules': 'modules',
+    'store': 'store',
+    'packages': 'packages',
+    'logs': 'logs',
+    'lifecycle': 'lifecycle',
+    'audit': 'audit',
+    'api-routes': 'routes',
+    'config': 'config',
+    'framework-config': 'config_source',
+    'files': 'files',
+};
+
+function isCapabilitySupported(capId) {
+    if (currentNode === 'local') return true;
+    var caps = nodeCapabilities[currentNode];
+    if (!caps) return true;
+    if (!caps[capId]) return true;
+    return caps[capId].supported !== false;
+}
+
+function switchNode(nodeId) {
+    if (nodeId === currentNode) return;
+    currentNode = nodeId;
+    allEvents = [];
+    updateNodeSelectorUI();
+    updateSidebarForNode();
+    _clearModuleViews();
+    wsConnect();
+    loadModuleViews();
+    var activePage = document.querySelector('.page.active');
+    if (activePage) {
+        var pageId = activePage.id.replace('p-', '');
+        go(pageId, document.querySelector('.nav-item[data-page="' + pageId + '"]'));
+    }
+}
+
+function updateSidebarForNode() {
+    document.querySelectorAll('.nav-item[data-page]').forEach(function(el) {
+        var page = el.getAttribute('data-page');
+        var cap = _PAGE_CAPABILITY_MAP[page];
+        if (!isCapabilitySupported(cap)) {
+            el.classList.add('nav-disabled');
+            el.title = t('unsupported_on_node');
+        } else {
+            el.classList.remove('nav-disabled');
+            el.title = '';
+        }
+    });
+    document.querySelectorAll('.nav-item[data-module-view]').forEach(function(el) {
+        if (!isCapabilitySupported('module_views')) {
+            el.classList.add('nav-disabled');
+        } else {
+            el.classList.remove('nav-disabled');
+        }
+    });
+}
+
+function _clearModuleViews() {
+    document.querySelectorAll('.nav-item[data-module-view]').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.page[data-module-view]').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.module-view-style').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.module-view-script').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.nav-group.module-view-group').forEach(function(el) { el.remove(); });
+    _moduleViewLoaders = {};
+    _moduleViewsLoaded = false;
+}
+
+function toggleNodeDropdown() {
+    var dd = document.getElementById('nodeDropdown');
+    dd.classList.toggle('open');
+}
+
+function closeNodeDropdown() {
+    document.getElementById('nodeDropdown').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    var sel = document.getElementById('nodeSelector');
+    if (sel && !sel.contains(e.target)) closeNodeDropdown();
+});
+
+function updateNodeSelectorUI() {
+    var label = document.getElementById('nodeSelectorLabel');
+    var dot = document.getElementById('nodeDot');
+    if (currentNode === 'local') {
+        label.textContent = t('node_local');
+        dot.className = 'node-dot node-dot-local';
+    } else {
+        var info = nodeRuntimeInfo[currentNode] || {};
+        label.textContent = info.name || currentNode;
+        dot.className = 'node-dot ' + (info.online ? 'node-dot-online' : 'node-dot-offline');
+    }
+}
+
+async function loadClusterNodes() {
+    var d = await api('/api/cluster/nodes');
+    if (!d) return;
+    if (d.nodes) {
+        d.nodes.forEach(function(n) {
+            nodeRuntimeInfo[n.id] = n;
+            if (n.capabilities) {
+                nodeCapabilities[n.id] = n.capabilities;
+            }
+        });
+    }
+    renderNodeDropdown(d.nodes || []);
+}
+
+function renderNodeDropdown(nodes) {
+    var list = document.getElementById('nodeDropdownList');
+    if (!list) return;
+    var html = '';
+    html += '<div class="node-dropdown-item' + (currentNode === 'local' ? ' active' : '') + '" onclick="switchNode(\'local\'); closeNodeDropdown();">';
+    html += '<span class="node-dot node-dot-local"></span>';
+    html += '<span>' + esc(t('node_local')) + '</span>';
+    html += '</div>';
+    nodes.forEach(function(n) {
+        var info = nodeRuntimeInfo[n.id] || {};
+        var dotClass = info.online ? 'node-dot-online' : 'node-dot-offline';
+        html += '<div class="node-dropdown-item' + (currentNode === n.id ? ' active' : '') + '" onclick="switchNode(\'' + esc(n.id) + '\'); closeNodeDropdown();">';
+        html += '<span class="node-dot ' + dotClass + '"></span>';
+        html += '<span class="node-dropdown-label">' + esc(n.name || n.id) + '</span>';
+        if (info.latency_ms >= 0) {
+            html += '<span class="node-latency">' + info.latency_ms + 'ms</span>';
+        }
+        html += '</div>';
+    });
+    list.innerHTML = html;
+}
+
+var _capKeys = [
+    'status','system','adapters','modules','bots','events','config','storage',
+    'store','packages','logs','lifecycle','audit','files','commands',
+    'event_builder','config_source','module_views','performance','routes','message_stats','framework_update'
+];
+
+function _clusterNodeCardHtml(n, overviewData) {
+    var info = nodeRuntimeInfo[n.id] || {};
+    var online = info.online;
+    var dotClass = online ? 'node-dot-online' : 'node-dot-offline';
+    var caps = info.capabilities || {};
+    var capKeys = _capKeys;
+    var supportedCaps = [];
+    var unsupportedCaps = [];
+    capKeys.forEach(function(k) {
+        var c = caps[k];
+        if (c && c.supported) supportedCaps.push(k);
+        else if (c && c.supported === false) unsupportedCaps.push(k);
+    });
+
+    var statsHtml = '';
+    if (overviewData && !overviewData._error) {
+        var mem = overviewData.memory || {};
+        var status = overviewData.status || {};
+        var system = overviewData.system || {};
+        var proc = system.process || {};
+        var stats = [];
+        if (mem.cpu_percent !== undefined) stats.push({ l: 'CPU', v: (typeof mem.cpu_percent === 'number' ? mem.cpu_percent.toFixed(1) : '-') + '%', c: _colorForUsage(mem.cpu_percent, 50, 80) });
+        if (mem.system_percent !== undefined) stats.push({ l: 'RAM', v: mem.system_percent.toFixed(1) + '%', c: _colorForUsage(mem.system_percent, 60, 85) });
+        if (mem.rss_mb !== undefined) stats.push({ l: t('process_memory'), v: mem.rss_mb + 'MB' });
+        var aCount;
+        if (status.adapters_count !== undefined) aCount = status.adapters_count;
+        else if (status.adapters && typeof status.adapters === 'object' && !status.adapters.error) aCount = Object.keys(status.adapters).length;
+        if (aCount !== undefined) stats.push({ l: t('adapters') || 'Adapters', v: aCount });
+        var mCount;
+        if (status.modules_count !== undefined) mCount = status.modules_count;
+        else if (status.modules && typeof status.modules === 'object' && !status.modules.error) mCount = Object.values(status.modules).filter(function(v) { return v; }).length;
+        if (mCount !== undefined) stats.push({ l: t('registered') || 'Modules', v: mCount });
+        var eCount;
+        if (status.events_count !== undefined) eCount = status.events_count;
+        else if (system.total_events !== undefined) eCount = system.total_events;
+        if (eCount !== undefined) stats.push({ l: t('events') || 'Events', v: eCount });
+        if (system.uptime_human) stats.push({ l: t('lifecycle') || 'Uptime', v: system.uptime_human, c: 'var(--tx-s)' });
+        if (proc.threads !== undefined) stats.push({ l: t('threads'), v: proc.threads });
+        if (proc.connections !== undefined) stats.push({ l: t('connections'), v: proc.connections });
+        if (stats.length > 0) {
+            statsHtml = '<div class="cluster-card-stats">';
+            stats.forEach(function(s) {
+                statsHtml += '<div class="cluster-card-stat"><span class="cluster-stat-val"' + (s.c ? ' style="color:' + s.c + '"' : '') + '>' + esc(s.v) + '</span><span class="cluster-stat-label">' + esc(s.l) + '</span></div>';
+            });
+            statsHtml += '</div>';
+        }
+    }
+
+    var capsHtml = '';
+    if (supportedCaps.length > 0 || unsupportedCaps.length > 0) {
+        capsHtml += '<div class="cluster-card-caps">';
+        supportedCaps.forEach(function(k) {
+            capsHtml += '<span class="cluster-cap-tag cap-supported" title="' + esc(t('cap_' + k + '_desc')) + '">' + esc(t('cap_' + k)) + '</span>';
+        });
+        unsupportedCaps.forEach(function(k) {
+            capsHtml += '<span class="cluster-cap-tag cap-unsupported" title="' + esc(t('cap_' + k + '_desc')) + '">' + esc(t('cap_' + k)) + '</span>';
+        });
+        capsHtml += '</div>';
+    }
+
+    var meta = '';
+    if (info.latency_ms >= 0) meta += '<span>' + esc(t('latency')) + ': ' + info.latency_ms + 'ms</span>';
+    if (info.dashboard_version) meta += '<span>v' + esc(info.dashboard_version) + '</span>';
+
+    var cardId = 'clusterCard-' + esc(n.id);
+    var h = '<div class="cluster-node-card" id="' + cardId + '">';
+    h += '<div class="cluster-card-header">';
+    h += '<div class="cluster-card-title"><span class="node-dot ' + dotClass + '"></span><span class="cluster-card-name">' + esc(n.name || n.id) + '</span>';
+    h += online ? '<span class="cluster-badge badge-online">' + esc(t('node_online')) + '</span>' : '<span class="cluster-badge badge-offline">' + esc(t('node_offline')) + '</span>';
+    h += '</div>';
+    h += '<div class="cluster-node-actions">';
+    h += '<button class="btn-icon-sm" onclick="editClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_edit')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>';
+    h += '<button class="btn-icon-sm" onclick="pingClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_ping')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>';
+    h += '<button class="btn-icon-sm" onclick="probeClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_probe')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>';
+    h += '<button class="btn-icon-sm btn-icon-danger" onclick="removeClusterNode(\'' + esc(n.id) + '\')" title="' + esc(t('node_delete')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
+    h += '</div></div>';
+    h += '<div class="cluster-node-url">' + esc(n.url) + '</div>';
+    if (meta) h += '<div class="cluster-node-meta">' + meta + '</div>';
+
+    if (statsHtml || capsHtml) {
+        h += '<button class="cluster-card-toggle" onclick="toggleClusterCardDetail(\'' + cardId + '\')">';
+        h += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-arrow"><polyline points="6 9 12 15 18 9"/></svg>';
+        h += '<span>' + esc(t('cluster_card_detail') || 'Details') + '</span>';
+        if (supportedCaps.length > 0) h += '<span class="cluster-cap-count">' + supportedCaps.length + '/' + capKeys.length + '</span>';
+        h += '</button>';
+        h += '<div class="cluster-card-detail">';
+        h += statsHtml + capsHtml;
+        h += '</div>';
+    }
+
+    h += '</div>';
+    return h;
+}
+
+function toggleClusterCardDetail(cardId) {
+    var card = document.getElementById(cardId);
+    if (!card) return;
+    card.classList.toggle('card-expanded');
+}
+
+function _clusterFormHtml(formId, title, fields, submitText, submitFn) {
+    var h = '<div class="cluster-form-panel" id="' + formId + '" style="display:none">';
+    h += '<div class="cluster-form-header">' + esc(title) + '</div>';
+    h += '<div class="cluster-form-grid">';
+    fields.forEach(function(f) {
+        h += '<div class="cluster-form-field">';
+        h += '<label>' + esc(f.label) + '</label>';
+        h += '<input id="' + f.id + '" placeholder="' + esc(f.placeholder || '') + '"' + (f.type ? ' type="' + f.type + '"' : '') + ' value="' + esc(f.value || '') + '">';
+        h += '</div>';
+    });
+    h += '</div>';
+    h += '<div class="cluster-form-actions">';
+    h += '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'' + formId + '\').style.display=\'none\'">' + esc(t('cancel') || 'Cancel') + '</button>';
+    h += '<button class="btn btn-primary btn-sm" onclick="' + submitFn + '">' + esc(submitText) + '</button>';
+    h += '</div></div>';
+    return h;
+}
+
+async function loadClusterPage() {
+    var container = document.getElementById('clusterContent');
+    if (!container) return;
+    container.innerHTML = '<div class="cluster-loading"><div class="cluster-spinner"></div></div>';
+
+    await loadClusterNodes();
+    var d = await api('/api/cluster/nodes');
+    var nodes = (d && d.nodes) ? d.nodes : [];
+
+    var overviewMap = {};
+    var od = await api('/api/cluster/overview');
+    if (od && od.nodes) {
+        Object.keys(od.nodes).forEach(function(nid) {
+            if (nid !== 'local') overviewMap[nid] = od.nodes[nid];
+        });
+    }
+
+    var html = '';
+
+    html += '<div class="cluster-toolbar">';
+    html += '<div class="cluster-toolbar-info">' + nodes.length + ' ' + esc(t('cluster_node_count') || (t('node_local') === '本地实例' ? '个节点' : 'node(s)')) + '</div>';
+    html += '<button class="btn btn-primary btn-sm" onclick="showAddNodeForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' + esc(t('node_add')) + '</button>';
+    html += '</div>';
+
+    html += _clusterFormHtml('clusterAddForm', t('node_add'), [
+        { id: 'addNodeId', label: t('node_id'), placeholder: 'node_a' },
+        { id: 'addNodeName', label: t('node_name'), placeholder: t('node_name') },
+        { id: 'addNodeUrl', label: t('node_url'), placeholder: t('node_url_placeholder') },
+        { id: 'addNodeToken', label: t('node_token'), placeholder: t('node_token_placeholder'), type: 'password' },
+    ], t('node_add'), 'submitClusterNode()');
+
+    html += _clusterFormHtml('clusterEditForm', t('node_edit'), [
+        { id: 'editNodeId', label: t('node_id'), placeholder: '' },
+        { id: 'editNodeName', label: t('node_name'), placeholder: '' },
+        { id: 'editNodeUrl', label: t('node_url'), placeholder: '' },
+        { id: 'editNodeToken', label: t('node_token'), placeholder: t('node_token_placeholder'), type: 'password' },
+    ], t('save') || 'Save', 'submitEditNode()');
+
+    if (nodes.length === 0) {
+        html += '<div class="cluster-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg><div>' + esc(t('no_data') || 'No nodes added yet') + '</div></div>';
+    } else {
+        html += '<div class="cluster-node-list">';
+        nodes.forEach(function(n) {
+            html += _clusterNodeCardHtml(n, overviewMap[n.id]);
+        });
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function showAddNodeForm() {
+    document.getElementById('clusterAddForm').style.display = 'block';
+    document.getElementById('clusterEditForm').style.display = 'none';
+    ['addNodeId','addNodeName','addNodeUrl','addNodeToken'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
+function editClusterNode(nodeId) {
+    var d = nodeRuntimeInfo[nodeId] || {};
+    document.getElementById('clusterEditForm').style.display = 'block';
+    document.getElementById('clusterAddForm').style.display = 'none';
+    document.getElementById('editNodeId').value = nodeId;
+    document.getElementById('editNodeId').readOnly = true;
+    document.getElementById('editNodeName').value = d.name || '';
+    document.getElementById('editNodeUrl').value = d.url || '';
+    document.getElementById('editNodeToken').value = '';
+    document.getElementById('editNodeToken').placeholder = t('node_token_placeholder') + ' (' + (t('node_local') === '本地实例' ? '留空不修改' : 'leave empty to keep') + ')';
+}
+
+async function submitClusterNode() {
+    var id = document.getElementById('addNodeId').value.trim();
+    var name = document.getElementById('addNodeName').value.trim();
+    var url = document.getElementById('addNodeUrl').value.trim();
+    var token = document.getElementById('addNodeToken').value.trim();
+    if (!id || !url || !token) { toast('ID, URL, Token required', 'wr'); return; }
+    var d = await api('/api/cluster/nodes', {
+        method: 'POST',
+        body: JSON.stringify({ id: id, name: name, url: url, token: token })
+    });
+    if (d && d.success) {
+        if (d.node) nodeRuntimeInfo[d.node.id] = d.node;
+        toast(t('node_add_success'), 'ok');
+        loadClusterPage();
+    } else {
+        toast(t('node_add_failed') + (d && d.error ? ': ' + d.error : ''), 'er');
+    }
+}
+
+async function submitEditNode() {
+    var nodeId = document.getElementById('editNodeId').value.trim();
+    var name = document.getElementById('editNodeName').value.trim();
+    var url = document.getElementById('editNodeUrl').value.trim();
+    var token = document.getElementById('editNodeToken').value.trim();
+    if (!nodeId) return;
+    var body = { name: name, url: url };
+    if (token) body.token = token;
+    var d = await api('/api/cluster/nodes/' + encodeURIComponent(nodeId), {
+        method: 'PUT',
+        body: JSON.stringify(body)
+    });
+    if (d && d.success) {
+        if (d.node) nodeRuntimeInfo[d.node.id] = d.node;
+        if (currentNode === nodeId) wsConnect();
+        toast(t('node_edit') + ' OK', 'ok');
+        loadClusterPage();
+    } else {
+        toast(t('node_edit') + ' ' + (t('failed') || 'failed') + (d && d.error ? ': ' + d.error : ''), 'er');
+    }
+}
+
+async function removeClusterNode(nodeId) {
+    if (!confirm(t('node_remove_confirm'))) return;
+    var d = await api('/api/cluster/nodes/' + encodeURIComponent(nodeId), { method: 'DELETE' });
+    if (d && d.success) {
+        toast(t('node_delete') + ' OK', 'ok');
+        if (currentNode === nodeId) switchNode('local');
+        loadClusterPage();
+    } else {
+        toast(t('node_not_found'), 'er');
+    }
+}
+
+async function pingClusterNode(nodeId) {
+    var btn = document.querySelector('#clusterCard-' + nodeId + ' .cluster-node-actions .btn-icon-sm:nth-child(2)');
+    if (btn) btn.classList.add('spin');
+    var d = await api('/api/cluster/nodes/' + encodeURIComponent(nodeId) + '/ping', { method: 'POST' });
+    if (btn) btn.classList.remove('spin');
+    if (d && d.online) {
+        toast(t('node_ping_success') + ' (' + d.latency_ms + 'ms)', 'ok');
+    } else {
+        toast(t('node_ping_failed'), 'er');
+    }
+    await loadClusterNodes();
+    loadClusterPage();
+}
+
+async function probeClusterNode(nodeId) {
+    toast(t('node_probing'), 'wr');
+    var d = await api('/api/cluster/nodes/' + encodeURIComponent(nodeId) + '/probe', { method: 'POST' });
+    if (d && d.capabilities) {
+        nodeCapabilities[nodeId] = d.capabilities;
+        toast(t('node_probe_complete'), 'ok');
+        loadClusterPage();
+    } else {
+        toast(t('node_probe_complete'), 'er');
+    }
+}
+
+function _colorForUsage(val, warn, danger) {
+    if (val > (danger || 85)) return 'var(--er-c)';
+    if (val > (warn || 60)) return 'var(--wr-c)';
+    return 'var(--ok-c)';
+}

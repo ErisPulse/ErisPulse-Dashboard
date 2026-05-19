@@ -409,7 +409,8 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: width .25s ease
+    transition: width .25s ease;
+    overflow: visible
 }
 
 .sidebar-nav {
@@ -556,6 +557,10 @@ body {
 
 .sidebar.collapsed .sidebar-footer {
     justify-content: center
+}
+
+.sidebar.collapsed .node-selector {
+    display: none
 }
 
 .sidebar-collapse-btn {
@@ -3708,6 +3713,10 @@ select.form-select::-ms-expand {
         display: none
     }
 
+    .sidebar .node-selector {
+        display: none
+    }
+
     .sidebar .nav-item {
         justify-content: center;
         padding: 10px
@@ -4374,3 +4383,101 @@ select.form-select::-ms-expand {
     margin-top: 2px;
     line-height: 1.4
 }
+
+/* ========== 节点选择器 ========== */
+.node-selector { padding: 10px 12px; border-bottom: 1px solid var(--bd); position: relative; overflow: visible; }
+.node-selector-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 7px 10px; border-radius: 8px; transition: background 0.2s; }
+.node-selector-header:hover { background: var(--bg-t); }
+.node-selector-current { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.node-selector-arrow { width: 14px; height: 14px; opacity: 0.4; transition: transform 0.2s; flex-shrink: 0; }
+.node-dropdown { display: none; position: absolute; top: calc(100% - 2px); left: 8px; right: 8px; background: var(--bg-t); border: 1px solid var(--bd); border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 100; max-height: 360px; overflow-y: auto; }
+.node-dropdown.open { display: block; }
+.node-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; font-size: 13px; border-radius: 6px; margin: 2px 6px; transition: background 0.15s; color: var(--tx-p);}
+.node-dropdown-item:hover { background: var(--bg-s); }
+.node-dropdown-item.active { background: var(--accent); color: #fff; }
+.node-dropdown-item.active .node-latency { color: rgba(255,255,255,0.7); }
+.node-dropdown-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.node-dropdown-footer { border-top: 1px solid var(--bd); padding: 4px 0; }
+.node-dropdown-footer .node-dropdown-item { color: var(--tx-s); font-size: 12px; height: 32px; }
+
+/* 节点状态圆点 */
+.node-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.node-dot-online { background: var(--ok-c); box-shadow: 0 0 4px rgba(46,125,50,0.3); }
+.node-dot-offline { background: var(--er-c); }
+.node-dot-local { background: var(--accent); }
+
+/* 侧边栏禁用态 */
+.nav-disabled { opacity: 0.35; pointer-events: none; cursor: not-allowed; }
+.nav-disabled:hover { opacity: 0.35; }
+
+/* 节点延迟标签 */
+.node-latency { margin-left: auto; font-size: 11px; color: var(--tx-t); flex-shrink: 0; padding-left: 8px; }
+.node-unsupported-hint { padding: 2px 12px 6px 28px; font-size: 11px; color: var(--tx-t); }
+
+/* ========== 集群通用 ========== */
+.cluster-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; margin-left: 8px; vertical-align: middle; }
+.cluster-badge.badge-online { background: var(--ok-bg); color: var(--ok-c); }
+.cluster-badge.badge-offline { background: var(--er-bg); color: var(--er-c); }
+.cluster-badge.badge-local { background: rgba(var(--accent),0.12); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.cluster-warn { color: var(--wr-c); }
+.cluster-empty { text-align: center; padding: 48px 20px; color: var(--tx-t); }
+.cluster-empty svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.4; }
+.cluster-loading { display: flex; justify-content: center; padding: 48px; }
+.cluster-spinner { width: 24px; height: 24px; border: 2px solid var(--bd); border-top-color: var(--accent); border-radius: 50%; animation: cluster-spin 0.8s linear infinite; }
+@keyframes cluster-spin { to { transform: rotate(360deg); } }
+
+.cluster-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.cluster-toolbar-info { font-size: 13px; color: var(--tx-s); }
+
+/* ========== 集群管理卡片 ========== */
+.cluster-node-list { display: flex; flex-direction: column; gap: 12px; }
+.cluster-node-card { background: var(--bg-t); border: 1px solid var(--bd); border-radius: 12px; transition: border-color 0.2s, box-shadow 0.2s; }
+.cluster-node-card:hover { border-color: var(--bd-h); }
+.cluster-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 0; gap: 8px; }
+.cluster-card-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 0; flex-shrink: 1; }
+.cluster-card-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cluster-node-url { font-size: 12px; color: var(--tx-t); word-break: break-all; font-family: 'Cascadia Code','Fira Code',Consolas,monospace; background: var(--bg-s); padding: 4px 8px; border-radius: 4px; margin: 8px 16px 0; }
+.cluster-node-meta { display: flex; gap: 12px; font-size: 12px; color: var(--tx-s); margin: 8px 16px 0; flex-wrap: wrap; align-items: center; }
+.cluster-node-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+/* ========== 卡片折叠按钮 ========== */
+.cluster-card-toggle { display: flex; align-items: center; gap: 6px; width: 100%; padding: 10px 16px; border: none; background: none; color: var(--tx-t); font-size: 12px; cursor: pointer; transition: color 0.15s, background 0.15s; }
+.cluster-card-toggle:hover { color: var(--tx-p); background: var(--bg-s); }
+.cluster-card-toggle .toggle-arrow { width: 14px; height: 14px; transition: transform 0.25s ease; flex-shrink: 0; }
+.cluster-card-expanded .cluster-card-toggle .toggle-arrow,
+.cluster-node-card.card-expanded .cluster-card-toggle .toggle-arrow { transform: rotate(180deg); }
+.cluster-cap-count { margin-left: auto; font-size: 11px; background: var(--bg-s); padding: 1px 8px; border-radius: 8px; font-weight: 500; }
+
+/* ========== 卡片详情区（可折叠） ========== */
+.cluster-card-detail { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; padding: 0 16px; }
+.cluster-node-card.card-expanded .cluster-card-detail { max-height: 500px; padding: 12px 16px 14px; }
+
+/* ========== 卡片统计 ========== */
+.cluster-card-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.cluster-card-stat { display: flex; flex-direction: column; align-items: center; background: var(--bg-s); border-radius: 8px; padding: 8px 14px; min-width: 72px; }
+.cluster-stat-val { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.cluster-stat-label { font-size: 10px; color: var(--tx-t); text-transform: uppercase; letter-spacing: 0.3px; font-weight: 500; margin-top: 2px; }
+
+/* ========== 功能标签 ========== */
+.cluster-card-caps { display: flex; flex-wrap: wrap; gap: 6px; }
+.cluster-cap-tag { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 10px; border-radius: 6px; font-weight: 500; }
+.cluster-cap-tag.cap-supported { background: var(--ok-bg); color: var(--ok-c); }
+.cluster-cap-tag.cap-unsupported { background: var(--er-bg); color: var(--er-c); opacity: 0.7; }
+
+/* ========== 小图标按钮 ========== */
+.btn-icon-sm { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; color: var(--tx-s); cursor: pointer; transition: all 0.15s; }
+.btn-icon-sm svg { width: 14px; height: 14px; }
+.btn-icon-sm:hover { background: var(--bg-s); color: var(--tx-p); }
+.btn-icon-sm.btn-icon-danger:hover { background: var(--er-bg); color: var(--er-c); }
+.btn-icon-sm.spin svg { animation: cluster-spin 0.8s linear infinite; }
+
+/* ========== 集群表单面板 ========== */
+.cluster-form-panel { background: var(--bg-t); border: 1px solid var(--bd); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.cluster-form-header { font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+.cluster-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 600px) { .cluster-form-grid { grid-template-columns: 1fr; } }
+.cluster-form-field label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 4px; color: var(--tx-s); text-transform: uppercase; letter-spacing: 0.3px; }
+.cluster-form-field input { width: 100%; padding: 7px 10px; border: 1px solid var(--bd); border-radius: 6px; background: var(--bg-s); color: var(--tx-p); font-size: 13px; box-sizing: border-box; transition: border-color 0.2s; }
+.cluster-form-field input:focus { outline: none; border-color: var(--accent); }
+.cluster-form-field input[readonly] { opacity: 0.6; cursor: default; }
+.cluster-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bd); }

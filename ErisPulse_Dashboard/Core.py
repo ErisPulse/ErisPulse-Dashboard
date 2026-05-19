@@ -15,6 +15,8 @@ from ErisPulse.Core.Bases import BaseModule
 from fastapi import Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
+from .Cluster import ClusterManager, PAGE_CAPABILITY_MAP
+
 
 class Main(BaseModule):
     def __init__(self):
@@ -25,6 +27,7 @@ class Main(BaseModule):
         self._token = self._ensure_token()
         self._ws_clients: list[WebSocket] = []
         self._event_log: list[dict] = []
+        self._total_event_count: int = 0
         self._max_log = 500
         self._start_time = time.time()
         self._install_tasks: dict[str, dict] = {}
@@ -40,6 +43,7 @@ class Main(BaseModule):
         self._command_rules: dict[str, dict] = {}
         self._command_middleware_func = None
         self._registered_views: dict[str, dict] = {}
+        self._cluster: ClusterManager | None = None
         self._register_routes()
 
     @staticmethod
@@ -62,6 +66,8 @@ class Main(BaseModule):
         self._setup_event_interceptors()
         self._setup_command_middleware()
         asyncio.create_task(self._events_flush_loop())
+        self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
+        asyncio.create_task(self._cluster.start_heartbeat())
         self.logger.info("WebUI module loaded")
         if getattr(self, "_token_new", False):
             self.logger.warning("┌──────────────────────────────────────────────┐")
@@ -74,6 +80,8 @@ class Main(BaseModule):
             self.logger.warning("Dashboard-Access-Token: %s", self._token)
         return True
     async def on_unload(self, event: dict) -> bool:
+        if self._cluster:
+            await self._cluster.close()
         for ws in self._ws_clients:
             try:
                 await ws.close()
@@ -339,6 +347,7 @@ class Main(BaseModule):
         entry["group_id"] = str(data.get("group_id", ""))
         entry["alt_message"] = data.get("alt_message", data.get("raw_message", ""))
         self._event_log.append(entry)
+        self._total_event_count += 1
         if len(self._event_log) > self._max_log:
             self._event_log = self._event_log[-self._max_log :]
         self._events_dirty = True
@@ -387,6 +396,7 @@ class Main(BaseModule):
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
                 self._event_log = events[-self._max_log:]
+                self._total_event_count = max(self._total_event_count, len(events))
         except Exception:
             pass
 
@@ -748,7 +758,7 @@ class Main(BaseModule):
             "memory": mem,
             "process": proc_info,
             "event_counts": ec,
-            "total_events": len(self._event_log),
+            "total_events": self._total_event_count,
         }
 
     @staticmethod
@@ -894,7 +904,19 @@ class Main(BaseModule):
         r.register_http_route(mn, "/api/commands/{name}", handler=self._api_command_update, methods=["PUT"])
         
         r.register_http_route(mn, "/api/views", handler=self._api_views, methods=["GET"])
-        
+
+        # 集群管理 API
+        r.register_http_route(mn, "/api/cluster/nodes", handler=self._api_cluster_nodes_list, methods=["GET"])
+        r.register_http_route(mn, "/api/cluster/nodes", handler=self._api_cluster_nodes_add, methods=["POST"])
+        r.register_http_route(mn, "/api/cluster/nodes/{node_id}", handler=self._api_cluster_nodes_update, methods=["PUT"])
+        r.register_http_route(mn, "/api/cluster/nodes/{node_id}", handler=self._api_cluster_nodes_delete, methods=["DELETE"])
+        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/ping", handler=self._api_cluster_ping, methods=["POST"])
+        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/probe", handler=self._api_cluster_probe, methods=["POST"])
+        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/status", handler=self._api_cluster_node_status, methods=["GET"])
+        r.register_http_route(mn, "/api/cluster/proxy/{node_id}/{path:path}", handler=self._api_cluster_proxy, methods=["GET", "POST", "PUT", "DELETE"])
+        r.register_http_route(mn, "/api/cluster/overview", handler=self._api_cluster_overview, methods=["GET"])
+        r.register_http_route(mn, "/api/cluster/sync/events", handler=self._api_cluster_sync_events, methods=["POST"])
+
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -962,6 +984,14 @@ class Main(BaseModule):
             "/api/commands",
             "/api/commands/{name}",
             "/api/views",
+            "/api/cluster/nodes",
+            "/api/cluster/nodes/{node_id}",
+            "/api/cluster/nodes/{node_id}/ping",
+            "/api/cluster/nodes/{node_id}/probe",
+            "/api/cluster/nodes/{node_id}/status",
+            "/api/cluster/proxy/{node_id}/{path:path}",
+            "/api/cluster/overview",
+            "/api/cluster/sync/events",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -1263,7 +1293,7 @@ class Main(BaseModule):
             evts = [e for e in evts if e["type"] == et]
         if ep:
             evts = [e for e in evts if e["platform"] == ep]
-        return JSONResponse({"events": evts[-limit:], "total": len(evts)})
+        return JSONResponse({"events": evts[-limit:], "total": len(evts), "total_count": self._total_event_count})
 
     async def _api_events_clear(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2194,7 +2224,7 @@ class Main(BaseModule):
             hourly_stats[hour_key] = hourly_stats.get(hour_key, 0) + 1
         
         return JSONResponse({
-            "total_events": len(self._event_log),
+            "total_events": self._total_event_count,
             "by_type": type_counts,
             "by_platform": platform_counts,
             "hourly": hourly_stats
@@ -2769,4 +2799,211 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         return JSONResponse({"views": self.get_registered_views()})
+
+    # ========== 集群管理 API ==========
+
+    async def _api_cluster_nodes_list(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"nodes": [], "local": {"id": "local", "name": "本地实例"}})
+        nodes = self._cluster.list_nodes()
+        return JSONResponse({
+            "nodes": nodes,
+            "local": {"id": "local", "name": "本地实例"},
+        })
+
+    async def _api_cluster_nodes_add(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "invalid_body"}, status_code=400)
+        node_id = str(body.get("id", "")).strip()
+        name = str(body.get("name", "")).strip()
+        url = str(body.get("url", "")).strip()
+        token = str(body.get("token", "")).strip()
+        if not node_id or not url or not token:
+            return JSONResponse({"error": "id, url, token are required"}, status_code=400)
+        if node_id == "local":
+            return JSONResponse({"error": "reserved_id"}, status_code=400)
+        if node_id in self._cluster._nodes:
+            return JSONResponse({"error": "node_already_exists"}, status_code=409)
+        ok = await self._cluster.add_node(node_id, name, url, token)
+        if not ok:
+            return JSONResponse({"error": "add_failed"}, status_code=400)
+        self._add_audit_log("cluster_node_add", f"node={node_id} url={url}", request)
+        return JSONResponse({"success": True, "node": self._cluster.get_node(node_id)})
+
+    async def _api_cluster_nodes_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        node_id = request.path_params.get("node_id", "")
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "invalid_body"}, status_code=400)
+        kwargs = {}
+        for key in ("name", "url", "token", "enabled"):
+            if key in body:
+                kwargs[key] = body[key]
+        ok = await self._cluster.update_node(node_id, **kwargs)
+        if not ok:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        self._add_audit_log("cluster_node_update", f"node={node_id}", request)
+        return JSONResponse({"success": True, "node": self._cluster.get_node(node_id)})
+
+    async def _api_cluster_nodes_delete(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        node_id = request.path_params.get("node_id", "")
+        ok = await self._cluster.remove_node(node_id)
+        if not ok:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        self._add_audit_log("cluster_node_delete", f"node={node_id}", request)
+        return JSONResponse({"success": True})
+
+    async def _api_cluster_ping(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        node_id = request.path_params.get("node_id", "")
+        proxy = self._cluster.get_proxy(node_id)
+        if not proxy:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        online = await proxy.ping()
+        self._add_audit_log("cluster_node_ping", f"node={node_id} online={online}", request)
+        return JSONResponse({
+            "online": online,
+            "latency_ms": proxy._latency_ms,
+        })
+
+    async def _api_cluster_probe(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        node_id = request.path_params.get("node_id", "")
+        result = await self._cluster.probe_node(node_id)
+        if result is None:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        self._add_audit_log("cluster_node_probe", f"node={node_id}", request)
+        return JSONResponse(result)
+
+    async def _api_cluster_node_status(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        node_id = request.path_params.get("node_id", "")
+        proxy = self._cluster.get_proxy(node_id)
+        if not proxy:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        status = await proxy.get_status()
+        system = await proxy.get_system()
+        return JSONResponse({
+            "online": proxy._online,
+            "latency_ms": proxy._latency_ms,
+            "dashboard_version": proxy._dashboard_version,
+            "status": status,
+            "system": system,
+            "capabilities": dict(proxy._capabilities),
+        })
+
+    async def _api_cluster_proxy(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        node_id = request.path_params.get("node_id", "")
+        path = request.path_params.get("path", "")
+        proxy = self._cluster.get_proxy(node_id) if self._cluster else None
+        if not proxy:
+            return JSONResponse({"error": "node_not_found"}, status_code=404)
+        method = request.method
+        kwargs: dict = {}
+        if method in ("POST", "PUT", "DELETE"):
+            try:
+                kwargs["json"] = await request.json()
+            except Exception:
+                pass
+        params = dict(request.query_params)
+        if params:
+            kwargs["params"] = params
+        try:
+            result = await proxy.request_raw(method, f"/{path}", **kwargs)
+            if result is None:
+                return JSONResponse({"error": "proxy_no_response"}, status_code=502)
+            if result.get("error") == "unauthorized":
+                return JSONResponse({"error": "remote_unauthorized"}, status_code=401)
+            return JSONResponse(result)
+        except Exception as e:
+            return JSONResponse({"error": "proxy_error", "message": str(e)}, status_code=502)
+
+    async def _api_cluster_overview(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        nodes = {}
+        if self._cluster:
+            nodes = await self._cluster.get_all_status()
+        fw = self._get_framework_info()
+        adapters_summary = self.sdk.adapter.get_status_summary().get("adapters", {})
+        adapter_count = sum(1 for v in adapters_summary.values() if v.get("running"))
+        modules = {n: self.sdk.module.is_loaded(n) for n in self.sdk.module.list_registered()}
+        nodes["local"] = {
+            "online": True,
+            "name": "本地实例",
+            "latency_ms": 0,
+            "dashboard_version": fw.get("version", ""),
+            "status": {
+                "framework": fw,
+                "adapters": adapters_summary,
+                "modules": modules,
+                "adapters_count": adapter_count,
+                "modules_count": sum(1 for v in modules.values() if v),
+                "events_count": self._total_event_count,
+            },
+            "system": await self._get_system_status(),
+        }
+        return JSONResponse({"nodes": nodes})
+
+    async def _api_cluster_sync_events(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        if not self._cluster:
+            return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "invalid_body"}, status_code=400)
+        source_node = body.get("source_node", "")
+        target_nodes = body.get("target_nodes", [])
+        event_types = body.get("event_types", [])
+        if not source_node or not target_nodes:
+            return JSONResponse({"error": "source_node and target_nodes required"}, status_code=400)
+        source_proxy = self._cluster.get_proxy(source_node)
+        if not source_proxy:
+            return JSONResponse({"error": "source_node_not_found"}, status_code=404)
+        events_result = await source_proxy.get_events()
+        if not events_result or "error" in (events_result or {}):
+            return JSONResponse({"error": "failed_to_fetch_events"}, status_code=502)
+        events = events_result.get("events", [])
+        if event_types:
+            events = [e for e in events if e.get("type") in event_types]
+        results: dict[str, dict] = {}
+        for target_id in target_nodes:
+            target_proxy = self._cluster.get_proxy(target_id)
+            if not target_proxy:
+                results[target_id] = {"success": False, "error": "node_not_found"}
+                continue
+            fwd_result = await target_proxy.request("POST", "/api/builder/submit", json={"events": events})
+            results[target_id] = {"success": not (fwd_result and fwd_result.get("error"))}
+        self._add_audit_log("cluster_sync_events", f"from={source_node} to={target_nodes}", request)
+        return JSONResponse({"results": results})
 

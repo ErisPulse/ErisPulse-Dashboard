@@ -57,6 +57,24 @@
         <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
         <div class="main">
             <nav class="sidebar" id="sidebar">
+                <div class="node-selector" id="nodeSelector">
+                    <div class="node-selector-header" onclick="toggleNodeDropdown()">
+                        <div class="node-selector-current">
+                            <span class="node-dot node-dot-local" id="nodeDot"></span>
+                            <span id="nodeSelectorLabel">本地实例</span>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-selector-arrow"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="node-dropdown" id="nodeDropdown">
+                        <div class="node-dropdown-list" id="nodeDropdownList"></div>
+                        <div class="node-dropdown-footer">
+                            <a class="node-dropdown-item" onclick="go('cluster', null); closeNodeDropdown();">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-selector-arrow"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68V3a2 2 0 014 0v.09c0 .74.44 1.31 1.08 1.51a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                                <span data-i18n="cluster_management"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <div class="sidebar-nav">
                     <div class="nav-group">
                         <div class="nav-group-title" data-i18n="group_overview"></div>
@@ -116,6 +134,10 @@
                         <a class="nav-item" data-page="api-routes" onclick="go('api-routes',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                             <span data-i18n="api_routes"></span>
+                        </a>
+                        <a class="nav-item" data-page="cluster" onclick="go('cluster',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                            <span data-i18n="cluster_management"></span>
                         </a>
                     </div>
                     <div class="nav-group">
@@ -939,6 +961,13 @@
                     <div style="margin-top:16px;display:flex;justify-content:flex-end">
                         <button class="btn btn-danger" onclick="restartFramework()"><span data-i18n="restart"></span></button>
                     </div>
+                </div>
+
+                <!-- 集群管理 -->
+                <div class="page" id="p-cluster">
+                    <h1 class="page-title" data-i18n="cluster_management"></h1>
+                    <p class="page-desc" data-i18n="cluster_desc"></p>
+                    <div id="clusterContent"></div>
                 </div>
             </div>
         </div>
