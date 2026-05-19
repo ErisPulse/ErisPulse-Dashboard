@@ -1,6 +1,6 @@
 [project]
 name = "ErisPulse-Dashboard"
-version = "1.4.15"
+version = "1.4.16"
 description = "ErisPulse Dashboard Module"
 requires-python = ">=3.10"
 dependencies = [

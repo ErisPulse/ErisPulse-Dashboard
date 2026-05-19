@@ -2941,7 +2941,7 @@ class Main(BaseModule):
             if result is None:
                 return JSONResponse({"error": "proxy_no_response"}, status_code=502)
             if result.get("error") == "unauthorized":
-                return JSONResponse({"error": "remote_unauthorized"}, status_code=401)
+                return JSONResponse({"error": "remote_unauthorized"}, status_code=502)
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": "proxy_error", "message": str(e)}, status_code=502)
