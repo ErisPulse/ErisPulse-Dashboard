@@ -368,12 +368,38 @@ class Main(BaseModule):
         async def log_all_events(data: dict):
             self._add_event_log(data)
         
-        # 注册 wildcard 处理器捕获所有生命周期事件（submit_event 格式自带 event 字段）
+        # 为每个生命周期事件单独注册 handler（emit() 不含 event 字段，通配符无法识别）
+        _all_events = [
+            "core.init.start", "core.init.complete", "core.uninit.complete",
+            "module.register", "module.load", "module.init", "module.unload",
+            "adapter.load", "adapter.start", "adapter.status.change", "adapter.stop", "adapter.stopped",
+            "adapter.event.receive", "adapter.event.dispatched",
+            "adapter.bot.online", "adapter.bot.offline",
+            "server.start", "server.stop",
+            "server.request", "server.response",
+            "server.websocket.connect", "server.websocket.disconnect",
+            "event.pre_process",
+            "message.sending", "message.sent",
+            "command.matched", "command.executed",
+            "config.set",
+        ]
+        def _make_handler(event_name):
+            async def _handler(data: dict):
+                entry = data if data.get("event") else {"event": event_name, "timestamp": time.time(), "data": data, "source": "", "msg": ""}
+                self._add_lifecycle_log(entry)
+                self._lifecycle_counts[event_name] = self._lifecycle_counts.get(event_name, 0) + 1
+            return _handler
+        for _ev in _all_events:
+            self.sdk.lifecycle.register(_ev, _make_handler(_ev))
+        
+        # 通配符兜底：捕获 submit_event 格式的事件（含 event 字段但不在上面列表中）
         @self.sdk.lifecycle.on("*")
-        async def log_all_lifecycle(data: dict):
+        async def _lifecycle_catch_all(data: dict):
             event_type = data.get("event")
             if not event_type:
-                return  # emit() 调用不含 event 字段，跳过
+                return
+            if event_type in _all_events:
+                return  # 已由单独 handler 处理，跳过
             self._add_lifecycle_log(data)
             self._lifecycle_counts[event_type] = self._lifecycle_counts.get(event_type, 0) + 1
 
