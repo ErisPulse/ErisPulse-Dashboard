@@ -48,6 +48,9 @@
                     <button class="btn-icon" onclick="showSettings()" title="Settings">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
                     </button>
+                    <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="btn-icon" title="GitHub">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    </a>
                 </div>
         </header>
         <div class="task-panel" id="taskPanel">
@@ -77,7 +80,7 @@
                 </div>
                 <div class="sidebar-nav">
                     <div class="nav-group">
-                        <div class="nav-group-title" data-i18n="group_overview"></div>
+                        <div class="nav-group-title" data-i18n="group_overview" onclick="toggleNavGroup(this)"></div>
                         <a class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                             <span data-i18n="dashboard"></span>
@@ -88,7 +91,7 @@
                         </a>
                     </div>
                     <div class="nav-group">
-                        <div class="nav-group-title" data-i18n="group_events"></div>
+                        <div class="nav-group-title" data-i18n="group_events" onclick="toggleNavGroup(this)"></div>
                         <a class="nav-item" data-page="event-stream" onclick="go('event-stream',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                             <span data-i18n="event_stream"></span>
@@ -103,7 +106,7 @@
                         </a>
                     </div>
                     <div class="nav-group">
-                        <div class="nav-group-title" data-i18n="group_extensions"></div>
+                        <div class="nav-group-title" data-i18n="group_extensions" onclick="toggleNavGroup(this)"></div>
                         <a class="nav-item" data-page="modules" onclick="go('modules',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             <span data-i18n="registered"></span>
@@ -118,7 +121,7 @@
                         </a>
                     </div>
                     <div class="nav-group">
-                        <div class="nav-group-title" data-i18n="group_system"></div>
+                        <div class="nav-group-title" data-i18n="group_system" onclick="toggleNavGroup(this)"></div>
                         <a class="nav-item" data-page="logs" onclick="go('logs',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                             <span data-i18n="sys_logs"></span>
@@ -141,7 +144,7 @@
                         </a>
                     </div>
                     <div class="nav-group">
-                        <div class="nav-group-title" data-i18n="group_tools"></div>
+                        <div class="nav-group-title" data-i18n="group_tools" onclick="toggleNavGroup(this)"></div>
                         <a class="nav-item" data-page="files" onclick="go('files',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
                             <span data-i18n="files"></span>
@@ -153,6 +156,10 @@
                         <a class="nav-item" data-page="framework-config" onclick="go('framework-config',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/></svg>
                             <span data-i18n="framework_config"></span>
+                        </a>
+                        <a class="nav-item" data-page="about" onclick="go('about',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                            <span data-i18n="about"></span>
                         </a>
                     </div>
                 </div>
@@ -177,27 +184,34 @@
                                 <span data-i18n="cpu_usage"></span>
                             </div>
                             <div class="card-body">
-                                <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="cpuUsage">--%</div>
-                                <div style="font-size:12px;color:var(--tx-s)" data-i18n="process_cpu"></div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-                                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-                                    <line x1="6" y1="6" x2="6.01" y2="6" />
-                                    <line x1="6" y1="18" x2="6.01" y2="18" />
-                                </svg>
-                                <span data-i18n="memory_usage"></span>
-                            </div>
-                            <div class="card-body">
-                                <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="memUsage">-- MB</div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:8px;font-size:12px;color:var(--tx-s)">
-                                    <span data-i18n="rss_memory"></span><span id="rssMemVal" style="color:var(--tx-p);font-weight:500;text-align:right">--</span>
-                                    <span data-i18n="swap_memory"></span><span id="swapMem" class="stat-value-sm" style="text-align:right">-- MB</span>
-                                    <span data-i18n="io_read"></span><span id="ioRead" class="stat-value-sm" style="text-align:right">-- MB</span>
-                                    <span data-i18n="io_write"></span><span id="ioWrite" class="stat-value-sm" style="text-align:right">-- MB</span>
+                                <div class="perf-card-body">
+                                    <svg class="circular-progress" viewBox="0 0 36 36">
+                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                        <circle id="cpuProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                        <text id="cpuProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                                    </svg>
+                                    <div class="perf-details">
+                                        <div style="font-size:24px;font-weight:700" id="cpuUsage">--%</div>
+                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="process_cpu"></div>
+                                        <div class="progress-bar-wrap"><div id="cpuBar" class="progress-bar-fill" style="width:0%"></div></div>
+                                    </div>
+                                </div>
+                                <div class="perf-card-body" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
+                                    <svg class="circular-progress" viewBox="0 0 36 36">
+                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                        <circle id="sysCpuCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                        <text id="sysCpuText" class="circular-progress-text" x="18" y="18">--%</text>
+                                    </svg>
+                                    <div class="perf-details">
+                                        <div style="font-size:24px;font-weight:700" id="sysCpuVal">--%</div>
+                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="system_cpu"></div>
+                                        <div class="progress-bar-wrap"><div id="sysCpuBar" class="progress-bar-fill" style="width:0%"></div></div>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--tx-s);border-top:1px solid var(--bd);padding-top:8px;margin-top:4px">
+                                    <span data-i18n="cpu_user"></span><span id="cpuUser" style="color:var(--tx-p);font-weight:500;text-align:right">-- s</span>
+                                    <span data-i18n="cpu_system"></span><span id="cpuSys" style="color:var(--tx-p);font-weight:500;text-align:right">-- s</span>
+                                    <span data-i18n="instance_threads"></span><span id="cpuThreads" style="color:var(--tx-p);font-weight:500;text-align:right">--</span>
                                 </div>
                             </div>
                         </div>
@@ -208,18 +222,59 @@
                                     <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
                                     <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
                                 </svg>
-                                <span data-i18n="system_memory"></span>
+                                <span data-i18n="memory_usage"></span>
                             </div>
                             <div class="card-body">
-                                <div style="font-size:24px;font-weight:700;margin-bottom:4px" id="sysMemUsage">--%</div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:8px;font-size:12px;color:var(--tx-s)">
-                                    <span data-i18n="system_total_memory"></span><span id="sysTotalMem" class="stat-value-sm" style="text-align:right">-- GB</span>
-                                    <span data-i18n="available_memory"></span><span id="sysAvailMem" class="stat-value-sm" style="text-align:right">-- GB</span>
+                                <div class="perf-card-body">
+                                    <svg class="circular-progress" viewBox="0 0 36 36">
+                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                        <circle id="memProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                        <text id="memProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                                    </svg>
+                                    <div class="perf-details">
+                                        <div style="font-size:24px;font-weight:700" id="procMemPct">--%</div>
+                                        <div style="font-size:12px;color:var(--tx-s)"><span data-i18n="rss_memory"></span> <span id="procMemVal" style="font-weight:500">--</span></div>
+                                        <div class="progress-bar-wrap"><div id="procMemBar" class="progress-bar-fill" style="width:0%"></div></div>
+                                    </div>
+                                </div>
+                                <div class="perf-card-body" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
+                                    <svg class="circular-progress" viewBox="0 0 36 36">
+                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                        <circle id="sysMemCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                        <text id="sysMemText" class="circular-progress-text" x="18" y="18">--%</text>
+                                    </svg>
+                                    <div class="perf-details">
+                                        <div style="font-size:24px;font-weight:700" id="sysMemVal">--%</div>
+                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="system_memory"></div>
+                                        <div class="progress-bar-wrap"><div id="sysMemBar" class="progress-bar-fill" style="width:0%"></div></div>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--tx-s);border-top:1px solid var(--bd);padding-top:8px;margin-top:4px">
+                                    <span data-i18n="swap_memory"></span><span id="swapMem" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
+                                    <span data-i18n="io_read"></span><span id="ioRead" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
+                                    <span data-i18n="io_write"></span><span id="ioWrite" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
                                 </div>
                             </div>
                         </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <span data-i18n="instance_info"></span>
+                            </div>
+                            <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px">
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_uptime"></div><div id="instUptime" class="stat-value-sm">--</div></div>
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_threads"></div><div id="instThreads" class="stat-value-sm">--</div></div>
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_platform"></div><div id="instPlatform" style="font-size:12px;font-weight:600;color:var(--tx-p)">--</div></div>
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_connections"></div><div id="instConnections" class="stat-value-sm">--</div></div>
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_pid"></div><div id="instPid" class="stat-value-sm">--</div></div>
+                                <div class="stat-item"><div class="stat-label" data-i18n="instance_open_files"></div><div id="instOpenFiles" class="stat-value-sm">--</div></div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="perfDetails" style="display:none"></div>
                     <div class="grid-2">
                         <div class="card">
                             <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -303,6 +358,7 @@
                             <option value="" data-i18n-option="all_platforms"></option>
                         </select>
                         <div style="flex:1"></div>
+                        <button class="btn btn-sm" id="eventLiveBtn" onclick="toggleEventLive()" data-i18n="live"></button>
                         <button class="btn btn-secondary btn-sm" onclick="loadEvents()"><svg viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" style="width:14px;height:14px">
@@ -492,8 +548,22 @@
                         <select id="logModuleFilter" onchange="loadLogs()">
                             <option value="" data-i18n-option="all_modules"></option>
                         </select>
+                        <select id="logLevelFilter" onchange="loadLogs()">
+                            <option value="">All Levels</option>
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
                                         <input type="text" id="logSearch" data-i18n-placeholder="search_logs" placeholder="" oninput="debounceLogs()">
                         <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm log-pause-btn" id="logPauseBtn" onclick="toggleLogPause()" title="Pause auto-scroll">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <rect x="6" y="4" width="4" height="16"/>
+                                <rect x="14" y="4" width="4" height="16"/>
+                            </svg>
+                        </button>
                         <button class="btn btn-secondary btn-sm" id="logAutoRefreshBtn" onclick="toggleLogAutoRefresh()" title="" data-i18n-title="auto_refresh" style="opacity:0.5">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
                                 <path d="M21 12a9 9 0 00-9-9 9.75 9.75 0 00-6.74 2.74L3 8" />
@@ -540,10 +610,27 @@
                             </svg>
                             <span data-i18n="lifecycle_timeline"></span>
                             <div class="header-actions">
+                                <select id="lifecycleFilter" class="form-select" style="width:auto;padding:4px 8px;font-size:12px" onchange="loadLifecycle()">
+                                    <option value="" data-i18n="all_modules"></option>
+                                    <option value="core">core</option>
+                                    <option value="module">module</option>
+                                    <option value="adapter">adapter</option>
+                                    <option value="server">server</option>
+                                    <option value="message">message</option>
+                                    <option value="command">command</option>
+                                    <option value="event">event</option>
+                                    <option value="config">config</option>
+                                </select>
                                 <button class="btn-icon" onclick="loadLifecycle()" title="" data-i18n-title="refresh">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
                                         <polyline points="23 4 23 10 17 10" />
                                         <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg>
+                                </button>
+                                <button class="btn-icon" onclick="clearLifecycle()" title="" data-i18n-title="clear">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                                     </svg>
                                 </button>
                             </div>
@@ -606,6 +693,18 @@
                 <div class="page" id="p-modules">
                     <h1 class="page-title" data-i18n="registered"></h1>
                     <p class="page-desc" data-i18n="registered_desc"></p>
+                    <div class="filter-bar">
+                        <input type="text" id="moduleSearch" data-i18n-placeholder="search_modules" oninput="loadModules()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:240px">
+                        <select id="moduleStatus" onchange="loadModules()" style="padding:6px 10px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p)">
+                            <option value="all" data-i18n-option="all_status"></option>
+                            <option value="active" data-i18n-option="active"></option>
+                            <option value="inactive" data-i18n-option="inactive"></option>
+                            <option value="loaded" data-i18n-option="loaded_status"></option>
+                            <option value="disabled" data-i18n-option="module_disabled"></option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadModules()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                    </div>
                     <div class="card" style="margin-top:16px">
                             <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -894,8 +993,8 @@
                                     </svg></button>
                             </div>
                         </div>
-                        <div id="configBodyTree" style="max-height:420px;overflow-y:auto"></div>
-                        <div id="configBodySource" style="display:none;max-height:420px;overflow-y:auto">
+                        <div id="configBodyTree" style="max-height:65vh;overflow-y:auto"></div>
+                        <div id="configBodySource" style="display:none;max-height:65vh;overflow-y:auto">
                             <div style="padding:12px 16px">
                                 <textarea id="configSourceEditor" class="code-editor" spellcheck="false"></textarea>
                                 <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
@@ -921,7 +1020,7 @@
                                         <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
                                     </svg></button></div>
                         </div>
-                        <div id="storageBody" style="max-height:420px;overflow-y:auto"></div>
+                        <div id="storageBody" style="max-height:65vh;overflow-y:auto"></div>
                     </div>
                 </div>
                 <div class="page" id="p-framework-config">
@@ -968,6 +1067,74 @@
                     <h1 class="page-title" data-i18n="cluster_management"></h1>
                     <p class="page-desc" data-i18n="cluster_desc"></p>
                     <div id="clusterContent"></div>
+                </div>
+
+                <div class="page" id="p-about">
+                    <h1 class="page-title" data-i18n="about"></h1>
+                    <div class="about-hero">
+                        <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/mascot-hero.png" alt="ErisPulse" class="about-mascot">
+                        <div class="about-hero-text">
+                            <h2 class="about-title">ErisPulse</h2>
+                            <p class="about-tagline" data-i18n="about_tagline"></p>
+                        </div>
+                    </div>
+                    <div class="about-card about-intro">
+                        <p data-i18n="about_desc"></p>
+                    </div>
+                    <div class="about-grid">
+                        <div class="about-feature">
+                            <div class="about-feature-icon">&#9889;</div>
+                            <div class="about-feature-title" data-i18n="about_feat_event_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_event_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">&#127760;</div>
+                            <div class="about-feature-title" data-i18n="about_feat_cross_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_cross_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">&#129513;</div>
+                            <div class="about-feature-title" data-i18n="about_feat_module_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_module_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">&#128260;</div>
+                            <div class="about-feature-title" data-i18n="about_feat_reload_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_reload_desc"></div>
+                        </div>
+                    </div>
+                    <div class="about-card about-star-cta">
+                        <div class="about-star-icon">&#11088;</div>
+                        <p data-i18n="about_star_hint"></p>
+                        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="about-star-btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>Star on GitHub</span>
+                        </a>
+                    </div>
+                    <div class="about-card">
+                        <h3 data-i18n="about_contributors"></h3>
+                        <div class="about-contributors" id="aboutContributors">
+                            <div class="about-contrib-loading" data-i18n="loading"></div>
+                        </div>
+                    </div>
+                    <div class="about-links">
+                        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="https://www.erisdev.com" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            <span data-i18n="about_docs"></span>
+                        </a>
+                        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            <span data-i18n="about_discussions"></span>
+                        </a>
+                        <a href="https://www.erisdev.com/#market" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                            <span data-i18n="about_market"></span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

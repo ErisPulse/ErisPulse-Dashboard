@@ -3,6 +3,7 @@ let ws = null, allEvents = [], _totalEventCount = 0, platforms = [], authed = fa
 let currentNode = 'local';
 let nodeCapabilities = {};
 let nodeRuntimeInfo = {};
+let _lastOverview = null;
 
 const _realFetch = window.fetch;
 window.fetch = function(input, init) {
@@ -27,9 +28,9 @@ const I18N = {
         no_adapters: '暂无适配器', no_modules: '暂无模块', no_events: '暂无事件', no_bots: '暂无机器人',
         no_logs: '暂无日志', no_http_routes: '暂无 HTTP 路由', no_ws_routes: '暂无 WebSocket 路由',
         no_data: '暂无数据', requires_auth: '需认证',
-        active: '活跃', inactive: '未活跃',
+        active: '活跃', inactive: '未活跃', loaded_status: '已加载',
         enable: '启用', load: '加载', unload: '停止加载', install: '安装',
-        search_packages: '搜索包...', live_events: '实时事件', waiting_events: '等待事件...',
+        search_packages: '搜索包...', search_modules: '搜索模块...', all_status: '所有状态', live_events: '实时事件', waiting_events: '等待事件...',
         bots_desc: '各平台已发现的机器人', events_desc: '事件流查看/构建',
         modules_desc: '管理已注册的模块和适配器', store_desc: '浏览并安装包',
         config_desc: '查看和管理配置与存储', configuration: '配置', storage: '存储',
@@ -37,11 +38,18 @@ const I18N = {
         auth_placeholder: '请输入令牌',
         auth_hint: '令牌存储在配置中的 <code>Dashboard.token</code>',
         login: '登录', cancel: '取消', ok: '确定',
+        setup_title: '欢迎使用 ErisPulse', setup_desc: '首次使用，请设置您的访问令牌。此令牌将用于保护 Dashboard 的安全访问。',
+        setup_token_label: '设置访问令牌', setup_token_placeholder: '请输入至少 8 位的令牌',
+        setup_token_confirm: '确认令牌', setup_token_confirm_placeholder: '请再次输入令牌',
+        setup_btn: '开始使用', setup_token_mismatch: '两次输入的令牌不一致', setup_token_too_short: '令牌长度至少为 8 位',
         logged_in: '登录成功', invalid_token: '无效令牌', action_completed: '操作完成', action_failed: '操作失败',
         installing: '安装中...', installed: '安装成功，建议重启框架', install_failed: '安装失败',
         install_success: '安装完成', install_timeout: '安装超时', install_restart_title: '重启加载新模块', install_restart_confirm: '模块安装成功，是否立即重启框架以加载新模块？', install_restart_btn: '重启',
         install_detail: '安装详情', no_token_refresh: '服务未就绪，请稍后刷新',
         unload_self_title: '警告', unload_self_confirm: '停止加载仪表盘模块后，你将无法再通过网页访问此界面。确定要继续吗？',
+        unload_confirm_title: '确认停止加载', unload_confirm_text: '确定要停止加载此模块吗？',
+        disable_confirm_title: '确认禁用', disable_confirm_text: '确定要禁用此模块吗？禁用后模块将无法响应事件。',
+        uninstall_confirm_title: '确认卸载', uninstall_confirm_text: '确定要卸载此模块吗？这将删除模块包。',
         upload_title: '上传安装', upload_desc: '上传 whl 或 zip 包直接安装模块', upload_btn: '选择文件并安装', uploading: '上传安装中...', upload_failed: '上传安装失败',
         restart: '重启框架', restart_confirm: '确定要重启框架吗？这将重新加载所有模块和适配器。',
         restart_success: '框架重启中...', restart_failed: '重启失败',
@@ -65,21 +73,28 @@ const I18N = {
         view_tree: '树形', view_source: '源码', reload_config: '重新加载', save_config: '保存配置',
         config_saved: '配置已保存', config_load_failed: '加载配置源码失败',
         read_only: '只读 (根配置)',
-        cpu_usage: 'CPU 使用率', process_cpu: '进程 CPU', memory_usage: '内存使用', rss_memory: 'RSS 内存',
-        system_memory: '系统内存', system_total_memory: '系统总内存', available_memory: '可用内存',
+        cpu_usage: 'CPU 使用率', process_cpu: '进程 CPU', cpu_user: '用户态', cpu_system: '内核态', memory_usage: '内存使用', rss_memory: 'RSS 内存',
+        system_memory: '系统内存', system_cpu: '系统 CPU', system_total_memory: '系统总内存', available_memory: '可用内存',
         swap_memory: '交换内存', io_read: 'IO 读取', io_write: 'IO 写入',
         active_connections: '活跃连接', system_details: '系统详情',
+        instance_info: '实例信息', instance_uptime: '运行时长', instance_platform: '系统平台',
+        instance_pid: '进程 PID', instance_threads: '线程数', instance_connections: '连接数',
+        instance_listening: '监听端口', instance_open_files: '打开文件', instance_ws_clients: 'WS 客户端',
+        lifecycle_commands: '命令执行', lifecycle_requests: 'HTTP 请求',
         websocket: 'WebSocket', message_stats: '消息统计', message_types: '消息类型',
         platform_distribution: '平台分布', last_24h_trend: '最近24小时趋势',
         registered_routes: '已注册路由',
         refresh: '刷新', copy: '复制', auto_refresh: '自动刷新', copy_all_logs: '复制所有日志',
         event_preview: '事件预览', copied_to_clipboard: '已复制到剪贴板', copy_failed: '复制失败',
         save_failed: '保存失败', unknown_error: '未知错误', validation_failed: '验证失败',
+        server_error: '服务器错误', connection_error: '无法连接到服务器，请检查网络',
         auto_refresh_off: '自动刷新已关闭', auto_refresh_on: '自动刷新已开启',
         alt_message: '备用消息', request_comment: '请求附言',
         field_name_placeholder: '字段名', field_value_placeholder: '字段值',
         load_segments_first: '请先加载消息段类型',
         test: '测试', send: '发送', query_params: 'Query 参数', request_body: '请求体', response: '响应',
+        click_to_expand_routes: '点击展开查看路由', base_path: '基础路径',
+        pause_scroll: '暂停滚动', resume_scroll: '恢复滚动',
         force_refresh: '强制刷新',
         audit_log: '审计日志', audit_log_desc: '查看系统操作记录', all_actions: '所有操作',
         backup_restore: '备份与恢复', backup_desc: '导出或导入系统配置和存储数据',
@@ -190,13 +205,22 @@ const I18N = {
         fw_section_event_message: '事件 › 消息',
         fw_section_event_command: '事件 › 命令',
         fw_section_framework: '框架',
-        fw_section_config_audit: '配置审计',
-        fw_section_metrics: '指标监控',
-        fw_section_router_cors: '路由 › CORS',
-        fw_section_router_security: '路由 › 安全',
-        fw_section_router_security_headers: '路由 › 安全 › 标头',
-        fw_section_adapters_status: '适配器状态',
-        fw_section_modules_status: '模块状态',
+        fw_section_adapters: '适配器',
+        fw_section_modules: '模块',
+        fw_field_server_host: '监听地址',
+        fw_field_server_port: '监听端口',
+        fw_field_server_ssl_certfile: 'SSL 证书路径，设为 null 禁用 SSL',
+        fw_field_server_ssl_keyfile: 'SSL 私钥路径',
+        fw_field_logger_level: '日志级别：DEBUG / INFO / WARNING / ERROR',
+        fw_field_logger_log_files: '日志文件路径，如 ["logs/app.log"]',
+        fw_field_logger_memory_limit: '内存中最大日志条数',
+        fw_field_storage_use_global_db: '使用跨模块共享的全局数据库',
+        fw_field_event_message_ignore_self: '忽略机器人自身发送的消息',
+        fw_field_event_command_prefix: '命令触发前缀',
+        fw_field_event_command_case_sensitive: '命令是否区分大小写',
+        fw_field_event_command_allow_space_prefix: '允许命令前缀前有空格',
+        fw_field_event_command_must_at_bot: '需要 @机器人 才能触发命令',
+        fw_field_framework_enable_lazy_loading: '启用模块懒加载',
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 确认修改服务器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。',
@@ -277,6 +301,22 @@ const I18N = {
         dashboard_version: 'Dashboard 版本',
         node_already_exists: '节点 ID 已存在',
         node_not_found: '节点未找到',
+        about: '关于',
+        about_tagline: '事件驱动的多平台机器人开发框架',
+        about_desc: 'ErisPulse 是一个开源的 Python 库，目标是提供一个简单、易于使用的框架，用于构建异步、非阻塞的机器人程序。基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。',
+        about_feat_event_title: '事件驱动架构',
+        about_feat_event_desc: '基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效',
+        about_feat_cross_title: '跨平台兼容',
+        about_feat_cross_desc: '插件模块编写一次即可在所有平台使用，无需为不同平台重复开发',
+        about_feat_module_title: '模块化设计',
+        about_feat_module_desc: '灵活的插件系统，易于扩展和集成，支持热插拔模块管理',
+        about_feat_reload_title: '热重载支持',
+        about_feat_reload_desc: '开发时无需重启即可重新加载代码，大幅提升开发迭代效率',
+        about_star_hint: '喜欢我们的项目的话，就为我们点个 Star 吧~ 这真的很重要！',
+        about_contributors: '贡献者',
+        about_docs: '文档',
+        about_discussions: '社区讨论',
+        about_market: '模块市场',
     },
     en: {
         dashboard: 'Dashboard', bots: 'Bots', events: 'Events', modules: 'Plugins', store: 'Module Store', config: 'Configuration',
@@ -290,9 +330,9 @@ const I18N = {
         no_adapters: 'No adapters', no_modules: 'No modules', no_events: 'No events', no_bots: 'No bots',
         no_logs: 'No logs', no_http_routes: 'No HTTP routes', no_ws_routes: 'No WebSocket routes',
         no_data: 'No data', requires_auth: 'Auth Required',
-        active: 'Active', inactive: 'Inactive',
+        active: 'Active', inactive: 'Inactive', loaded_status: 'Loaded',
         enable: 'Enable', load: 'Load', unload: 'Unload', install: 'Install',
-        search_packages: 'Search packages...', live_events: 'Live Events', waiting_events: 'Waiting for events...',
+        search_packages: 'Search packages...', search_modules: 'Search modules...', all_status: 'All Status', live_events: 'Live Events', waiting_events: 'Waiting for events...',
         bots_desc: 'Discovered bots across platforms', events_desc: 'Event stream view/builder',
         modules_desc: 'Manage registered modules and adapters', store_desc: 'Browse and install packages',
         config_desc: 'View and manage configuration and storage', configuration: 'Configuration', storage: 'Storage',
@@ -300,11 +340,18 @@ const I18N = {
         auth_placeholder: 'Enter your token',
         auth_hint: 'Token is stored in config at <code>Dashboard.token</code>',
         login: 'Login', cancel: 'Cancel', ok: 'OK',
+        setup_title: 'Welcome to ErisPulse', setup_desc: 'First time here? Please set your access token. This token will be used to secure access to the Dashboard.',
+        setup_token_label: 'Set Access Token', setup_token_placeholder: 'Enter at least 8 characters',
+        setup_token_confirm: 'Confirm Token', setup_token_confirm_placeholder: 'Enter token again',
+        setup_btn: 'Get Started', setup_token_mismatch: 'Tokens do not match', setup_token_too_short: 'Token must be at least 8 characters',
         logged_in: 'Logged in successfully', invalid_token: 'Invalid token', action_completed: 'Action completed', action_failed: 'Action failed',
         installing: 'Installing...', installed: 'Installed! Restart recommended', install_failed: 'Install failed',
         install_success: 'Install complete', install_timeout: 'Install timed out', install_restart_title: 'Restart to load new module', install_restart_confirm: 'Module installed successfully. Restart framework now to load it?', install_restart_btn: 'Restart',
         install_detail: 'Install Details', no_token_refresh: 'Service not ready, please refresh later',
         unload_self_title: 'Warning', unload_self_confirm: 'After unloading the dashboard module, you will not be able to access this interface via web. Continue?',
+        unload_confirm_title: 'Confirm Unload', unload_confirm_text: 'Are you sure you want to unload this module?',
+        disable_confirm_title: 'Confirm Disable', disable_confirm_text: 'Are you sure you want to disable this module? It will stop responding to events.',
+        uninstall_confirm_title: 'Confirm Uninstall', uninstall_confirm_text: 'Are you sure you want to uninstall this module? This will remove the package.',
         upload_title: 'Upload Install', upload_desc: 'Upload a whl or zip package to install module', upload_btn: 'Select File & Install', uploading: 'Uploading & Installing...', upload_failed: 'Upload install failed',
         restart: 'Restart', restart_confirm: 'Restart the framework? This will reload all modules and adapters.',
         restart_success: 'Restarting framework...', restart_failed: 'Restart failed',
@@ -328,21 +375,28 @@ const I18N = {
         view_tree: 'Tree', view_source: 'Source', reload_config: 'Reload', save_config: 'Save',
         config_saved: 'Configuration saved', config_load_failed: 'Failed to load config source',
         read_only: 'Read-only (root config)',
-        cpu_usage: 'CPU Usage', process_cpu: 'Process CPU', memory_usage: 'Memory Usage', rss_memory: 'RSS Memory',
-        system_memory: 'System Memory', system_total_memory: 'System Total Memory', available_memory: 'Available Memory',
+        cpu_usage: 'CPU Usage', process_cpu: 'Process CPU', cpu_user: 'User', cpu_system: 'System', memory_usage: 'Memory Usage', rss_memory: 'RSS Memory',
+        system_memory: 'System Memory', system_cpu: 'System CPU', system_total_memory: 'System Total Memory', available_memory: 'Available Memory',
         swap_memory: 'Swap Memory', io_read: 'I/O Read', io_write: 'I/O Write',
         active_connections: 'Active Connections', system_details: 'System Details',
+        instance_info: 'Instance Info', instance_uptime: 'Uptime', instance_platform: 'Platform',
+        instance_pid: 'PID', instance_threads: 'Threads', instance_connections: 'Connections',
+        instance_listening: 'Listening', instance_open_files: 'Open Files', instance_ws_clients: 'WS Clients',
+        lifecycle_commands: 'Commands', lifecycle_requests: 'HTTP Requests',
         websocket: 'WebSocket', message_stats: 'Message Statistics', message_types: 'Message Types',
         platform_distribution: 'Platform Distribution', last_24h_trend: 'Last 24 Hours',
         registered_routes: 'Registered Routes',
         refresh: 'Refresh', copy: 'Copy', auto_refresh: 'Auto Refresh', copy_all_logs: 'Copy All Logs',
         event_preview: 'Event Preview', copied_to_clipboard: 'Copied to clipboard', copy_failed: 'Copy failed',
         save_failed: 'Save failed', unknown_error: 'Unknown error', validation_failed: 'Validation failed',
+        server_error: 'Server error', connection_error: 'Cannot connect to server, check network',
         auto_refresh_off: 'Auto refresh disabled', auto_refresh_on: 'Auto refresh enabled',
         alt_message: 'Alt Message', request_comment: 'Request Comment',
         field_name_placeholder: 'Field Name', field_value_placeholder: 'Field Value',
         load_segments_first: 'Please load segment types first',
         test: 'Test', send: 'Send', query_params: 'Query Params', request_body: 'Request Body', response: 'Response',
+        click_to_expand_routes: 'Click to view routes', base_path: 'Base',
+        pause_scroll: 'Pause scroll', resume_scroll: 'Resume scroll',
         force_refresh: 'Force Refresh',
         audit_log: 'Audit Log', audit_log_desc: 'View system operation records', all_actions: 'All Actions',
         backup_restore: 'Backup & Restore', backup_desc: 'Export or import system configuration and storage data',
@@ -453,13 +507,8 @@ const I18N = {
         fw_section_event_message: 'Event › Message',
         fw_section_event_command: 'Event › Command',
         fw_section_framework: 'Framework',
-        fw_section_config_audit: 'Config Audit',
-        fw_section_metrics: 'Metrics',
-        fw_section_router_cors: 'Router › CORS',
-        fw_section_router_security: 'Router › Security',
-        fw_section_router_security_headers: 'Router › Security › Headers',
-        fw_section_adapters_status: 'Adapter Status',
-        fw_section_modules_status: 'Module Status',
+        fw_section_adapters: 'Adapters',
+        fw_section_modules: 'Modules',
         fw_version_note: 'Note: Some options may not take effect on older ErisPulse versions',
         fw_server_warn_title: '⚠ Confirm Server Config Change',
         fw_server_warn_text: 'You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.',
@@ -487,18 +536,6 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: 'Allow spaces before the command prefix',
         fw_field_event_command_must_at_bot: 'Require @bot to trigger commands',
         fw_field_framework_enable_lazy_loading: 'Enable lazy-loading of modules',
-        fw_field_config_audit_enabled: 'Enable config change audit logging',
-        fw_field_config_audit_max_entries: 'Max audit log entries to retain',
-        fw_field_metrics_enabled: 'Enable system metrics collection',
-        fw_field_router_cors_enabled: 'Enable CORS cross-origin support',
-        fw_field_router_cors_allow_origins: 'Allowed origins, ["*"] allows all',
-        fw_field_router_cors_allow_methods: 'Allowed HTTP methods',
-        fw_field_router_cors_allow_headers: 'Allowed HTTP request headers',
-        fw_field_router_cors_allow_credentials: 'Allow cross-origin credentials (cookies etc.)',
-        fw_field_router_cors_max_age: 'Preflight cache duration in seconds',
-        fw_field_router_security_enabled: 'Enable security response headers',
-        fw_field_router_security_headers_X_Content_Type_Options: 'Disable MIME type sniffing',
-        fw_field_router_security_headers_X_Frame_Options: 'Prevent clickjacking (DENY = block iframe embed)',
         cluster_management: 'Cluster',
         cluster_desc: 'Add, edit, remove remote nodes, view capability comparison',
         cluster_overview: 'Overview',
@@ -566,6 +603,22 @@ const I18N = {
         dashboard_version: 'Dashboard Version',
         node_already_exists: 'Node ID already exists',
         node_not_found: 'Node not found',
+        about: 'About',
+        about_tagline: 'Event-driven multi-platform bot development framework',
+        about_desc: 'ErisPulse is an open-source Python library that aims to provide a simple, easy-to-use framework for building asynchronous, non-blocking bot programs. Based on the OneBot12 standard interface, write once and deploy across multiple platforms. With a flexible plugin system, hot-reload support, and a complete developer toolchain, it is suitable for everything from simple chatbots to complex automation systems.',
+        about_feat_event_title: 'Event-Driven Architecture',
+        about_feat_event_desc: 'Clear event model based on OneBot12 standard, making message processing logic more intuitive and efficient',
+        about_feat_cross_title: 'Cross-Platform Compatible',
+        about_feat_cross_desc: 'Write plugin modules once and use them on all platforms, no need for repetitive development',
+        about_feat_module_title: 'Modular Design',
+        about_feat_module_desc: 'Flexible plugin system, easy to extend and integrate, supports hot-pluggable module management',
+        about_feat_reload_title: 'Hot Reload Support',
+        about_feat_reload_desc: 'Reload code without restarting during development, greatly improving iteration efficiency',
+        about_star_hint: 'If you like our project, give us a Star~ It really matters!',
+        about_contributors: 'Contributors',
+        about_docs: 'Documentation',
+        about_discussions: 'Discussions',
+        about_market: 'Module Market',
     },
     'zh-TW': {
         dashboard: '儀表盤', bots: '機器人', events: '事件系統', modules: '插件管理', store: '模組商店', config: '配置管理',
@@ -579,9 +632,9 @@ const I18N = {
         no_adapters: '暫無適配器', no_modules: '暫無模組', no_events: '暫無事件', no_bots: '暫無機器人',
         no_logs: '暫無日誌', no_http_routes: '暫無 HTTP 路由', no_ws_routes: '暫無 WebSocket 路由',
         no_data: '暫無資料', requires_auth: '需認證',
-        active: '活躍', inactive: '未活躍',
+        active: '活躍', inactive: '未活躍', loaded_status: '已載入',
         enable: '啟用', load: '載入', unload: '停止載入', install: '安裝',
-        search_packages: '搜尋套件...', live_events: '即時事件', waiting_events: '等待事件...',
+        search_packages: '搜尋套件...', search_modules: '搜尋模組...', all_status: '所有狀態', live_events: '即時事件', waiting_events: '等待事件...',
         bots_desc: '各平台已發現的機器人', events_desc: '事件流查看/構建',
         modules_desc: '管理已註冊的模組和適配器', store_desc: '瀏覽並安裝套件',
         config_desc: '查看和管理配置與儲存', configuration: '配置', storage: '儲存',
@@ -589,11 +642,18 @@ const I18N = {
         auth_placeholder: '請輸入令牌',
         auth_hint: '令牌儲存在配置中的 <code>Dashboard.token</code>',
         login: '登入', cancel: '取消', ok: '確定',
+        setup_title: '歡迎使用 ErisPulse', setup_desc: '首次使用，請設定您的訪問令牌。此令牌將用於保護 Dashboard 的安全存取。',
+        setup_token_label: '設定訪問令牌', setup_token_placeholder: '請輸入至少 8 字元的令牌',
+        setup_token_confirm: '確認令牌', setup_token_confirm_placeholder: '請再次輸入令牌',
+        setup_btn: '開始使用', setup_token_mismatch: '兩次輸入的令牌不一致', setup_token_too_short: '令牌長度至少為 8 字元',
         logged_in: '登入成功', invalid_token: '無效令牌', action_completed: '操作完成', action_failed: '操作失敗',
         installing: '安裝中...', installed: '安裝成功，建議重啟框架', install_failed: '安裝失敗',
         install_success: '安裝完成', install_timeout: '安裝超時', install_restart_title: '重啟載入新模組', install_restart_confirm: '模組安裝成功，是否立即重啟框架以載入新模組？', install_restart_btn: '重啟',
         install_detail: '安裝詳情', no_token_refresh: '服務未就緒，請稍後重新整理',
         unload_self_title: '警告', unload_self_confirm: '停止載入儀表盤模組後，你將無法再透過網頁訪問此介面。確定要繼續嗎？',
+        unload_confirm_title: '確認停止載入', unload_confirm_text: '確定要停止載入此模組嗎？',
+        disable_confirm_title: '確認禁用', disable_confirm_text: '確定要禁用此模組嗎？禁用後模組將無法回應事件。',
+        uninstall_confirm_title: '確認卸載', uninstall_confirm_text: '確定要卸載此模組嗎？這將刪除模組包。',
         upload_title: '上傳安裝', upload_desc: '上傳 whl 或 zip 包直接安裝模組', upload_btn: '選擇檔案並安裝', uploading: '上傳安裝中...', upload_failed: '上傳安裝失敗',
         restart: '重啟框架', restart_confirm: '確定要重啟框架嗎？這將重新載入所有模組和適配器。',
         restart_success: '框架重啟中...', restart_failed: '重啟失敗',
@@ -617,21 +677,28 @@ const I18N = {
         view_tree: '樹形', view_source: '原始碼', reload_config: '重新載入', save_config: '儲存配置',
         config_saved: '配置已儲存', config_load_failed: '載入配置原始碼失敗',
         read_only: '唯讀 (根配置)',
-        cpu_usage: 'CPU 使用率', process_cpu: '處理程序 CPU', memory_usage: '記憶體使用', rss_memory: 'RSS 記憶體',
-        system_memory: '系統記憶體', system_total_memory: '系統總記憶體', available_memory: '可用記憶體',
+        cpu_usage: 'CPU 使用率', process_cpu: '處理程序 CPU', cpu_user: '使用者', cpu_system: '核心', memory_usage: '記憶體使用', rss_memory: 'RSS 記憶體',
+        system_memory: '系統記憶體', system_cpu: '系統 CPU', system_total_memory: '系統總記憶體', available_memory: '可用記憶體',
         swap_memory: '交換記憶體', io_read: 'IO 讀取', io_write: 'IO 寫入',
         active_connections: '活躍連線', system_details: '系統詳情',
+        instance_info: '執行個體資訊', instance_uptime: '運行時長', instance_platform: '系統平台',
+        instance_pid: '處理程序 PID', instance_threads: '執行緒數', instance_connections: '連線數',
+        instance_listening: '監聽埠', instance_open_files: '開啟檔案', instance_ws_clients: 'WS 客戶端',
+        lifecycle_commands: '指令執行', lifecycle_requests: 'HTTP 請求',
         websocket: 'WebSocket', message_stats: '訊息統計', message_types: '訊息類型',
         platform_distribution: '平台分佈', last_24h_trend: '最近24小時趨勢',
         registered_routes: '已註冊路由',
         refresh: '重新整理', copy: '複製', auto_refresh: '自動重新整理', copy_all_logs: '複製所有日誌',
         event_preview: '事件預覽', copied_to_clipboard: '已複製到剪貼簿', copy_failed: '複製失敗',
         save_failed: '儲存失敗', unknown_error: '未知錯誤', validation_failed: '驗證失敗',
+        server_error: '伺服器錯誤', connection_error: '無法連接伺服器，請檢查網路',
         auto_refresh_off: '自動重新整理已關閉', auto_refresh_on: '自動重新整理已開啟',
         alt_message: '備用訊息', request_comment: '請求附言',
         field_name_placeholder: '欄位名', field_value_placeholder: '欄位值',
         load_segments_first: '請先載入訊息段類型',
         test: '測試', send: '傳送', query_params: 'Query 參數', request_body: '請求體', response: '回應',
+        click_to_expand_routes: '點擊展開查看路由', base_path: '基礎路徑',
+        pause_scroll: '暫停滾動', resume_scroll: '恢復滾動',
         force_refresh: '強制重新整理',
         audit_log: '審計日誌', audit_log_desc: '查看系統操作記錄', all_actions: '所有操作',
         backup_restore: '備份與還原', backup_desc: '匯出或匯入系統配置和儲存資料',
@@ -742,13 +809,22 @@ const I18N = {
         fw_section_event_message: '事件 › 訊息',
         fw_section_event_command: '事件 › 指令',
         fw_section_framework: '框架',
-        fw_section_config_audit: '配置稽核',
-        fw_section_metrics: '指標監控',
-        fw_section_router_cors: '路由 › CORS',
-        fw_section_router_security: '路由 › 安全',
-        fw_section_router_security_headers: '路由 › 安全 › 標頭',
-        fw_section_adapters_status: '適配器狀態',
-        fw_section_modules_status: '模組狀態',
+        fw_section_adapters: '適配器',
+        fw_section_modules: '模組',
+        fw_field_server_host: '監聽地址',
+        fw_field_server_port: '監聽埠',
+        fw_field_server_ssl_certfile: 'SSL 憑證路徑，設為 null 停用 SSL',
+        fw_field_server_ssl_keyfile: 'SSL 私鑰路徑',
+        fw_field_logger_level: '日誌層級：DEBUG / INFO / WARNING / ERROR',
+        fw_field_logger_log_files: '日誌檔案路徑，如 ["logs/app.log"]',
+        fw_field_logger_memory_limit: '記憶體中最大日誌條數',
+        fw_field_storage_use_global_db: '使用跨模組共享的全域資料庫',
+        fw_field_event_message_ignore_self: '忽略機器人自身發送的訊息',
+        fw_field_event_command_prefix: '指令觸發前綴',
+        fw_field_event_command_case_sensitive: '指令是否區分大小寫',
+        fw_field_event_command_allow_space_prefix: '允許指令前綴前有空格',
+        fw_field_event_command_must_at_bot: '需要 @機器人才能觸發指令',
+        fw_field_framework_enable_lazy_loading: '啟用模組懶載入',
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 確認修改伺服器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 伺服器連接配置（host/port/ssl）。請確定您在幹什麼，否則不要修改此處！\n\n在 Docker 容器中操作此項可能導致您無法外部存取 ErisPulse 的 routers。',
@@ -829,8 +905,25 @@ const I18N = {
         dashboard_version: 'Dashboard 版本',
         node_already_exists: '節點 ID 已存在',
         node_not_found: '節點未找到',
+        about: '關於',
+        about_tagline: '事件驅動的多平台機器人開發框架',
+        about_desc: 'ErisPulse 是一個開源的 Python 函式庫，目標是提供一個簡單、易於使用的框架，用於構建非同步、非阻塞的機器人程式。基於 OneBot12 標準介面，一次編寫，多平台部署。靈活的外掛系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。',
+        about_feat_event_title: '事件驅動架構',
+        about_feat_event_desc: '基於 OneBot12 標準的清晰事件模型，讓訊息處理邏輯更加直觀和高效',
+        about_feat_cross_title: '跨平台相容',
+        about_feat_cross_desc: '外掛模組編寫一次即可在所有平台使用，無需為不同平台重複開發',
+        about_feat_module_title: '模組化設計',
+        about_feat_module_desc: '靈活的外掛系統，易於擴展和整合，支援熱插拔模組管理',
+        about_feat_reload_title: '熱重載支援',
+        about_feat_reload_desc: '開發時無需重新啟動即可重新載入程式碼，大幅提升開發迭代效率',
+        about_star_hint: '喜歡我們的話，就為我們點個 Star 吧~ 這真的很重要！',
+        about_contributors: '貢獻者',
+        about_docs: '文件',
+        about_discussions: '社群討論',
+        about_market: '模組市場',
     },
     ja: {
+        dashboard: 'ダッシュボード', bots: 'ボット', events: 'イベント', modules: 'プラグイン', store: 'モジュールストア', config: '設定',
         sys_logs: 'システムログ', logs: 'ログ', lifecycle: 'ライフサイクル', events_stream: 'ストリーム', events_builder: 'ビルダー',
         sys_logs_desc: 'システムログとライフサイクルイベントを表示', logs_desc: 'システムログの表示とフィルタリング', lifecycle_desc: 'システムの起動と実行プロセスを表示',
         lifecycle_timeline: 'ライフサイクルタイムライン', all_modules: 'すべてのモジュール', search_logs: 'ログを検索...', no_lifecycle: 'ライフサイクルイベントなし',
@@ -841,9 +934,9 @@ const I18N = {
         no_adapters: 'アダプタなし', no_modules: 'モジュールなし', no_events: 'イベントなし', no_bots: 'ボットなし',
         no_logs: 'ログなし', no_http_routes: 'HTTPルートなし', no_ws_routes: 'WebSocketルートなし',
         no_data: 'データなし', requires_auth: '認証が必要',
-        active: 'アクティブ', inactive: '非アクティブ',
+        active: 'アクティブ', inactive: '非アクティブ', loaded_status: 'ロード済み',
         enable: '有効化', load: 'ロード', unload: 'アンロード', install: 'インストール',
-        search_packages: 'パッケージを検索...', live_events: 'ライブイベント', waiting_events: 'イベントを待機中...',
+        search_packages: 'パッケージを検索...', search_modules: 'モジュールを検索...', all_status: 'すべて', live_events: 'ライブイベント', waiting_events: 'イベントを待機中...',
         bots_desc: '各プラットフォームで検出されたボット', events_desc: 'イベントストリームの表示/ビルド',
         modules_desc: '登録済みモジュールとアダプタの管理', store_desc: 'パッケージの閲覧とインストール',
         config_desc: '設定とストレージの表示・管理', configuration: '設定', storage: 'ストレージ',
@@ -851,11 +944,18 @@ const I18N = {
         auth_placeholder: 'トークンを入力',
         auth_hint: 'トークンは設定の <code>Dashboard.token</code> に保存されています',
         login: 'ログイン', cancel: 'キャンセル', ok: 'OK',
+        setup_title: 'ErisPulse へようこそ', setup_desc: '初回利用です。アクセストークンを設定してください。このトークンは Dashboard への安全なアクセスを保護するために使用されます。',
+        setup_token_label: 'アクセストークンを設定', setup_token_placeholder: '8文字以上で入力してください',
+        setup_token_confirm: 'トークンを確認', setup_token_confirm_placeholder: 'トークンを再入力してください',
+        setup_btn: 'はじめる', setup_token_mismatch: 'トークンが一致しません', setup_token_too_short: 'トークンは8文字以上必要です',
         logged_in: 'ログイン成功', invalid_token: '無効なトークン', action_completed: '操作完了', action_failed: '操作失敗',
         installing: 'インストール中...', installed: 'インストール完了！再起動を推奨', install_failed: 'インストール失敗',
         install_success: 'インストール完了', install_timeout: 'インストールがタイムアウト', install_restart_title: '新モジュールを読み込むために再起動', install_restart_confirm: 'モジュールのインストールに成功しました。フレームワークを再起動して読み込みますか？', install_restart_btn: '再起動',
         install_detail: 'インストール詳細', no_token_refresh: 'サービスの準備ができていません。後で更新してください',
         unload_self_title: '警告', unload_self_confirm: 'ダッシュボードモジュールをアンロードすると、Webからこのインターフェースにアクセスできなくなります。続行しますか？',
+        unload_confirm_title: 'アンロード確認', unload_confirm_text: 'このモジュールをアンロードしてもよろしいですか？',
+        disable_confirm_title: '無効化確認', disable_confirm_text: 'このモジュールを無効化してもよろしいですか？イベントに応答しなくなります。',
+        uninstall_confirm_title: 'アンインストール確認', uninstall_confirm_text: 'このモジュールをアンインストールしますか？パッケージが削除されます。',
         upload_title: 'アップロードインストール', upload_desc: 'whlまたはzipパッケージをアップロードしてモジュールをインストール', upload_btn: 'ファイルを選択してインストール', uploading: 'アップロード＆インストール中...', upload_failed: 'アップロードインストール失敗',
         restart: 'フレームワーク再起動', restart_confirm: 'フレームワークを再起動しますか？すべてのモジュールとアダプタが再読み込みされます。',
         restart_success: 'フレームワークを再起動中...', restart_failed: '再起動失敗',
@@ -879,21 +979,28 @@ const I18N = {
         view_tree: 'ツリー', view_source: 'ソース', reload_config: '再読込', save_config: '保存',
         config_saved: '設定を保存しました', config_load_failed: '設定ソースの読み込みに失敗',
         read_only: '読み取り専用（ルート設定）',
-        cpu_usage: 'CPU使用率', process_cpu: 'プロセスCPU', memory_usage: 'メモリ使用量', rss_memory: 'RSSメモリ',
-        system_memory: 'システムメモリ', system_total_memory: 'システム合計メモリ', available_memory: '利用可能メモリ',
+        cpu_usage: 'CPU使用率', process_cpu: 'プロセスCPU', cpu_user: 'ユーザー', cpu_system: 'システム', memory_usage: 'メモリ使用量', rss_memory: 'RSSメモリ',
+        system_memory: 'システムメモリ', system_cpu: 'システム CPU', system_total_memory: 'システム合計メモリ', available_memory: '利用可能メモリ',
         swap_memory: 'スワップメモリ', io_read: 'IO読み取り', io_write: 'IO書き込み',
         active_connections: 'アクティブ接続', system_details: 'システム詳細',
+        instance_info: 'インスタンス情報', instance_uptime: '稼働時間', instance_platform: 'プラットフォーム',
+        instance_pid: 'PID', instance_threads: 'スレッド', instance_connections: '接続数',
+        instance_listening: 'リッスン中', instance_open_files: '開いているファイル', instance_ws_clients: 'WS クライアント',
+        lifecycle_commands: 'コマンド実行', lifecycle_requests: 'HTTP リクエスト',
         websocket: 'WebSocket', message_stats: 'メッセージ統計', message_types: 'メッセージタイプ',
         platform_distribution: 'プラットフォーム分布', last_24h_trend: '過去24時間の傾向',
         registered_routes: '登録済みルート',
         refresh: '更新', copy: 'コピー', auto_refresh: '自動更新', copy_all_logs: 'すべてのログをコピー',
         event_preview: 'イベントプレビュー', copied_to_clipboard: 'クリップボードにコピーしました', copy_failed: 'コピー失敗',
         save_failed: '保存失敗', unknown_error: '不明なエラー', validation_failed: '検証失敗',
+        server_error: 'サーバーエラー', connection_error: 'サーバーに接続できません。ネットワークを確認',
         auto_refresh_off: '自動更新をオフにしました', auto_refresh_on: '自動更新をオンにしました',
         alt_message: '代替メッセージ', request_comment: 'リクエストコメント',
         field_name_placeholder: 'フィールド名', field_value_placeholder: 'フィールド値',
         load_segments_first: '先にセグメントタイプを読み込んでください',
         test: 'テスト', send: '送信', query_params: 'クエリパラメータ', request_body: 'リクエストボディ', response: 'レスポンス',
+        click_to_expand_routes: 'クリックしてルートを表示', base_path: 'ベースパス',
+        pause_scroll: 'スクロール停止', resume_scroll: 'スクロール再開',
         force_refresh: '強制更新',
         audit_log: '監査ログ', audit_log_desc: 'システム操作記録を表示', all_actions: 'すべての操作',
         backup_restore: 'バックアップと復元', backup_desc: 'システム設定とストレージデータのエクスポート/インポート',
@@ -1004,13 +1111,22 @@ const I18N = {
         fw_section_event_message: 'イベント › メッセージ',
         fw_section_event_command: 'イベント › コマンド',
         fw_section_framework: 'フレームワーク',
-        fw_section_config_audit: '構成監査',
-        fw_section_metrics: 'メトリクス',
-        fw_section_router_cors: 'ルーター › CORS',
-        fw_section_router_security: 'ルーター › セキュリティ',
-        fw_section_router_security_headers: 'ルーター › セキュリティ › ヘッダー',
-        fw_section_adapters_status: 'アダプター状態',
-        fw_section_modules_status: 'モジュール状態',
+        fw_section_adapters: 'アダプター',
+        fw_section_modules: 'モジュール',
+        fw_field_server_host: 'リッスンアドレス',
+        fw_field_server_port: 'リッスンポート',
+        fw_field_server_ssl_certfile: 'SSL証明書パス、nullでSSL無効',
+        fw_field_server_ssl_keyfile: 'SSL秘密鍵パス',
+        fw_field_logger_level: 'ログレベル：DEBUG / INFO / WARNING / ERROR',
+        fw_field_logger_log_files: 'ログファイルパス（例: ["logs/app.log"]）',
+        fw_field_logger_memory_limit: 'メモリ内最大ログエントリ数',
+        fw_field_storage_use_global_db: 'モジュール間共有のグローバルデータベースを使用',
+        fw_field_event_message_ignore_self: 'ボット自身が送信したメッセージを無視',
+        fw_field_event_command_prefix: 'コマンドトリガープレフィックス',
+        fw_field_event_command_case_sensitive: 'コマンドの大文字小文字を区別するか',
+        fw_field_event_command_allow_space_prefix: 'コマンドプレフィックス前のスペースを許可',
+        fw_field_event_command_must_at_bot: 'コマンド実行に@ボットが必要',
+        fw_field_framework_enable_lazy_loading: 'モジュールの遅延読み込みを有効化',
         fw_version_note: '注意: 一部の設定は古いバージョンのErisPulseでは無効な場合があります',
         fw_server_warn_title: '⚠ サーバー設定変更の確認',
         fw_server_warn_text: 'ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。',
@@ -1091,6 +1207,22 @@ const I18N = {
         dashboard_version: 'Dashboard バージョン',
         node_already_exists: 'ノード ID は既に存在します',
         node_not_found: 'ノードが見つかりません',
+        about: 'について',
+        about_tagline: 'イベント駆動型マルチプラットフォームボット開発フレームワーク',
+        about_desc: 'ErisPulse は、非同期・非ブロッキングのボットプログラムを構築するためのシンプルで使いやすいフレームワークを提供することを目指すオープンソースの Python ライブラリです。OneBot12 標準インターフェースに基づき、一度書けば複数プラットフォームにデプロイできます。柔軟なプラグインシステム、ホットリロードサポート、完全な開発者ツールチェーンを備え、シンプルなチャットボットから複雑な自動化システムまで様々なシーンに対応します。',
+        about_feat_event_title: 'イベント駆動アーキテクチャ',
+        about_feat_event_desc: 'OneBot12 標準に基づく明確なイベントモデルで、メッセージ処理ロジックがより直感的で効率的',
+        about_feat_cross_title: 'クロスプラットフォーム対応',
+        about_feat_cross_desc: 'プラグインモジュールは一度書けば全プラットフォームで使用可能、プラットフォームごとの重複開発不要',
+        about_feat_module_title: 'モジュラー設計',
+        about_feat_module_desc: '柔軟なプラグインシステム、拡張と統合が容易、ホットプラグ可能なモジュール管理をサポート',
+        about_feat_reload_title: 'ホットリロードサポート',
+        about_feat_reload_desc: '開発中に再起動なしでコードをリロード、開発イテレーション効率を大幅に向上',
+        about_star_hint: 'プロジェクトが気に入ったら、Star を付けてください~ とても大切です！',
+        about_contributors: '貢献者',
+        about_docs: 'ドキュメント',
+        about_discussions: 'ディスカッション',
+        about_market: 'モジュールマーケット',
     },
     
     ru: {
@@ -1105,9 +1237,9 @@ const I18N = {
         no_adapters: 'Нет адаптеров', no_modules: 'Нет модулей', no_events: 'Нет событий', no_bots: 'Нет ботов',
         no_logs: 'Нет журналов', no_http_routes: 'Нет HTTP маршрутов', no_ws_routes: 'Нет WebSocket маршрутов',
         no_data: 'Нет данных', requires_auth: 'Требуется авторизация',
-        active: 'Активен', inactive: 'Неактивен',
+        active: 'Активен', inactive: 'Неактивен', loaded_status: 'Загружен',
         enable: 'Включить', load: 'Загрузить', unload: 'Выгрузить', install: 'Установить',
-        search_packages: 'Поиск пакетов...', live_events: 'События в реальном времени', waiting_events: 'Ожидание событий...',
+        search_packages: 'Поиск пакетов...', search_modules: 'Поиск модулей...', all_status: 'Все', live_events: 'События в реальном времени', waiting_events: 'Ожидание событий...',
         bots_desc: 'Обнаруженные боты на платформах', events_desc: 'Просмотр/создание потока событий',
         modules_desc: 'Управление зарегистрированными модулями и адаптерами', store_desc: 'Просмотр и установка пакетов',
         config_desc: 'Просмотр и управление конфигурацией и хранилищем', configuration: 'Конфигурация', storage: 'Хранилище',
@@ -1115,11 +1247,18 @@ const I18N = {
         auth_placeholder: 'Введите токен',
         auth_hint: 'Токен хранится в конфигурации <code>Dashboard.token</code>',
         login: 'Войти', cancel: 'Отмена', ok: 'OK',
+        setup_title: 'Добро пожаловать в ErisPulse', setup_desc: 'Первый раз здесь? Установите токен доступа. Этот токен будет использоваться для защиты доступа к панели управления.',
+        setup_token_label: 'Установить токен доступа', setup_token_placeholder: 'Введите не менее 8 символов',
+        setup_token_confirm: 'Подтвердить токен', setup_token_confirm_placeholder: 'Введите токен еще раз',
+        setup_btn: 'Начать', setup_token_mismatch: 'Токены не совпадают', setup_token_too_short: 'Токен должен содержать не менее 8 символов',
         logged_in: 'Вход выполнен', invalid_token: 'Неверный токен', action_completed: 'Действие выполнено', action_failed: 'Действие не удалось',
         installing: 'Установка...', installed: 'Установлено! Рекомендуется перезапуск', install_failed: 'Установка не удалась',
         install_success: 'Установка завершена', install_timeout: 'Таймаут установки', install_restart_title: 'Перезапуск для загрузки нового модуля', install_restart_confirm: 'Модуль успешно установлен. Перезапустить фреймворк для его загрузки?', install_restart_btn: 'Перезапуск',
         install_detail: 'Детали установки', no_token_refresh: 'Сервис не готов, обновите позже',
         unload_self_title: 'Предупреждение', unload_self_confirm: 'После выгрузки модуля панели управления вы не сможете получить доступ к этому интерфейсу через веб. Продолжить?',
+        unload_confirm_title: 'Подтверждение выгрузки', unload_confirm_text: 'Вы уверены, что хотите выгрузить этот модуль?',
+        disable_confirm_title: 'Подтверждение отключения', disable_confirm_text: 'Вы уверены, что хотите отключить этот модуль? Он перестанет отвечать на события.',
+        uninstall_confirm_title: 'Подтверждение удаления', uninstall_confirm_text: 'Вы уверены, что хотите удалить этот модуль? Пакет будет удалён.',
         upload_title: 'Установка из файла', upload_desc: 'Загрузите whl или zip пакет для установки модуля', upload_btn: 'Выбрать файл и установить', uploading: 'Загрузка и установка...', upload_failed: 'Ошибка загрузки и установки',
         restart: 'Перезапуск фреймворка', restart_confirm: 'Перезапустить фреймворк? Все модули и адаптеры будут перезагружены.',
         restart_success: 'Перезапуск фреймворка...', restart_failed: 'Ошибка перезапуска',
@@ -1143,21 +1282,28 @@ const I18N = {
         view_tree: 'Дерево', view_source: 'Исходный код', reload_config: 'Обновить', save_config: 'Сохранить',
         config_saved: 'Конфигурация сохранена', config_load_failed: 'Не удалось загрузить исходный код конфигурации',
         read_only: 'Только чтение (корневая конфигурация)',
-        cpu_usage: 'Использование CPU', process_cpu: 'CPU процесса', memory_usage: 'Использование памяти', rss_memory: 'RSS память',
-        system_memory: 'Системная память', system_total_memory: 'Общая системная память', available_memory: 'Доступная память',
+        cpu_usage: 'Использование CPU', process_cpu: 'CPU процесса', cpu_user: 'Пользователь', cpu_system: 'Ядро', memory_usage: 'Использование памяти', rss_memory: 'RSS память',
+        system_memory: 'Системная память', system_cpu: 'Системный CPU', system_total_memory: 'Общая системная память', available_memory: 'Доступная память',
         swap_memory: 'Swap память', io_read: 'IO чтение', io_write: 'IO запись',
         active_connections: 'Активные соединения', system_details: 'Детали системы',
+        instance_info: 'Информация', instance_uptime: 'Время работы', instance_platform: 'Платформа',
+        instance_pid: 'PID', instance_threads: 'Потоки', instance_connections: 'Соединения',
+        instance_listening: 'Прослушивание', instance_open_files: 'Открытые файлы', instance_ws_clients: 'WS Клиенты',
+        lifecycle_commands: 'Команды', lifecycle_requests: 'HTTP Запросы',
         websocket: 'WebSocket', message_stats: 'Статистика сообщений', message_types: 'Типы сообщений',
         platform_distribution: 'Распределение по платформам', last_24h_trend: 'Тренд за 24 часа',
         registered_routes: 'Зарегистрированные маршруты',
         refresh: 'Обновить', copy: 'Копировать', auto_refresh: 'Автообновление', copy_all_logs: 'Копировать все журналы',
         event_preview: 'Предпросмотр события', copied_to_clipboard: 'Скопировано в буфер обмена', copy_failed: 'Ошибка копирования',
         save_failed: 'Ошибка сохранения', unknown_error: 'Неизвестная ошибка', validation_failed: 'Ошибка валидации',
+        server_error: 'Ошибка сервера', connection_error: 'Не удалось подключиться к серверу',
         auto_refresh_off: 'Автообновление отключено', auto_refresh_on: 'Автообновление включено',
         alt_message: 'Альт. сообщение', request_comment: 'Комментарий к запросу',
         field_name_placeholder: 'Имя поля', field_value_placeholder: 'Значение поля',
         load_segments_first: 'Сначала загрузите типы сегментов',
         test: 'Тест', send: 'Отправить', query_params: 'Параметры запроса', request_body: 'Тело запроса', response: 'Ответ',
+        click_to_expand_routes: 'Нажмите для просмотра маршрутов', base_path: 'Базовый путь',
+        pause_scroll: 'Пауза', resume_scroll: 'Продолжить',
         force_refresh: 'Принудительное обновление',
         audit_log: 'Журнал аудита', audit_log_desc: 'Просмотр записей системных операций', all_actions: 'Все действия',
         backup_restore: 'Резервное копирование', backup_desc: 'Экспорт или импорт конфигурации системы и данных хранилища',
@@ -1268,13 +1414,22 @@ const I18N = {
         fw_section_event_message: 'Событие › Сообщение',
         fw_section_event_command: 'Событие › Команда',
         fw_section_framework: 'Фреймворк',
-        fw_section_config_audit: 'Аудит конфигурации',
-        fw_section_metrics: 'Метрики',
-        fw_section_router_cors: 'Маршрут › CORS',
-        fw_section_router_security: 'Маршрут › Безопасность',
-        fw_section_router_security_headers: 'Маршрут › Безопасность › Заголовки',
-        fw_section_adapters_status: 'Статус адаптеров',
-        fw_section_modules_status: 'Статус модулей',
+        fw_section_adapters: 'Адаптеры',
+        fw_section_modules: 'Модули',
+        fw_field_server_host: 'Адрес прослушивания',
+        fw_field_server_port: 'Порт прослушивания',
+        fw_field_server_ssl_certfile: 'Путь к SSL сертификату, null для отключения SSL',
+        fw_field_server_ssl_keyfile: 'Путь к SSL закрытому ключу',
+        fw_field_logger_level: 'Уровень логирования: DEBUG / INFO / WARNING / ERROR',
+        fw_field_logger_log_files: 'Пути к файлам логов, напр. ["logs/app.log"]',
+        fw_field_logger_memory_limit: 'Макс. записей логов в памяти',
+        fw_field_storage_use_global_db: 'Использовать общую базу данных между модулями',
+        fw_field_event_message_ignore_self: 'Игнорировать сообщения, отправленные ботом',
+        fw_field_event_command_prefix: 'Префикс команды',
+        fw_field_event_command_case_sensitive: 'Учитывать регистр команд',
+        fw_field_event_command_allow_space_prefix: 'Разрешить пробелы перед префиксом',
+        fw_field_event_command_must_at_bot: 'Требовать @bot для вызова команд',
+        fw_field_framework_enable_lazy_loading: 'Включить отложенную загрузку модулей',
         fw_version_note: 'Примечание: некоторые опции могут не работать в старых версиях ErisPulse',
         fw_server_warn_title: '⚠ Подтвердите изменение конфигурации сервера',
         fw_server_warn_text: 'Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.',
@@ -1288,6 +1443,86 @@ const I18N = {
         fw_current: 'текущая',
         fw_downgrade_title: '⚠ Подтверждение даунгрейда',
         fw_downgrade_text: 'Вы собираетесь понизить ErisPulse до {v}. Это может вызвать проблемы совместимости. Продолжить?',
+        about: 'О проекте',
+        about_tagline: 'Фреймворк для разработки мультиплатформенных ботов на основе событий',
+        about_desc: 'ErisPulse — это библиотека с открытым исходным кодом, целью которой является предоставление простого и удобного фреймворка для создания асинхронных неблокирующих ботов. Основана на стандарте OneBot12, пишите один раз — разворачивайте на любой платформе. Гибкая система плагинов, горячая перезагрузка и полный набор инструментов разработчика подходят для всего — от простых чат-ботов до сложных систем автоматизации.',
+        about_feat_event_title: 'Архитектура на событиях',
+        about_feat_event_desc: 'Чёткая модель событий на основе стандарта OneBot12 делает обработку сообщений интуитивной и эффективной',
+        about_feat_cross_title: 'Кроссплатформенность',
+        about_feat_cross_desc: 'Плагины пишутся один раз и работают на всех платформах без повторной разработки',
+        about_feat_module_title: 'Модульный дизайн',
+        about_feat_module_desc: 'Гибкая система плагинов, легко расширяется и интегрируется, поддержка горячей замены модулей',
+        about_feat_reload_title: 'Горячая перезагрузка',
+        about_feat_reload_desc: 'Перезагрузка кода без перезапуска во время разработки, значительно ускоряет итерации',
+        about_star_hint: 'Если вам нравится наш проект, поставьте нам Star~ Это действительно важно!',
+        about_contributors: 'Участники',
+        about_docs: 'Документация',
+        about_discussions: 'Обсуждения',
+        about_market: 'Магазин модулей',
+        cluster_management: 'Кластер',
+        cluster_desc: 'Добавление, редактирование, удаление удалённых узлов, сравнение возможностей',
+        cluster_overview: 'Обзор',
+        cluster_overview_desc: 'Общий обзор состояния всех узлов',
+        node_local: 'Локальный',
+        node_online: 'Онлайн',
+        node_offline: 'Офлайн',
+        node_add: 'Добавить узел',
+        node_edit: 'Редактировать',
+        node_delete: 'Удалить',
+        node_ping: 'Проверить связь',
+        node_probe: 'Перепроверить',
+        node_id: 'ID узла',
+        node_name: 'Имя узла',
+        node_url: 'URL узла',
+        node_token: 'Токен доступа',
+        node_url_placeholder: 'http://192.168.1.100:8000',
+        node_token_placeholder: 'Токен удалённого Dashboard',
+        node_add_success: 'Узел добавлен',
+        handshake_success: 'Узел автоматически зарегистрирован на удалённой стороне',
+        remote_unauthorized: 'Ошибка аутентификации удалённого узла, проверьте токен',
+        toggle_url_visibility: 'Показать/скрыть URL',
+        node_add_failed: 'Не удалось добавить узел',
+        node_remove_confirm: 'Удалить этот узел?',
+        node_ping_success: 'Подключено',
+        node_ping_failed: 'Ошибка подключения',
+        node_probing: 'Проверка возможностей...',
+        node_probe_complete: 'Проверка завершена',
+        unsupported_on_node: 'Не поддерживается на этом узле',
+        unsupported_features: 'Неподдерживаемые функции',
+        capability_matrix: 'Сравнение возможностей',
+        cluster_card_detail: 'Подробности',
+        cluster_node_count: 'узел(ов)',
+        process_memory: 'Процесс', threads: 'Потоки', connections: 'Соединения',
+        cap_status: 'Статус', cap_status_desc: 'Просмотр состояния узла',
+        cap_system: 'Система', cap_system_desc: 'Просмотр использования ресурсов',
+        cap_adapters: 'Адаптеры', cap_adapters_desc: 'Управление адаптерами сообщений',
+        cap_modules: 'Модули', cap_modules_desc: 'Просмотр зарегистрированных модулей',
+        cap_bots: 'Боты', cap_bots_desc: 'Управление экземплярами ботов',
+        cap_events: 'События', cap_events_desc: 'Поток событий в реальном времени',
+        cap_config: 'Конфиг', cap_config_desc: 'Просмотр и редактирование конфигурации',
+        cap_storage: 'Хранилище', cap_storage_desc: 'Доступ к хранилищу ключ-значение',
+        cap_store: 'Магазин', cap_store_desc: 'Просмотр и установка расширений',
+        cap_packages: 'Пакеты', cap_packages_desc: 'Управление пакетами Python',
+        cap_logs: 'Журналы', cap_logs_desc: 'Просмотр системных журналов',
+        cap_lifecycle: 'Жизненный цикл', cap_lifecycle_desc: 'Управление модулями',
+        cap_performance: 'Производительность', cap_performance_desc: 'Просмотр метрик',
+        cap_routes: 'Маршруты', cap_routes_desc: 'Просмотр API маршрутов',
+        cap_message_stats: 'Статистика', cap_message_stats_desc: 'Статистика сообщений',
+        cap_framework_update: 'Обновление', cap_framework_update_desc: 'Проверка обновлений',
+        cap_event_builder: 'Конструктор событий', cap_event_builder_desc: 'Создание и отправка событий',
+        cap_config_source: 'Источник конфига', cap_config_source_desc: 'Просмотр источника конфигурации',
+        cap_module_views: 'Представления', cap_module_views_desc: 'Пользовательские страницы модулей',
+        cluster_sync: 'Синхронизация событий',
+        cluster_sync_desc: 'Пересылка событий между узлами',
+        sync_source: 'Источник',
+        sync_target: 'Цель',
+        sync_start: 'Начать синхронизацию',
+        sync_success: 'Синхронизация завершена',
+        sync_failed: 'Ошибка синхронизации',
+        latency: 'Задержка',
+        dashboard_version: 'Версия Dashboard',
+        node_already_exists: 'ID узла уже существует',
+        node_not_found: 'Узел не найден',
     }
 };
 
@@ -1605,6 +1840,7 @@ function toggleLang() {
             'config': loadConfig,
             'framework-config': loadFrameworkConfig,
             'cluster': loadClusterPage,
+            'about': loadAbout,
         };
         if (loaders[pageId]) loaders[pageId]();
         else if (_moduleViewLoaders && _moduleViewLoaders[pageId]) _moduleViewLoaders[pageId]();
@@ -1661,6 +1897,7 @@ function closeSidebar() { document.getElementById('sidebar').classList.remove('o
 function esc(s) { if (s == null) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
 
 let _remoteAuthToastTs = 0;
+var _lastErrorToast = 0;
 function api(path, opts) {
     const tk = localStorage.getItem(TK);
     const headers = { ...(opts?.headers || {}), ...(tk ? { 'Authorization': 'Bearer ' + tk } : {}) };
@@ -1679,8 +1916,23 @@ function api(path, opts) {
                 return d;
             });
         }
+        if (r.status >= 500) {
+            var now = Date.now();
+            if (now - _lastErrorToast > 5000) {
+                _lastErrorToast = now;
+                toast(t('server_error') + ' (' + r.status + ')', 'er');
+            }
+            return null;
+        }
         return r.json()
-    }).catch(() => null);
+    }).catch(e => {
+        var now = Date.now();
+        if (now - _lastErrorToast > 5000) {
+            _lastErrorToast = now;
+            toast(t('connection_error'), 'er');
+        }
+        return null;
+    });
 }
 
 async function fetchAdapterLogos() {
@@ -1751,6 +2003,7 @@ function go(name, el) {
         'config': loadConfig,
         'framework-config': loadFrameworkConfig,
         'cluster': loadClusterPage,
+        'about': loadAbout,
     };
     if (loaders[name]) {
         loaders[name]();
@@ -1938,6 +2191,7 @@ function showModal(title, text, actions) {
     });
 }
 function confirm2(title, text) { return showModal(title, text, [{ label: t('cancel'), value: false }, { label: t('ok'), value: true, primary: true }]) }
+function toggleNavGroup(titleEl) { titleEl.parentElement.classList.toggle('collapsed') }
 function alert2(title, text) { return showModal(title, text, [{ label: t('ok'), value: true, primary: true }]) }
 
 function showOutputModal(title, lines, actions) {
@@ -1973,7 +2227,7 @@ function showLogin() {
     document.getElementById('loginOv').classList.add('show');
     const ls = document.getElementById('loginLangSelect'); if (ls) ls.value = lang;
     preloadLoginBg();
-    document.getElementById('loginInput').focus()
+    document.getElementById('loginInput').focus();
 }
 function closeLogin() { document.getElementById('loginOv').classList.remove('show') }
 
@@ -2038,10 +2292,10 @@ async function refreshDashboard() {
     let ob = 0; Object.values(ad).forEach(a => Object.values(a.bots || {}).forEach(b => { if (b.status === 'online') ob++ }));
     document.getElementById('statGrid').innerHTML =
         '<div class="card"><div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">' +
-        statCard(Object.keys(ad).length, t('adapters')) +
-        statCard(Object.keys(mo).filter(k => mo[k]).length, t('modules_label')) +
-        statCard(ob, t('online_bots')) +
-        statCard(_totalEventCount, t('total_events')) +
+        statCard(Object.keys(ad).length, t('adapters'), '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>') +
+        statCard(Object.keys(mo).filter(k => mo[k]).length, t('modules_label'), '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>') +
+        statCard(ob, t('online_bots'), '<rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><path d="M9 13v3a3 3 0 006 0v-3"/>') +
+        statCard(_totalEventCount, t('total_events'), '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>') +
         '</div></div>';
 
     let aH = ''; Object.entries(ad).forEach(([n, i]) => {
@@ -2058,8 +2312,10 @@ async function refreshDashboard() {
     platforms = Object.keys(ad);
 }
 
-function statCard(v, label) {
-    return '<div class="stat-card"><div class="stat-val">' + v + '</div><div class="stat-label">' + esc(label) + '</div></div>';
+function statCard(v, label, icon) {
+    return '<div class="stat-card">' +
+        (icon ? '<svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg>' : '') +
+        '<div class="stat-val">' + v + '</div><div class="stat-label">' + esc(label) + '</div></div>';
 }
 
 async function loadEvents() {
@@ -2111,8 +2367,26 @@ async function loadBots() {
 async function loadModules() {
     const d = await api('/api/modules'); if (!d) return;
     const items = d.modules || [];
-    const adapters = items.filter(m => m.type === 'adapter');
-    const modules = items.filter(m => m.type === 'module');
+    const search = (document.getElementById('moduleSearch')?.value || '').toLowerCase();
+    const status = document.getElementById('moduleStatus')?.value || 'all';
+    const adapters = items.filter(m => {
+        if (m.type !== 'adapter') return false;
+        if (search && !m.name.toLowerCase().includes(search)) return false;
+        if (status === 'active' && !m.loaded) return false;
+        if (status === 'inactive' && m.loaded) return false;
+        if (status === 'loaded' && !m.loaded) return false;
+        if (status === 'disabled' && m.enabled) return false;
+        return true;
+    });
+    const modules = items.filter(m => {
+        if (m.type !== 'module') return false;
+        if (search && !m.name.toLowerCase().includes(search)) return false;
+        if (status === 'active' && !m.loaded) return false;
+        if (status === 'inactive' && m.loaded) return false;
+        if (status === 'loaded' && !m.loaded) return false;
+        if (status === 'disabled' && m.enabled) return false;
+        return true;
+    });
     document.getElementById('adapterCount').textContent = adapters.length;
     document.getElementById('moduleCount').textContent = modules.length;
     document.getElementById('adapterList').innerHTML = adapters.length ? adapters.map(m => renderPluginRow(m, true)).join('') : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' + t('no_adapters') + '</div>';
@@ -2153,9 +2427,14 @@ async function moduleAction(name, action, type, pkg) {
     if (!authed) return showLogin();
     if (action === 'unload' && name === 'Dashboard') {
         const ok = await confirm2(t('unload_self_title'), t('unload_self_confirm')); if (!ok) return;
+    } else if (action === 'unload') {
+        const ok = await confirm2(t('unload_confirm_title'), t('unload_confirm_text')); if (!ok) return;
+    }
+    if (action === 'disable') {
+        const ok = await confirm2(t('disable_confirm_title'), t('disable_confirm_text')); if (!ok) return;
     }
     if (action === 'uninstall') {
-        const ok = await confirm2(t('uninstall_module'), t('uninstall_confirm') + ' <strong>' + esc(name) + '</strong>'); if (!ok) return;
+        const ok = await confirm2(t('uninstall_confirm_title'), t('uninstall_confirm_text') + ' <strong>' + esc(name) + '</strong>'); if (!ok) return;
     }
     const body = { name, action, type };
     if (pkg) body.package = pkg;
@@ -2477,6 +2756,7 @@ async function batchInstall() {
 }
 async function restartFramework() {
     if (!authed) return showLogin();
+    closeSettings();
     const ok = await confirm2(t('restart'), t('restart_confirm')); if (!ok) return;
     toast(t('restart_success'), '');
     const d = await api('/api/restart', { method: 'POST' });
@@ -2658,19 +2938,13 @@ const _fwDefaults = {
     server: { host: '0.0.0.0', port: 8000, ssl_certfile: null, ssl_keyfile: null },
     logger: { level: 'INFO', log_files: [], memory_limit: 1000 },
     storage: { use_global_db: false },
+    modules: {},
+    adapters: {},
     event: {
         message: { ignore_self: true },
         command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
     },
     framework: { enable_lazy_loading: true },
-    'config.audit': { enabled: false, max_entries: 1000 },
-    metrics: { enabled: false },
-    router: {
-        cors: { enabled: false, allow_origins: ['*'], allow_methods: ['*'], allow_headers: ['*'], allow_credentials: false, max_age: 600 },
-        security: { enabled: false, headers: { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' } },
-    },
-    'adapters.status': {},
-    'modules.status': {},
 };
 
 const _fwFieldDescs = {
@@ -2688,18 +2962,6 @@ const _fwFieldDescs = {
     'event.command.allow_space_prefix': '是否允许命令前缀前有空格',
     'event.command.must_at_bot': '是否必须 @Bot 才能触发命令',
     'framework.enable_lazy_loading': '是否启用模块懒加载（按需加载）',
-    'config.audit.enabled': '是否启用配置变更审计日志',
-    'config.audit.max_entries': '审计日志最大保留条数',
-    'metrics.enabled': '是否启用系统指标采集',
-    'router.cors.enabled': '是否启用 CORS 跨域支持',
-    'router.cors.allow_origins': '允许的跨域来源，["*"] 表示允许所有',
-    'router.cors.allow_methods': '允许的 HTTP 方法',
-    'router.cors.allow_headers': '允许的 HTTP 请求头',
-    'router.cors.allow_credentials': '是否允许跨域携带凭据（cookie 等）',
-    'router.cors.max_age': '预检请求缓存时间（秒）',
-    'router.security.enabled': '是否启用安全响应头',
-    'router.security.headers.X-Content-Type-Options': '禁用 MIME 类型嗅探',
-    'router.security.headers.X-Frame-Options': '防止点击劫持（DENY=禁止嵌入 iframe）',
 };
 
 function fwFieldDesc(fullKey) {
@@ -2919,6 +3181,33 @@ async function delStorage(k, btn) {
     else row.style.opacity = '1';
 }
 
+let _eventStreamLive = true;
+let _wsEventBuffer = [];
+let _wsFlushTimer = null;
+function _flushEventStream() {
+    if (!_wsEventBuffer.length) return;
+    if (!_eventStreamLive) { _wsEventBuffer = []; return; }
+    const el = document.getElementById('eventList');
+    if (!el) { _wsEventBuffer = []; return; }
+    const active = document.querySelector('.page.active');
+    if (!active || active.id !== 'p-event-stream') { _wsEventBuffer = []; return; }
+    const em = el.querySelector('.empty-state');
+    if (em) em.remove();
+    _wsEventBuffer.forEach(ev => {
+        el.insertAdjacentHTML('afterbegin', evHtml(ev));
+    });
+    while (el.children.length > 100) el.removeChild(el.lastChild);
+    _wsEventBuffer = [];
+}
+function toggleEventLive() {
+    _eventStreamLive = !_eventStreamLive;
+    const btn = document.getElementById('eventLiveBtn');
+    if (btn) {
+        btn.style.opacity = _eventStreamLive ? '' : '0.5';
+        btn.title = _eventStreamLive ? t('live_events') : t('live_events') + ' (' + t('module_disabled') + ')';
+    }
+}
+
 function wsConnect() {
     if (ws) {
         ws.onclose = null;
@@ -2954,6 +3243,15 @@ function wsConnect() {
                     const dh = document.getElementById('dashEvents'); const em = dh?.querySelector('.empty-state');
                     if (em) em.remove(); dh?.insertAdjacentHTML('afterbegin', evHtml(m.data));
                     while (dh && dh.children.length > 20) dh.removeChild(dh.lastChild);
+                }
+                if (document.querySelector('.page.active')?.id === 'p-event-stream' && _eventStreamLive) {
+                    _wsEventBuffer.push(m.data);
+                    if (!_wsFlushTimer) {
+                        _wsFlushTimer = setTimeout(() => {
+                            _wsFlushTimer = null;
+                            _flushEventStream();
+                        }, 500);
+                    }
                 }
             } else if (m.type === 'install_progress') {
                 const pkg = _installTaskIds.get(m.task_id) || (m.packages ? m.packages.join(', ') : '');
@@ -3458,6 +3756,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ========== 日志功能 ==========
 
 let _logAutoRefreshTimer = null;
+let _logPaused = false;
 let _availableModules = new Set();
 
 let _logDebounceTimer;
@@ -3477,8 +3776,18 @@ function toggleLogAutoRefresh() {
     }
 }
 
+function toggleLogPause() {
+    _logPaused = !_logPaused;
+    var btn = document.getElementById('logPauseBtn');
+    if (btn) {
+        btn.classList.toggle('paused', _logPaused);
+        btn.title = _logPaused ? t('resume_scroll') : t('pause_scroll');
+    }
+}
+
 async function loadLogs() {
     const moduleFilter = document.getElementById('logModuleFilter')?.value || '';
+    const levelFilter = document.getElementById('logLevelFilter')?.value || '';
     const search = document.getElementById('logSearch')?.value || '';
     
     // 首次加载时收集所有模块
@@ -3490,13 +3799,13 @@ async function loadLogs() {
                     _availableModules.add(log.module);
                 }
             });
-            // 更新模块下拉框
             updateModuleSelect();
         }
     }
     
     const params = new URLSearchParams();
     if (moduleFilter) params.set('module', moduleFilter);
+    if (levelFilter) params.set('level', levelFilter);
     if (search) params.set('search', search);
     params.set('limit', '200');
     
@@ -3514,23 +3823,23 @@ async function loadLogs() {
     const logHtml = logs.map(log => {
         const moduleEsc = esc(log.module);
         const moduleTooltip = log.module.length > 15 ? `title="${esc(log.module)}"` : '';
+        var lvl = (log.level || '').toLowerCase();
+        var lvlClass = lvl ? ' log-level-' + lvl : '';
+        var lvlBadge = lvl ? '<span class="log-level-badge ' + lvl + '">' + lvl + '</span>' : '';
         
-        return `<div class="log-entry">
+        return `<div class="log-entry${lvlClass}" onclick="this.classList.toggle('log-expanded')">
             <span class="log-time">${esc(log.timestamp)}</span>
-            <span class="log-module" ${moduleTooltip}>${moduleEsc}</span>
+            <span class="log-module" ${moduleTooltip}>${lvlBadge}${moduleEsc}</span>
             <span class="log-message">${esc(log.message)}</span>
         </div>`;
     }).join('');
     
     const logList = document.getElementById('logList');
-    
-    // 检查是否在底部附近（距离底部小于50px）
     const wasNearBottom = logList.scrollHeight - logList.scrollTop - logList.clientHeight < 50;
     
     logList.innerHTML = logHtml;
     
-    // 只有当用户之前在底部附近，或者启用了自动刷新时才滚动到底部
-    if (_logAutoRefreshTimer || wasNearBottom) {
+    if (!_logPaused && (_logAutoRefreshTimer || wasNearBottom)) {
         logList.scrollTop = logList.scrollHeight;
     }
 }
@@ -3578,13 +3887,16 @@ async function loadLifecycle() {
     if (!d) return;
     
     const events = d.events || [];
+    const filter = document.getElementById('lifecycleFilter')?.value || '';
     
-    if (events.length === 0) {
+    const filtered = filter ? events.filter(e => e.event.startsWith(filter + '.')) : events;
+    
+    if (filtered.length === 0) {
         document.getElementById('lifecycleTimeline').innerHTML = '<div class="empty-state"><p>' + esc(t('no_lifecycle')) + '</p></div>';
         return;
     }
     
-    const timelineHtml = events.map((event) => {
+    const timelineHtml = filtered.map((event, idx) => {
         const eventParts = event.event.split('.');
         const eventType = eventParts[0] || '';
         const eventName = eventParts.slice(1).join('.');
@@ -3597,7 +3909,11 @@ async function loadLifecycle() {
             duration = `<span class="lifecycle-duration">${dur.toFixed(2)}s</span>`;
         }
         
-        return `<div class="lifecycle-item">
+        const hasData = event.data && Object.keys(event.data).length > 0;
+        const dataJson = hasData ? JSON.stringify(event.data, null, 2) : '';
+        const source = event.source ? `<span class="lifecycle-source">${esc(event.source)}</span>` : '';
+        
+        return `<div class="lifecycle-item${hasData ? ' has-data' : ''}" ${hasData ? `onclick="this.classList.toggle('expanded')"` : ''}>
             <span class="lifecycle-badge ${esc(eventType)}">${esc(eventType)}</span>
             <div class="lifecycle-content">
                 <div class="lifecycle-header">
@@ -3606,13 +3922,54 @@ async function loadLifecycle() {
                 </div>
                 <div class="lifecycle-details">
                     <span class="lifecycle-desc">${esc(event.msg || eventName)}</span>
+                    ${source}
                     ${duration}
+                    ${hasData ? '<span class="lifecycle-expand-hint">▸</span>' : ''}
                 </div>
+                ${hasData ? `<div class="lifecycle-data"><pre>${esc(dataJson)}</pre></div>` : ''}
             </div>
         </div>`;
     }).join('');
     
     document.getElementById('lifecycleTimeline').innerHTML = timelineHtml;
+}
+
+async function clearLifecycle() {
+    const ok = await confirm2(t('clear_events'), t('clear_confirm'));
+    if (!ok) return;
+    await api('/api/lifecycle/clear', { method: 'POST' });
+    loadLifecycle();
+}
+
+// ========== 关于页面 ==========
+
+async function loadAbout() {
+    loadAboutContributors();
+}
+
+async function loadAboutContributors() {
+    const container = document.getElementById('aboutContributors');
+    if (!container) return;
+    
+    try {
+        const resp = await fetch('https://api.github.com/repos/ErisPulse/ErisPulse/contributors?per_page=100');
+        if (!resp.ok) throw new Error('Failed to fetch');
+        const contributors = await resp.json();
+        
+        if (!Array.isArray(contributors) || contributors.length === 0) {
+            container.innerHTML = '<span class="about-contrib-empty">-</span>';
+            return;
+        }
+        
+        container.innerHTML = contributors.map(c => `
+            <a href="${esc(c.html_url)}" target="_blank" rel="noopener" class="about-contrib-item" title="${esc(c.login)}">
+                <img src="${esc(c.avatar_url)}" alt="${esc(c.login)}" loading="lazy" width="36" height="36">
+                <span class="about-contrib-name">${esc(c.login)}</span>
+            </a>
+        `).join('');
+    } catch {
+        container.innerHTML = '<span class="about-contrib-empty" data-i18n="about_contrib_failed"></span>';
+    }
 }
 
 // ========== 性能监控功能 ==========
@@ -3622,48 +3979,77 @@ async function loadPerformance() {
     if (!d) return;
     
     const system = d.system || {};
-    const ws = d.websocket || {};
     const process = system.process || {};
-    
-    // 确保 memory 对象存在
     const memory = system.memory || {};
     
-    // 格式化函数
     const fmt = (v, unit = '') => {
         if (v === null || v === undefined) return '--' + unit;
         if (typeof v === 'string') v = parseFloat(v) || 0;
         return v.toFixed(1) + unit;
     };
     
-    // CPU
-    const cpuPercent = memory.cpu_percent || 0;
-    
-    // 更新仪表盘上的性能卡片
-    if (document.getElementById('cpuUsage')) {
-        document.getElementById('cpuUsage').textContent = fmt(cpuPercent, '%');
-    }
-    if (document.getElementById('memUsage')) {
-        document.getElementById('memUsage').textContent = fmt(memory.rss_mb, ' MB');
-    }
-    if (document.getElementById('sysMemUsage')) {
-        document.getElementById('sysMemUsage').textContent = fmt(memory.system_percent, '%');
-    }
-    if (document.getElementById('rssMemVal')) {
-        document.getElementById('rssMemVal').textContent = fmt(memory.rss_mb, ' MB');
-    }
-    
-    // 更新系统详情卡片
-    const setEl = (id, v, unit = '') => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = fmt(v, unit);
+    var _updateCircle = function(circleId, textId, pct) {
+        var circleEl = document.getElementById(circleId);
+        if (circleEl) {
+            circleEl.setAttribute('stroke-dashoffset', 100 - Math.min(pct, 100));
+            circleEl.classList.toggle('high', pct > 60);
+            circleEl.classList.toggle('critical', pct > 85);
+        }
+        var textEl = document.getElementById(textId);
+        if (textEl) textEl.textContent = (pct || 0).toFixed(0) + '%';
+    };
+    var _updateBar = function(barId, pct) {
+        var bar = document.getElementById(barId);
+        if (bar) {
+            bar.style.width = Math.min(pct, 100) + '%';
+            bar.classList.toggle('high', pct > 60);
+            bar.classList.toggle('critical', pct > 85);
+        }
     };
     
-    setEl('sysTotalMem', memory.system_total_gb, ' GB');
-    setEl('sysAvailMem', memory.system_available_gb, ' GB');
+    // CPU 卡片：上=进程，下=系统（完全对称）
+    var procCpu = memory.cpu_percent || 0;
+    var sysCpu = memory.system_cpu_percent || 0;
+    _updateCircle('cpuProgressCircle', 'cpuProgressText', procCpu);
+    if (document.getElementById('cpuUsage')) document.getElementById('cpuUsage').textContent = fmt(procCpu, '%');
+    _updateBar('cpuBar', procCpu);
+    _updateCircle('sysCpuCircle', 'sysCpuText', sysCpu);
+    if (document.getElementById('sysCpuVal')) document.getElementById('sysCpuVal').textContent = fmt(sysCpu, '%');
+    _updateBar('sysCpuBar', sysCpu);
+    
+    // CPU 底部
+    const setEl = (id, v, unit = '') => { const el = document.getElementById(id); if (el) el.textContent = fmt(v, unit); };
+    setEl('cpuUser', process.cpu_user, ' s');
+    setEl('cpuSys', process.cpu_system, ' s');
+    if (document.getElementById('cpuThreads')) document.getElementById('cpuThreads').textContent = String(process.threads || '--');
+    
+    // 内存卡片：上=进程，下=系统（完全对称）
+    var rssMb = memory.rss_mb || 0;
+    var totalGb = memory.system_total_gb || 0;
+    var procMemPct = totalGb > 0 ? Math.min(rssMb / (totalGb * 1024) * 100, 100) : 0;
+    var sysPct = memory.system_percent || 0;
+    
+    _updateCircle('memProgressCircle', 'memProgressText', procMemPct);
+    if (document.getElementById('procMemPct')) document.getElementById('procMemPct').textContent = fmt(procMemPct, '%');
+    if (document.getElementById('procMemVal')) document.getElementById('procMemVal').textContent = fmt(rssMb, ' MB');
+    _updateBar('procMemBar', procMemPct);
+    _updateCircle('sysMemCircle', 'sysMemText', sysPct);
+    if (document.getElementById('sysMemVal')) document.getElementById('sysMemVal').textContent = fmt(sysPct, '%');
+    _updateBar('sysMemBar', sysPct);
+    
+    // Swap / IO
     setEl('swapMem', memory.swap_used_mb, ' MB');
     setEl('ioRead', process.read_bytes_mb, ' MB');
     setEl('ioWrite', process.write_bytes_mb, ' MB');
     
+    // 实例信息卡片
+    var setInst = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    setInst('instUptime', system.uptime_human || '--');
+    setInst('instPlatform', (system.platform || '') + ' ' + (system.platform_release || ''));
+    setInst('instPid', system.pid != null ? String(system.pid) : '--');
+    setInst('instThreads', String(process.threads || '--'));
+    setInst('instConnections', String(process.connections || '--'));
+    setInst('instOpenFiles', String(process.open_files || '--'));
     // 存储以便后续使用
     window._perfData = {
         vms: memory.vms_mb,
@@ -3718,10 +4104,11 @@ async function loadApiRoutes() {
     
     var html = '';
     
-    moduleNames.forEach(function(mod) {
+    moduleNames.forEach(function(mod, idx) {
         var g = groups[mod];
         var totalRoutes = g.http.length + g.ws.length;
         if (totalRoutes === 0) return;
+        var basePath = '/' + mod;
         
         html += '<div class="card route-group-card collapsed" style="margin-bottom:12px">';
         html += '<div class="card-header" style="cursor:pointer;user-select:none" onclick="toggleRouteGroup(this)">';
@@ -3739,7 +4126,7 @@ async function loadApiRoutes() {
             html += '<div class="route-item">';
             html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
             html += '<span class="method-badge ' + mc + '">' + r.method + '</span>';
-            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.path) + '</code>';
+            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.full_path) + '</code>';
             html += '<div style="margin-left:auto">';
             html += '<button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' + esc(r.method) + '\',\'' + esc(r.full_path) + '\')">' + t('test') + '</button>';
             html += '</div></div></div>';
@@ -3751,30 +4138,44 @@ async function loadApiRoutes() {
             html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
             html += '<span class="method-badge method-ws">WS</span>';
             html += authBadge;
-            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.path) + '</code>';
+            html += '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' + esc(r.full_path) + '</code>';
             html += '</div></div>';
         });
         
         html += '</div></div>';
     });
     
-    document.getElementById('routeModulesContainer').innerHTML = html || '<div style="padding:16px;font-size:13px;color:var(--tx-s);text-align:center">' + t('no_data') + '</div>';
+    var container = document.getElementById('routeModulesContainer');
+    container.innerHTML = html || '<div style="padding:16px;font-size:13px;color:var(--tx-s);text-align:center">' + t('no_data') + '</div>';
+    
+    var firstCard = container.querySelector('.route-group-card');
+    if (firstCard) {
+        firstCard.classList.remove('collapsed');
+        firstCard.querySelector('.route-group-body').style.display = 'block';
+        var firstChevron = firstCard.querySelector('.route-group-chevron');
+        if (firstChevron) firstChevron.style.transform = 'rotate(180deg)';
+        var firstHint = firstCard.querySelector('.route-expand-hint');
+        if (firstHint) firstHint.style.display = 'none';
+    }
 }
 
 function toggleRouteGroup(hd) {
     var card = hd.parentElement;
     var body = card.querySelector('.route-group-body');
     var chevron = card.querySelector('.route-group-chevron');
+    var hint = card.querySelector('.route-expand-hint');
     var collapsed = card.classList.contains('collapsed');
     
     if (collapsed) {
         body.style.display = 'block';
         chevron.style.transform = 'rotate(180deg)';
         card.classList.remove('collapsed');
+        if (hint) hint.style.display = 'none';
     } else {
         body.style.display = 'none';
         chevron.style.transform = 'rotate(0deg)';
         card.classList.add('collapsed');
+        if (hint) hint.style.display = '';
     }
 }
 
@@ -3784,6 +4185,8 @@ function expandAllRouteGroups() {
         card.classList.remove('collapsed');
         card.querySelector('.route-group-body').style.display = 'block';
         card.querySelector('.route-group-chevron').style.transform = 'rotate(180deg)';
+        var hint = card.querySelector('.route-expand-hint');
+        if (hint) hint.style.display = 'none';
     });
 }
 
@@ -3793,6 +4196,8 @@ function collapseAllRouteGroups() {
         card.classList.add('collapsed');
         card.querySelector('.route-group-body').style.display = 'none';
         card.querySelector('.route-group-chevron').style.transform = 'rotate(0deg)';
+        var hint = card.querySelector('.route-expand-hint');
+        if (hint) hint.style.display = '';
     });
 }
 
@@ -3804,51 +4209,50 @@ async function loadMessageStats() {
     
     // 消息类型分布
     const typeStats = d.by_type || {};
+    var typeColors = ['var(--accent)', 'var(--ok-c)', 'var(--pr-c)', 'var(--wr-c)', 'var(--sc-c)', 'var(--lk)'];
+    var ti = 0;
     const typeHtml = Object.entries(typeStats).map(([type, count]) => {
         const total = d.total_events || 1;
         const percent = ((count / total) * 100).toFixed(1);
-        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="min-width:80px;font-weight:500">${esc(type)}</span>
-            <div style="flex:1;height:8px;background:var(--bg-s);border-radius:4px;overflow:hidden">
-                <div style="width:${percent}%;height:100%;background:var(--accent)"></div>
-            </div>
-            <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
-        </div>`;
+        var c = typeColors[ti % typeColors.length]; ti++;
+        return '<div class="stat-bar-chart">' +
+            '<span class="stat-bar-label">' + esc(type) + '</span>' +
+            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%;background:' + c + '"><span class="stat-bar-fill-text">' + (percent > 15 ? count : '') + '</span></div></div>' +
+            '<span class="stat-bar-value">' + count + ' (' + percent + '%)</span></div>';
     }).join('');
     document.getElementById('msgTypeStats').innerHTML = typeHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
     // 平台分布
     const platformStats = d.by_platform || {};
+    ti = 0;
     const platformHtml = Object.entries(platformStats).map(([platform, count]) => {
         const total = d.total_events || 1;
         const percent = ((count / total) * 100).toFixed(1);
-        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="min-width:80px;font-weight:500">${esc(platform)}</span>
-            <div style="flex:1;height:8px;background:var(--bg-s);border-radius:4px;overflow:hidden">
-                <div style="width:${percent}%;height:100%;background:var(--ok-c)"></div>
-            </div>
-            <span style="min-width:60px;text-align:right;font-size:12px;color:var(--tx-s)">${count} (${percent}%)</span>
-        </div>`;
+        var c = typeColors[ti % typeColors.length]; ti++;
+        return '<div class="stat-bar-chart">' +
+            '<span class="stat-bar-label">' + esc(platform) + '</span>' +
+            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%;background:' + c + '"><span class="stat-bar-fill-text">' + (percent > 15 ? count : '') + '</span></div></div>' +
+            '<span class="stat-bar-value">' + count + ' (' + percent + '%)</span></div>';
     }).join('');
     document.getElementById('msgPlatformStats').innerHTML = platformHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
-    // 每小时趋势（最近24小时）
+    // 每小时趋势（最近24小时） - 精美版
     const hourlyStats = d.hourly || {};
     const now = Date.now() / 1000;
     const hourlyHtml = [];
+    var maxCount = Math.max(...Object.values(hourlyStats), 1);
     
     for (let i = 23; i >= 0; i--) {
         const hourKey = Math.floor((now - i * 3600) / 3600) * 3600;
         const count = hourlyStats[hourKey] || 0;
-        const maxCount = Math.max(...Object.values(hourlyStats), 1);
         const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-        
+        var barColor = count > maxCount * 0.7 ? 'var(--wr-c)' : count > 0 ? 'var(--accent)' : 'var(--bd)';
         const hourLabel = new Date(hourKey * 1000).getHours() + ':00';
         
-        hourlyHtml.push(`<div style="flex:1;min-width:28px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px">
-            <div style="width:100%;max-width:16px;height:${height}%;background:var(--accent);border-radius:2px;min-height:2px;transition:height 0.3s"></div>
-            <span style="font-size:9px;color:var(--tx-t);white-space:nowrap">${hourLabel}</span>
-        </div>`);
+        hourlyHtml.push('<div style="flex:1;min-width:22px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px" title="' + hourLabel + ': ' + count + ' msgs">' +
+            '<div style="width:100%;max-width:14px;height:' + (height || 2) + '%;min-height:' + (count > 0 ? '4px' : '2px') + ';background:' + barColor + ';border-radius:3px 3px 0 0;transition:height .3s"></div>' +
+            (i % 4 === 0 ? '<span style="font-size:9px;color:var(--tx-t);white-space:nowrap">' + hourLabel + '</span>' : '') +
+            '</div>');
     }
     
     document.getElementById('msgHourlyTrend').innerHTML = hourlyHtml.join('');
@@ -5184,7 +5588,13 @@ function _toggleUrlVisibility(cardId) {
 function toggleClusterCardDetail(cardId) {
     var card = document.getElementById(cardId);
     if (!card) return;
+    var wasExpanded = card.classList.contains('card-expanded');
     card.classList.toggle('card-expanded');
+    if (!wasExpanded) {
+        var nodeId = cardId.replace('clusterCard-', '');
+        var od = _lastOverview && _lastOverview.nodes && _lastOverview.nodes[nodeId];
+        if (od) _fillClusterCardDetail(nodeId, od);
+    }
 }
 
 function _clusterFormHtml(formId, title, fields, submitText, submitFn) {
@@ -5308,6 +5718,7 @@ async function loadClusterPage() {
     if (nodes.length > 0) {
         api('/api/cluster/overview').then(function(od) {
             if (!od || !od.nodes) return;
+            _lastOverview = od;
             nodes.forEach(function(n) {
                 if (od.nodes[n.id]) _fillClusterCardDetail(n.id, od.nodes[n.id]);
             });

@@ -18,6 +18,40 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingRes
 from .Cluster import ClusterManager, PAGE_CAPABILITY_MAP
 
 
+DEFAULT_ERISPULSE_CONFIG = {
+    "server": {
+        "host": "0.0.0.0",
+        "port": 8000,
+        "ssl_certfile": None,
+        "ssl_keyfile": None,
+    },
+    "logger": {
+        "level": "INFO",
+        "log_files": [],
+        "memory_limit": 1000,
+    },
+    "storage": {
+        "use_global_db": False,
+    },
+    "modules": {},
+    "adapters": {},
+    "event": {
+        "message": {
+            "ignore_self": True,
+        },
+        "command": {
+            "prefix": "/",
+            "case_sensitive": True,
+            "allow_space_prefix": False,
+            "must_at_bot": False,
+        },
+    },
+    "framework": {
+        "enable_lazy_loading": True,
+    },
+}
+
+
 class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
@@ -44,6 +78,7 @@ class Main(BaseModule):
         self._command_middleware_func = None
         self._registered_views: dict[str, dict] = {}
         self._cluster: ClusterManager | None = None
+        self._lifecycle_counts: dict[str, int] = {}
         self._register_routes()
 
     @staticmethod
@@ -69,16 +104,28 @@ class Main(BaseModule):
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
         self.logger.info("WebUI module loaded")
-        if getattr(self, "_token_new", False):
-            self.logger.warning("┌──────────────────────────────────────────────┐")
-            self.logger.warning("│           ErisPulse Dashboard                │")
-            self.logger.warning("│  访问地址: /Dashboard                       │")
-            self.logger.warning("│  访问令牌: %s", self._token)
-            self.logger.warning("│  令牌已保存至配置文件 Dashboard.token         │")
-            self.logger.warning("└──────────────────────────────────────────────┘")
-        else:
-            self.logger.warning("Dashboard-Access-Token: %s", self._token)
+        asyncio.create_task(self._show_token_later())
         return True
+
+    async def _show_token_later(self):
+        await asyncio.sleep(2)
+        if getattr(self, "_token_new", False):
+            self.logger.warning("")
+            self.logger.warning("╔══════════════════════════════════════════════╗")
+            self.logger.warning("║           ErisPulse Dashboard                ║")
+            self.logger.warning("║  访问地址: /Dashboard                       ║")
+            self.logger.warning("║  访问令牌: %-34s║", self._token)
+            self.logger.warning("║  令牌已保存至配置文件 Dashboard.token         ║")
+            self.logger.warning("╚══════════════════════════════════════════════╝")
+            self.logger.warning("")
+        else:
+            self.logger.warning("")
+            self.logger.warning("╔══════════════════════════════════════════════╗")
+            self.logger.warning("║           ErisPulse Dashboard                ║")
+            self.logger.warning("║  访问地址: /Dashboard                       ║")
+            self.logger.warning("║  访问令牌: %-34s║", self._token)
+            self.logger.warning("╚══════════════════════════════════════════════╝")
+            self.logger.warning("")
     async def on_unload(self, event: dict) -> bool:
         if self._cluster:
             await self._cluster.close()
@@ -113,7 +160,7 @@ class Main(BaseModule):
     def _verify_token(self, provided: str | None) -> bool:
         if not provided:
             return False
-        return secrets.compare_digest(str(provided), self._token)
+        return secrets.compare_digest(str(provided).encode('utf-8'), self._token.encode('utf-8'))
 
     def register_view(self, *, id: str, title: str = "", title_en: str = "",
                       icon_svg: str = "", html_content: str = "",
@@ -321,9 +368,14 @@ class Main(BaseModule):
         async def log_all_events(data: dict):
             self._add_event_log(data)
         
+        # 注册 wildcard 处理器捕获所有生命周期事件（submit_event 格式自带 event 字段）
         @self.sdk.lifecycle.on("*")
-        async def log_lifecycle_events(data: dict):
+        async def log_all_lifecycle(data: dict):
+            event_type = data.get("event")
+            if not event_type:
+                return  # emit() 调用不含 event 字段，跳过
             self._add_lifecycle_log(data)
+            self._lifecycle_counts[event_type] = self._lifecycle_counts.get(event_type, 0) + 1
 
     def _add_event_log(self, data: dict):
         entry = {
@@ -706,6 +758,11 @@ class Main(BaseModule):
             mem["system_total_gb"] = round(vm.total / 1024 / 1024 / 1024, 2)
             mem["system_available_gb"] = round(vm.available / 1024 / 1024 / 1024, 2)
             
+            try:
+                mem["system_cpu_percent"] = round(psutil.cpu_percent(interval=0.1), 1)
+            except Exception:
+                mem["system_cpu_percent"] = 0.0
+            
             swap = psutil.swap_memory()
             mem["swap_percent"] = round(swap.percent, 1)
             mem["swap_used_mb"] = round(swap.used / 1024 / 1024, 1)
@@ -870,6 +927,7 @@ class Main(BaseModule):
         
         # 生命周期相关 API
         r.register_http_route(mn, "/api/lifecycle", handler=self._api_lifecycle, methods=["GET"])
+        r.register_http_route(mn, "/api/lifecycle/clear", handler=self._api_lifecycle_clear, methods=["POST"])
         
         # 性能监控相关 API
         r.register_http_route(mn, "/api/performance", handler=self._api_performance, methods=["GET"])
@@ -2072,6 +2130,12 @@ class Main(BaseModule):
                         if log_level != level:
                             continue
                 
+                # 提取日志级别
+                log_level = ""
+                level_match = re.search(r'\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]', message)
+                if level_match:
+                    log_level = level_match.group(1)
+                
                 # 搜索过滤
                 if search and search not in message.lower():
                     continue
@@ -2080,6 +2144,7 @@ class Main(BaseModule):
                     "module": module_name,
                     "timestamp": timestamp_str,
                     "message": message,
+                    "level": log_level,
                     "full": log_entry
                 })
         
@@ -2111,6 +2176,15 @@ class Main(BaseModule):
             "events": list(self._lifecycle_log),
             "total": len(self._lifecycle_log)
         })
+    
+    async def _api_lifecycle_clear(self, request: Request) -> JSONResponse:
+        """清空生命周期事件"""
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        
+        self._lifecycle_log.clear()
+        self._lifecycle_counts.clear()
+        return JSONResponse({"success": True})
 
     # ========== 性能监控相关 API ==========
     
@@ -2130,7 +2204,8 @@ class Main(BaseModule):
         
         return JSONResponse({
             "system": system_status,
-            "websocket": ws_stats
+            "websocket": ws_stats,
+            "lifecycle_counts": self._lifecycle_counts
         })
 
     # ========== API 路由列表相关 API ==========
