@@ -174,108 +174,125 @@
                 <div class="page active" id="p-dashboard">
                     <h1 class="page-title" data-i18n="dashboard"></h1>
                     <p class="page-desc" id="fwDesc"></p>
-                    <div id="statGrid" style="margin-bottom:20px"></div>
-                    <div class="grid-3" style="margin-bottom:20px">
-                        <div class="card">
-                            <div class="card-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                </svg>
-                                <span data-i18n="cpu_usage"></span>
-                            </div>
-                            <div class="card-body">
-                                <div class="perf-card-body">
-                                    <svg class="circular-progress" viewBox="0 0 36 36">
-                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
-                                        <circle id="cpuProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
-                                        <text id="cpuProgressText" class="circular-progress-text" x="18" y="18">--%</text>
-                                    </svg>
-                                    <div class="perf-details">
-                                        <div style="font-size:24px;font-weight:700" id="cpuUsage">--%</div>
-                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="process_cpu"></div>
-                                        <div class="progress-bar-wrap"><div id="cpuBar" class="progress-bar-fill" style="width:0%"></div></div>
-                                    </div>
-                                </div>
-                                <div class="perf-card-body" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
-                                    <svg class="circular-progress" viewBox="0 0 36 36">
-                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
-                                        <circle id="sysCpuCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
-                                        <text id="sysCpuText" class="circular-progress-text" x="18" y="18">--%</text>
-                                    </svg>
-                                    <div class="perf-details">
-                                        <div style="font-size:24px;font-weight:700" id="sysCpuVal">--%</div>
-                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="system_cpu"></div>
-                                        <div class="progress-bar-wrap"><div id="sysCpuBar" class="progress-bar-fill" style="width:0%"></div></div>
-                                    </div>
-                                </div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--tx-s);border-top:1px solid var(--bd);padding-top:8px;margin-top:4px">
-                                    <span data-i18n="cpu_user"></span><span id="cpuUser" style="color:var(--tx-p);font-weight:500;text-align:right">-- s</span>
-                                    <span data-i18n="cpu_system"></span><span id="cpuSys" style="color:var(--tx-p);font-weight:500;text-align:right">-- s</span>
-                                    <span data-i18n="instance_threads"></span><span id="cpuThreads" style="color:var(--tx-p);font-weight:500;text-align:right">--</span>
-                                </div>
-                            </div>
+                    <div id="statGrid" style="margin-bottom:24px"></div>
+                    <!-- 性能监控 -->
+                    <div class="perf-grid" style="margin-bottom:24px">
+                        <!-- CPU -->
+                        <div class="perf-section" id="cpuSection">
+                            <svg class="circular-progress" viewBox="0 0 36 36">
+                                <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                <circle id="cpuProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                <text id="cpuProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                            </svg>
+                            <div class="perf-ring-label" data-i18n="cpu_usage"></div>
                         </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
-                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                                </svg>
-                                <span data-i18n="memory_usage"></span>
-                            </div>
-                            <div class="card-body">
-                                <div class="perf-card-body">
-                                    <svg class="circular-progress" viewBox="0 0 36 36">
-                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
-                                        <circle id="memProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
-                                        <text id="memProgressText" class="circular-progress-text" x="18" y="18">--%</text>
-                                    </svg>
-                                    <div class="perf-details">
-                                        <div style="font-size:24px;font-weight:700" id="procMemPct">--%</div>
-                                        <div style="font-size:12px;color:var(--tx-s)"><span data-i18n="rss_memory"></span> <span id="procMemVal" style="font-weight:500">--</span></div>
-                                        <div class="progress-bar-wrap"><div id="procMemBar" class="progress-bar-fill" style="width:0%"></div></div>
-                                    </div>
-                                </div>
-                                <div class="perf-card-body" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
-                                    <svg class="circular-progress" viewBox="0 0 36 36">
-                                        <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
-                                        <circle id="sysMemCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
-                                        <text id="sysMemText" class="circular-progress-text" x="18" y="18">--%</text>
-                                    </svg>
-                                    <div class="perf-details">
-                                        <div style="font-size:24px;font-weight:700" id="sysMemVal">--%</div>
-                                        <div style="font-size:12px;color:var(--tx-s)" data-i18n="system_memory"></div>
-                                        <div class="progress-bar-wrap"><div id="sysMemBar" class="progress-bar-fill" style="width:0%"></div></div>
-                                    </div>
-                                </div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--tx-s);border-top:1px solid var(--bd);padding-top:8px;margin-top:4px">
-                                    <span data-i18n="swap_memory"></span><span id="swapMem" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
-                                    <span data-i18n="io_read"></span><span id="ioRead" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
-                                    <span data-i18n="io_write"></span><span id="ioWrite" style="color:var(--tx-p);font-weight:500;text-align:right">-- MB</span>
-                                </div>
-                            </div>
+                        <!-- 内存 -->
+                        <div class="perf-section" id="memSection">
+                            <svg class="circular-progress" viewBox="0 0 36 36">
+                                <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                <circle id="memProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                <text id="memProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                            </svg>
+                            <div class="perf-ring-label"><span data-i18n="memory_usage"></span> <span id="procMemVal" style="font-weight:600">--</span></div>
                         </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="16" x2="12" y2="12"/>
-                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
-                                </svg>
-                                <span data-i18n="instance_info"></span>
+                        <!-- 实例信息 -->
+                        <div class="perf-info-section">
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_uptime"></span>
+                                <span class="perf-info-value" id="instUptime">--</span>
                             </div>
-                            <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px">
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_uptime"></div><div id="instUptime" class="stat-value-sm">--</div></div>
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_threads"></div><div id="instThreads" class="stat-value-sm">--</div></div>
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_platform"></div><div id="instPlatform" style="font-size:12px;font-weight:600;color:var(--tx-p)">--</div></div>
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_connections"></div><div id="instConnections" class="stat-value-sm">--</div></div>
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_pid"></div><div id="instPid" class="stat-value-sm">--</div></div>
-                                <div class="stat-item"><div class="stat-label" data-i18n="instance_open_files"></div><div id="instOpenFiles" class="stat-value-sm">--</div></div>
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_threads"></span>
+                                <span class="perf-info-value" id="instThreads">--</span>
+                            </div>
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_connections"></span>
+                                <span class="perf-info-value" id="instConnections">--</span>
                             </div>
                         </div>
                     </div>
-                    <div class="grid-2">
+                    <!-- CPU详情弹窗 -->
+                    <div class="popover" id="cpuDetailPopover">
+                        <div class="popover-header">
+                            <span class="popover-title" data-i18n="cpu_details"></span>
+                            <button class="popover-close" id="cpuPopoverClose">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="popover-content">
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="process_cpu"></span>
+                                <span class="popover-item-value" id="cpuProcPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_cpu"></span>
+                                <span class="popover-item-value" id="cpuSysPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="cpu_user"></span>
+                                <span class="popover-item-value" id="cpuUser">-- s</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="cpu_system"></span>
+                                <span class="popover-item-value" id="cpuSys">-- s</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="instance_threads"></span>
+                                <span class="popover-item-value" id="cpuThreads">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 内存详情弹窗 -->
+                    <div class="popover" id="memDetailPopover">
+                        <div class="popover-header">
+                            <span class="popover-title" data-i18n="memory_details"></span>
+                            <button class="popover-close" id="memPopoverClose">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="popover-content">
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="rss_memory"></span>
+                                <span class="popover-item-value" id="memRss">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_memory"></span>
+                                <span class="popover-item-value" id="sysMemPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="vms_memory"></span>
+                                <span class="popover-item-value" id="vmsMem">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_total"></span>
+                                <span class="popover-item-value" id="sysTotal">-- GB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_available"></span>
+                                <span class="popover-item-value" id="sysAvail">-- GB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="swap_memory"></span>
+                                <span class="popover-item-value" id="swapMem">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="io_read"></span>
+                                <span class="popover-item-value" id="ioRead">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="io_write"></span>
+                                <span class="popover-item-value" id="ioWrite">-- MB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 适配器和模块 -->
+                    <div class="grid-2" style="margin-bottom:24px">
                         <div class="card">
                             <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -381,13 +398,6 @@
                     <p class="page-desc" data-i18n="event_builder_desc"></p>
                     <div class="builder-toolbar">
                         <div style="flex:1"></div>
-                        <button class="btn btn-secondary btn-sm" onclick="previewEvent()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <span data-i18n="preview"></span>
-                        </button>
                         <button class="btn btn-primary btn-sm" onclick="submitEvent()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
                                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -1072,7 +1082,7 @@
                 <div class="page" id="p-about">
                     <h1 class="page-title" data-i18n="about"></h1>
                     <div class="about-hero">
-                        <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/mascot-hero.png" alt="ErisPulse" class="about-mascot">
+                        <img src="/Dashboard/static/res/about/mascot-hero.png" alt="ErisPulse" class="about-mascot">
                         <div class="about-hero-text">
                             <h2 class="about-title">ErisPulse</h2>
                             <p class="about-tagline" data-i18n="about_tagline"></p>
@@ -1083,28 +1093,38 @@
                     </div>
                     <div class="about-grid">
                         <div class="about-feature">
-                            <div class="about-feature-icon">&#9889;</div>
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            </div>
                             <div class="about-feature-title" data-i18n="about_feat_event_title"></div>
                             <div class="about-feature-desc" data-i18n="about_feat_event_desc"></div>
                         </div>
                         <div class="about-feature">
-                            <div class="about-feature-icon">&#127760;</div>
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
                             <div class="about-feature-title" data-i18n="about_feat_cross_title"></div>
                             <div class="about-feature-desc" data-i18n="about_feat_cross_desc"></div>
                         </div>
                         <div class="about-feature">
-                            <div class="about-feature-icon">&#129513;</div>
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.611a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.685a.98.98 0 0 1 .837-.276c.47.07.802.48.968.925a2.501 2.501 0 1 0 3.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 0 1 .276-.837l1.61-1.611A2.404 2.404 0 0 1 12 2c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
                             <div class="about-feature-title" data-i18n="about_feat_module_title"></div>
                             <div class="about-feature-desc" data-i18n="about_feat_module_desc"></div>
                         </div>
                         <div class="about-feature">
-                            <div class="about-feature-icon">&#128260;</div>
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                            </div>
                             <div class="about-feature-title" data-i18n="about_feat_reload_title"></div>
                             <div class="about-feature-desc" data-i18n="about_feat_reload_desc"></div>
                         </div>
                     </div>
                     <div class="about-card about-star-cta">
-                        <div class="about-star-icon">&#11088;</div>
+                        <div class="about-star-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
                         <p data-i18n="about_star_hint"></p>
                         <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="about-star-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
