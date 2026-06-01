@@ -124,7 +124,7 @@ class Main(BaseModule):
             self.logger.warning("╔══════════════════════════════════════════════╗")
             self.logger.warning("║           ErisPulse Dashboard                ║")
             self.logger.warning("║  访问地址: /Dashboard                       ║")
-            self.logger.warning("║  访问令牌: %-34s║", self._token)
+            self.logger.warning("║  访问令牌: %-34s", self._token)
             self.logger.warning("╚══════════════════════════════════════════════╝")
             self.logger.warning("")
     async def on_unload(self, event: dict) -> bool:
@@ -365,12 +365,7 @@ class Main(BaseModule):
         self._command_middleware_func = _command_middleware
 
     def _setup_event_interceptors(self):
-        @self.sdk.adapter.on("*")
-        async def log_all_events(data: dict):
-            self._add_event_log(data)
-        
-        # 为每个生命周期事件单独注册 handler（emit() 不含 event 字段，通配符无法识别）
-        _all_events = [
+        _all_events = {
             "core.init.start", "core.init.complete", "core.uninit.complete",
             "module.register", "module.load", "module.init", "module.unload",
             "adapter.load", "adapter.start", "adapter.status.change", "adapter.stop", "adapter.stopped",
@@ -383,24 +378,27 @@ class Main(BaseModule):
             "message.sending", "message.sent",
             "command.matched", "command.executed",
             "config.set",
-        ]
-        def _make_handler(event_name):
-            async def _handler(data: dict):
-                entry = data if data.get("event") else {"event": event_name, "timestamp": time.time(), "data": data, "source": "", "msg": ""}
-                self._add_lifecycle_log(entry)
-                self._lifecycle_counts[event_name] = self._lifecycle_counts.get(event_name, 0) + 1
-            return _handler
+        }
+
+        @self.sdk.adapter.on("*")
+        async def log_all_events(data: dict):
+            self.logger.Error(f"Event: {data.get('event')}")
+            self._add_event_log(data)
+
         for _ev in _all_events:
-            self.sdk.lifecycle.register(_ev, _make_handler(_ev))
-        
-        # 通配符兜底：捕获 submit_event 格式的事件（含 event 字段但不在上面列表中）
+            @self.sdk.lifecycle.on(_ev)
+            async def _on_lifecycle_event(data: dict, _name=_ev):
+                entry = data if data.get("event") else {"event": _name, "timestamp": time.time(), "data": data, "source": "", "msg": ""}
+                self._add_lifecycle_log(entry)
+                self._lifecycle_counts[_name] = self._lifecycle_counts.get(_name, 0) + 1
+
         @self.sdk.lifecycle.on("*")
         async def _lifecycle_catch_all(data: dict):
             event_type = data.get("event")
             if not event_type:
                 return
             if event_type in _all_events:
-                return  # 已由单独 handler 处理，跳过
+                return
             self._add_lifecycle_log(data)
             self._lifecycle_counts[event_type] = self._lifecycle_counts.get(event_type, 0) + 1
 
