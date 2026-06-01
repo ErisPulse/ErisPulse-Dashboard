@@ -72,6 +72,7 @@ class Main(BaseModule):
         self._loop: asyncio.AbstractEventLoop | None = None
         self._lifecycle_log: list[dict] = []
         self._max_lifecycle_log = 200
+        self._max_per_type = 30   
         self._audit_log: list[dict] = []
         self._max_audit_log = 500
         self._command_rules: dict[str, dict] = {}
@@ -114,7 +115,7 @@ class Main(BaseModule):
             self.logger.warning("╔══════════════════════════════════════════════╗")
             self.logger.warning("║           ErisPulse Dashboard                ║")
             self.logger.warning("║  访问地址: /Dashboard                       ║")
-            self.logger.warning("║  访问令牌: %-34s║", self._token)
+            self.logger.warning("║  访问令牌: %-34s", self._token)
             self.logger.warning("║  令牌已保存至配置文件 Dashboard.token         ║")
             self.logger.warning("╚══════════════════════════════════════════════╝")
             self.logger.warning("")
@@ -432,7 +433,7 @@ class Main(BaseModule):
         asyncio.ensure_future(self._broadcast_event(entry))
     
     def _add_lifecycle_log(self, data: dict):
-        """添加生命周期事件日志"""
+        """添加生命周期事件日志（按类型限制数量）"""
         entry = {
             "event": data.get("event", ""),
             "timestamp": data.get("timestamp", time.time()),
@@ -441,8 +442,28 @@ class Main(BaseModule):
             "msg": data.get("msg", ""),
         }
         self._lifecycle_log.append(entry)
+        
+         
+        type_count = {}
+        for e in self._lifecycle_log:
+            t = e.get("event", "").split(".")[0]   
+            type_count[t] = type_count.get(t, 0) + 1
+        
+         
         if len(self._lifecycle_log) > self._max_lifecycle_log:
-            self._lifecycle_log = self._lifecycle_log[-self._max_lifecycle_log :]
+             
+            groups = {}
+            for e in self._lifecycle_log:
+                t = e.get("event", "").split(".")[0]
+                groups.setdefault(t, []).append(e)
+            
+            trimmed = []
+            for t, items in groups.items():
+                trimmed.extend(items[-self._max_per_type:])
+            
+             
+            trimmed.sort(key=lambda x: x.get("timestamp", 0))
+            self._lifecycle_log = trimmed[-self._max_lifecycle_log:]
 
     async def _broadcast_event(self, event: dict):
         if not self._ws_clients:

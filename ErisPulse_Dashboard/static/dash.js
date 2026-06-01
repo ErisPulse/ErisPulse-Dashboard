@@ -77,6 +77,8 @@ const I18N = {
         system_memory: '系统内存', system_cpu: '系统 CPU', system_total_memory: '系统总内存', available_memory: '可用内存',
         swap_memory: '交换内存', io_read: 'IO 读取', io_write: 'IO 写入',
         active_connections: '活跃连接', system_details: '系统详情',
+        view_details: '查看详情', cpu_details: 'CPU 详情', memory_details: '内存详情',
+        vms_memory: 'VMS 内存', system_total: '系统总内存', system_available: '可用内存', swap_percent: '交换内存使用率',
         instance_info: '实例信息', instance_uptime: '运行时长', instance_platform: '系统平台',
         instance_pid: '进程 PID', instance_threads: '线程数', instance_connections: '连接数',
         instance_listening: '监听端口', instance_open_files: '打开文件', instance_ws_clients: 'WS 客户端',
@@ -379,6 +381,8 @@ const I18N = {
         system_memory: 'System Memory', system_cpu: 'System CPU', system_total_memory: 'System Total Memory', available_memory: 'Available Memory',
         swap_memory: 'Swap Memory', io_read: 'I/O Read', io_write: 'I/O Write',
         active_connections: 'Active Connections', system_details: 'System Details',
+        view_details: 'View Details', cpu_details: 'CPU Details', memory_details: 'Memory Details',
+        vms_memory: 'VMS Memory', system_total: 'System Total', system_available: 'Available Memory', swap_percent: 'Swap Usage',
         instance_info: 'Instance Info', instance_uptime: 'Uptime', instance_platform: 'Platform',
         instance_pid: 'PID', instance_threads: 'Threads', instance_connections: 'Connections',
         instance_listening: 'Listening', instance_open_files: 'Open Files', instance_ws_clients: 'WS Clients',
@@ -1982,7 +1986,12 @@ function go(name, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const page = document.getElementById('p-' + name);
-    if (page) page.classList.add('active');
+    if (page) {
+        page.classList.add('active');
+         
+        page.classList.add('anim-enter');
+        setTimeout(() => page.classList.remove('anim-enter'), 600);
+    }
     if (el) el.classList.add('active');
     closeSidebar();
 
@@ -3751,7 +3760,38 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sessionId) {
         sessionId.addEventListener('input', updateEventPreview);
     }
+    
+     
+    initRippleEffects();
 });
+
+ 
+function initRippleEffects() {
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn');
+        if (!btn) return;
+        
+        const rect = btn.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        btn.style.setProperty('--ripple-x', x + '%');
+        btn.style.setProperty('--ripple-y', y + '%');
+        btn.classList.remove('ripple');
+        void btn.offsetWidth;  
+        btn.classList.add('ripple');
+        
+        setTimeout(() => btn.classList.remove('ripple'), 600);
+    });
+}
+
+ 
+function animateContributors() {
+    const items = document.querySelectorAll('.about-contrib-item');
+    items.forEach((item, i) => {
+        item.style.animationDelay = (i * 0.05) + 's';
+    });
+}
 
  
 
@@ -3903,31 +3943,15 @@ async function loadLifecycle() {
         
         const time = new Date(event.timestamp * 1000).toLocaleTimeString();
         
-        let duration = '';
-        if (event.data && event.data.duration) {
-            const dur = event.data.duration;
-            duration = `<span class="lifecycle-duration">${dur.toFixed(2)}s</span>`;
-        }
-        
         const hasData = event.data && Object.keys(event.data).length > 0;
         const dataJson = hasData ? JSON.stringify(event.data, null, 2) : '';
-        const source = event.source ? `<span class="lifecycle-source">${esc(event.source)}</span>` : '';
         
         return `<div class="lifecycle-item${hasData ? ' has-data' : ''}" ${hasData ? `onclick="this.classList.toggle('expanded')"` : ''}>
             <span class="lifecycle-badge ${esc(eventType)}">${esc(eventType)}</span>
-            <div class="lifecycle-content">
-                <div class="lifecycle-header">
-                    <span class="lifecycle-event">${esc(event.event)}</span>
-                    <span class="lifecycle-time">${time}</span>
-                </div>
-                <div class="lifecycle-details">
-                    <span class="lifecycle-desc">${esc(event.msg || eventName)}</span>
-                    ${source}
-                    ${duration}
-                    ${hasData ? '<span class="lifecycle-expand-hint">▸</span>' : ''}
-                </div>
-                ${hasData ? `<div class="lifecycle-data"><pre>${esc(dataJson)}</pre></div>` : ''}
-            </div>
+            <span class="lifecycle-event">${esc(eventName)}</span>
+            <span class="lifecycle-time">${time}</span>
+            ${hasData ? '<span class="lifecycle-expand-hint">▸</span>' : ''}
+            ${hasData ? `<div class="lifecycle-data"><pre>${esc(dataJson)}</pre></div>` : ''}
         </div>`;
     }).join('');
     
@@ -3967,6 +3991,7 @@ async function loadAboutContributors() {
                 <span class="about-contrib-name">${esc(c.login)}</span>
             </a>
         `).join('');
+        animateContributors();
     } catch {
         container.innerHTML = '<span class="about-contrib-empty" data-i18n="about_contrib_failed"></span>';
     }
@@ -4011,17 +4036,6 @@ async function loadPerformance() {
     var procCpu = memory.cpu_percent || 0;
     var sysCpu = memory.system_cpu_percent || 0;
     _updateCircle('cpuProgressCircle', 'cpuProgressText', procCpu);
-    if (document.getElementById('cpuUsage')) document.getElementById('cpuUsage').textContent = fmt(procCpu, '%');
-    _updateBar('cpuBar', procCpu);
-    _updateCircle('sysCpuCircle', 'sysCpuText', sysCpu);
-    if (document.getElementById('sysCpuVal')) document.getElementById('sysCpuVal').textContent = fmt(sysCpu, '%');
-    _updateBar('sysCpuBar', sysCpu);
-    
-     
-    const setEl = (id, v, unit = '') => { const el = document.getElementById(id); if (el) el.textContent = fmt(v, unit); };
-    setEl('cpuUser', process.cpu_user, ' s');
-    setEl('cpuSys', process.cpu_system, ' s');
-    if (document.getElementById('cpuThreads')) document.getElementById('cpuThreads').textContent = String(process.threads || '--');
     
      
     var rssMb = memory.rss_mb || 0;
@@ -4030,26 +4044,29 @@ async function loadPerformance() {
     var sysPct = memory.system_percent || 0;
     
     _updateCircle('memProgressCircle', 'memProgressText', procMemPct);
-    if (document.getElementById('procMemPct')) document.getElementById('procMemPct').textContent = fmt(procMemPct, '%');
     if (document.getElementById('procMemVal')) document.getElementById('procMemVal').textContent = fmt(rssMb, ' MB');
-    _updateBar('procMemBar', procMemPct);
-    _updateCircle('sysMemCircle', 'sysMemText', sysPct);
-    if (document.getElementById('sysMemVal')) document.getElementById('sysMemVal').textContent = fmt(sysPct, '%');
-    _updateBar('sysMemBar', sysPct);
     
      
+    const setEl = (id, v, unit = '') => { const el = document.getElementById(id); if (el) el.textContent = fmt(v, unit); };
+    if (document.getElementById('cpuProcPct')) document.getElementById('cpuProcPct').textContent = fmt(procCpu, '%');
+    if (document.getElementById('cpuSysPct')) document.getElementById('cpuSysPct').textContent = fmt(sysCpu, '%');
+    setEl('cpuUser', process.cpu_user, ' s');
+    setEl('cpuSys', process.cpu_system, ' s');
+    if (document.getElementById('cpuThreads')) document.getElementById('cpuThreads').textContent = String(process.threads || '--');
+    
+    if (document.getElementById('memRss')) document.getElementById('memRss').textContent = fmt(rssMb, ' MB');
+    if (document.getElementById('sysMemPct')) document.getElementById('sysMemPct').textContent = fmt(sysPct, '%');
+    setEl('vmsMem', memory.vms_mb, ' MB');
+    setEl('sysTotal', memory.system_total_gb, ' GB');
+    setEl('sysAvail', memory.system_available_gb, ' GB');
     setEl('swapMem', memory.swap_used_mb, ' MB');
     setEl('ioRead', process.read_bytes_mb, ' MB');
     setEl('ioWrite', process.write_bytes_mb, ' MB');
     
      
-    var setInst = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
-    setInst('instUptime', system.uptime_human || '--');
-    setInst('instPlatform', (system.platform || '') + ' ' + (system.platform_release || ''));
-    setInst('instPid', system.pid != null ? String(system.pid) : '--');
-    setInst('instThreads', String(process.threads || '--'));
-    setInst('instConnections', String(process.connections || '--'));
-    setInst('instOpenFiles', String(process.open_files || '--'));
+    if (document.getElementById('instUptime')) document.getElementById('instUptime').textContent = system.uptime_human || '--';
+    if (document.getElementById('instThreads')) document.getElementById('instThreads').textContent = String(process.threads || '--');
+    if (document.getElementById('instConnections')) document.getElementById('instConnections').textContent = String(process.connections || '--');
      
     window._perfData = {
         vms: memory.vms_mb,
@@ -4064,6 +4081,150 @@ async function loadPerformance() {
         sysAvail: memory.system_available_gb,
     };
 }
+
+ 
+function initPopovers() {
+     
+    function positionPopover(trigger, popover) {
+        const rect = trigger.getBoundingClientRect();
+        const gap = 12;
+        
+         
+        popover.style.visibility = 'hidden';
+        popover.style.display = 'block';
+        const popoverHeight = popover.offsetHeight;
+        const popoverWidth = popover.offsetWidth;
+        popover.style.visibility = '';
+        popover.style.display = '';
+        
+        const viewportH = window.innerHeight;
+        const viewportW = window.innerWidth;
+        
+         
+        let top = rect.top - popoverHeight - gap;
+        let left = rect.left + (rect.width - popoverWidth) / 2;
+        
+         
+        if (top < gap) {
+            top = rect.bottom + gap;
+        }
+        
+         
+        if (top + popoverHeight > viewportH - gap) {
+            const spaceAbove = rect.top - gap;
+            const spaceBelow = viewportH - rect.bottom - gap;
+            if (spaceAbove > spaceBelow) {
+                top = rect.top - popoverHeight - gap;
+            } else {
+                top = rect.bottom + gap;
+            }
+        }
+        
+         
+        if (left < gap) {
+            left = gap;
+        }
+        if (left + popoverWidth > viewportW - gap) {
+            left = viewportW - popoverWidth - gap;
+        }
+        
+        popover.style.top = top + 'px';
+        popover.style.left = left + 'px';
+    }
+    
+     
+    const cpuSection = document.getElementById('cpuSection');
+    const cpuPopover = document.getElementById('cpuDetailPopover');
+    const cpuClose = document.getElementById('cpuPopoverClose');
+    
+    if (cpuSection && cpuPopover) {
+        let cpuPinned = false;
+        
+         
+        cpuSection.addEventListener('click', function(e) {
+            if (e.target.closest('.popover-close')) {
+                cpuPinned = false;
+                cpuPopover.classList.remove('show');
+                return;
+            }
+             
+            if (memPopover) memPopover.classList.remove('show');
+            
+            cpuPinned = !cpuPinned;
+            if (cpuPinned) {
+                positionPopover(cpuSection, cpuPopover);
+            }
+            cpuPopover.classList.toggle('show', cpuPinned);
+        });
+    }
+    
+     
+    const memSection = document.getElementById('memSection');
+    const memPopover = document.getElementById('memDetailPopover');
+    const memClose = document.getElementById('memPopoverClose');
+    
+    if (memSection && memPopover) {
+        let memPinned = false;
+        
+         
+        memSection.addEventListener('click', function(e) {
+            if (e.target.closest('.popover-close')) {
+                memPinned = false;
+                memPopover.classList.remove('show');
+                return;
+            }
+             
+            if (cpuPopover) cpuPopover.classList.remove('show');
+            
+            memPinned = !memPinned;
+            if (memPinned) {
+                positionPopover(memSection, memPopover);
+            }
+            memPopover.classList.toggle('show', memPinned);
+        });
+    }
+    
+     
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#cpuSection') && !e.target.closest('#cpuDetailPopover')) {
+            if (cpuPopover) cpuPopover.classList.remove('show');
+        }
+        if (!e.target.closest('#memSection') && !e.target.closest('#memDetailPopover')) {
+            if (memPopover) memPopover.classList.remove('show');
+        }
+    });
+    
+     
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (cpuPopover) cpuPopover.classList.remove('show');
+            if (memPopover) memPopover.classList.remove('show');
+        }
+    });
+    
+     
+    window.addEventListener('resize', function() {
+        if (cpuPopover && cpuPopover.classList.contains('show')) {
+            positionPopover(cpuSection, cpuPopover);
+        }
+        if (memPopover && memPopover.classList.contains('show')) {
+            positionPopover(memSection, memPopover);
+        }
+    });
+    
+     
+    window.addEventListener('scroll', function() {
+        if (cpuPopover && cpuPopover.classList.contains('show')) {
+            cpuPopover.classList.remove('show');
+        }
+        if (memPopover && memPopover.classList.contains('show')) {
+            memPopover.classList.remove('show');
+        }
+    }, { passive: true });
+}
+
+ 
+document.addEventListener('DOMContentLoaded', initPopovers);
 
  
 
@@ -4209,53 +4370,50 @@ async function loadMessageStats() {
     
      
     const typeStats = d.by_type || {};
-    var typeColors = ['var(--accent)', 'var(--ok-c)', 'var(--pr-c)', 'var(--wr-c)', 'var(--sc-c)', 'var(--lk)'];
     var ti = 0;
     const typeHtml = Object.entries(typeStats).map(([type, count]) => {
         const total = d.total_events || 1;
         const percent = ((count / total) * 100).toFixed(1);
-        var c = typeColors[ti % typeColors.length]; ti++;
         return '<div class="stat-bar-chart">' +
             '<span class="stat-bar-label">' + esc(type) + '</span>' +
-            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%;background:' + c + '"><span class="stat-bar-fill-text">' + (percent > 15 ? count : '') + '</span></div></div>' +
-            '<span class="stat-bar-value">' + count + ' (' + percent + '%)</span></div>';
+            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%"></div></div>' +
+            '<span class="stat-bar-value">' + count + '</span></div>';
     }).join('');
     document.getElementById('msgTypeStats').innerHTML = typeHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
      
     const platformStats = d.by_platform || {};
-    ti = 0;
     const platformHtml = Object.entries(platformStats).map(([platform, count]) => {
         const total = d.total_events || 1;
         const percent = ((count / total) * 100).toFixed(1);
-        var c = typeColors[ti % typeColors.length]; ti++;
         return '<div class="stat-bar-chart">' +
             '<span class="stat-bar-label">' + esc(platform) + '</span>' +
-            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%;background:' + c + '"><span class="stat-bar-fill-text">' + (percent > 15 ? count : '') + '</span></div></div>' +
-            '<span class="stat-bar-value">' + count + ' (' + percent + '%)</span></div>';
+            '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + percent + '%"></div></div>' +
+            '<span class="stat-bar-value">' + count + '</span></div>';
     }).join('');
     document.getElementById('msgPlatformStats').innerHTML = platformHtml || '<div style="color:var(--tx-s);font-size:13px">' + t('no_data') + '</div>';
     
      
     const hourlyStats = d.hourly || {};
     const now = Date.now() / 1000;
-    const hourlyHtml = [];
+    const bars = [];
     var maxCount = Math.max(...Object.values(hourlyStats), 1);
     
     for (let i = 23; i >= 0; i--) {
         const hourKey = Math.floor((now - i * 3600) / 3600) * 3600;
         const count = hourlyStats[hourKey] || 0;
-        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-        var barColor = count > maxCount * 0.7 ? 'var(--wr-c)' : count > 0 ? 'var(--accent)' : 'var(--bd)';
-        const hourLabel = new Date(hourKey * 1000).getHours() + ':00';
-        
-        hourlyHtml.push('<div style="flex:1;min-width:22px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px" title="' + hourLabel + ': ' + count + ' msgs">' +
-            '<div style="width:100%;max-width:14px;height:' + (height || 2) + '%;min-height:' + (count > 0 ? '4px' : '2px') + ';background:' + barColor + ';border-radius:3px 3px 0 0;transition:height .3s"></div>' +
-            (i % 4 === 0 ? '<span style="font-size:9px;color:var(--tx-t);white-space:nowrap">' + hourLabel + '</span>' : '') +
-            '</div>');
+        const height = maxCount > 0 ? Math.max((count / maxCount) * 100, 1) : 1;
+        bars.push('<div class="hourly-bar-wrap"><div class="hourly-bar" style="height:' + height + '%"></div></div>');
     }
     
-    document.getElementById('msgHourlyTrend').innerHTML = hourlyHtml.join('');
+     
+    const firstHour = new Date((now - 23 * 3600) * 1000).getHours();
+    const midHour = new Date((now - 12 * 3600) * 1000).getHours();
+    const lastHour = new Date(now * 1000).getHours();
+    
+    document.getElementById('msgHourlyTrend').innerHTML = 
+        '<div class="hourly-chart">' + bars.join('') + '</div>' +
+        '<div class="hourly-labels"><span class="hourly-label">' + firstHour + ':00</span><span class="hourly-label">' + midHour + ':00</span><span class="hourly-label">' + lastHour + ':00</span></div>';
 }
 
  
