@@ -1834,7 +1834,10 @@ class Main(BaseModule):
 
         async def _delayed_restart():
             await asyncio.sleep(0.5)
-            await self.sdk.restart()
+            if hasattr(self.sdk, 'hard_restart'):
+                await self.sdk.hard_restart()
+            else:
+                await self.sdk.restart()
 
         self._add_audit_log("restart_framework", "", request)
         asyncio.create_task(_delayed_restart())
