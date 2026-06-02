@@ -1698,6 +1698,22 @@ body {
     align-items: center
 }
 
+.filter-bar-inputs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex: 1;
+    min-width: 0
+}
+
+.filter-bar-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto
+}
+
 .filter-bar select {
     padding: 8px 14px;
     border: 1px solid var(--bd);
@@ -3051,6 +3067,8 @@ select.form-select::-ms-expand {
 
 .log-pause-btn { opacity: 0.5; transition: opacity .2s }
 .log-pause-btn.paused { opacity: 1; color: var(--wr-c) }
+#logSortBtn { opacity: 0.5; transition: opacity .2s }
+#logSortBtn.active { opacity: 1; color: var(--wr-c) }
 
 @media (max-width: 640px) {
     .log-entry {
@@ -3093,10 +3111,20 @@ select.form-select::-ms-expand {
         align-items: stretch
     }
 
-    #p-logs .filter-bar > select,
-    #p-logs .filter-bar > input {
+    #p-logs .filter-bar-inputs {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    #p-logs .filter-bar-inputs > select,
+    #p-logs .filter-bar-inputs > input {
         width: 100%;
         max-width: 100%
+    }
+
+    #p-logs .filter-bar-actions {
+        margin-left: 0;
+        justify-content: flex-end
     }
 }
 

@@ -97,6 +97,7 @@ const I18N = {
         test: '测试', send: '发送', query_params: 'Query 参数', request_body: '请求体', response: '响应',
         click_to_expand_routes: '点击展开查看路由', base_path: '基础路径',
         pause_scroll: '暂停滚动', resume_scroll: '恢复滚动',
+        sort_newest_top: '最新日志在上方', sort_newest_bottom: '最新日志在下方',
         force_refresh: '强制刷新',
         audit_log: '审计日志', audit_log_desc: '查看系统操作记录', all_actions: '所有操作',
         backup_restore: '备份与恢复', backup_desc: '导出或导入系统配置和存储数据',
@@ -401,6 +402,7 @@ const I18N = {
         test: 'Test', send: 'Send', query_params: 'Query Params', request_body: 'Request Body', response: 'Response',
         click_to_expand_routes: 'Click to view routes', base_path: 'Base',
         pause_scroll: 'Pause scroll', resume_scroll: 'Resume scroll',
+        sort_newest_top: 'Newest logs on top', sort_newest_bottom: 'Newest logs on bottom',
         force_refresh: 'Force Refresh',
         audit_log: 'Audit Log', audit_log_desc: 'View system operation records', all_actions: 'All Actions',
         backup_restore: 'Backup & Restore', backup_desc: 'Export or import system configuration and storage data',
@@ -703,6 +705,7 @@ const I18N = {
         test: '測試', send: '傳送', query_params: 'Query 參數', request_body: '請求體', response: '回應',
         click_to_expand_routes: '點擊展開查看路由', base_path: '基礎路徑',
         pause_scroll: '暫停滾動', resume_scroll: '恢復滾動',
+        sort_newest_top: '最新日誌在上方', sort_newest_bottom: '最新日誌在下方',
         force_refresh: '強制重新整理',
         audit_log: '審計日誌', audit_log_desc: '查看系統操作記錄', all_actions: '所有操作',
         backup_restore: '備份與還原', backup_desc: '匯出或匯入系統配置和儲存資料',
@@ -1005,6 +1008,7 @@ const I18N = {
         test: 'テスト', send: '送信', query_params: 'クエリパラメータ', request_body: 'リクエストボディ', response: 'レスポンス',
         click_to_expand_routes: 'クリックしてルートを表示', base_path: 'ベースパス',
         pause_scroll: 'スクロール停止', resume_scroll: 'スクロール再開',
+        sort_newest_top: '最新ログを上に表示', sort_newest_bottom: '最新ログを下に表示',
         force_refresh: '強制更新',
         audit_log: '監査ログ', audit_log_desc: 'システム操作記録を表示', all_actions: 'すべての操作',
         backup_restore: 'バックアップと復元', backup_desc: 'システム設定とストレージデータのエクスポート/インポート',
@@ -1308,6 +1312,7 @@ const I18N = {
         test: 'Тест', send: 'Отправить', query_params: 'Параметры запроса', request_body: 'Тело запроса', response: 'Ответ',
         click_to_expand_routes: 'Нажмите для просмотра маршрутов', base_path: 'Базовый путь',
         pause_scroll: 'Пауза', resume_scroll: 'Продолжить',
+        sort_newest_top: 'Новые записи сверху', sort_newest_bottom: 'Новые записи снизу',
         force_refresh: 'Принудительное обновление',
         audit_log: 'Журнал аудита', audit_log_desc: 'Просмотр записей системных операций', all_actions: 'Все действия',
         backup_restore: 'Резервное копирование', backup_desc: 'Экспорт или импорт конфигурации системы и данных хранилища',
@@ -3797,6 +3802,7 @@ function animateContributors() {
 
 let _logAutoRefreshTimer = null;
 let _logPaused = false;
+let _logSortNewestBottom = true;
 let _availableModules = new Set();
 
 let _logDebounceTimer;
@@ -3823,6 +3829,16 @@ function toggleLogPause() {
         btn.classList.toggle('paused', _logPaused);
         btn.title = _logPaused ? t('resume_scroll') : t('pause_scroll');
     }
+}
+
+function toggleLogSortOrder() {
+    _logSortNewestBottom = !_logSortNewestBottom;
+    var btn = document.getElementById('logSortBtn');
+    if (btn) {
+        btn.classList.toggle('active', _logSortNewestBottom);
+        btn.title = _logSortNewestBottom ? t('sort_newest_bottom') : t('sort_newest_top');
+    }
+    loadLogs();
 }
 
 async function loadLogs() {
@@ -3860,7 +3876,8 @@ async function loadLogs() {
         return;
     }
     
-    const logHtml = logs.map(log => {
+    const sortedLogs = _logSortNewestBottom ? logs.slice().reverse() : logs;
+    const logHtml = sortedLogs.map(log => {
         const moduleEsc = esc(log.module);
         const moduleTooltip = log.module.length > 15 ? `title="${esc(log.module)}"` : '';
         var lvl = (log.level || '').toLowerCase();
@@ -3880,7 +3897,7 @@ async function loadLogs() {
     logList.innerHTML = logHtml;
     
     if (!_logPaused && (_logAutoRefreshTimer || wasNearBottom)) {
-        logList.scrollTop = logList.scrollHeight;
+        logList.scrollTop = _logSortNewestBottom ? logList.scrollHeight : 0;
     }
 }
 
