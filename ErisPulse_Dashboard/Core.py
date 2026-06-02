@@ -382,7 +382,6 @@ class Main(BaseModule):
 
         @self.sdk.adapter.on("*")
         async def log_all_events(data: dict):
-            self.logger.error(f"Event: {data.get('event')}")
             self._add_event_log(data)
 
         for _ev in _all_events:
