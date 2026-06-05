@@ -1,0 +1,1500 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>ErisPulse Dashboard</title>
+    <link rel="icon" href="res/erispulse_logo_hp.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css">
+    <link rel="stylesheet" href="dash.css">
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <button class="btn-hamburger" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+                <h1 id="appTitle">ErisPulse Dashboard</h1>
+            </div>
+                <div class="header-right">
+                    <button class="task-badge" id="taskBadge" onclick="toggleTaskPanel()" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="task-badge-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span class="task-badge-count" id="taskCount">0</span>
+                    </button>
+                    <div class="conn-badge-wrapper">
+                        <div class="conn-badge disconnected" id="connBadge">
+                            <div id="status-badge-icon"></div>
+                            <span class="conn-badge-text" id="connBadgeText" data-i18n="status_conn_disconnected"></span>
+                        </div>
+                        <div class="conn-panel" id="connPanel">
+                            <div id="status-panel-icon"></div>
+                            <div class="conn-panel-info">
+                                <div class="conn-panel-title" id="connPanelTitle"></div>
+                                <div class="conn-panel-desc" id="connPanelDesc"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="btn-icon" title="GitHub">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    </a>
+                    <button class="btn-icon" onclick="showSettings()" title="Settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                    </button>
+                </div>
+        </header>
+        <div class="task-panel" id="taskPanel">
+            <div class="task-panel-hd"><span data-i18n="task_list"></span><button class="btn-icon" onclick="clearAllTasks()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>
+            <div id="taskList" class="task-panel-body"></div>
+        </div>
+        <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+        <div class="main">
+            <nav class="sidebar" id="sidebar">
+                <div class="node-selector" id="nodeSelector">
+                    <div class="node-selector-header" onclick="toggleNodeDropdown()">
+                        <div class="node-selector-current">
+                            <span class="node-dot node-dot-local" id="nodeDot"></span>
+                            <span id="nodeSelectorLabel">本地实例</span>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-selector-arrow"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="node-dropdown" id="nodeDropdown">
+                        <div class="node-dropdown-list" id="nodeDropdownList"></div>
+                        <div class="node-dropdown-footer">
+                            <a class="node-dropdown-item" onclick="go('cluster', null); closeNodeDropdown();">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-selector-arrow"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68V3a2 2 0 014 0v.09c0 .74.44 1.31 1.08 1.51a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                                <span data-i18n="cluster_management"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-nav">
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_overview" onclick="toggleNavGroup(this)"></div>
+                        <a class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                            <span data-i18n="dashboard"></span>
+                        </a>
+                        <a class="nav-item" data-page="bots" onclick="go('bots',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/></svg>
+                            <span data-i18n="bots"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_events" onclick="toggleNavGroup(this)"></div>
+                        <a class="nav-item" data-page="event-stream" onclick="go('event-stream',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                            <span data-i18n="event_stream"></span>
+                        </a>
+                        <a class="nav-item" data-page="event-builder" onclick="go('event-builder',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <span data-i18n="event_builder"></span>
+                        </a>
+                        <a class="nav-item" data-page="commands" onclick="go('commands',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                            <span data-i18n="cmd_management"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_extensions" onclick="toggleNavGroup(this)"></div>
+                        <a class="nav-item" data-page="modules" onclick="go('modules',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span data-i18n="registered"></span>
+                        </a>
+                        <a class="nav-item" data-page="store" onclick="go('store',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                            <span data-i18n="store"></span>
+                        </a>
+                        <a class="nav-item" data-page="packages" onclick="go('packages',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                            <span data-i18n="pkg_manager"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_system" onclick="toggleNavGroup(this)"></div>
+                        <a class="nav-item" data-page="logs" onclick="go('logs',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span data-i18n="sys_logs"></span>
+                        </a>
+                        <a class="nav-item" data-page="lifecycle" onclick="go('lifecycle',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 16"/></svg>
+                            <span data-i18n="lifecycle"></span>
+                        </a>
+                        <a class="nav-item" data-page="audit" onclick="go('audit',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span data-i18n="audit_log"></span>
+                        </a>
+                        <a class="nav-item" data-page="api-routes" onclick="go('api-routes',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            <span data-i18n="api_routes"></span>
+                        </a>
+                        <a class="nav-item" data-page="cluster" onclick="go('cluster',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                            <span data-i18n="cluster_management"></span>
+                        </a>
+                    </div>
+                    <div class="nav-group">
+                        <div class="nav-group-title" data-i18n="group_tools" onclick="toggleNavGroup(this)"></div>
+                        <a class="nav-item" data-page="files" onclick="go('files',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span data-i18n="files"></span>
+                        </a>
+                        <a class="nav-item" data-page="config" onclick="go('config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                            <span data-i18n="config"></span>
+                        </a>
+                        <a class="nav-item" data-page="framework-config" onclick="go('framework-config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/></svg>
+                            <span data-i18n="framework_config"></span>
+                        </a>
+                        <a class="nav-item" data-page="about" onclick="go('about',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                            <span data-i18n="about"></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sidebar-footer">
+                    <span class="fw-ver" id="fwInfo">Loading...</span>
+                    <div class="footer-btns">
+                        <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+                    </div>
+                </div>
+            </nav>
+            <div id="demoBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;text-align:center;padding:6px 16px;font-size:12px;font-weight:600;letter-spacing:.3px;box-shadow:0 2px 8px rgba(245,158,11,.3);pointer-events:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;vertical-align:-2px;margin-right:4px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span data-i18n="demo_banner">Demo 环境仅供展示，并非真实运行数据（模拟环境）</span>
+            </div>
+            <div class="content">
+                <div class="page active" id="p-dashboard">
+                    <h1 class="page-title" data-i18n="dashboard"></h1>
+                    <p class="page-desc" id="fwDesc"></p>
+                    <div id="statGrid" style="margin-bottom:24px"></div>
+                    <!-- 性能监控 -->
+                    <div class="perf-grid" style="margin-bottom:24px">
+                        <!-- CPU -->
+                        <div class="perf-section" id="cpuSection">
+                            <svg class="circular-progress" viewBox="0 0 36 36">
+                                <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                <circle id="cpuProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                <text id="cpuProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                            </svg>
+                            <div class="perf-ring-label" data-i18n="cpu_usage"></div>
+                        </div>
+                        <!-- 内存 -->
+                        <div class="perf-section" id="memSection">
+                            <svg class="circular-progress" viewBox="0 0 36 36">
+                                <circle class="circular-progress-bg" cx="18" cy="18" r="15.9" stroke-width="4"/>
+                                <circle id="memProgressCircle" class="circular-progress-fill" cx="18" cy="18" r="15.9" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="100"/>
+                                <text id="memProgressText" class="circular-progress-text" x="18" y="18">--%</text>
+                            </svg>
+                            <div class="perf-ring-label"><span data-i18n="memory_usage"></span> <span id="procMemVal" style="font-weight:600">--</span></div>
+                        </div>
+                        <!-- 实例信息 -->
+                        <div class="perf-info-section">
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_uptime"></span>
+                                <span class="perf-info-value" id="instUptime">--</span>
+                            </div>
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_threads"></span>
+                                <span class="perf-info-value" id="instThreads">--</span>
+                            </div>
+                            <div class="perf-info-item">
+                                <span class="perf-info-label" data-i18n="instance_connections"></span>
+                                <span class="perf-info-value" id="instConnections">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- CPU详情弹窗 -->
+                    <div class="popover" id="cpuDetailPopover">
+                        <div class="popover-header">
+                            <span class="popover-title" data-i18n="cpu_details"></span>
+                            <button class="popover-close" id="cpuPopoverClose">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="popover-content">
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="process_cpu"></span>
+                                <span class="popover-item-value" id="cpuProcPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_cpu"></span>
+                                <span class="popover-item-value" id="cpuSysPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="cpu_user"></span>
+                                <span class="popover-item-value" id="cpuUser">-- s</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="cpu_system"></span>
+                                <span class="popover-item-value" id="cpuSys">-- s</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="instance_threads"></span>
+                                <span class="popover-item-value" id="cpuThreads">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 内存详情弹窗 -->
+                    <div class="popover" id="memDetailPopover">
+                        <div class="popover-header">
+                            <span class="popover-title" data-i18n="memory_details"></span>
+                            <button class="popover-close" id="memPopoverClose">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="popover-content">
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="rss_memory"></span>
+                                <span class="popover-item-value" id="memRss">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_memory"></span>
+                                <span class="popover-item-value" id="sysMemPct">--%</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="vms_memory"></span>
+                                <span class="popover-item-value" id="vmsMem">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_total"></span>
+                                <span class="popover-item-value" id="sysTotal">-- GB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="system_available"></span>
+                                <span class="popover-item-value" id="sysAvail">-- GB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="swap_memory"></span>
+                                <span class="popover-item-value" id="swapMem">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="io_read"></span>
+                                <span class="popover-item-value" id="ioRead">-- MB</span>
+                            </div>
+                            <div class="popover-item">
+                                <span class="popover-item-label" data-i18n="io_write"></span>
+                                <span class="popover-item-value" id="ioWrite">-- MB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 适配器和模块 -->
+                    <div class="grid-2" style="margin-bottom:24px">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path
+                                        d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                </svg><span data-i18n="adapters"></span></div>
+                            <div class="card-body" id="dashAdapters"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                                </svg><span data-i18n="modules_label"></span></div>
+                            <div class="card-body" id="dashModules"></div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                            </svg><span data-i18n="live_events"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="clearEvents()"
+                                    title="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="dashEvents" style="max-height:280px;overflow-y:auto"></div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 6l-9.5 9.5-5-5L1 18" />
+                                <path d="M17 6h6v6" />
+                            </svg>
+                            <span data-i18n="message_stats"></span>
+                        </div>
+                        <div class="card-body">
+                            <div class="msg-stats-grid">
+                                <div>
+                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="message_types"></div>
+                                    <div id="msgTypeStats"></div>
+                                </div>
+                                <div>
+                                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="platform_distribution"></div>
+                                    <div id="msgPlatformStats"></div>
+                                </div>
+                            </div>
+                            <div style="border-top:1px solid var(--bd);padding-top:12px">
+                                <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px" data-i18n="last_24h_trend"></div>
+                                <div id="msgHourlyTrend" class="hourly-trend"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="p-bots">
+                    <h1 class="page-title" data-i18n="bots"></h1>
+                    <p class="page-desc" data-i18n="bots_desc"></p>
+                    <div class="grid-3" style="margin-top:16px" id="botGrid"></div>
+                </div>
+                <div class="page" id="p-event-stream">
+                    <h1 class="page-title" data-i18n="event_stream"></h1>
+                    <p class="page-desc" data-i18n="event_stream_desc"></p>
+                    <div class="filter-bar">
+                        <select id="eTypeFilter" onchange="loadEvents()">
+                            <option value="">--</option>
+                            <option value="message" data-i18n-option="message"></option>
+                            <option value="notice" data-i18n-option="notice"></option>
+                            <option value="request" data-i18n-option="request"></option>
+                            <option value="meta" data-i18n-option="meta"></option>
+                        </select>
+                        <select id="ePlatFilter" onchange="loadEvents()">
+                            <option value="" data-i18n-option="all_platforms"></option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-sm" id="eventLiveBtn" onclick="toggleEventLive()" data-i18n="live"></button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadEvents()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                            </svg></button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearEvents()"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="width:14px;height:14px">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg></button>
+                    </div>
+                    <div class="card">
+                        <div id="eventList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-event-builder">
+                    <h1 class="page-title" data-i18n="event_builder"></h1>
+                    <p class="page-desc" data-i18n="event_builder_desc"></p>
+                    <div class="builder-toolbar">
+                        <div style="flex:1"></div>
+                        <button class="btn btn-primary btn-sm" onclick="submitEvent()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                            <span data-i18n="submit_event"></span>
+                        </button>
+                    </div>
+                    
+                    <div class="builder-layout">
+                        <div class="builder-form">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="event_type"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="event-type-selector">
+                                        <button class="type-btn active" data-type="message" onclick="selectEventType('message')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                                <path d="M8 10h.01" />
+                                                <path d="M12 10h.01" />
+                                                <path d="M16 10h.01" />
+                                            </svg>
+                                            <span data-i18n="message"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="notice" onclick="selectEventType('notice')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                                            </svg>
+                                            <span data-i18n="notice"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="request" onclick="selectEventType('request')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                                <path d="M7 15h0M2 9.5h20" />
+                                            </svg>
+                                            <span data-i18n="request"></span>
+                                        </button>
+                                        <button class="type-btn" data-type="meta" onclick="selectEventType('meta')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="3" />
+                                                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                                            </svg>
+                                            <span data-i18n="meta"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="detail_type"></span>
+                                </div>
+                                <div class="card-body">
+                                    <select id="detailType" class="form-select" onchange="onDetailTypeChange()">
+                                        <option value="" data-i18n="select_detail_type"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="platform_info"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label data-i18n="platform"></label>
+                                        <select id="platformSelect" class="form-select" onchange="onPlatformChange()">
+                                            <option value="" data-i18n-option="loading"></option>
+                                        </select>
+                                        <button class="btn-link" onclick="toggleCustomPlatform()" style="margin-left:8px" data-i18n="custom"></button>
+                                    </div>
+                                    <div class="form-group" id="customPlatformGroup" style="display:none">
+                                        <input type="text" id="platformCustom" class="form-input" data-i18n-placeholder="custom_platform_placeholder" placeholder="">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>Bot</label>
+                                        <select id="botSelect" class="form-select" onchange="onBotChange()">
+                                            <option value="" data-i18n-option="select_platform_placeholder"></option>
+                                        </select>
+                                        <button class="btn-link" onclick="toggleCustomBot()" style="margin-left:8px" data-i18n="custom"></button>
+                                    </div>
+                                    <div class="form-group" id="customBotGroup" style="display:none">
+                                        <input type="text" id="botCustom" class="form-input" data-i18n-placeholder="custom_bot_placeholder" placeholder="">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label data-i18n="session_type"></label>
+                                        <select id="sessionType" class="form-select">
+                                            <option value="private" data-i18n="session_private"></option>
+                                            <option value="group" data-i18n="session_group"></option>
+                                            <option value="channel" data-i18n="session_channel"></option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label data-i18n="session_id"></label>
+                                        <input type="text" id="sessionId" class="form-input" data-i18n-placeholder="session_id_placeholder" placeholder="">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card" id="messageBuilderCard">
+                                <div class="card-header">
+                                    <span data-i18n="message_content"></span>
+                                    <button class="btn-icon" onclick="addMessageSegment()" title="" data-i18n-title="add_segment">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="messageSegments"></div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="optional_fields"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="optionalFields"></div>
+                                    <button class="btn btn-secondary btn-sm" onclick="addOptionalField()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-right:4px">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg>
+                                        <span data-i18n="add_field"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="builder-preview">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span data-i18n="json_preview"></span>
+                                    <button class="btn-icon" onclick="copyEventJson()" title="" data-i18n-title="copy">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="eventJsonPreview" class="code-preview"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="p-logs">
+                    <h1 class="page-title" data-i18n="sys_logs"></h1>
+                    <p class="page-desc" data-i18n="sys_logs_desc"></p>
+                    <div class="filter-bar">
+                        <div class="filter-bar-inputs">
+                            <select id="logModuleFilter" onchange="loadLogs()">
+                                <option value="" data-i18n-option="all_modules"></option>
+                            </select>
+                            <select id="logLevelFilter" onchange="loadLogs()">
+                                <option value="">All Levels</option>
+                                <option value="DEBUG">DEBUG</option>
+                                <option value="INFO">INFO</option>
+                                <option value="WARNING">WARNING</option>
+                                <option value="ERROR">ERROR</option>
+                                <option value="CRITICAL">CRITICAL</option>
+                            </select>
+                            <input type="text" id="logSearch" data-i18n-placeholder="search_logs" placeholder="" oninput="debounceLogs()">
+                        </div>
+                        <div class="filter-bar-actions">
+                            <button class="btn btn-secondary btn-sm active" id="logSortBtn" onclick="toggleLogSortOrder()" title="" data-i18n-title="sort_newest_bottom">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="m3 17 3 3 3-3"/><path d="M6 18V4"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-secondary btn-sm log-pause-btn" id="logPauseBtn" onclick="toggleLogPause()" title="Pause auto-scroll">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <rect x="6" y="4" width="4" height="16"/>
+                                    <rect x="14" y="4" width="4" height="16"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="logAutoRefreshBtn" onclick="toggleLogAutoRefresh()" title="" data-i18n-title="auto_refresh" style="opacity:0.5">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <path d="M21 12a9 9 0 00-9-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+                                    <path d="M3 3v5h5" />
+                                    <path d="M3 12a9 9 0 009 9 9.75 9.75 0 006.74-2.74L21 16" />
+                                    <path d="M16 21h5v-5" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="loadLogs()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                    <polyline points="23 4 23 10 17 10" />
+                                    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <span data-i18n="log_list"></span>
+                            <span class="chip chip-pr" id="logCount" style="margin-left:8px">0</span>
+                            <div class="header-actions">
+                                <button class="btn-icon" onclick="copyLogs()" title="" data-i18n-title="copy_all_logs">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="logList" style="max-height:calc(100vh - 260px);overflow-y:auto;font-family:'Cascadia Code','Fira Code',Consolas,Monospace;font-size:12px;line-height:1.6"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-lifecycle">
+                    <h1 class="page-title" data-i18n="lifecycle"></h1>
+                    <p class="page-desc" data-i18n="lifecycle_desc"></p>
+                    <div class="card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 16" />
+                            </svg>
+                            <span data-i18n="lifecycle_timeline"></span>
+                            <div class="header-actions">
+                                <select id="lifecycleFilter" class="form-select" style="width:auto;padding:4px 8px;font-size:12px" onchange="loadLifecycle()">
+                                    <option value="" data-i18n="all_modules"></option>
+                                    <option value="core">core</option>
+                                    <option value="module">module</option>
+                                    <option value="adapter">adapter</option>
+                                    <option value="server">server</option>
+                                    <option value="message">message</option>
+                                    <option value="command">command</option>
+                                    <option value="event">event</option>
+                                    <option value="config">config</option>
+                                </select>
+                                <button class="btn-icon" onclick="loadLifecycle()" title="" data-i18n-title="refresh">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg>
+                                </button>
+                                <button class="btn-icon" onclick="clearLifecycle()" title="" data-i18n-title="clear">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="lifecycleTimeline" style="max-height:calc(100vh - 200px);overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-audit">
+                    <h1 class="page-title" data-i18n="audit_log"></h1>
+                    <p class="page-desc" data-i18n="audit_log_desc"></p>
+                    <div class="filter-bar">
+                        <select id="auditActionFilter" onchange="loadAuditLog()">
+                            <option value="" data-i18n="all_actions"></option>
+                            <option value="load_module">load_module</option>
+                            <option value="unload_module">unload_module</option>
+                            <option value="load_adapter">load_adapter</option>
+                            <option value="unload_adapter">unload_adapter</option>
+                            <option value="config_update">config_update</option>
+                            <option value="config_source_save">config_source_save</option>
+                            <option value="storage_set">storage_set</option>
+                            <option value="storage_delete">storage_delete</option>
+                            <option value="package_install">package_install</option>
+                            <option value="clear_events">clear_events</option>
+                            <option value="restart_framework">restart_framework</option>
+                            <option value="backup_import">backup_import</option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearAuditLog()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span data-i18n="audit_log"></span>
+                            <span class="chip chip-pr" id="auditCount" style="margin-left:8px">0</span>
+                        </div>
+                        <div id="auditList" style="max-height:calc(100vh - 260px);overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-api-routes">
+                    <h1 class="page-title" data-i18n="api_routes"></h1>
+                    <p class="page-desc" data-i18n="api_routes_desc"></p>
+                    <div class="filter-bar">
+                        <span style="display:flex;align-items:center;gap:6px">
+                            <span class="chip chip-pr" style="margin:0"><span id="httpRouteCount">0</span> HTTP</span>
+                            <span class="chip chip-sc" style="margin:0"><span id="wsRouteCount">0</span> WS</span>
+                        </span>
+                        <div class="filter-spacer" style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="expandAllRouteGroups()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 9 12 15 18 9"/></svg>
+                            <span class="btn-label" data-i18n="expand_all"></span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="collapseAllRouteGroups()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 15 12 9 18 15"/></svg>
+                            <span class="btn-label" data-i18n="collapse_all"></span>
+                        </button>
+                    </div>
+                    <div id="routeModulesContainer"></div>
+                </div>
+                <div class="page" id="p-modules">
+                    <h1 class="page-title" data-i18n="registered"></h1>
+                    <p class="page-desc" data-i18n="registered_desc"></p>
+                    <div class="filter-bar">
+                        <input type="text" id="moduleSearch" data-i18n-placeholder="search_modules" oninput="loadModules()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:240px">
+                        <select id="moduleStatus" onchange="loadModules()" style="padding:6px 10px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p)">
+                            <option value="all" data-i18n-option="all_status"></option>
+                            <option value="active" data-i18n-option="active"></option>
+                            <option value="inactive" data-i18n-option="inactive"></option>
+                            <option value="loaded" data-i18n-option="loaded_status"></option>
+                            <option value="disabled" data-i18n-option="module_disabled"></option>
+                        </select>
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadModules()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                </svg><span data-i18n="adapters"></span><span class="chip chip-pr" id="adapterCount"
+                                    style="margin-left:6px"></span>
+                                <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                        title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            style="width:16px;height:16px">
+                                            <polyline points="23 4 23 10 17 10" />
+                                            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                        </svg></button></div>
+                            </div>
+                            <div id="adapterList"></div>
+                        </div>
+                        <div class="card" style="margin-top:16px">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                                </svg><span data-i18n="modules_label"></span><span class="chip chip-sc" id="moduleCount"
+                                    style="margin-left:6px"></span>
+                                <div class="header-actions"><button class="btn-icon" onclick="loadModules()"
+                                        title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            style="width:16px;height:16px">
+                                            <polyline points="23 4 23 10 17 10" />
+                                            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                        </svg></button></div>
+                            </div>
+                            <div id="moduleList"></div>
+                        </div>
+                </div>
+                <div class="page" id="p-store">
+                    <h1 class="page-title" data-i18n="store"></h1>
+                    <p class="page-desc" data-i18n="store_desc"></p>
+                    <div class="filter-bar" style="margin-top:16px">
+                        <input type="text" id="storeSearch" data-i18n-placeholder="search_packages" oninput="debounceStore()">
+                        <button class="btn btn-secondary btn-sm" onclick="loadStore(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                    </div>
+                    <div class="card" style="margin-top:12px;margin-bottom:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_title"></span></div>
+                        <div style="padding:12px 16px;display:flex;align-items:center;gap:12px">
+                            <span style="font-size:13px;color:var(--tx-s)" data-i18n="upload_desc"></span>
+                            <div style="flex:1"></div>
+                            <button class="btn btn-primary btn-sm" onclick="openUploadModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="upload_btn"></span></button>
+                        </div>
+                    </div>
+                    <div class="grid-3" id="storeGrid"></div>
+                    <div class="store-batch-bar" id="storeBatchBar" style="display:none">
+                        <span id="storeBatchCount"></span>
+                        <button class="btn btn-primary btn-sm" onclick="batchInstall()" data-i18n="batch_install"></button>
+                    </div>
+                </div>
+                <div class="page" id="p-packages">
+                    <h1 class="page-title" data-i18n="pkg_manager"></h1>
+                    <p class="page-desc" data-i18n="pkg_manager_desc"></p>
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:16px;margin-bottom:16px;flex-wrap:wrap">
+                        <input type="text" id="pkgSearch" data-i18n-placeholder="search_packages" oninput="debouncePkgs()" style="padding:6px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);width:200px">
+                        <button class="btn btn-secondary btn-sm" onclick="loadPackages(true)" data-i18n-title="force_refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                        <div style="flex:1"></div>
+                        <div class="view-toggle" style="margin:0">
+                            <button class="view-btn active" data-tab="pk-installed" onclick="switchPkgTab('pk-installed',this)">
+                                <span data-i18n="pkg_installed"></span>
+                                <span class="chip chip-sc" id="pkgInstalledCount" style="margin-left:4px;font-size:11px;padding:1px 6px">0</span>
+                            </button>
+                            <button class="view-btn" data-tab="pk-updates" onclick="switchPkgTab('pk-updates',this)">
+                                <span data-i18n="pkg_updates"></span>
+                                <span class="chip chip-wr" id="pkgUpdateCount" style="margin-left:4px;font-size:11px;padding:1px 6px;display:none">0</span>
+                            </button>
+                            <button class="view-btn" data-tab="pk-install-new" onclick="switchPkgTab('pk-install-new',this)">
+                                <span data-i18n="pkg_install_new"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pkInstalledTab">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span data-i18n="pkg_installed"></span></div>
+                            <div id="pkgInstalledList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div id="pkUpdatesTab" style="display:none">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><span data-i18n="pkg_updates_available"></span><span class="chip chip-wr" id="pkgUpdateCountInner" style="margin-left:6px">0</span>
+                                <div class="header-actions"><button class="btn btn-primary btn-xs" onclick="upgradeAllPkgs()" data-i18n="pkg_upgrade_all"></button></div>
+                            </div>
+                            <div id="pkgUpdateList" style="max-height:calc(100vh - 380px);overflow-y:auto"></div>
+                        </div>
+                    </div>
+                    <div id="pkInstallNewTab" style="display:none">
+                        <div class="card">
+                            <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="pkg_install_new"></span></div>
+                            <div style="padding:16px">
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                                    <input type="text" id="pkgInstallInput" data-i18n-placeholder="pkg_install_placeholder" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;font-size:13px;background:var(--bg-s);color:var(--tx-p);font-family:Consolas,Monaco,monospace">
+                                    <button class="btn btn-primary btn-sm" onclick="installNewPkg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="install"></span></button>
+                                </div>
+                                <div style="font-size:12px;color:var(--tx-t);margin-top:8px" data-i18n="pkg_install_hint"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="p-files">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+                        <div>
+                            <h1 class="page-title" style="margin-bottom:2px" data-i18n="files"></h1>
+                            <p class="page-desc" data-i18n="files_desc"></p>
+                        </div>
+                    </div>
+                    <div class="fm-toolbar">
+                        <button class="btn btn-secondary btn-sm" onclick="fmGoUp()" title="Go Up">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="18 15 12 9 6 15"/></svg>
+                        </button>
+                        <div class="fm-breadcrumb" id="fmBreadcrumb"><span class="fm-crumb active" onclick="fmNavigateTo('.')">/</span></div>
+                        <div style="flex:1"></div>
+                        <input type="text" id="fmSearch" class="module-search" data-i18n-placeholder="search_files" placeholder="" oninput="debounceFmSearch()">
+                        <button class="btn btn-secondary btn-sm" onclick="fmToggleHidden()" id="fmHiddenBtn" title="Toggle Hidden">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fmRefresh()" title="Refresh">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                        </button>
+                    </div>
+                    <div class="fm-toolbar" style="margin-top:8px">
+                        <button class="btn btn-primary btn-sm" onclick="fmNewFile()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                            <span data-i18n="new_file"></span>
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="fmNewFolder()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                            <span data-i18n="new_folder"></span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fmUpload()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span data-i18n="upload"></span>
+                        </button>
+                        <input type="file" id="fmUploadInput" multiple style="display:none" onchange="fmDoUpload(this)">
+                        <input type="file" id="fmUploadDirInput" webkitdirectory multiple style="display:none" onchange="fmDoUpload(this)">
+                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fmUploadDirInput').click()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span data-i18n="upload_folder"></span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fmCompress()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                <!-- 文件夹主体 -->
+                                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                                <!-- 下载箭头 -->
+                                <polyline points="12 11 12 17"></polyline>
+                                <polyline points="9 14 12 17 15 14"></polyline>
+                            </svg>
+                            <span data-i18n="compress"></span>
+                        </button>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            <span id="fmCurrentPath">.</span>
+                            <span class="chip chip-pr" id="fmItemCount" style="margin-left:8px">0</span>
+                        </div>
+                        <div id="fmFileList" style="max-height:calc(100vh - 320px);overflow-y:auto"></div>
+                    </div>
+                    <div id="fmEditorPanel" style="display:none;margin-top:16px">
+                        <div class="card">
+                            <div class="card-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                <span id="fmEditorTitle">Editor</span>
+                                <div class="header-actions">
+                                    <span id="fmEditorStatus" style="font-size:12px;color:var(--tx-s);margin-right:8px"></span>
+                                    <button class="btn btn-secondary btn-sm" onclick="fmCloseEditor()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="fmSaveFile()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                        <span data-i18n="save"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="fmEditorContainer" style="height:500px;border-top:1px solid var(--bd)"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page" id="p-commands">
+                    <h1 class="page-title" data-i18n="cmd_management"></h1>
+                    <p class="page-desc" data-i18n="cmd_management_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                            <span data-i18n="cmd_global_settings"></span>
+                        </div>
+                        <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px">
+                            <span style="color:var(--tx-s)" data-i18n="cmd_prefix"></span><span id="cmdPrefix" style="font-weight:600">/</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_case_sensitive"></span><span id="cmdCaseSensitive">--</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_allow_space_prefix"></span><span id="cmdAllowSpace">--</span>
+                            <span style="color:var(--tx-s)" data-i18n="cmd_must_at_bot"></span><span id="cmdMustAtBot">--</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                            <span data-i18n="cmd_list"></span>
+                            <span class="chip chip-pr" id="cmdCount" style="margin-left:8px"></span>
+                            <div class="header-actions">
+                                <button class="btn-icon" onclick="loadCommands()" title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+                            </div>
+                        </div>
+                        <div id="cmdListBody"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-config">
+                    <h1 class="page-title" data-i18n="config"></h1>
+                    <p class="page-desc" data-i18n="config_desc"></p>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <span data-i18n="backup_restore"></span>
+                        </div>
+                        <div style="padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+                            <span style="font-size:13px;color:var(--tx-s);flex:1;min-width:200px" data-i18n="backup_desc"></span>
+                            <button class="btn btn-primary btn-sm" onclick="exportBackup()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                                <span data-i18n="backup_export"></span>
+                            </button>
+                            <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="importBackup(this)">
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('backupFileInput').click()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <span data-i18n="backup_import"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z" />
+                            </svg><span data-i18n="configuration"></span>
+                            <div class="header-actions">
+                                <div class="view-toggle">
+                                    <button class="view-btn active" data-view="tree" onclick="switchConfigView('tree',this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                                        </svg>
+                                        <span data-i18n="view_tree"></span>
+                                    </button>
+                                    <button class="view-btn" data-view="source" onclick="switchConfigView('source',this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                            <polyline points="16 18 22 12 16 6" />
+                                            <polyline points="8 6 2 12 8 18" />
+                                        </svg>
+                                        <span data-i18n="view_source"></span>
+                                    </button>
+                                </div>
+                                <button class="btn-icon" onclick="loadConfig()" title="Refresh"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button>
+                            </div>
+                        </div>
+                        <div id="configBodyTree" style="max-height:65vh;overflow-y:auto"></div>
+                        <div id="configBodySource" style="display:none;max-height:65vh;overflow-y:auto">
+                            <div style="padding:12px 16px">
+                                <textarea id="configSourceEditor" class="code-editor" spellcheck="false"></textarea>
+                                <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+                                    <button class="btn btn-secondary btn-sm" onclick="loadConfigSource()"><span data-i18n="reload_config"></span></button>
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfigSource()"><span data-i18n="save_config"></span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                            </svg><span data-i18n="storage"></span><span class="chip chip-pr" id="storageCount"
+                                style="margin-left:8px"></span>
+                            <div class="header-actions"><button class="btn-icon" onclick="loadConfig()"
+                                    title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="width:16px;height:16px">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                                    </svg></button></div>
+                        </div>
+                        <div id="storageBody" style="max-height:65vh;overflow-y:auto"></div>
+                    </div>
+                </div>
+                <div class="page" id="p-framework-config">
+                    <h1 class="page-title" data-i18n="framework_config"></h1>
+                    <p class="page-desc" data-i18n="framework_config_desc"></p>
+                    <div class="restart-banner" data-i18n="restart_required_hint"></div>
+                    <div class="version-note" data-i18n="fw_version_note"></div>
+                    <div class="fw-section" id="fwUpdateSection" style="margin-top:16px">
+                        <div class="fw-section-title" data-i18n="fw_update_title"></div>
+                        <div class="fw-section-body">
+                            <div class="fw-row">
+                                <div class="fw-label" data-i18n="fw_current_version"></div>
+                                <div class="fw-control"><span id="fwCurrentVer" style="font-weight:500">-</span></div>
+                            </div>
+                            <div class="fw-row">
+                                <div class="fw-label" data-i18n="fw_latest_version"></div>
+                                <div class="fw-control"><span id="fwLatestVer" style="font-weight:600;color:var(--accent)">-</span></div>
+                            </div>
+                            <div class="fw-row" id="fwVersionRow" style="display:none">
+                                <div class="fw-label" data-i18n="fw_select_version"></div>
+                                <div class="fw-control" style="display:flex;align-items:center;gap:6px">
+                                    <select id="fwVersionSelect" class="settings-select" style="width:auto;min-width:160px"></select>
+                                    <label class="switch" title="Include pre-release versions">
+                                        <input type="checkbox" id="fwPreRelease" onchange="loadFrameworkVersions()">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                    <span style="font-size:11px;color:var(--tx-s)">--pre</span>
+                                </div>
+                            </div>
+                            <div class="fw-row" style="justify-content:flex-end;border:none;padding-top:12px">
+                                <button class="btn btn-primary btn-sm" id="fwUpdateBtn" onclick="doFrameworkUpdate()" disabled><span data-i18n="fw_install_update"></span></button>
+                                <button class="btn btn-secondary btn-sm" onclick="loadFrameworkVersions()"><span data-i18n="fw_check_updates"></span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="fwConfigBody" style="margin-top:16px"></div>
+                    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+                        <button class="btn btn-danger" onclick="restartFramework()"><span data-i18n="restart"></span></button>
+                    </div>
+                </div>
+
+                <!-- 集群管理 -->
+                <div class="page" id="p-cluster">
+                    <h1 class="page-title" data-i18n="cluster_management"></h1>
+                    <p class="page-desc" data-i18n="cluster_desc"></p>
+                    <div id="clusterContent"></div>
+                </div>
+
+                <div class="page" id="p-about">
+                    <h1 class="page-title" data-i18n="about"></h1>
+                    <div class="about-hero">
+                        <img src="res/about/mascot-hero.png" alt="ErisPulse" class="about-mascot">
+                        <div class="about-hero-text">
+                            <h2 class="about-title">ErisPulse</h2>
+                            <p class="about-tagline" data-i18n="about_tagline"></p>
+                        </div>
+                    </div>
+                    <div class="about-card about-intro">
+                        <p data-i18n="about_desc"></p>
+                    </div>
+                    <div class="about-grid">
+                        <div class="about-feature">
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            </div>
+                            <div class="about-feature-title" data-i18n="about_feat_event_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_event_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
+                            <div class="about-feature-title" data-i18n="about_feat_cross_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_cross_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.611a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.685a.98.98 0 0 1 .837-.276c.47.07.802.48.968.925a2.501 2.501 0 1 0 3.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 0 1 .276-.837l1.61-1.611A2.404 2.404 0 0 1 12 2c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <div class="about-feature-title" data-i18n="about_feat_module_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_module_desc"></div>
+                        </div>
+                        <div class="about-feature">
+                            <div class="about-feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                            </div>
+                            <div class="about-feature-title" data-i18n="about_feat_reload_title"></div>
+                            <div class="about-feature-desc" data-i18n="about_feat_reload_desc"></div>
+                        </div>
+                    </div>
+                    <div class="about-card about-star-cta">
+                        <div class="about-star-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <p data-i18n="about_star_hint"></p>
+                        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="about-star-btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>Star on GitHub</span>
+                        </a>
+                    </div>
+                    <div class="about-card">
+                        <h3 data-i18n="about_contributors"></h3>
+                        <div class="about-contributors" id="aboutContributors">
+                            <div class="about-contrib-loading" data-i18n="loading"></div>
+                        </div>
+                    </div>
+                    <div class="about-links">
+                        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="https://www.erisdev.com" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            <span data-i18n="about_docs"></span>
+                        </a>
+                        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            <span data-i18n="about_discussions"></span>
+                        </a>
+                        <a href="https://www.erisdev.com/#market" target="_blank" rel="noopener" class="about-link-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                            <span data-i18n="about_market"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOv">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-text" id="modalText"></div>
+            <div class="modal-actions" id="modalActions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay output-modal" id="outputOv">
+        <div class="modal-box">
+            <div class="modal-title" id="outputTitle"></div>
+            <pre class="output-pre" id="outputPre"></pre>
+            <div class="modal-actions" id="outputActions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="uploadOv" onclick="if(event.target===this)closeUploadModal()">
+        <div class="modal-box" style="max-width:520px">
+            <div class="modal-title" data-i18n="upload_modal_title"></div>
+            <div class="upload-drop-zone" id="uploadDropZone" onclick="document.getElementById('uploadModalFileInput').click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:40px;height:40px;color:var(--tx-t);margin-bottom:8px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p style="font-size:13px;color:var(--tx-s)" data-i18n="upload_drop_hint"></p>
+                <p class="upload-file-info" id="uploadFileInfo"></p>
+            </div>
+            <input type="file" id="uploadModalFileInput" accept=".whl,.zip" style="display:none" onchange="handleUploadFileSelect(this)">
+            <div class="upload-progress-section" id="uploadProgressSection" style="display:none">
+                <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+                <span class="upload-progress-text" id="uploadProgressText">0%</span>
+            </div>
+            <div class="upload-options">
+                <div class="upload-option-row">
+                    <div>
+                        <div class="upload-option-label" data-i18n="force_install"></div>
+                        <div class="upload-option-desc" data-i18n="force_install_desc"></div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="uploadForceInstall"><span class="switch-slider"></span></label>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="pip_mirror"></div></div>
+                    <select class="upload-select" id="uploadMirrorSelect"></select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeUploadModal()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" id="uploadInstallBtn" disabled onclick="startUploadInstall()" data-i18n="start_install"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pkgDetailOv" onclick="if(event.target===this)closePkgDetail()">
+        <div class="modal-box" style="max-width:560px;max-height:80vh;overflow-y:auto">
+            <div class="modal-title" id="pkgDetailTitle"></div>
+            <div class="pkg-detail-meta">
+                <span class="chip chip-pr" id="pkgDetailType"></span>
+                <span class="pkg-detail-version" id="pkgDetailVersion"></span>
+            </div>
+            <div class="pkg-detail-desc" id="pkgDetailDesc"></div>
+            <div class="pkg-detail-info-grid" id="pkgDetailInfoGrid"></div>
+            <div class="pkg-detail-section" id="pkgDetailDepsSection" style="display:none">
+                <div class="pkg-detail-section-title" data-i18n="dependencies"></div>
+                <div class="pkg-detail-deps" id="pkgDetailDeps"></div>
+            </div>
+            <div class="pkg-detail-section" id="pkgDetailVersionsSection" style="display:none">
+                <div class="pkg-detail-section-title" data-i18n="version_history"></div>
+                <div id="pkgDetailVersions" style="max-height:120px;overflow-y:auto;font-size:12px;color:var(--tx-s);line-height:1.8"></div>
+            </div>
+            <div class="upload-options">
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="force_install"></div></div>
+                    <label class="switch"><input type="checkbox" id="detailForceInstall"><span class="switch-slider"></span></label>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="pip_mirror"></div></div>
+                    <select class="upload-select" id="detailMirrorSelect"></select>
+                </div>
+                <div class="upload-option-row">
+                    <div><div class="upload-option-label" data-i18n="install_version"></div></div>
+                    <select class="upload-select" id="detailVersionSelect"><option value="" data-i18n="latest_version"></option></select>
+                </div>
+            </div>
+            <div class="modal-actions" id="pkgDetailActions"></div>
+        </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-panel-hd">
+            <div style="display:flex;align-items:center;gap:8px">
+                <img src="res/erispulse_logo_hp.png" alt="ErisPulse" style="height:28px">
+                <span class="settings-panel-title" data-i18n="settings_title"></span>
+            </div>
+            <button class="btn-icon" onclick="closeSettings()" style="width:32px;height:32px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="settings-panel-body">
+            <div style="text-align:center;margin-bottom:12px">
+                <img src="res/erispulse_logo_hp.png" alt="ErisPulse" style="height:64px">
+            </div>
+            <div style="margin-bottom:8px">
+                <div class="settings-section-title" data-i18n="settings_appearance"></div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_theme"></div>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch"><input type="checkbox" id="settingsTheme" onchange="applySettingTheme(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_ui_style"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsUiStyle" onchange="applySettingUiStyle(this.value)">
+                            <option value="eris">ErisPulse</option>
+                            <option value="classic">Material Design 3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_language"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsLang" onchange="applySettingLang(this.value)">
+                            <option value="en">English</option>
+                            <option value="zh">简体中文</option>
+                            <option value="zh-TW">繁體中文</option>
+                            <option value="ja">日本語</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_sidebar"></div>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch"><input type="checkbox" id="settingsSidebar" onchange="applySettingSidebar(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-bottom:8px">
+                <div class="settings-section-title" data-i18n="settings_behavior"></div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_refresh_interval"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsRefresh" onchange="applySettingRefresh(this.value)">
+                            <option value="3000">3s</option>
+                            <option value="5000" selected>5s</option>
+                            <option value="10000">10s</option>
+                            <option value="30000">30s</option>
+                            <option value="0" data-i18n="settings_disabled"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_event_limit"></div>
+                    </div>
+                    <div class="settings-control">
+                        <select class="settings-select" id="settingsEventLimit" onchange="applySettingEventLimit(this.value)">
+                            <option value="50">50</option>
+                            <option value="100" selected>100</option>
+                            <option value="200">200</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="restart"></div>
+                        <div class="settings-desc" data-i18n="settings_restart_desc"></div>
+                    </div>
+                    <div class="settings-control">
+                        <button class="btn btn-danger btn-sm" onclick="restartFramework()" data-i18n="restart"></button>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label" data-i18n="settings_logout"></div>
+                        <div class="settings-desc" data-i18n="settings_logout_desc"></div>
+                    </div>
+                    <div class="settings-control">
+                        <button class="btn btn-secondary btn-sm" onclick="doLogout()" data-i18n="settings_logout"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
+
+    <div class="login-overlay" id="loginOv">
+        <div class="login-bg-loader" id="loginBgLoader"></div>
+        <div class="login-card">
+            <div class="login-decor">
+                <svg class="login-decor-star" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" fill="currentColor"/></svg>
+                <svg class="login-decor-star" width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" fill="currentColor"/></svg>
+                <svg class="login-decor-star" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" fill="currentColor"/></svg>
+                <svg class="login-decor-star" width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" fill="currentColor"/></svg>
+                <svg class="login-decor-cloud" width="60" height="30" viewBox="0 0 60 30"><ellipse cx="30" cy="22" rx="28" ry="8" fill="currentColor" opacity=".3"/><ellipse cx="20" cy="16" rx="16" ry="12" fill="currentColor" opacity=".2"/><ellipse cx="42" cy="18" rx="14" ry="10" fill="currentColor" opacity=".15"/></svg>
+                <svg class="login-decor-cloud" width="50" height="25" viewBox="0 0 50 25"><ellipse cx="25" cy="18" rx="23" ry="7" fill="currentColor" opacity=".3"/><ellipse cx="15" cy="12" rx="14" ry="10" fill="currentColor" opacity=".2"/><ellipse cx="36" cy="14" rx="12" ry="8" fill="currentColor" opacity=".15"/></svg>
+            </div>
+            <div class="login-avatar">
+                <img src="res/login/Login Avatar.png" alt="ErisPulse">
+            </div>
+            <h2 data-i18n="auth_title"></h2>
+            <p data-i18n="auth_desc_text"></p>
+            <div class="form-group">
+                <label data-i18n="auth_label"></label>
+                <input id="loginInput" type="password" data-i18n-placeholder="auth_placeholder"
+                    onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            
+            <div class="login-hint" id="authHint">
+                <div style="background:var(--pr-bg);border:1px solid var(--pr-bd);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:13px;color:var(--pr-c)">
+                    <strong>Demo Mode</strong> — Token: <code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;font-family:Consolas,Monaco,monospace;font-weight:700">demo</code>
+                </div>
+            </div>
+            <div class="login-actions">
+                <button class="btn btn-primary" onclick="doLogin()" data-i18n="login"></button>
+            </div>
+            <div class="login-footer">
+                <svg class="login-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <select id="loginLangSelect" class="login-lang-select" onchange="applySettingLang(this.value);this.value=lang">
+                    <option value="en">English</option>
+                    <option value="zh">简体中文</option>
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="ru">Русский</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="cmdEditOverlay" style="display:none" onclick="if(event.target===this)closeCmdEdit()">
+        <div class="modal-box" style="max-width:600px;max-height:85vh;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <h3 style="flex:1;margin:0;font-size:16px" id="cmdEditTitle"></h3>
+                <button class="btn-icon" onclick="closeCmdEdit()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div style="flex:1;overflow-y:auto;min-height:0">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                    <span style="font-size:13px;color:var(--tx-s)" data-i18n="cmd_enabled"></span>
+                    <label class="switch"><input type="checkbox" id="cmdEnabled" checked><span class="switch-slider"></span></label>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_custom_aliases"></label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="cmdAliasTags"></div>
+                    <div style="display:flex;gap:6px">
+                        <input type="text" id="cmdAliasInput" class="input" style="flex:1" data-i18n-placeholder="cmd_alias_placeholder" onkeydown="if(event.key==='Enter'){event.preventDefault();addCmdAlias()}">
+                        <button class="btn btn-secondary btn-sm" onclick="addCmdAlias()">+</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_allowed_platforms"></label>
+                    <div style="font-size:12px;color:var(--tx-s);margin-bottom:4px" data-i18n="cmd_allowed_platforms_hint"></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap" id="cmdAllowedPlatforms"></div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_blocked_platforms"></label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap" id="cmdBlockedPlatforms"></div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:var(--tx-s);display:block;margin-bottom:4px" data-i18n="cmd_transform_to"></label>
+                    <input type="text" id="cmdTransformTo" class="input" style="width:100%" data-i18n-placeholder="cmd_transform_placeholder">
+                </div>
+                <div style="font-size:12px;color:var(--tx-s);margin-bottom:8px" id="cmdOriginalAliases"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                <button class="btn btn-secondary" onclick="closeCmdEdit()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" onclick="saveCmdEdit()" data-i18n="save"></button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="routeTestOverlay" style="display:none" onclick="if(event.target===this)closeRouteTest()">
+        <div class="modal-box" style="max-width:720px;max-height:90vh;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <span class="method-badge" id="rtMethod">GET</span>
+                <code id="rtPath" style="font-size:14px;font-weight:600;flex:1;word-break:break-all"></code>
+                <button class="btn-icon" onclick="closeRouteTest()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div style="flex:1;overflow-y:auto;min-height:0">
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="query_params"></div>
+                    <div id="rtParams"></div>
+                    <button class="btn btn-secondary btn-xs" onclick="addRouteParam()" style="margin-top:4px">+ Param</button>
+                </div>
+                <div id="rtBodySection" style="margin-bottom:12px;display:none">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="request_body"></div>
+                    <textarea id="rtBody" class="code-editor" style="min-height:100px;max-height:200px;font-size:12px" placeholder="JSON"></textarea>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:var(--tx-s);margin-bottom:6px" data-i18n="response"></div>
+                    <div id="rtResponseStatus" style="display:none;margin-bottom:6px"></div>
+                    <pre id="rtResponse" style="background:var(--bg-s);border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:12px;max-height:300px;overflow:auto;font-family:'Cascadia Code','Fira Code',Consolas,Monospace,monospace;white-space:pre-wrap;word-break:break-all"></pre>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                <button class="btn btn-secondary" onclick="closeRouteTest()" data-i18n="cancel"></button>
+                <button class="btn btn-primary" onclick="sendRouteTest()" data-i18n="send"></button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/python/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/xml/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/css/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/toml/toml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
+    <script src="mock.js"></script>
+    <script src="dash.js"></script>
+</body>
+
+</html>
