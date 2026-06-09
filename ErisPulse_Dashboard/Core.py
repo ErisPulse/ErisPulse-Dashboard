@@ -91,6 +91,7 @@ class Main(BaseModule):
     def _get_pkg_manager(self):
         if self._pkg_manager is None:
             from .PackageManager import DashboardPackageManager
+
             self._pkg_manager = DashboardPackageManager()
         return self._pkg_manager
 
@@ -127,6 +128,7 @@ class Main(BaseModule):
             self.logger.warning("║  访问令牌: %-34s", self._token)
             self.logger.warning("╚══════════════════════════════════════════════╝")
             self.logger.warning("")
+
     async def on_unload(self, event: dict) -> bool:
         if self._cluster:
             await self._cluster.close()
@@ -161,19 +163,33 @@ class Main(BaseModule):
     def _verify_token(self, provided: str | None) -> bool:
         if not provided:
             return False
-        return secrets.compare_digest(str(provided).encode('utf-8'), self._token.encode('utf-8'))
+        return secrets.compare_digest(
+            str(provided).encode("utf-8"), self._token.encode("utf-8")
+        )
 
-    def register_view(self, *, id: str, title: str = "", title_en: str = "",
-                      icon_svg: str = "", html_content: str = "",
-                      js_content: str = "", css_content: str = "",
-                      iframe_url: str = "", loader: str = "",
-                      group: str = "group_extensions",
-                      group_title: str = "", group_title_en: str = "") -> bool:
+    def register_view(
+        self,
+        *,
+        id: str,
+        title: str = "",
+        title_en: str = "",
+        icon_svg: str = "",
+        html_content: str = "",
+        js_content: str = "",
+        css_content: str = "",
+        iframe_url: str = "",
+        loader: str = "",
+        group: str = "group_extensions",
+        group_title: str = "",
+        group_title_en: str = "",
+    ) -> bool:
         if not id:
             self.logger.warning("register_view: id is required")
             return False
         if id in self._registered_views:
-            self.logger.warning(f"register_view: view '{id}' already registered, overwriting")
+            self.logger.warning(
+                f"register_view: view '{id}' already registered, overwriting"
+            )
         view_data = {
             "id": id,
             "title": title or id,
@@ -190,7 +206,9 @@ class Main(BaseModule):
         }
         self._registered_views[id] = view_data
         self.logger.info(f"Module view registered: {id}")
-        self._safe_broadcast({"type": "views_changed", "data": {"action": "register", "id": id}})
+        self._safe_broadcast(
+            {"type": "views_changed", "data": {"action": "register", "id": id}}
+        )
         return True
 
     def unregister_view(self, id: str) -> bool:
@@ -198,7 +216,9 @@ class Main(BaseModule):
             return False
         del self._registered_views[id]
         self.logger.info(f"Module view unregistered: {id}")
-        self._safe_broadcast({"type": "views_changed", "data": {"action": "unregister", "id": id}})
+        self._safe_broadcast(
+            {"type": "views_changed", "data": {"action": "unregister", "id": id}}
+        )
         return True
 
     def get_registered_views(self) -> list[dict]:
@@ -230,7 +250,7 @@ class Main(BaseModule):
     def _sync_command_aliases(self):
         try:
             cmd_handler = self.sdk.Event.command
-            for tag in list(getattr(cmd_handler, '_dashboard_aliases', set())):
+            for tag in list(getattr(cmd_handler, "_dashboard_aliases", set())):
                 cmd_handler.aliases.pop(tag, None)
             dashboard_tags = set()
             for main_name, rule in self._command_rules.items():
@@ -258,19 +278,21 @@ class Main(BaseModule):
                 a for a, m in cmd_handler.aliases.items() if m == main_name
             ]
             rule = self._command_rules.get(main_name, {})
-            result.append({
-                "name": main_name,
-                "help": info.get("help"),
-                "usage": info.get("usage"),
-                "group": info.get("group"),
-                "hidden": info.get("hidden", False),
-                "original_aliases": original_aliases,
-                "custom_aliases": rule.get("aliases", []),
-                "enabled": rule.get("enabled", True),
-                "allowed_platforms": rule.get("allowed_platforms", []),
-                "blocked_platforms": rule.get("blocked_platforms", []),
-                "transform_to": rule.get("transform_to"),
-            })
+            result.append(
+                {
+                    "name": main_name,
+                    "help": info.get("help"),
+                    "usage": info.get("usage"),
+                    "group": info.get("group"),
+                    "hidden": info.get("hidden", False),
+                    "original_aliases": original_aliases,
+                    "custom_aliases": rule.get("aliases", []),
+                    "enabled": rule.get("enabled", True),
+                    "allowed_platforms": rule.get("allowed_platforms", []),
+                    "blocked_platforms": rule.get("blocked_platforms", []),
+                    "transform_to": rule.get("transform_to"),
+                }
+            )
         return result
 
     def _setup_command_middleware(self):
@@ -295,6 +317,7 @@ class Main(BaseModule):
 
             try:
                 from ErisPulse.runtime import get_event_config
+
                 event_config = get_event_config()
                 command_config = event_config.get("command", {})
                 prefix = command_config.get("prefix", "/")
@@ -309,7 +332,7 @@ class Main(BaseModule):
             if not check_text.startswith(check_prefix):
                 return data
 
-            command_part = check_text[len(check_prefix):].strip()
+            command_part = check_text[len(check_prefix) :].strip()
             parts = command_part.split()
             if not parts:
                 return data
@@ -354,7 +377,10 @@ class Main(BaseModule):
                 new_cmd_text = new_cmd_text.strip()
                 for i, segment in enumerate(message_segments):
                     if segment.get("type") == "text":
-                        message_segments[i] = {"type": "text", "data": {"text": new_cmd_text}}
+                        message_segments[i] = {
+                            "type": "text",
+                            "data": {"text": new_cmd_text},
+                        }
                         break
                 data["message"] = message_segments
                 if alt_message and alt_message == text:
@@ -366,17 +392,33 @@ class Main(BaseModule):
 
     def _setup_event_interceptors(self):
         _all_events = {
-            "core.init.start", "core.init.complete", "core.uninit.complete",
-            "module.register", "module.load", "module.init", "module.unload",
-            "adapter.load", "adapter.start", "adapter.status.change", "adapter.stop", "adapter.stopped",
-            "adapter.event.receive", "adapter.event.dispatched",
-            "adapter.bot.online", "adapter.bot.offline",
-            "server.start", "server.stop",
-            "server.request", "server.response",
-            "server.websocket.connect", "server.websocket.disconnect",
+            "core.init.start",
+            "core.init.complete",
+            "core.uninit.complete",
+            "module.register",
+            "module.load",
+            "module.init",
+            "module.unload",
+            "adapter.load",
+            "adapter.start",
+            "adapter.status.change",
+            "adapter.stop",
+            "adapter.stopped",
+            "adapter.event.receive",
+            "adapter.event.dispatched",
+            "adapter.bot.online",
+            "adapter.bot.offline",
+            "server.start",
+            "server.stop",
+            "server.request",
+            "server.response",
+            "server.websocket.connect",
+            "server.websocket.disconnect",
             "event.pre_process",
-            "message.sending", "message.sent",
-            "command.matched", "command.executed",
+            "message.sending",
+            "message.sent",
+            "command.matched",
+            "command.executed",
             "config.set",
         }
 
@@ -385,9 +427,20 @@ class Main(BaseModule):
             self._add_event_log(data)
 
         for _ev in _all_events:
+
             @self.sdk.lifecycle.on(_ev)
             async def _on_lifecycle_event(data: dict, _name=_ev):
-                entry = data if data.get("event") else {"event": _name, "timestamp": time.time(), "data": data, "source": "", "msg": ""}
+                entry = (
+                    data
+                    if data.get("event")
+                    else {
+                        "event": _name,
+                        "timestamp": time.time(),
+                        "data": data,
+                        "source": "",
+                        "msg": "",
+                    }
+                )
                 self._add_lifecycle_log(entry)
                 self._lifecycle_counts[_name] = self._lifecycle_counts.get(_name, 0) + 1
 
@@ -399,7 +452,9 @@ class Main(BaseModule):
             if event_type in _all_events:
                 return
             self._add_lifecycle_log(data)
-            self._lifecycle_counts[event_type] = self._lifecycle_counts.get(event_type, 0) + 1
+            self._lifecycle_counts[event_type] = (
+                self._lifecycle_counts.get(event_type, 0) + 1
+            )
 
     def _add_event_log(self, data: dict):
         entry = {
@@ -428,7 +483,7 @@ class Main(BaseModule):
             self._event_log = self._event_log[-self._max_log :]
         self._events_dirty = True
         asyncio.ensure_future(self._broadcast_event(entry))
-    
+
     def _add_lifecycle_log(self, data: dict):
         """添加生命周期事件日志（按类型限制数量）"""
         entry = {
@@ -439,13 +494,13 @@ class Main(BaseModule):
             "msg": data.get("msg", ""),
         }
         self._lifecycle_log.append(entry)
-        
+
         # 按类型限制：每种类型最多保留 _max_per_type 条
         type_count = {}
         for e in self._lifecycle_log:
             t = e.get("event", "").split(".")[0]  # 取第一段作为类型
             type_count[t] = type_count.get(t, 0) + 1
-        
+
         # 如果超过总限制，按类型裁剪
         if len(self._lifecycle_log) > self._max_lifecycle_log:
             # 分组保留最新条数
@@ -453,14 +508,14 @@ class Main(BaseModule):
             for e in self._lifecycle_log:
                 t = e.get("event", "").split(".")[0]
                 groups.setdefault(t, []).append(e)
-            
+
             trimmed = []
             for t, items in groups.items():
-                trimmed.extend(items[-self._max_per_type:])
-            
+                trimmed.extend(items[-self._max_per_type :])
+
             # 按时间排序
             trimmed.sort(key=lambda x: x.get("timestamp", 0))
-            self._lifecycle_log = trimmed[-self._max_lifecycle_log:]
+            self._lifecycle_log = trimmed[-self._max_lifecycle_log :]
 
     async def _broadcast_event(self, event: dict):
         if not self._ws_clients:
@@ -476,7 +531,7 @@ class Main(BaseModule):
 
     def _persist_events(self):
         try:
-            self.storage.set("__ep_events__", self._event_log[-self._max_log:])
+            self.storage.set("__ep_events__", self._event_log[-self._max_log :])
             self._events_dirty = False
         except Exception:
             pass
@@ -491,12 +546,14 @@ class Main(BaseModule):
         try:
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
-                self._event_log = events[-self._max_log:]
+                self._event_log = events[-self._max_log :]
                 self._total_event_count = max(self._total_event_count, len(events))
         except Exception:
             pass
 
-    def _add_audit_log(self, action: str, detail: str = "", request: Request | None = None):
+    def _add_audit_log(
+        self, action: str, detail: str = "", request: Request | None = None
+    ):
         ip = ""
         if request:
             ip = request.client.host if request.client else ""
@@ -511,12 +568,12 @@ class Main(BaseModule):
         }
         self._audit_log.append(entry)
         if len(self._audit_log) > self._max_audit_log:
-            self._audit_log = self._audit_log[-self._max_audit_log:]
+            self._audit_log = self._audit_log[-self._max_audit_log :]
         self._persist_audit()
 
     def _persist_audit(self):
         try:
-            self.storage.set("__ep_audit__", self._audit_log[-self._max_audit_log:])
+            self.storage.set("__ep_audit__", self._audit_log[-self._max_audit_log :])
         except Exception:
             pass
 
@@ -524,7 +581,7 @@ class Main(BaseModule):
         try:
             logs = self.storage.get("__ep_audit__")
             if isinstance(logs, list):
-                self._audit_log = logs[-self._max_audit_log:]
+                self._audit_log = logs[-self._max_audit_log :]
         except Exception:
             pass
 
@@ -544,7 +601,13 @@ class Main(BaseModule):
         if self._loop and not self._loop.is_closed():
             asyncio.run_coroutine_threadsafe(self._broadcast(msg), self._loop)
 
-    def _run_pip_install(self, packages: list[str], task_id: str, force: bool = False, index_url: str = None):
+    def _run_pip_install(
+        self,
+        packages: list[str],
+        task_id: str,
+        force: bool = False,
+        index_url: str = None,
+    ):
         cmd = [sys.executable, "-m", "pip", "install"]
         if force:
             cmd.append("--force-reinstall")
@@ -657,29 +720,37 @@ class Main(BaseModule):
         try:
             from ErisPulse.loaders import ModuleLoader, AdapterLoader
             from ErisPulse.finders import ModuleFinder, AdapterFinder
-            
+
             mf = ModuleFinder()
             af = AdapterFinder()
             mf.clear_cache()
             af.clear_cache()
-            
+
             new_module_map = mf.get_entry_point_map()
             existing_modules = set(self.sdk.module.list_registered())
-            
+
             for ep_name, ep in new_module_map.items():
                 if ep_name not in existing_modules:
                     self.logger.info(f"Dynamic loading new module: {ep_name}")
                     try:
                         module_class = ep.load()
                         import importlib.metadata as imd
+
                         dist = imd.distribution(ep.dist.name) if ep.dist else None
                         import sys
+
                         module_pkg = sys.modules.get(module_class.__module__)
                         module_info = {
                             "meta": {
                                 "name": ep_name,
-                                "version": getattr(module_pkg, "__version__", dist.version if dist else "1.0.0"),
-                                "description": getattr(module_pkg, "__description__", ""),
+                                "version": getattr(
+                                    module_pkg,
+                                    "__version__",
+                                    dist.version if dist else "1.0.0",
+                                ),
+                                "description": getattr(
+                                    module_pkg, "__description__", ""
+                                ),
                                 "author": getattr(module_pkg, "__author__", ""),
                                 "license": getattr(module_pkg, "__license__", ""),
                                 "package": ep.dist.name,
@@ -691,17 +762,23 @@ class Main(BaseModule):
                         }
                         self.sdk.module._config_register(ep_name, True)
                         self.sdk.module.register(ep_name, module_class, module_info)
-                        
+
                         if self._loop and not self._loop.is_closed():
-                            asyncio.run_coroutine_threadsafe(self.sdk.module.load(ep_name), self._loop)
-                        
-                        self._safe_broadcast({
-                            "type": "module_changed",
-                            "data": {"name": ep_name, "action": "installed"},
-                        })
+                            asyncio.run_coroutine_threadsafe(
+                                self.sdk.module.load(ep_name), self._loop
+                            )
+
+                        self._safe_broadcast(
+                            {
+                                "type": "module_changed",
+                                "data": {"name": ep_name, "action": "installed"},
+                            }
+                        )
                     except Exception as e:
-                        self.logger.warning(f"Failed to dynamic load module {ep_name}: {e}")
-            
+                        self.logger.warning(
+                            f"Failed to dynamic load module {ep_name}: {e}"
+                        )
+
             new_adapter_map = af.get_entry_point_map()
             existing_adapters = set(self.sdk.adapter.list_registered())
             new_adapter_names = []
@@ -712,17 +789,26 @@ class Main(BaseModule):
                         adapter_class = ep.load()
                         import importlib.metadata as imd
                         import sys
+
                         adapter_obj = sys.modules.get(adapter_class.__module__)
                         dist = imd.distribution(ep.dist.name) if ep.dist else None
                         adapter_info = {
                             "meta": {
                                 "name": ep_name,
-                                "version": getattr(adapter_obj, "__version__", dist.version if dist else "1.0.0"),
-                                "description": getattr(adapter_obj, "__description__", ""),
+                                "version": getattr(
+                                    adapter_obj,
+                                    "__version__",
+                                    dist.version if dist else "1.0.0",
+                                ),
+                                "description": getattr(
+                                    adapter_obj, "__description__", ""
+                                ),
                                 "author": getattr(adapter_obj, "__author__", ""),
                                 "license": getattr(adapter_obj, "__license__", ""),
                                 "package": ep.dist.name if ep.dist else "",
-                                "top_level": af.get_top_level_modules(ep.dist.name) if ep.dist else [],
+                                "top_level": af.get_top_level_modules(ep.dist.name)
+                                if ep.dist
+                                else [],
                             },
                             "adapter_class": adapter_class,
                         }
@@ -736,24 +822,31 @@ class Main(BaseModule):
                         new_adapter_names.append(ep_name)
                         self.logger.info(f"Adapter {ep_name} registered successfully")
                     except Exception as e:
-                        self.logger.warning(f"Failed to dynamic load adapter {ep_name}: {e}")
+                        self.logger.warning(
+                            f"Failed to dynamic load adapter {ep_name}: {e}"
+                        )
 
             if new_adapter_names and self._loop and not self._loop.is_closed():
+
                 async def _startup_new_adapters():
                     for platform in new_adapter_names:
                         try:
                             await self.sdk.adapter.startup(platform)
                             self.logger.info(f"Adapter {platform} started successfully")
                         except Exception as e:
-                            self.logger.warning(f"Failed to startup adapter {platform}: {e}")
+                            self.logger.warning(
+                                f"Failed to startup adapter {platform}: {e}"
+                            )
 
                 asyncio.run_coroutine_threadsafe(_startup_new_adapters(), self._loop)
 
             for ep_name in new_adapter_names:
-                self._safe_broadcast({
-                    "type": "module_changed",
-                    "data": {"name": ep_name, "action": "installed_adapter"},
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "module_changed",
+                        "data": {"name": ep_name, "action": "installed_adapter"},
+                    }
+                )
         except Exception as e:
             self.logger.warning(f"Dynamic module loading failed: {e}")
 
@@ -775,19 +868,21 @@ class Main(BaseModule):
         uptime = time.time() - self._start_time
         mem = {}
         proc_info = {}
-        
+
         try:
             import psutil
 
             proc = psutil.Process(os.getpid())
-            
+
             mem_info_rss = proc.memory_info()
             mem["rss_mb"] = round(mem_info_rss.rss / 1024 / 1024, 1)
             mem["vms_mb"] = round(mem_info_rss.vms / 1024 / 1024, 1)
-            
+
             try:
                 loop = asyncio.get_event_loop()
-                cpu_val = await loop.run_in_executor(None, lambda: proc.cpu_percent(interval=1.0))
+                cpu_val = await loop.run_in_executor(
+                    None, lambda: proc.cpu_percent(interval=1.0)
+                )
                 mem["cpu_percent"] = round(cpu_val, 1)
             except Exception as e:
                 self.logger.debug(f"CPU measurement failed: {e}")
@@ -796,46 +891,54 @@ class Main(BaseModule):
                 except Exception as e2:
                     self.logger.debug(f"CPU fallback failed: {e2}")
                     mem["cpu_percent"] = 0.0
-            
+
             vm = psutil.virtual_memory()
             mem["system_percent"] = round(vm.percent, 1)
             mem["system_total_gb"] = round(vm.total / 1024 / 1024 / 1024, 2)
             mem["system_available_gb"] = round(vm.available / 1024 / 1024 / 1024, 2)
-            
+
             try:
                 mem["system_cpu_percent"] = round(psutil.cpu_percent(interval=0.1), 1)
             except Exception:
                 mem["system_cpu_percent"] = 0.0
-            
+
             swap = psutil.swap_memory()
             mem["swap_percent"] = round(swap.percent, 1)
             mem["swap_used_mb"] = round(swap.used / 1024 / 1024, 1)
-            
+
             proc_info["threads"] = proc.num_threads()
             proc_info["open_files"] = len(proc.open_files())
-            
+
             cpu_times = proc.cpu_times()
             proc_info["cpu_user"] = round(cpu_times.user, 2)
             proc_info["cpu_system"] = round(cpu_times.system, 2)
-            
+
             try:
                 io_counters = proc.io_counters()
-                proc_info["read_bytes_mb"] = round(io_counters.read_bytes / 1024 / 1024, 1)
-                proc_info["write_bytes_mb"] = round(io_counters.write_bytes / 1024 / 1024, 1)
+                proc_info["read_bytes_mb"] = round(
+                    io_counters.read_bytes / 1024 / 1024, 1
+                )
+                proc_info["write_bytes_mb"] = round(
+                    io_counters.write_bytes / 1024 / 1024, 1
+                )
             except Exception:
                 pass
-            
+
             try:
                 connections = proc.connections()
                 proc_info["connections"] = len(connections)
-                proc_info["listening"] = len([c for c in connections if c.status == 'LISTEN'])
+                proc_info["listening"] = len(
+                    [c for c in connections if c.status == "LISTEN"]
+                )
             except Exception:
                 pass
-            
+
             proc_info["created"] = proc.create_time()
-            
+
         except ImportError:
-            self.logger.warning("psutil not installed, system monitoring unavailable. Install with: pip install psutil")
+            self.logger.warning(
+                "psutil not installed, system monitoring unavailable. Install with: pip install psutil"
+            )
             mem["rss_mb"] = 0
             mem["cpu_percent"] = 0
             mem["system_percent"] = 0
@@ -844,7 +947,7 @@ class Main(BaseModule):
             mem["rss_mb"] = 0
             mem["cpu_percent"] = 0
             mem["system_percent"] = 0
-        
+
         ec = {}
         for e in self._event_log:
             t = e["type"]
@@ -878,40 +981,43 @@ class Main(BaseModule):
     def _register_routes(self):
         r = self.sdk.router
         mn = "Dashboard"
-        
+
         from pathlib import Path
+
         static_dir = Path(__file__).parent / "static"
-        
+
         # 根路径 - HTML
         async def _html(request: Request) -> HTMLResponse:
             html_path = static_dir / "dash.html"
-            return HTMLResponse(html_path.read_text(encoding='utf-8'))
-        
+            return HTMLResponse(html_path.read_text(encoding="utf-8"))
+
         # CSS 文件
         async def _css(request: Request):
             from fastapi.responses import Response
+
             css_path = static_dir / "dash.css"
             return Response(
-                content=css_path.read_text(encoding='utf-8'),
-                media_type="text/css"
+                content=css_path.read_text(encoding="utf-8"), media_type="text/css"
             )
-        
+
         # 如果有 JS 文件也可以加上
         async def _js(request: Request):
             from fastapi.responses import Response
+
             js_path = static_dir / "dash.js"
             if js_path.exists():
                 return Response(
-                    content=js_path.read_text(encoding='utf-8'),
-                    media_type="application/javascript"
+                    content=js_path.read_text(encoding="utf-8"),
+                    media_type="application/javascript",
                 )
             return JSONResponse({"error": "File not found"}, status_code=404)
-        
+
         r.register_http_route(mn, "/", handler=_html, methods=["GET"])
         r.register_http_route(mn, "/static/dash.css", handler=_css, methods=["GET"])
         r.register_http_route(mn, "/static/dash.js", handler=_js, methods=["GET"])
 
         import mimetypes as _mimetypes
+
         async def _static_res(request: Request):
             subpath = request.path_params.get("path", "")
             file_path = static_dir / "res" / subpath
@@ -919,105 +1025,327 @@ class Main(BaseModule):
                 ct, _ = _mimetypes.guess_type(str(file_path))
                 return Response(
                     content=file_path.read_bytes(),
-                    media_type=ct or "application/octet-stream"
+                    media_type=ct or "application/octet-stream",
                 )
             return JSONResponse({"error": "Not found"}, status_code=404)
 
-        r.register_http_route(mn, "/static/res/{path:path}", handler=_static_res, methods=["GET"])
-        
+        r.register_http_route(
+            mn, "/static/res/{path:path}", handler=_static_res, methods=["GET"]
+        )
+
         # API 路由保持不变
         r.register_http_route(mn, "/api/auth", handler=self._api_auth, methods=["POST"])
-        r.register_http_route(mn, "/api/auth/status", handler=self._api_auth_status, methods=["GET"])
-        r.register_http_route(mn, "/api/status", handler=self._api_status, methods=["GET"])
-        r.register_http_route(mn, "/api/system", handler=self._api_system, methods=["GET"])
-        r.register_http_route(mn, "/api/adapter-logos", handler=self._api_adapter_logos, methods=["GET"])
-        r.register_http_route(mn, "/api/adapters", handler=self._api_adapters, methods=["GET"])
-        r.register_http_route(mn, "/api/modules", handler=self._api_modules, methods=["GET"])
-        r.register_http_route(mn, "/api/modules/action", handler=self._api_modules_action, methods=["POST"])
+        r.register_http_route(
+            mn, "/api/auth/status", handler=self._api_auth_status, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/status", handler=self._api_status, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/system", handler=self._api_system, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/adapter-logos", handler=self._api_adapter_logos, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/adapters", handler=self._api_adapters, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/modules", handler=self._api_modules, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/modules/action",
+            handler=self._api_modules_action,
+            methods=["POST"],
+        )
         r.register_http_route(mn, "/api/bots", handler=self._api_bots, methods=["GET"])
-        r.register_http_route(mn, "/api/events", handler=self._api_events, methods=["GET"])
-        r.register_http_route(mn, "/api/events/clear", handler=self._api_events_clear, methods=["POST"])
-        r.register_http_route(mn, "/api/config", handler=self._api_config, methods=["GET"])
-        r.register_http_route(mn, "/api/config", handler=self._api_config_update, methods=["PUT"])
-        r.register_http_route(mn, "/api/storage", handler=self._api_storage, methods=["GET"])
-        r.register_http_route(mn, "/api/storage", handler=self._api_storage_set, methods=["POST"])
-        r.register_http_route(mn, "/api/storage/delete", handler=self._api_storage_delete, methods=["POST"])
-        r.register_http_route(mn, "/api/store/remote", handler=self._api_store_remote, methods=["GET"])
-        r.register_http_route(mn, "/api/store/install", handler=self._api_store_install, methods=["POST"])
-        r.register_http_route(mn, "/api/store/upload", handler=self._api_store_upload, methods=["POST"])
-        r.register_http_route(mn, "/api/store/install/status", handler=self._api_store_install_status, methods=["GET"])
-        r.register_http_route(mn, "/api/store/package/detail", handler=self._api_package_detail, methods=["GET"])
-        
-        r.register_http_route(mn, "/api/packages", handler=self._api_packages, methods=["GET"])
-        r.register_http_route(mn, "/api/packages/updates", handler=self._api_packages_updates, methods=["GET"])
-        r.register_http_route(mn, "/api/packages/upgrade", handler=self._api_packages_upgrade, methods=["POST"])
-        r.register_http_route(mn, "/api/packages/install", handler=self._api_packages_install, methods=["POST"])
-        r.register_http_route(mn, "/api/packages/uninstall", handler=self._api_packages_uninstall, methods=["POST"])
-        r.register_http_route(mn, "/api/framework/versions", handler=self._api_framework_versions, methods=["GET"])
-        r.register_http_route(mn, "/api/framework/update", handler=self._api_framework_update, methods=["POST"])
-        r.register_http_route(mn, "/api/restart", handler=self._api_restart, methods=["POST"])
-        
+        r.register_http_route(
+            mn, "/api/events", handler=self._api_events, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/events/clear", handler=self._api_events_clear, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/config", handler=self._api_config, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/config", handler=self._api_config_update, methods=["PUT"]
+        )
+        r.register_http_route(
+            mn, "/api/storage", handler=self._api_storage, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/storage", handler=self._api_storage_set, methods=["POST"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/storage/delete",
+            handler=self._api_storage_delete,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn, "/api/store/remote", handler=self._api_store_remote, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/store/install", handler=self._api_store_install, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/store/upload", handler=self._api_store_upload, methods=["POST"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/store/install/status",
+            handler=self._api_store_install_status,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/store/package/detail",
+            handler=self._api_package_detail,
+            methods=["GET"],
+        )
+
+        r.register_http_route(
+            mn, "/api/packages", handler=self._api_packages, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/updates",
+            handler=self._api_packages_updates,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/upgrade",
+            handler=self._api_packages_upgrade,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/install",
+            handler=self._api_packages_install,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/uninstall",
+            handler=self._api_packages_uninstall,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/framework/versions",
+            handler=self._api_framework_versions,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/framework/update",
+            handler=self._api_framework_update,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn, "/api/restart", handler=self._api_restart, methods=["POST"]
+        )
+
         # 事件构建器相关 API
-        r.register_http_route(mn, "/api/builder/validate", handler=self._api_builder_validate, methods=["POST"])
-        r.register_http_route(mn, "/api/builder/submit", handler=self._api_builder_submit, methods=["POST"])
-        r.register_http_route(mn, "/api/builder/segments", handler=self._api_builder_segments, methods=["GET"])
-        
+        r.register_http_route(
+            mn,
+            "/api/builder/validate",
+            handler=self._api_builder_validate,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/builder/submit",
+            handler=self._api_builder_submit,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/builder/segments",
+            handler=self._api_builder_segments,
+            methods=["GET"],
+        )
+
         # 配置源码相关 API
-        r.register_http_route(mn, "/api/config/source", handler=self._api_config_source, methods=["GET", "POST"])
-        
+        r.register_http_route(
+            mn,
+            "/api/config/source",
+            handler=self._api_config_source,
+            methods=["GET", "POST"],
+        )
+
         # 日志相关 API
         r.register_http_route(mn, "/api/logs", handler=self._api_logs, methods=["GET"])
-        r.register_http_route(mn, "/api/logs/clear", handler=self._api_logs_clear, methods=["POST"])
-        
+        r.register_http_route(
+            mn, "/api/logs/clear", handler=self._api_logs_clear, methods=["POST"]
+        )
+
         # 生命周期相关 API
-        r.register_http_route(mn, "/api/lifecycle", handler=self._api_lifecycle, methods=["GET"])
-        r.register_http_route(mn, "/api/lifecycle/clear", handler=self._api_lifecycle_clear, methods=["POST"])
-        
+        r.register_http_route(
+            mn, "/api/lifecycle", handler=self._api_lifecycle, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/lifecycle/clear",
+            handler=self._api_lifecycle_clear,
+            methods=["POST"],
+        )
+
         # 性能监控相关 API
-        r.register_http_route(mn, "/api/performance", handler=self._api_performance, methods=["GET"])
-        
+        r.register_http_route(
+            mn, "/api/performance", handler=self._api_performance, methods=["GET"]
+        )
+
         # API 路由列表相关 API
-        r.register_http_route(mn, "/api/routes", handler=self._api_routes, methods=["GET"])
-        
+        r.register_http_route(
+            mn, "/api/routes", handler=self._api_routes, methods=["GET"]
+        )
+
         # 消息统计相关 API
-        r.register_http_route(mn, "/api/message-stats", handler=self._api_message_stats, methods=["GET"])
-        
-        r.register_http_route(mn, "/api/audit", handler=self._api_audit, methods=["GET"])
-        r.register_http_route(mn, "/api/audit/clear", handler=self._api_audit_clear, methods=["POST"])
-        r.register_http_route(mn, "/api/backup/export", handler=self._api_backup_export, methods=["GET"])
-        r.register_http_route(mn, "/api/backup/import", handler=self._api_backup_import, methods=["POST"])
-        
-        r.register_http_route(mn, "/api/files/browse", handler=self._api_files_browse, methods=["GET"])
-        r.register_http_route(mn, "/api/files/read", handler=self._api_files_read, methods=["GET"])
-        r.register_http_route(mn, "/api/files/write", handler=self._api_files_write, methods=["PUT"])
-        r.register_http_route(mn, "/api/files/upload", handler=self._api_files_upload, methods=["POST"])
-        r.register_http_route(mn, "/api/files/download", handler=self._api_files_download, methods=["GET"])
-        r.register_http_route(mn, "/api/files/mkdir", handler=self._api_files_mkdir, methods=["POST"])
-        r.register_http_route(mn, "/api/files/delete", handler=self._api_files_delete, methods=["POST"])
-        r.register_http_route(mn, "/api/files/rename", handler=self._api_files_rename, methods=["POST"])
-        r.register_http_route(mn, "/api/files/copy", handler=self._api_files_copy, methods=["POST"])
-        r.register_http_route(mn, "/api/files/chmod", handler=self._api_files_chmod, methods=["POST"])
-        r.register_http_route(mn, "/api/files/stat", handler=self._api_files_stat, methods=["GET"])
-        r.register_http_route(mn, "/api/files/search", handler=self._api_files_search, methods=["GET"])
-        r.register_http_route(mn, "/api/files/compress", handler=self._api_files_compress, methods=["POST"])
-        r.register_http_route(mn, "/api/files/decompress", handler=self._api_files_decompress, methods=["POST"])
-        
-        r.register_http_route(mn, "/api/commands", handler=self._api_commands, methods=["GET"])
-        r.register_http_route(mn, "/api/commands/{name}", handler=self._api_command_update, methods=["PUT"])
-        
-        r.register_http_route(mn, "/api/views", handler=self._api_views, methods=["GET"])
+        r.register_http_route(
+            mn, "/api/message-stats", handler=self._api_message_stats, methods=["GET"]
+        )
+
+        r.register_http_route(
+            mn, "/api/audit", handler=self._api_audit, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/audit/clear", handler=self._api_audit_clear, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/backup/export", handler=self._api_backup_export, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/backup/import", handler=self._api_backup_import, methods=["POST"]
+        )
+
+        r.register_http_route(
+            mn, "/api/files/browse", handler=self._api_files_browse, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/files/read", handler=self._api_files_read, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/files/write", handler=self._api_files_write, methods=["PUT"]
+        )
+        r.register_http_route(
+            mn, "/api/files/upload", handler=self._api_files_upload, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/download", handler=self._api_files_download, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/files/mkdir", handler=self._api_files_mkdir, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/delete", handler=self._api_files_delete, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/rename", handler=self._api_files_rename, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/copy", handler=self._api_files_copy, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/chmod", handler=self._api_files_chmod, methods=["POST"]
+        )
+        r.register_http_route(
+            mn, "/api/files/stat", handler=self._api_files_stat, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/files/search", handler=self._api_files_search, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/files/compress",
+            handler=self._api_files_compress,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/files/decompress",
+            handler=self._api_files_decompress,
+            methods=["POST"],
+        )
+
+        r.register_http_route(
+            mn, "/api/commands", handler=self._api_commands, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/commands/{name}",
+            handler=self._api_command_update,
+            methods=["PUT"],
+        )
+
+        r.register_http_route(
+            mn, "/api/views", handler=self._api_views, methods=["GET"]
+        )
 
         # 集群管理 API
-        r.register_http_route(mn, "/api/cluster/nodes", handler=self._api_cluster_nodes_list, methods=["GET"])
-        r.register_http_route(mn, "/api/cluster/nodes", handler=self._api_cluster_nodes_add, methods=["POST"])
-        r.register_http_route(mn, "/api/cluster/nodes/{node_id}", handler=self._api_cluster_nodes_update, methods=["PUT"])
-        r.register_http_route(mn, "/api/cluster/nodes/{node_id}", handler=self._api_cluster_nodes_delete, methods=["DELETE"])
-        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/ping", handler=self._api_cluster_ping, methods=["POST"])
-        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/probe", handler=self._api_cluster_probe, methods=["POST"])
-        r.register_http_route(mn, "/api/cluster/nodes/{node_id}/status", handler=self._api_cluster_node_status, methods=["GET"])
-        r.register_http_route(mn, "/api/cluster/proxy/{node_id}/{path:path}", handler=self._api_cluster_proxy, methods=["GET", "POST", "PUT", "DELETE"])
-        r.register_http_route(mn, "/api/cluster/overview", handler=self._api_cluster_overview, methods=["GET"])
-        r.register_http_route(mn, "/api/cluster/sync/events", handler=self._api_cluster_sync_events, methods=["POST"])
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes",
+            handler=self._api_cluster_nodes_list,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes",
+            handler=self._api_cluster_nodes_add,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes/{node_id}",
+            handler=self._api_cluster_nodes_update,
+            methods=["PUT"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes/{node_id}",
+            handler=self._api_cluster_nodes_delete,
+            methods=["DELETE"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes/{node_id}/ping",
+            handler=self._api_cluster_ping,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes/{node_id}/probe",
+            handler=self._api_cluster_probe,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/nodes/{node_id}/status",
+            handler=self._api_cluster_node_status,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/proxy/{node_id}/{path:path}",
+            handler=self._api_cluster_proxy,
+            methods=["GET", "POST", "PUT", "DELETE"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/overview",
+            handler=self._api_cluster_overview,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/cluster/sync/events",
+            handler=self._api_cluster_sync_events,
+            methods=["POST"],
+        )
 
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
@@ -1115,7 +1443,8 @@ class Main(BaseModule):
             self._login_fails = 0
         if self._login_fails >= 10:
             return JSONResponse(
-                {"success": False, "error": "Too many attempts, try again later"}, status_code=429
+                {"success": False, "error": "Too many attempts, try again later"},
+                status_code=429,
             )
         body = await request.json()
         token = body.get("token", "")
@@ -1180,11 +1509,12 @@ class Main(BaseModule):
 
     async def _api_adapter_logos(self, request: Request) -> JSONResponse:
         import os as _os
+
         logo_dir = Path(__file__).parent / "static" / "res" / "adapter_logo"
         logos = {}
         if logo_dir.exists() and logo_dir.is_dir():
             for f in _os.listdir(str(logo_dir)):
-                if f.lower().endswith('.png'):
+                if f.lower().endswith(".png"):
                     name = f[:-4]
                     logos[name] = "/Dashboard/static/res/adapter_logo/" + f
         return JSONResponse({"logos": logos})
@@ -1261,12 +1591,16 @@ class Main(BaseModule):
         elif action == "enable":
             result = self.sdk.module.enable(name)
             if not result:
-                return JSONResponse({"error": "enable failed (module not registered)"}, status_code=400)
+                return JSONResponse(
+                    {"error": "enable failed (module not registered)"}, status_code=400
+                )
             self._add_audit_log("enable_module", name, request)
             return JSONResponse({"success": True})
         elif action == "disable":
             if name == "Dashboard":
-                return JSONResponse({"error": "Cannot disable Dashboard module"}, status_code=400)
+                return JSONResponse(
+                    {"error": "Cannot disable Dashboard module"}, status_code=400
+                )
             result = self.sdk.module.disable(name)
             if not result:
                 return JSONResponse({"error": "disable failed"}, status_code=400)
@@ -1274,7 +1608,9 @@ class Main(BaseModule):
             return JSONResponse({"success": True})
         elif action == "reload":
             if name == "Dashboard":
-                return JSONResponse({"error": "Cannot reload Dashboard from dashboard"}, status_code=400)
+                return JSONResponse(
+                    {"error": "Cannot reload Dashboard from dashboard"}, status_code=400
+                )
             await self.sdk.module.unload(name)
             result = await self.sdk.module.load(name)
             if not result:
@@ -1283,28 +1619,33 @@ class Main(BaseModule):
             return JSONResponse({"success": True})
         elif action == "uninstall":
             if name == "Dashboard":
-                return JSONResponse({"error": "Cannot uninstall Dashboard"}, status_code=400)
+                return JSONResponse(
+                    {"error": "Cannot uninstall Dashboard"}, status_code=400
+                )
             pkg_name = body.get("package", "")
             if not pkg_name:
                 info = self.sdk.module.get_info(name)
                 if info and info.get("package"):
                     pkg_name = info["package"]
                 else:
-                    return JSONResponse({"error": "package name required for uninstall"}, status_code=400)
+                    return JSONResponse(
+                        {"error": "package name required for uninstall"},
+                        status_code=400,
+                    )
             if self.sdk.module.is_loaded(name):
                 await self.sdk.module.unload(name)
             self.sdk.module.disable(name)
             task_id = secrets.token_urlsafe(8)
             t = threading.Thread(
-                target=self._run_pip_uninstall, args=(pkg_name, name, task_id), daemon=True
+                target=self._run_pip_uninstall,
+                args=(pkg_name, name, task_id),
+                daemon=True,
             )
             t.start()
             self._add_audit_log("uninstall_module", f"{name} ({pkg_name})", request)
             return JSONResponse({"success": True, "task_id": task_id})
         else:
-            return JSONResponse(
-                {"error": f"unknown action: {action}"}, status_code=400
-            )
+            return JSONResponse({"error": f"unknown action: {action}"}, status_code=400)
 
     def _run_pip_uninstall(self, package_name: str, module_name: str, task_id: str):
         self._install_tasks[task_id] = {
@@ -1312,34 +1653,42 @@ class Main(BaseModule):
             "started_at": time.time(),
             "packages": [package_name],
         }
-        self._safe_broadcast({
-            "type": "install_progress",
-            "task_id": task_id,
-            "status": "running",
-            "packages": [package_name],
-        })
+        self._safe_broadcast(
+            {
+                "type": "install_progress",
+                "task_id": task_id,
+                "status": "running",
+                "packages": [package_name],
+            }
+        )
         try:
             cmd = [sys.executable, "-m", "pip", "uninstall", "-y", package_name]
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if proc.returncode == 0:
                 self.sdk.module.unregister(module_name)
-                self.sdk.config.setConfig(f"ErisPulse.modules.status.{module_name}", None)
+                self.sdk.config.setConfig(
+                    f"ErisPulse.modules.status.{module_name}", None
+                )
                 self._install_tasks[task_id] = {
                     "status": "success",
                     "started_at": time.time(),
                     "packages": [package_name],
                     "output": proc.stdout.splitlines()[-20:],
                 }
-                self._safe_broadcast({
-                    "type": "install_progress",
-                    "task_id": task_id,
-                    "status": "success",
-                    "output": proc.stdout.splitlines()[-20:],
-                })
-                self._safe_broadcast({
-                    "type": "module_changed",
-                    "data": {"name": module_name, "action": "uninstalled"},
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "install_progress",
+                        "task_id": task_id,
+                        "status": "success",
+                        "output": proc.stdout.splitlines()[-20:],
+                    }
+                )
+                self._safe_broadcast(
+                    {
+                        "type": "module_changed",
+                        "data": {"name": module_name, "action": "uninstalled"},
+                    }
+                )
             else:
                 self._install_tasks[task_id] = {
                     "status": "error",
@@ -1347,12 +1696,16 @@ class Main(BaseModule):
                     "packages": [package_name],
                     "error": proc.stderr,
                 }
-                self._safe_broadcast({
-                    "type": "install_progress",
-                    "task_id": task_id,
-                    "status": "error",
-                    "message": proc.stderr[-500:] if proc.stderr else "Uninstall failed",
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "install_progress",
+                        "task_id": task_id,
+                        "status": "error",
+                        "message": proc.stderr[-500:]
+                        if proc.stderr
+                        else "Uninstall failed",
+                    }
+                )
         except Exception as e:
             self._install_tasks[task_id] = {
                 "status": "error",
@@ -1360,12 +1713,14 @@ class Main(BaseModule):
                 "packages": [package_name],
                 "error": str(e),
             }
-            self._safe_broadcast({
-                "type": "install_progress",
-                "task_id": task_id,
-                "status": "error",
-                "message": str(e),
-            })
+            self._safe_broadcast(
+                {
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "error",
+                    "message": str(e),
+                }
+            )
 
     async def _api_bots(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -1395,7 +1750,13 @@ class Main(BaseModule):
             evts = [e for e in evts if e["type"] == et]
         if ep:
             evts = [e for e in evts if e["platform"] == ep]
-        return JSONResponse({"events": evts[-limit:], "total": len(evts), "total_count": self._total_event_count})
+        return JSONResponse(
+            {
+                "events": evts[-limit:],
+                "total": len(evts),
+                "total_count": self._total_event_count,
+            }
+        )
 
     async def _api_events_clear(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -1474,7 +1835,9 @@ class Main(BaseModule):
         index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_install, args=(packages, task_id, force, index_url), daemon=True
+            target=self._run_pip_install,
+            args=(packages, task_id, force, index_url),
+            daemon=True,
         )
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
@@ -1511,7 +1874,9 @@ class Main(BaseModule):
         index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_upgrade, args=(packages, task_id, index_url), daemon=True
+            target=self._run_pip_upgrade,
+            args=(packages, task_id, index_url),
+            daemon=True,
         )
         t.start()
         self._add_audit_log("package_upgrade", ", ".join(packages), request)
@@ -1529,7 +1894,9 @@ class Main(BaseModule):
         index_url = body.get("index_url", "") or None
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_install, args=(packages, task_id, force, index_url), daemon=True
+            target=self._run_pip_install,
+            args=(packages, task_id, force, index_url),
+            daemon=True,
         )
         t.start()
         self._add_audit_log("package_install", ", ".join(packages), request)
@@ -1544,8 +1911,12 @@ class Main(BaseModule):
         if not package:
             return JSONResponse({"error": "package required"}, status_code=400)
         protected = {"erispulse", "erispulse-dashboard"}
-        if package.lower().replace("-", "").replace("_", "") in {p.replace("-", "").replace("_", "") for p in protected}:
-            return JSONResponse({"error": "Cannot uninstall core package"}, status_code=400)
+        if package.lower().replace("-", "").replace("_", "") in {
+            p.replace("-", "").replace("_", "") for p in protected
+        }:
+            return JSONResponse(
+                {"error": "Cannot uninstall core package"}, status_code=400
+            )
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
             target=self._run_pip_uninstall, args=(package, "", task_id), daemon=True
@@ -1555,7 +1926,9 @@ class Main(BaseModule):
         self._get_pkg_manager().invalidate_caches()
         return JSONResponse({"success": True, "task_id": task_id})
 
-    def _run_pip_upgrade(self, packages: list[str], task_id: str, index_url: str = None):
+    def _run_pip_upgrade(
+        self, packages: list[str], task_id: str, index_url: str = None
+    ):
         cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
         if index_url:
             cmd.extend(["--index-url", index_url])
@@ -1565,12 +1938,14 @@ class Main(BaseModule):
             "started_at": time.time(),
             "packages": packages,
         }
-        self._safe_broadcast({
-            "type": "install_progress",
-            "task_id": task_id,
-            "status": "running",
-            "packages": packages,
-        })
+        self._safe_broadcast(
+            {
+                "type": "install_progress",
+                "task_id": task_id,
+                "status": "running",
+                "packages": packages,
+            }
+        )
         try:
             proc = subprocess.Popen(
                 cmd,
@@ -1586,12 +1961,14 @@ class Main(BaseModule):
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
                         if len(combined_lines) % 5 == 0:
-                            self._safe_broadcast({
-                                "type": "install_progress",
-                                "task_id": task_id,
-                                "status": "running",
-                                "output": combined_lines[-10:],
-                            })
+                            self._safe_broadcast(
+                                {
+                                    "type": "install_progress",
+                                    "task_id": task_id,
+                                    "status": "running",
+                                    "output": combined_lines[-10:],
+                                }
+                            )
                 except Exception:
                     pass
                 pipe.close()
@@ -1607,12 +1984,14 @@ class Main(BaseModule):
                 proc.kill()
                 proc.wait()
                 self._install_tasks[task_id]["status"] = "timeout"
-                self._safe_broadcast({
-                    "type": "install_progress",
-                    "task_id": task_id,
-                    "status": "error",
-                    "message": "Upgrade timed out (5 min)",
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "install_progress",
+                        "task_id": task_id,
+                        "status": "error",
+                        "message": "Upgrade timed out (5 min)",
+                    }
+                )
                 return
 
             t_out.join(timeout=10)
@@ -1621,33 +2000,43 @@ class Main(BaseModule):
             if proc.returncode == 0:
                 self._install_tasks[task_id]["status"] = "success"
                 self._install_tasks[task_id]["output"] = combined_lines
-                self._safe_broadcast({
-                    "type": "install_progress",
-                    "task_id": task_id,
-                    "status": "success",
-                    "output": combined_lines,
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "install_progress",
+                        "task_id": task_id,
+                        "status": "success",
+                        "output": combined_lines,
+                    }
+                )
                 self._get_pkg_manager().invalidate_caches()
-                self._safe_broadcast({"type": "module_changed", "data": {"action": "upgraded"}})
+                self._safe_broadcast(
+                    {"type": "module_changed", "data": {"action": "upgraded"}}
+                )
             else:
                 self._install_tasks[task_id]["status"] = "error"
                 self._install_tasks[task_id]["error"] = "\n".join(combined_lines[-20:])
-                self._safe_broadcast({
-                    "type": "install_progress",
-                    "task_id": task_id,
-                    "status": "error",
-                    "output": combined_lines,
-                    "message": "\n".join(combined_lines[-10:]) if combined_lines else "Unknown error",
-                })
+                self._safe_broadcast(
+                    {
+                        "type": "install_progress",
+                        "task_id": task_id,
+                        "status": "error",
+                        "output": combined_lines,
+                        "message": "\n".join(combined_lines[-10:])
+                        if combined_lines
+                        else "Unknown error",
+                    }
+                )
         except Exception as e:
             self._install_tasks[task_id]["status"] = "error"
             self._install_tasks[task_id]["error"] = str(e)
-            self._safe_broadcast({
-                "type": "install_progress",
-                "task_id": task_id,
-                "status": "error",
-                "message": str(e),
-            })
+            self._safe_broadcast(
+                {
+                    "type": "install_progress",
+                    "task_id": task_id,
+                    "status": "error",
+                    "message": str(e),
+                }
+            )
 
     async def _api_store_install_status(self, request: Request) -> JSONResponse:
         tid = request.query_params.get("task_id", "")
@@ -1661,7 +2050,9 @@ class Main(BaseModule):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         package = request.query_params.get("package", "")
         if not package:
-            return JSONResponse({"error": "package parameter required"}, status_code=400)
+            return JSONResponse(
+                {"error": "package parameter required"}, status_code=400
+            )
         try:
             detail = await self._get_pkg_manager().get_package_detail(package)
             return JSONResponse(detail)
@@ -1698,7 +2089,13 @@ class Main(BaseModule):
         return JSONResponse({"success": True, "task_id": task_id})
 
     def _run_pip_install_file(
-        self, file_path: str, filename: str, tmp_dir: str, task_id: str, force: bool = False, index_url: str = None
+        self,
+        file_path: str,
+        filename: str,
+        tmp_dir: str,
+        task_id: str,
+        force: bool = False,
+        index_url: str = None,
     ):
         self._install_tasks[task_id] = {
             "status": "running",
@@ -1831,7 +2228,7 @@ class Main(BaseModule):
 
         async def _delayed_restart():
             await asyncio.sleep(0.5)
-            if hasattr(self.sdk, 'hard_restart'):
+            if hasattr(self.sdk, "hard_restart"):
                 await self.sdk.hard_restart()
             else:
                 await self.sdk.restart()
@@ -1846,27 +2243,31 @@ class Main(BaseModule):
         modules = []
         for name in self.sdk.module.list_registered():
             info = self.sdk.module.get_info(name) or {}
-            modules.append({
-                "name": name,
-                "type": "module",
-                "enabled": self.sdk.module.is_enabled(name),
-                "loaded": self.sdk.module.is_loaded(name),
-                "version": info.get("version", ""),
-                "description": info.get("description", ""),
-                "author": info.get("author", ""),
-                "package": info.get("package", ""),
-            })
+            modules.append(
+                {
+                    "name": name,
+                    "type": "module",
+                    "enabled": self.sdk.module.is_enabled(name),
+                    "loaded": self.sdk.module.is_loaded(name),
+                    "version": info.get("version", ""),
+                    "description": info.get("description", ""),
+                    "author": info.get("author", ""),
+                    "package": info.get("package", ""),
+                }
+            )
         for name in self.sdk.adapter.list_registered():
-            modules.append({
-                "name": name,
-                "type": "adapter",
-                "enabled": self.sdk.adapter.is_enabled(name),
-                "loaded": self.sdk.adapter.is_running(name),
-                "version": "",
-                "description": "",
-                "author": "",
-                "package": "",
-            })
+            modules.append(
+                {
+                    "name": name,
+                    "type": "adapter",
+                    "enabled": self.sdk.adapter.is_enabled(name),
+                    "loaded": self.sdk.adapter.is_running(name),
+                    "version": "",
+                    "description": "",
+                    "author": "",
+                    "package": "",
+                }
+            )
         return JSONResponse({"modules": modules})
 
     async def _ws_handler(self, websocket: WebSocket):
@@ -1876,6 +2277,7 @@ class Main(BaseModule):
             return
         self._ws_clients.append(websocket)
         try:
+
             async def _heartbeat():
                 while websocket in self._ws_clients:
                     await asyncio.sleep(30)
@@ -1883,6 +2285,7 @@ class Main(BaseModule):
                         await websocket.send_json({"type": "ping"})
                     except Exception:
                         break
+
             hb = asyncio.create_task(_heartbeat())
             try:
                 while True:
@@ -1897,11 +2300,11 @@ class Main(BaseModule):
 
     def _get_html(self) -> str:
         from pathlib import Path
-        
+
         current_dir = Path(__file__).parent
         _html_path = current_dir / "static" / "dash.html"
-        
-        return _html_path.read_text(encoding='utf-8')
+
+        return _html_path.read_text(encoding="utf-8")
 
     # ========== 事件构建器相关 API ==========
 
@@ -1909,48 +2312,70 @@ class Main(BaseModule):
         """验证事件数据"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         body = await request.json()
         event_type = body.get("type")
-        
+
         # 事件类型定义
         EVENT_TYPES = {
             "message": {
-                "detail_types": ["private", "group", "channel", "guild", "thread", "user"],
+                "detail_types": [
+                    "private",
+                    "group",
+                    "channel",
+                    "guild",
+                    "thread",
+                    "user",
+                ],
                 "required_fields": ["message", "alt_message", "user_id"],
-                "optional_fields": ["group_id", "channel_id", "guild_id", "user_nickname", "message_id"]
+                "optional_fields": [
+                    "group_id",
+                    "channel_id",
+                    "guild_id",
+                    "user_nickname",
+                    "message_id",
+                ],
             },
             "notice": {
-                "detail_types": ["friend_increase", "friend_decrease", "group_member_increase", "group_member_decrease"],
+                "detail_types": [
+                    "friend_increase",
+                    "friend_decrease",
+                    "group_member_increase",
+                    "group_member_decrease",
+                ],
                 "required_fields": ["user_id"],
-                "optional_fields": ["user_nickname", "group_id", "operator_id", "operator_nickname"]
+                "optional_fields": [
+                    "user_nickname",
+                    "group_id",
+                    "operator_id",
+                    "operator_nickname",
+                ],
             },
             "request": {
                 "detail_types": ["friend", "group"],
                 "required_fields": ["user_id", "comment"],
-                "optional_fields": ["user_nickname", "group_id"]
+                "optional_fields": ["user_nickname", "group_id"],
             },
             "meta": {
                 "detail_types": ["connect", "disconnect", "heartbeat"],
                 "required_fields": [],
-                "optional_fields": []
-            }
+                "optional_fields": [],
+            },
         }
-        
+
         if event_type not in EVENT_TYPES:
-            return JSONResponse({
-                "valid": False,
-                "errors": [f"未知的事件类型: {event_type}"]
-            })
-        
+            return JSONResponse(
+                {"valid": False, "errors": [f"未知的事件类型: {event_type}"]}
+            )
+
         type_def = EVENT_TYPES[event_type]
         errors = []
-        
+
         # 验证必填字段
         for field in type_def["required_fields"]:
             if field not in body or body[field] is None or body[field] == "":
                 errors.append(f"缺少必填字段: {field}")
-        
+
         # 验证时间戳
         if "time" in body:
             try:
@@ -1959,29 +2384,32 @@ class Main(BaseModule):
                     errors.append("时间戳格式不正确（应为 10 位 Unix 时间戳）")
             except (ValueError, TypeError):
                 errors.append("时间戳必须是数字")
-        
-        return JSONResponse({
-            "valid": len(errors) == 0,
-            "errors": errors,
-            "warnings": []
-        })
+
+        return JSONResponse(
+            {"valid": len(errors) == 0, "errors": errors, "warnings": []}
+        )
 
     async def _api_builder_submit(self, request: Request) -> JSONResponse:
         """提交构建的事件"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         body = await request.json()
-        
+
         # 先验证
         validation = await self._api_builder_validate(request)
-        validation_data = validation.body.decode() if hasattr(validation, 'body') else {}
+        validation_data = (
+            validation.body.decode() if hasattr(validation, "body") else {}
+        )
         if isinstance(validation_data, str):
             validation_data = json.loads(validation_data)
-        
+
         if not validation_data.get("valid", False):
-            return JSONResponse({"success": False, "errors": validation_data.get("errors", [])}, status_code=400)
-        
+            return JSONResponse(
+                {"success": False, "errors": validation_data.get("errors", [])},
+                status_code=400,
+            )
+
         # 发送事件到适配器系统
         try:
             await self.sdk.adapter.emit(body)
@@ -1994,53 +2422,59 @@ class Main(BaseModule):
         """获取支持的消息段类型"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
-        return JSONResponse({
-            "standard_segments": [
-                {
-                    "type": "text",
-                    "name": "文本",
-                    "fields": [
-                        {"name": "text", "type": "string", "required": True}
-                    ]
-                },
-                {
-                    "type": "mention",
-                    "name": "@用户",
-                    "fields": [
-                        {"name": "user_id", "type": "string", "required": True},
-                        {"name": "user_name", "type": "string", "required": False}
-                    ]
-                },
-                {
-                    "type": "mention_all",
-                    "name": "@全体",
-                    "fields": []
-                },
-                {
-                    "type": "image",
-                    "name": "图片",
-                    "fields": [
-                        {"name": "file", "type": "string", "required": True}
-                    ]
-                },
-                {
-                    "type": "reply",
-                    "name": "回复",
-                    "fields": [
-                        {"name": "message_id", "type": "string", "required": True}
-                    ]
-                }
-            ],
-            "platform_segments": {
-                "yunhu": [
-                    {"type": "yunhu_form", "name": "表单", "fields": [{"name": "form_id", "type": "string"}]}
+
+        return JSONResponse(
+            {
+                "standard_segments": [
+                    {
+                        "type": "text",
+                        "name": "文本",
+                        "fields": [
+                            {"name": "text", "type": "string", "required": True}
+                        ],
+                    },
+                    {
+                        "type": "mention",
+                        "name": "@用户",
+                        "fields": [
+                            {"name": "user_id", "type": "string", "required": True},
+                            {"name": "user_name", "type": "string", "required": False},
+                        ],
+                    },
+                    {"type": "mention_all", "name": "@全体", "fields": []},
+                    {
+                        "type": "image",
+                        "name": "图片",
+                        "fields": [
+                            {"name": "file", "type": "string", "required": True}
+                        ],
+                    },
+                    {
+                        "type": "reply",
+                        "name": "回复",
+                        "fields": [
+                            {"name": "message_id", "type": "string", "required": True}
+                        ],
+                    },
                 ],
-                "telegram": [
-                    {"type": "telegram_sticker", "name": "贴纸", "fields": [{"name": "file_id", "type": "string"}]}
-                ]
+                "platform_segments": {
+                    "yunhu": [
+                        {
+                            "type": "yunhu_form",
+                            "name": "表单",
+                            "fields": [{"name": "form_id", "type": "string"}],
+                        }
+                    ],
+                    "telegram": [
+                        {
+                            "type": "telegram_sticker",
+                            "name": "贴纸",
+                            "fields": [{"name": "file_id", "type": "string"}],
+                        }
+                    ],
+                },
             }
-        })
+        )
 
     # ========== 框架版本/更新相关 API ==========
 
@@ -2051,14 +2485,19 @@ class Main(BaseModule):
         current = self._get_framework_info()["version"]
         versions = await self._fetch_pypi_versions("ErisPulse", pre)
         can_update = sys.platform != "win32"
-        return JSONResponse({"current": current, "versions": versions, "can_update": can_update})
+        return JSONResponse(
+            {"current": current, "versions": versions, "can_update": can_update}
+        )
 
     async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
         import urllib.request
         import re
+
         try:
             url = f"https://pypi.org/pypi/{package}/json"
-            req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+            )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except Exception:
@@ -2068,11 +2507,12 @@ class Main(BaseModule):
         for ver, files in releases.items():
             if not files:
                 continue
-            if not pre and re.search(r'(a|alpha|b|beta|rc|dev|preview)', ver, re.I):
+            if not pre and re.search(r"(a|alpha|b|beta|rc|dev|preview)", ver, re.I):
                 continue
             all_versions.append(ver)
         try:
             from packaging.version import parse as vp
+
             all_versions.sort(key=lambda v: vp(v), reverse=True)
         except Exception:
             all_versions.sort(reverse=True)
@@ -2087,7 +2527,9 @@ class Main(BaseModule):
             return JSONResponse({"error": "version required"}, status_code=400)
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
-            target=self._run_pip_install, args=([f"ErisPulse=={version}"], task_id, True, None), daemon=True
+            target=self._run_pip_install,
+            args=([f"ErisPulse=={version}"], task_id, True, None),
+            daemon=True,
         )
         t.start()
         self._add_audit_log("framework_update", f"ErisPulse=={version}", request)
@@ -2099,58 +2541,61 @@ class Main(BaseModule):
         """获取/更新配置文件源码"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         from pathlib import Path
+
         config_path = Path.cwd() / "config" / "config.toml"
-        
+
         if request.method == "POST":
             body = await request.json()
             content = body.get("content", "")
-            
+
             try:
-                config_path.write_text(content, encoding='utf-8')
+                config_path.write_text(content, encoding="utf-8")
                 self.sdk.config.reload()
                 self._add_audit_log("config_source_save", "", request)
                 return JSONResponse({"success": True})
             except Exception as e:
-                return JSONResponse({"success": False, "error": str(e)}, status_code=400)
+                return JSONResponse(
+                    {"success": False, "error": str(e)}, status_code=400
+                )
         else:
             if config_path.exists():
-                content = config_path.read_text(encoding='utf-8')
+                content = config_path.read_text(encoding="utf-8")
                 return JSONResponse({"content": content})
             else:
                 return JSONResponse({"error": "Config file not found"}, status_code=404)
 
     # ========== 日志相关 API ==========
-    
+
     async def _api_logs(self, request: Request) -> JSONResponse:
         """获取日志"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         limit = int(request.query_params.get("limit", "100"))
         module_filter = request.query_params.get("module", "")
         level_filter = request.query_params.get("level", "")
         search = request.query_params.get("search", "").lower()
-        
+
         # 获取所有日志
         all_logs = self.sdk.logger.get_logs()
         logs_list = []
-        
+
         import re
-        
+
         for module_name, logs in all_logs.items():
             # 模块过滤（支持部分匹配）
             if module_filter and module_filter.lower() not in module_name.lower():
                 continue
-                
+
             for log_entry in logs:
                 # 解析日志条目
                 # 格式1: "timestamp - message" (标准格式)
                 # 格式2: "timestamp module message" (当前实际格式)
                 timestamp_str = ""
                 message = ""
-                
+
                 if " - " in log_entry:
                     parts = log_entry.split(" - ", 1)
                     timestamp_str = parts[0]
@@ -2158,7 +2603,10 @@ class Main(BaseModule):
                 else:
                     # 尝试解析格式2: "2026-04-22 12:30:00 ErisPulse.ErisPulse 消息内容"
                     # 使用正则匹配日期时间开头
-                    match = re.match(r'^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.+)$', log_entry)
+                    match = re.match(
+                        r"^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.+)$",
+                        log_entry,
+                    )
                     if match:
                         timestamp_str = match.group(1)
                         log_module = match.group(2)
@@ -2166,174 +2614,211 @@ class Main(BaseModule):
                     else:
                         # 完全无法解析，使用原始内容
                         message = log_entry
-                
+
                 # 级别过滤
                 if level_filter:
                     level = level_filter.upper()
                     # 从消息中提取级别（如 [DEBUG], [INFO] 等）
-                    level_match = re.search(r'\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]', message)
+                    level_match = re.search(
+                        r"\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]", message
+                    )
                     if level_match:
                         log_level = level_match.group(1)
                         if log_level != level:
                             continue
-                
+
                 # 提取日志级别
                 log_level = ""
-                level_match = re.search(r'\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]', message)
+                level_match = re.search(
+                    r"\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]", message
+                )
                 if level_match:
                     log_level = level_match.group(1)
-                
+
                 # 搜索过滤
                 if search and search not in message.lower():
                     continue
-                
-                logs_list.append({
-                    "module": module_name,
-                    "timestamp": timestamp_str,
-                    "message": message,
-                    "level": log_level,
-                    "full": log_entry
-                })
-        
+
+                logs_list.append(
+                    {
+                        "module": module_name,
+                        "timestamp": timestamp_str,
+                        "message": message,
+                        "level": log_level,
+                        "full": log_entry,
+                    }
+                )
+
         # 按时间排序（如果有时间戳）
         logs_list.sort(key=lambda x: x["timestamp"] or "", reverse=True)
-        
-        return JSONResponse({
-            "logs": logs_list[:limit],
-            "total": len(logs_list)
-        })
-    
+
+        return JSONResponse({"logs": logs_list[:limit], "total": len(logs_list)})
+
     async def _api_logs_clear(self, request: Request) -> JSONResponse:
         """清空日志（注意：这只是清空 Dashboard 缓存，实际的日志仍在 logger 模块中）"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         # 清空 Dashboard 缓存的日志
         # 注意：实际的日志仍在 sdk.logger 中，这里只清空我们存储的引用
         return JSONResponse({"success": True, "message": "日志缓存已清空"})
 
     # ========== 生命周期相关 API ==========
-    
+
     async def _api_lifecycle(self, request: Request) -> JSONResponse:
         """获取生命周期事件"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
-        return JSONResponse({
-            "events": list(self._lifecycle_log),
-            "total": len(self._lifecycle_log)
-        })
-    
+
+        return JSONResponse(
+            {"events": list(self._lifecycle_log), "total": len(self._lifecycle_log)}
+        )
+
     async def _api_lifecycle_clear(self, request: Request) -> JSONResponse:
         """清空生命周期事件"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         self._lifecycle_log.clear()
         self._lifecycle_counts.clear()
         return JSONResponse({"success": True})
 
     # ========== 性能监控相关 API ==========
-    
+
     async def _api_performance(self, request: Request) -> JSONResponse:
         """获取性能监控数据"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         system_status = await self._get_system_status()
-        
+
         # 添加 WebSocket 连接统计
         ws_stats = {
             "active_connections": len(self._ws_clients),
             "uptime_seconds": system_status["uptime_seconds"],
-            "uptime_human": system_status["uptime_human"]
+            "uptime_human": system_status["uptime_human"],
         }
-        
-        return JSONResponse({
-            "system": system_status,
-            "websocket": ws_stats,
-            "lifecycle_counts": self._lifecycle_counts
-        })
+
+        return JSONResponse(
+            {
+                "system": system_status,
+                "websocket": ws_stats,
+                "lifecycle_counts": self._lifecycle_counts,
+            }
+        )
 
     # ========== API 路由列表相关 API ==========
     async def _api_routes(self, request: Request) -> JSONResponse:
         """获取所有注册的 API 路由"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         # 获取路由管理器中的内部路由信息
         router_manager = self.sdk.router
         http_routes_dict = router_manager._http_routes
         ws_routes_dict = router_manager._websocket_routes
-        
+
         http_routes = []
         for module_name, paths in http_routes_dict.items():
             for path, methods in paths.items():
                 for method, handler in methods.items():
                     # 获取处理器信息
                     import inspect
-                    handler_name = handler.__name__ if hasattr(handler, '__name__') else 'unknown'
-                    handler_file = inspect.getfile(handler) if inspect.isfunction(handler) else 'unknown'
-                    handler_line = inspect.getsourcelines(handler)[0] if inspect.isfunction(handler) else 'unknown'
-                    
-                    http_routes.append({
-                        "path": path.replace('/' + module_name, '', 1) or '/',  # 移除模块前缀
+
+                    handler_name = (
+                        handler.__name__ if hasattr(handler, "__name__") else "unknown"
+                    )
+                    handler_file = (
+                        inspect.getfile(handler)
+                        if inspect.isfunction(handler)
+                        else "unknown"
+                    )
+                    handler_line = (
+                        inspect.getsourcelines(handler)[0]
+                        if inspect.isfunction(handler)
+                        else "unknown"
+                    )
+
+                    http_routes.append(
+                        {
+                            "path": path.replace("/" + module_name, "", 1)
+                            or "/",  # 移除模块前缀
+                            "full_path": path,
+                            "method": method,
+                            "module": module_name,
+                            "handler": {
+                                "name": handler_name,
+                                "file": handler_file,
+                                "line": handler_line,
+                            },
+                        }
+                    )
+
+        ws_routes = []
+        for module_name, paths in ws_routes_dict.items():
+            for path, route_info in paths.items():
+                if isinstance(route_info, tuple):
+                    handler = route_info[0]
+                    auth_handler = route_info[1] if len(route_info) > 1 else None
+                    auto_accept = route_info[2] if len(route_info) > 2 else True
+                else:
+                    handler = route_info
+                    auth_handler = None
+                    auto_accept = True
+                import inspect
+
+                handler_name = (
+                    handler.__name__ if hasattr(handler, "__name__") else "unknown"
+                )
+                handler_file = (
+                    inspect.getfile(handler)
+                    if inspect.isfunction(handler)
+                    else "unknown"
+                )
+                handler_line = (
+                    inspect.getsourcelines(handler)[0]
+                    if inspect.isfunction(handler)
+                    else "unknown"
+                )
+
+                ws_routes.append(
+                    {
+                        "path": path.replace("/" + module_name, "", 1)
+                        or "/",  # 移除模块前缀
                         "full_path": path,
-                        "method": method,
                         "module": module_name,
+                        "has_auth": auth_handler is not None,
+                        "auto_accept": auto_accept,
                         "handler": {
                             "name": handler_name,
                             "file": handler_file,
-                            "line": handler_line
-                        }
-                    })
-        
-        ws_routes = []
-        for module_name, paths in ws_routes_dict.items():
-            for path, (handler, auth_handler) in paths.items():
-                # 获取处理器信息
-                import inspect
-                handler_name = handler.__name__ if hasattr(handler, '__name__') else 'unknown'
-                handler_file = inspect.getfile(handler) if inspect.isfunction(handler) else 'unknown'
-                handler_line = inspect.getsourcelines(handler)[0] if inspect.isfunction(handler) else 'unknown'
-                
-                ws_routes.append({
-                    "path": path.replace('/' + module_name, '', 1) or '/',  # 移除模块前缀
-                    "full_path": path,
-                    "module": module_name,
-                    "has_auth": auth_handler is not None,
-                    "handler": {
-                        "name": handler_name,
-                        "file": handler_file,
-                        "line": handler_line
+                            "line": handler_line,
+                        },
                     }
-                })
-        
-        return JSONResponse({
-            "http_routes": http_routes,
-            "ws_routes": ws_routes
-        })
+                )
+
+        return JSONResponse({"http_routes": http_routes, "ws_routes": ws_routes})
 
     # ========== 消息统计相关 API ==========
-    
+
     async def _api_message_stats(self, request: Request) -> JSONResponse:
         """获取消息统计"""
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
-        
+
         # 从事件日志中统计
         type_counts = {}
         platform_counts = {}
-        
+
         for event in self._event_log:
             # 按类型统计
             event_type = event.get("type", "unknown")
             type_counts[event_type] = type_counts.get(event_type, 0) + 1
-            
+
             # 按平台统计
             platform = event.get("platform", "unknown")
             platform_counts[platform] = platform_counts.get(platform, 0) + 1
-        
+
         # 按小时聚合（最近24小时）
         hourly_stats = {}
         now = time.time()
@@ -2341,16 +2826,18 @@ class Main(BaseModule):
             event_time = event.get("time", 0)
             if now - event_time > 86400:  # 超过24小时
                 continue
-            
+
             hour_key = int(event_time // 3600) * 3600
             hourly_stats[hour_key] = hourly_stats.get(hour_key, 0) + 1
-        
-        return JSONResponse({
-            "total_events": self._total_event_count,
-            "by_type": type_counts,
-            "by_platform": platform_counts,
-            "hourly": hourly_stats
-        })
+
+        return JSONResponse(
+            {
+                "total_events": self._total_event_count,
+                "by_type": type_counts,
+                "by_platform": platform_counts,
+                "hourly": hourly_stats,
+            }
+        )
 
     # ========== 操作审计日志 API ==========
 
@@ -2409,8 +2896,18 @@ class Main(BaseModule):
                 if key.startswith("__ep_"):
                     continue
                 self.storage.set(key, value)
-        self._add_audit_log("backup_import", f"config: {len(config_data)} keys, storage: {len(storage_data)} keys", request)
-        return JSONResponse({"success": True, "config_restored": len(config_data), "storage_restored": len(storage_data)})
+        self._add_audit_log(
+            "backup_import",
+            f"config: {len(config_data)} keys, storage: {len(storage_data)} keys",
+            request,
+        )
+        return JSONResponse(
+            {
+                "success": True,
+                "config_restored": len(config_data),
+                "storage_restored": len(storage_data),
+            }
+        )
 
     # ========== 文件管理 API ==========
 
@@ -2434,7 +2931,11 @@ class Main(BaseModule):
         return target
 
     def _is_sensitive_file(self, path: Path) -> bool:
-        return path.name in self._SENSITIVE_FILES or path.name.endswith(".key") or path.name.endswith(".pem")
+        return (
+            path.name in self._SENSITIVE_FILES
+            or path.name.endswith(".key")
+            or path.name.endswith(".pem")
+        )
 
     def _format_permissions(self, mode: int) -> str:
         def _rwx(m):
@@ -2442,6 +2943,7 @@ class Main(BaseModule):
             w = "w" if m & 2 else "-"
             x = "x" if m & 1 else "-"
             return r + w + x
+
         owner = _rwx((mode >> 6) & 7)
         group = _rwx((mode >> 3) & 7)
         others = _rwx(mode & 7)
@@ -2452,7 +2954,11 @@ class Main(BaseModule):
             st = path.stat()
             is_dir = path.is_dir()
             rel = str(path.relative_to(root)).replace("\\", "/")
-            perm = self._format_permissions(st.st_mode & 0o777) if hasattr(st, 'st_mode') else ""
+            perm = (
+                self._format_permissions(st.st_mode & 0o777)
+                if hasattr(st, "st_mode")
+                else ""
+            )
             return {
                 "name": path.name,
                 "path": rel,
@@ -2466,7 +2972,12 @@ class Main(BaseModule):
             }
         except (OSError, PermissionError):
             rel = str(path.relative_to(root)).replace("\\", "/")
-            return {"name": path.name, "path": rel, "type": "unknown", "error": "access_denied"}
+            return {
+                "name": path.name,
+                "path": rel,
+                "type": "unknown",
+                "error": "access_denied",
+            }
 
     async def _api_files_browse(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2484,19 +2995,32 @@ class Main(BaseModule):
             for item in target.iterdir():
                 if not show_hidden and item.name.startswith("."):
                     continue
-                entries.append(self._file_entry(item, self._get_project_root().resolve()))
+                entries.append(
+                    self._file_entry(item, self._get_project_root().resolve())
+                )
         except PermissionError:
             return JSONResponse({"error": "Permission denied"}, status_code=403)
-        sort_key_map = {"name": "name", "size": "size", "modified": "modified", "type": "type"}
+        sort_key_map = {
+            "name": "name",
+            "size": "size",
+            "modified": "modified",
+            "type": "type",
+        }
         sort_key = sort_key_map.get(sort_by, "name")
-        entries.sort(key=lambda e: (e.get("type", "") != "directory", e.get(sort_key, "")))
+        entries.sort(
+            key=lambda e: (e.get("type", "") != "directory", e.get(sort_key, ""))
+        )
         root = self._get_project_root().resolve()
-        return JSONResponse({
-            "path": str(target.relative_to(root)).replace("\\", "/") if target != root else ".",
-            "absolute_path": str(target),
-            "entries": entries,
-            "total": len(entries),
-        })
+        return JSONResponse(
+            {
+                "path": str(target.relative_to(root)).replace("\\", "/")
+                if target != root
+                else ".",
+                "absolute_path": str(target),
+                "entries": entries,
+                "total": len(entries),
+            }
+        )
 
     async def _api_files_read(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2509,22 +3033,37 @@ class Main(BaseModule):
         if not target.exists() or not target.is_file():
             return JSONResponse({"error": "File not found"}, status_code=404)
         if self._is_sensitive_file(target):
-            return JSONResponse({"error": "Cannot read sensitive file"}, status_code=403)
+            return JSONResponse(
+                {"error": "Cannot read sensitive file"}, status_code=403
+            )
         try:
             st = target.stat()
             if st.st_size > self._MAX_READ_SIZE:
-                return JSONResponse({
-                    "error": "File too large",
-                    "size": st.st_size,
-                    "max_size": self._MAX_READ_SIZE,
-                }, status_code=413)
+                return JSONResponse(
+                    {
+                        "error": "File too large",
+                        "size": st.st_size,
+                        "max_size": self._MAX_READ_SIZE,
+                    },
+                    status_code=413,
+                )
         except OSError:
             pass
         try:
             content = target.read_text(encoding=encoding)
-            return JSONResponse({"content": content, "size": st.st_size, "encoding": encoding, "path": file_path})
+            return JSONResponse(
+                {
+                    "content": content,
+                    "size": st.st_size,
+                    "encoding": encoding,
+                    "path": file_path,
+                }
+            )
         except UnicodeDecodeError:
-            return JSONResponse({"error": "Binary file, cannot display as text", "binary": True}, status_code=415)
+            return JSONResponse(
+                {"error": "Binary file, cannot display as text", "binary": True},
+                status_code=415,
+            )
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -2542,7 +3081,13 @@ class Main(BaseModule):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding=encoding)
             self._add_audit_log("file_write", file_path, request)
-            return JSONResponse({"success": True, "path": file_path, "size": len(content.encode(encoding))})
+            return JSONResponse(
+                {
+                    "success": True,
+                    "path": file_path,
+                    "size": len(content.encode(encoding)),
+                }
+            )
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -2556,19 +3101,23 @@ class Main(BaseModule):
             return JSONResponse({"error": "Path not allowed"}, status_code=403)
         if not target_dir.exists():
             target_dir.mkdir(parents=True, exist_ok=True)
-        files = form.getlist("files") if hasattr(form, "getlist") else [form.get("file")]
+        files = (
+            form.getlist("files") if hasattr(form, "getlist") else [form.get("file")]
+        )
         if not files or files[0] is None:
-            files = [v for k, v in form.items() if hasattr(v, 'filename')]
+            files = [v for k, v in form.items() if hasattr(v, "filename")]
         if not files:
             return JSONResponse({"error": "No files provided"}, status_code=400)
         uploaded = []
         for f in files:
-            if not hasattr(f, 'filename') or not f.filename:
+            if not hasattr(f, "filename") or not f.filename:
                 continue
             rel_name = f.filename.replace("\\", "/")
             safe_name = "/".join(rel_name.split("/"))
             target_path = target_dir / safe_name
-            resolved = self._resolve_safe_path(str(target_path.relative_to(self._get_project_root().resolve())))
+            resolved = self._resolve_safe_path(
+                str(target_path.relative_to(self._get_project_root().resolve()))
+            )
             if resolved is None:
                 continue
             content = await f.read()
@@ -2577,8 +3126,12 @@ class Main(BaseModule):
             resolved.parent.mkdir(parents=True, exist_ok=True)
             resolved.write_bytes(content)
             uploaded.append({"name": safe_name, "size": len(content)})
-        self._add_audit_log("file_upload", f"{dest_dir}: {len(uploaded)} files", request)
-        return JSONResponse({"success": True, "uploaded": uploaded, "count": len(uploaded)})
+        self._add_audit_log(
+            "file_upload", f"{dest_dir}: {len(uploaded)} files", request
+        )
+        return JSONResponse(
+            {"success": True, "uploaded": uploaded, "count": len(uploaded)}
+        )
 
     async def _api_files_download(self, request: Request):
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2595,10 +3148,14 @@ class Main(BaseModule):
                 while chunk := f.read(65536):
                     yield chunk
 
-        return StreamingResponse(_iter(), media_type="application/octet-stream", headers={
-            "Content-Disposition": f'attachment; filename="{target.name}"',
-            "Content-Length": str(target.stat().st_size),
-        })
+        return StreamingResponse(
+            _iter(),
+            media_type="application/octet-stream",
+            headers={
+                "Content-Disposition": f'attachment; filename="{target.name}"',
+                "Content-Length": str(target.stat().st_size),
+            },
+        )
 
     async def _api_files_mkdir(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2641,7 +3198,9 @@ class Main(BaseModule):
             except Exception:
                 pass
         self._add_audit_log("file_delete", f"{len(deleted)} items", request)
-        return JSONResponse({"success": True, "deleted": deleted, "count": len(deleted)})
+        return JSONResponse(
+            {"success": True, "deleted": deleted, "count": len(deleted)}
+        )
 
     async def _api_files_rename(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2650,7 +3209,9 @@ class Main(BaseModule):
         old_path = body.get("old_path", "")
         new_path = body.get("new_path", "")
         if not old_path or not new_path:
-            return JSONResponse({"error": "old_path and new_path required"}, status_code=400)
+            return JSONResponse(
+                {"error": "old_path and new_path required"}, status_code=400
+            )
         old_target = self._resolve_safe_path(old_path)
         new_target = self._resolve_safe_path(new_path)
         if old_target is None or new_target is None:
@@ -2709,7 +3270,9 @@ class Main(BaseModule):
             else:
                 mode_int = int(mode)
             target.chmod(mode_int)
-            self._add_audit_log("file_chmod", f"{file_path} -> {oct(mode_int)}", request)
+            self._add_audit_log(
+                "file_chmod", f"{file_path} -> {oct(mode_int)}", request
+            )
             return JSONResponse({"success": True, "mode": oct(mode_int)})
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
@@ -2728,20 +3291,22 @@ class Main(BaseModule):
             is_dir = target.is_dir()
             root = self._get_project_root().resolve()
             rel = str(target.relative_to(root)).replace("\\", "/")
-            return JSONResponse({
-                "name": target.name,
-                "path": rel,
-                "type": "directory" if is_dir else "file",
-                "size": st.st_size,
-                "modified": st.st_mtime,
-                "created": st.st_ctime,
-                "permissions": self._format_permissions(st.st_mode & 0o777),
-                "mode_octal": oct(st.st_mode & 0o777),
-                "readable": os.access(target, os.R_OK),
-                "writable": os.access(target, os.W_OK),
-                "executable": os.access(target, os.X_OK),
-                "is_symlink": target.is_symlink(),
-            })
+            return JSONResponse(
+                {
+                    "name": target.name,
+                    "path": rel,
+                    "type": "directory" if is_dir else "file",
+                    "size": st.st_size,
+                    "modified": st.st_mtime,
+                    "created": st.st_ctime,
+                    "permissions": self._format_permissions(st.st_mode & 0o777),
+                    "mode_octal": oct(st.st_mode & 0o777),
+                    "readable": os.access(target, os.R_OK),
+                    "writable": os.access(target, os.W_OK),
+                    "executable": os.access(target, os.X_OK),
+                    "is_symlink": target.is_symlink(),
+                }
+            )
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -2767,7 +3332,9 @@ class Main(BaseModule):
                 results.append(self._file_entry(item, root))
         except PermissionError:
             pass
-        return JSONResponse({"results": results, "total": len(results), "pattern": pattern})
+        return JSONResponse(
+            {"results": results, "total": len(results), "pattern": pattern}
+        )
 
     async def _api_files_compress(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2779,6 +3346,7 @@ class Main(BaseModule):
             return JSONResponse({"error": "paths required"}, status_code=400)
         import zipfile
         import io
+
         buf = io.BytesIO()
         root = self._get_project_root().resolve()
         added = 0
@@ -2803,9 +3371,14 @@ class Main(BaseModule):
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         buf.seek(0)
-        self._add_audit_log("file_compress", f"{len(paths)} items -> {archive_name}", request)
-        return Response(content=buf.getvalue(), media_type="application/zip",
-                        headers={"Content-Disposition": f'attachment; filename="{archive_name}"'})
+        self._add_audit_log(
+            "file_compress", f"{len(paths)} items -> {archive_name}", request
+        )
+        return Response(
+            content=buf.getvalue(),
+            media_type="application/zip",
+            headers={"Content-Disposition": f'attachment; filename="{archive_name}"'},
+        )
 
     async def _api_files_decompress(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2819,21 +3392,34 @@ class Main(BaseModule):
             return JSONResponse({"error": "File not found"}, status_code=404)
         import zipfile
         import tarfile
+
         dest = target.parent
         try:
             name_lower = target.name.lower()
             if name_lower.endswith(".zip"):
                 with zipfile.ZipFile(target, "r") as zf:
                     zf.extractall(dest)
-            elif name_lower.endswith((".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".tar")):
+            elif name_lower.endswith(
+                (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".tar")
+            ):
                 with tarfile.open(target, "r:*") as tf:
                     tf.extractall(dest)
             else:
-                return JSONResponse({"error": "Unsupported archive format. Use .zip, .tar.gz, .tgz"}, status_code=400)
+                return JSONResponse(
+                    {"error": "Unsupported archive format. Use .zip, .tar.gz, .tgz"},
+                    status_code=400,
+                )
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         self._add_audit_log("file_decompress", file_path, request)
-        return JSONResponse({"success": True, "path": str(dest.relative_to(self._get_project_root().resolve())).replace("\\", "/")})
+        return JSONResponse(
+            {
+                "success": True,
+                "path": str(
+                    dest.relative_to(self._get_project_root().resolve())
+                ).replace("\\", "/"),
+            }
+        )
 
     # ========== 命令管理 API ==========
 
@@ -2843,6 +3429,7 @@ class Main(BaseModule):
         commands = self._get_all_commands_info()
         try:
             from ErisPulse.runtime import get_event_config
+
             event_config = get_event_config()
             command_config = event_config.get("command", {})
         except Exception:
@@ -2854,12 +3441,14 @@ class Main(BaseModule):
             "must_at_bot": command_config.get("must_at_bot", False),
         }
         registered_platforms = self.sdk.adapter.list_registered()
-        return JSONResponse({
-            "commands": commands,
-            "global_settings": global_settings,
-            "platforms": registered_platforms,
-            "total": len(commands),
-        })
+        return JSONResponse(
+            {
+                "commands": commands,
+                "global_settings": global_settings,
+                "platforms": registered_platforms,
+                "total": len(commands),
+            }
+        )
 
     async def _api_command_update(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2869,6 +3458,7 @@ class Main(BaseModule):
         if not cmd_name:
             path = request.scope.get("path", "")
             import re as _re
+
             m = _re.search(r"/api/commands/([^/]+)", path)
             cmd_name = m.group(1) if m else ""
         if not cmd_name:
@@ -2881,10 +3471,14 @@ class Main(BaseModule):
             if cmd_name not in main_names:
                 actual = cmd_handler.aliases.get(cmd_name, cmd_name)
                 if actual not in main_names:
-                    return JSONResponse({"error": f"command '{cmd_name}' not found"}, status_code=404)
+                    return JSONResponse(
+                        {"error": f"command '{cmd_name}' not found"}, status_code=404
+                    )
                 cmd_name = actual
         except Exception:
-            return JSONResponse({"error": "failed to access command registry"}, status_code=500)
+            return JSONResponse(
+                {"error": "failed to access command registry"}, status_code=500
+            )
 
         rule = self._command_rules.get(cmd_name, {})
 
@@ -2893,17 +3487,23 @@ class Main(BaseModule):
         if "aliases" in body:
             aliases = body["aliases"]
             if not isinstance(aliases, list):
-                return JSONResponse({"error": "aliases must be a list"}, status_code=400)
+                return JSONResponse(
+                    {"error": "aliases must be a list"}, status_code=400
+                )
             rule["aliases"] = [str(a) for a in aliases if a]
         if "allowed_platforms" in body:
             platforms = body["allowed_platforms"]
             if not isinstance(platforms, list):
-                return JSONResponse({"error": "allowed_platforms must be a list"}, status_code=400)
+                return JSONResponse(
+                    {"error": "allowed_platforms must be a list"}, status_code=400
+                )
             rule["allowed_platforms"] = [str(p) for p in platforms if p]
         if "blocked_platforms" in body:
             platforms = body["blocked_platforms"]
             if not isinstance(platforms, list):
-                return JSONResponse({"error": "blocked_platforms must be a list"}, status_code=400)
+                return JSONResponse(
+                    {"error": "blocked_platforms must be a list"}, status_code=400
+                )
             rule["blocked_platforms"] = [str(p) for p in platforms if p]
         if "transform_to" in body:
             val = body["transform_to"]
@@ -2928,12 +3528,16 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
-            return JSONResponse({"nodes": [], "local": {"id": "local", "name": "本地实例"}})
+            return JSONResponse(
+                {"nodes": [], "local": {"id": "local", "name": "本地实例"}}
+            )
         nodes = self._cluster.list_nodes()
-        return JSONResponse({
-            "nodes": nodes,
-            "local": {"id": "local", "name": "本地实例"},
-        })
+        return JSONResponse(
+            {
+                "nodes": nodes,
+                "local": {"id": "local", "name": "本地实例"},
+            }
+        )
 
     async def _api_cluster_nodes_add(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -2949,7 +3553,9 @@ class Main(BaseModule):
         url = str(body.get("url", "")).strip()
         token = str(body.get("token", "")).strip()
         if not node_id or not url or not token:
-            return JSONResponse({"error": "id, url, token are required"}, status_code=400)
+            return JSONResponse(
+                {"error": "id, url, token are required"}, status_code=400
+            )
         if node_id == "local":
             return JSONResponse({"error": "reserved_id"}, status_code=400)
         if node_id in self._cluster._nodes:
@@ -3002,11 +3608,15 @@ class Main(BaseModule):
         if not proxy:
             return JSONResponse({"error": "node_not_found"}, status_code=404)
         online = await proxy.ping()
-        self._add_audit_log("cluster_node_ping", f"node={node_id} online={online}", request)
-        return JSONResponse({
-            "online": online,
-            "latency_ms": proxy._latency_ms,
-        })
+        self._add_audit_log(
+            "cluster_node_ping", f"node={node_id} online={online}", request
+        )
+        return JSONResponse(
+            {
+                "online": online,
+                "latency_ms": proxy._latency_ms,
+            }
+        )
 
     async def _api_cluster_probe(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -3031,14 +3641,16 @@ class Main(BaseModule):
             return JSONResponse({"error": "node_not_found"}, status_code=404)
         status = await proxy.get_status()
         system = await proxy.get_system()
-        return JSONResponse({
-            "online": proxy._online,
-            "latency_ms": proxy._latency_ms,
-            "dashboard_version": proxy._dashboard_version,
-            "status": status,
-            "system": system,
-            "capabilities": dict(proxy._capabilities),
-        })
+        return JSONResponse(
+            {
+                "online": proxy._online,
+                "latency_ms": proxy._latency_ms,
+                "dashboard_version": proxy._dashboard_version,
+                "status": status,
+                "system": system,
+                "capabilities": dict(proxy._capabilities),
+            }
+        )
 
     async def _api_cluster_proxy(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -3066,7 +3678,9 @@ class Main(BaseModule):
                 return JSONResponse({"error": "remote_unauthorized"}, status_code=502)
             return JSONResponse(result)
         except Exception as e:
-            return JSONResponse({"error": "proxy_error", "message": str(e)}, status_code=502)
+            return JSONResponse(
+                {"error": "proxy_error", "message": str(e)}, status_code=502
+            )
 
     async def _api_cluster_overview(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -3077,7 +3691,9 @@ class Main(BaseModule):
         fw = self._get_framework_info()
         adapters_summary = self.sdk.adapter.get_status_summary().get("adapters", {})
         adapter_count = sum(1 for v in adapters_summary.values() if v.get("running"))
-        modules = {n: self.sdk.module.is_loaded(n) for n in self.sdk.module.list_registered()}
+        modules = {
+            n: self.sdk.module.is_loaded(n) for n in self.sdk.module.list_registered()
+        }
         nodes["local"] = {
             "online": True,
             "name": "本地实例",
@@ -3108,7 +3724,9 @@ class Main(BaseModule):
         target_nodes = body.get("target_nodes", [])
         event_types = body.get("event_types", [])
         if not source_node or not target_nodes:
-            return JSONResponse({"error": "source_node and target_nodes required"}, status_code=400)
+            return JSONResponse(
+                {"error": "source_node and target_nodes required"}, status_code=400
+            )
         source_proxy = self._cluster.get_proxy(source_node)
         if not source_proxy:
             return JSONResponse({"error": "source_node_not_found"}, status_code=404)
@@ -3124,8 +3742,13 @@ class Main(BaseModule):
             if not target_proxy:
                 results[target_id] = {"success": False, "error": "node_not_found"}
                 continue
-            fwd_result = await target_proxy.request("POST", "/api/builder/submit", json={"events": events})
-            results[target_id] = {"success": not (fwd_result and fwd_result.get("error"))}
-        self._add_audit_log("cluster_sync_events", f"from={source_node} to={target_nodes}", request)
+            fwd_result = await target_proxy.request(
+                "POST", "/api/builder/submit", json={"events": events}
+            )
+            results[target_id] = {
+                "success": not (fwd_result and fwd_result.get("error"))
+            }
+        self._add_audit_log(
+            "cluster_sync_events", f"from={source_node} to={target_nodes}", request
+        )
         return JSONResponse({"results": results})
-
