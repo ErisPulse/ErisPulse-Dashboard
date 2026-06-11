@@ -27,6 +27,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "logger": {
         "level": "INFO",
+        "format": "rich",
         "log_files": [],
         "memory_limit": 1000,
     },
@@ -48,6 +49,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "framework": {
         "enable_lazy_loading": True,
+        "uninit_timeout": 30,
     },
 }
 
@@ -1347,6 +1349,43 @@ class Main(BaseModule):
             methods=["POST"],
         )
 
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/config",
+            handler=self._api_adapter_config_get,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/config",
+            handler=self._api_adapter_config_set,
+            methods=["PUT"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/accounts",
+            handler=self._api_adapter_accounts_get,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/accounts",
+            handler=self._api_adapter_accounts_set,
+            methods=["PUT"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/accounts/add",
+            handler=self._api_adapter_accounts_add,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/adapter/{platform}/accounts/{name}",
+            handler=self._api_adapter_accounts_delete,
+            methods=["DELETE"],
+        )
+
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
@@ -1422,6 +1461,10 @@ class Main(BaseModule):
             "/api/cluster/proxy/{node_id}/{path:path}",
             "/api/cluster/overview",
             "/api/cluster/sync/events",
+            "/api/adapter/{platform}/config",
+            "/api/adapter/{platform}/accounts",
+            "/api/adapter/{platform}/accounts/add",
+            "/api/adapter/{platform}/accounts/{name}",
         ]:
             try:
                 r.unregister_http_route(mn, p)
@@ -1506,6 +1549,293 @@ class Main(BaseModule):
                 )
             adapters.append(info)
         return JSONResponse({"adapters": adapters})
+
+    def _get_adapter_config_info(self, platform: str) -> dict | None:
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return None
+
+        config_key = adapter_instance._get_config_key()
+        config_class = getattr(adapter_instance, 'ConfigClass', None)
+        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+
+        result = {
+            "platform": platform,
+            "config_key": config_key,
+            "has_config": config_class is not None,
+            "has_accounts": account_config_class is not None,
+            "schema": None,
+            "values": None,
+            "account_schema": None,
+            "accounts": None,
+            "accounts_key": None,
+        }
+
+        if config_class is not None:
+            try:
+                from ErisPulse.runtime.config_schema import get_config_schema
+                result["schema"] = get_config_schema(config_class)
+            except Exception as e:
+                self.logger.debug(f"Failed to get config schema for {platform}: {e}")
+            result["values"] = self.sdk.config.getConfig(config_key) or {}
+
+        if account_config_class is not None:
+            try:
+                from ErisPulse.runtime.config_schema import get_config_schema
+                result["account_schema"] = get_config_schema(account_config_class)
+            except Exception as e:
+                self.logger.debug(f"Failed to get account config schema for {platform}: {e}")
+
+            accounts_key = config_key + ".accounts"
+            accounts_data = self.sdk.config.getConfig(accounts_key)
+            if accounts_data is None:
+                accounts_key = config_key + ".bots"
+                accounts_data = self.sdk.config.getConfig(accounts_key)
+            result["accounts_key"] = accounts_key
+            result["accounts"] = accounts_data or {}
+
+        return result
+
+    async def _api_adapter_config_get(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        info = self._get_adapter_config_info(platform)
+        if info is None:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+
+        if info.get("schema") and info["schema"].get("fields"):
+            for fname, fschema in info["schema"]["fields"].items():
+                if fschema.get("secret") and info["values"].get(fname):
+                    info["values"][fname] = "******"
+
+        return JSONResponse(info)
+
+    async def _api_adapter_config_set(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+
+        body = await request.json()
+        config_key = adapter_instance._get_config_key()
+        config_class = getattr(adapter_instance, 'ConfigClass', None)
+
+        values = body.get("values")
+        if values is not None:
+            if config_class is not None:
+                try:
+                    from ErisPulse.runtime.config_schema import dict_to_dataclass, validate_config
+                    current = self.sdk.config.getConfig(config_key) or {}
+                    merged = {**current, **values}
+                    for k, v in merged.items():
+                        if v == "******" and current.get(k):
+                            merged[k] = current[k]
+                    instance = dict_to_dataclass(config_class, merged)
+                    errors = validate_config(instance)
+                    if errors:
+                        return JSONResponse({"success": False, "errors": errors}, status_code=400)
+                except Exception as e:
+                    self.logger.debug(f"Config validation error: {e}")
+
+            current = self.sdk.config.getConfig(config_key) or {}
+            for k, v in values.items():
+                if v == "******" and current.get(k):
+                    continue
+                current[k] = v
+            self.sdk.config.setConfig(config_key, current)
+
+            try:
+                old_config = getattr(adapter_instance, '_config_instance', None)
+                adapter_instance._config_instance = None
+                if config_class is not None:
+                    from ErisPulse.runtime.config_schema import dict_to_dataclass
+                    adapter_instance._config_instance = dict_to_dataclass(config_class, current)
+                if hasattr(adapter_instance, 'on_config_update') and old_config:
+                    adapter_instance.on_config_update(old_config, adapter_instance._config_instance)
+            except Exception as e:
+                self.logger.debug(f"Config hot-reload callback error: {e}")
+
+            self._add_audit_log("adapter_config_update", platform, request)
+            return JSONResponse({"success": True})
+
+        key = body.get("key", "")
+        value = body.get("value")
+        if not key:
+            return JSONResponse({"error": "key or values required"}, status_code=400)
+
+        if value == "******":
+            return JSONResponse({"success": True})
+
+        full_key = config_key + "." + key
+        self.sdk.config.setConfig(full_key, value)
+        self._add_audit_log("adapter_config_update", f"{platform}.{key}", request)
+        return JSONResponse({"success": True})
+
+    async def _api_adapter_accounts_get(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        info = self._get_adapter_config_info(platform)
+        if info is None:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+        if not info.get("has_accounts"):
+            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+
+        accounts = info.get("accounts", {})
+        if info.get("account_schema") and info["account_schema"].get("fields"):
+            for aname, adata in accounts.items():
+                if isinstance(adata, dict):
+                    for fname, fschema in info["account_schema"]["fields"].items():
+                        if fschema.get("secret") and adata.get(fname):
+                            accounts[aname][fname] = "******"
+
+        return JSONResponse({
+            "schema": info.get("account_schema"),
+            "accounts": accounts,
+            "accounts_key": info.get("accounts_key"),
+        })
+
+    async def _api_adapter_accounts_set(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+
+        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+        if not account_config_class:
+            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+
+        body = await request.json()
+        accounts = body.get("accounts")
+        if accounts is None:
+            return JSONResponse({"error": "accounts required"}, status_code=400)
+
+        config_key = adapter_instance._get_config_key()
+        accounts_key = config_key + ".accounts"
+        old_accounts = self.sdk.config.getConfig(accounts_key)
+        if old_accounts is None:
+            accounts_key = config_key + ".bots"
+            old_accounts = self.sdk.config.getConfig(accounts_key) or {}
+
+        merged_accounts = {}
+        for aname, adata in accounts.items():
+            merged = {**(old_accounts.get(aname, {}) or {}), **adata}
+            for k, v in merged.items():
+                if v == "******" and (old_accounts.get(aname) or {}).get(k):
+                    merged[k] = old_accounts[aname][k]
+            merged_accounts[aname] = merged
+
+        all_errors = []
+        try:
+            from ErisPulse.runtime.config_schema import dict_to_dataclass, validate_config
+            for aname, adata in merged_accounts.items():
+                if not isinstance(adata, dict):
+                    continue
+                instance = dict_to_dataclass(account_config_class, adata)
+                errors = validate_config(instance)
+                if errors:
+                    all_errors.extend([f"[{aname}] {e}" for e in errors])
+        except Exception as e:
+            self.logger.debug(f"Account validation error: {e}")
+
+        if all_errors:
+            return JSONResponse({"success": False, "errors": all_errors}, status_code=400)
+
+        self.sdk.config.setConfig(accounts_key, merged_accounts)
+
+        try:
+            adapter_instance._accounts_data = None
+            if hasattr(adapter_instance, '_load_accounts'):
+                adapter_instance._accounts_data = adapter_instance._load_accounts()
+        except Exception as e:
+            self.logger.debug(f"Account hot-reload error: {e}")
+
+        self._add_audit_log("adapter_accounts_update", platform, request)
+        return JSONResponse({"success": True})
+
+    async def _api_adapter_accounts_add(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+
+        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+        if not account_config_class:
+            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+
+        body = await request.json()
+        account_name = body.get("name", "")
+        if not account_name:
+            return JSONResponse({"error": "name required"}, status_code=400)
+
+        config_key = adapter_instance._get_config_key()
+        accounts_key = config_key + ".accounts"
+        accounts_data = self.sdk.config.getConfig(accounts_key)
+        if accounts_data is None:
+            accounts_key = config_key + ".bots"
+            accounts_data = self.sdk.config.getConfig(accounts_key) or {}
+
+        if account_name in accounts_data:
+            return JSONResponse({"error": "Account already exists"}, status_code=400)
+
+        try:
+            from ErisPulse.runtime.config_schema import dataclass_to_defaults_dict
+            default_data = dataclass_to_defaults_dict(account_config_class)
+            default_data.update(body.get("data", {}))
+        except Exception:
+            default_data = body.get("data", {"enabled": True, "name": account_name})
+
+        accounts_data[account_name] = default_data
+        self.sdk.config.setConfig(accounts_key, accounts_data)
+
+        try:
+            adapter_instance._accounts_data = None
+            if hasattr(adapter_instance, '_load_accounts'):
+                adapter_instance._accounts_data = adapter_instance._load_accounts()
+        except Exception as e:
+            self.logger.debug(f"Account hot-reload error: {e}")
+
+        self._add_audit_log("adapter_account_add", f"{platform}/{account_name}", request)
+        return JSONResponse({"success": True})
+
+    async def _api_adapter_accounts_delete(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        platform = request.path_params.get("platform", "")
+        account_name = request.path_params.get("name", "")
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return JSONResponse({"error": "Adapter not found"}, status_code=404)
+
+        config_key = adapter_instance._get_config_key()
+        accounts_key = config_key + ".accounts"
+        accounts_data = self.sdk.config.getConfig(accounts_key)
+        if accounts_data is None:
+            accounts_key = config_key + ".bots"
+            accounts_data = self.sdk.config.getConfig(accounts_key) or {}
+
+        if account_name not in accounts_data:
+            return JSONResponse({"error": "Account not found"}, status_code=404)
+
+        del accounts_data[account_name]
+        self.sdk.config.setConfig(accounts_key, accounts_data)
+
+        try:
+            adapter_instance._accounts_data = None
+            if hasattr(adapter_instance, '_load_accounts'):
+                adapter_instance._accounts_data = adapter_instance._load_accounts()
+        except Exception as e:
+            self.logger.debug(f"Account hot-reload error: {e}")
+
+        self._add_audit_log("adapter_account_delete", f"{platform}/{account_name}", request)
+        return JSONResponse({"success": True})
 
     async def _api_adapter_logos(self, request: Request) -> JSONResponse:
         import os as _os

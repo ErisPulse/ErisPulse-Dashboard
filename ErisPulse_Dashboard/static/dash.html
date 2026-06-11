@@ -157,6 +157,10 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/></svg>
                             <span data-i18n="framework_config"></span>
                         </a>
+                        <a class="nav-item" data-page="adapter-config" onclick="go('adapter-config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            <span data-i18n="adapter_config"></span>
+                        </a>
                         <a class="nav-item" data-page="about" onclick="go('about',this)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                             <span data-i18n="about"></span>
@@ -1077,6 +1081,21 @@
                     <div id="fwConfigBody" style="margin-top:16px"></div>
                     <div style="margin-top:16px;display:flex;justify-content:flex-end">
                         <button class="btn btn-danger" onclick="restartFramework()"><span data-i18n="restart"></span></button>
+                    </div>
+                </div>
+
+                <!-- 适配器配置 -->
+                <div class="page" id="p-adapter-config">
+                    <h1 class="page-title" data-i18n="adapter_config"></h1>
+                    <p class="page-desc" data-i18n="adapter_config_desc"></p>
+                    <div class="adapter-config-layout">
+                        <div class="adapter-list-panel card" id="adapterConfigList"></div>
+                        <div class="adapter-config-panel" id="adapterConfigPanel">
+                            <div class="empty-state" id="adapterConfigEmpty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                                <p data-i18n="select_adapter_prompt"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

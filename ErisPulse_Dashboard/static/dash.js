@@ -224,9 +224,35 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: '允许命令前缀前有空格',
         fw_field_event_command_must_at_bot: '需要 @机器人 才能触发命令',
         fw_field_framework_enable_lazy_loading: '启用模块懒加载',
+        fw_field_logger_format: '日志格式: rich（彩色终端）/ plain',
+        fw_field_framework_uninit_timeout: '反初始化超时时间（秒）',
+        adapter_config: '适配器配置',
+        adapter_config_desc: '管理各平台适配器的连接和账户配置',
+        adapter_global_config: '全局配置',
+        adapter_accounts: '账户配置',
+        add_account: '添加账户',
+        remove_account: '删除账户',
+        account_name: '账户名称',
+        save_adapter_config: '保存配置',
+        no_config_schema: '该适配器未声明配置 Schema（无可用配置项）',
+        config_validation_failed: '配置校验失败',
+        adapter_config_saved: '适配器配置已保存',
+        account_removed: '账户已删除',
+        account_added: '账户已添加',
+        confirm_remove_account: '确认删除此账户？',
+        new_account_default_name: '新账户',
+        select_adapter_prompt: '请从左侧选择一个适配器以查看配置',
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 确认修改服务器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。',
+        fw_unknown_field: '未知字段',
+        fw_unknown_field_desc: '此配置项不属于当前版本的默认配置，建议删除',
+        fw_reset_default: '恢复默认',
+        fw_reset_confirm: '确认将 {key} 恢复为默认值？',
+        fw_reset_done: '已恢复为默认值',
+        fw_delete_field: '删除配置',
+        fw_delete_confirm: '确认删除配置项 {key}？删除后将使用默认值',
+        fw_delete_done: '配置项已删除',
         fw_update_title: '框架更新',
         fw_current_version: '当前版本',
         fw_latest_version: '最新版本',
@@ -518,6 +544,14 @@ const I18N = {
         fw_version_note: 'Note: Some options may not take effect on older ErisPulse versions',
         fw_server_warn_title: '⚠ Confirm Server Config Change',
         fw_server_warn_text: 'You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.',
+        fw_unknown_field: 'Unknown Field',
+        fw_unknown_field_desc: 'This config field is not part of the current default config. Consider deleting it.',
+        fw_reset_default: 'Reset to Default',
+        fw_reset_confirm: 'Reset {key} to its default value?',
+        fw_reset_done: 'Reset to default',
+        fw_delete_field: 'Delete Field',
+        fw_delete_confirm: 'Delete config field {key}?',
+        fw_delete_done: 'Config field deleted',
         fw_update_title: 'Framework Update',
         fw_current_version: 'Current Version',
         fw_latest_version: 'Latest Version',
@@ -542,6 +576,24 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: 'Allow spaces before the command prefix',
         fw_field_event_command_must_at_bot: 'Require @bot to trigger commands',
         fw_field_framework_enable_lazy_loading: 'Enable lazy-loading of modules',
+        fw_field_logger_format: 'Log format: rich (colored terminal) / plain',
+        fw_field_framework_uninit_timeout: 'Uninit timeout (seconds)',
+        adapter_config: 'Adapter Config',
+        adapter_config_desc: 'Manage adapter platform connections and account settings',
+        adapter_global_config: 'Global Config',
+        adapter_accounts: 'Accounts',
+        add_account: 'Add Account',
+        remove_account: 'Remove Account',
+        account_name: 'Account Name',
+        save_adapter_config: 'Save Config',
+        no_config_schema: 'This adapter has no config schema',
+        config_validation_failed: 'Config validation failed',
+        adapter_config_saved: 'Adapter config saved',
+        account_removed: 'Account removed',
+        account_added: 'Account added',
+        confirm_remove_account: 'Confirm remove this account?',
+        new_account_default_name: 'new_account',
+        select_adapter_prompt: 'Select an adapter from the left to view its config',
         cluster_management: 'Cluster',
         cluster_desc: 'Add, edit, remove remote nodes, view capability comparison',
         cluster_overview: 'Overview',
@@ -832,9 +884,35 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: '允許指令前綴前有空格',
         fw_field_event_command_must_at_bot: '需要 @機器人才能觸發指令',
         fw_field_framework_enable_lazy_loading: '啟用模組懶載入',
+        fw_field_logger_format: '日誌格式: rich（彩色終端）/ plain',
+        fw_field_framework_uninit_timeout: '反初始化超時時間（秒）',
+        adapter_config: '適配器配置',
+        adapter_config_desc: '管理各平台適配器的連接和帳戶配置',
+        adapter_global_config: '全域配置',
+        adapter_accounts: '帳戶配置',
+        add_account: '新增帳戶',
+        remove_account: '刪除帳戶',
+        account_name: '帳戶名稱',
+        save_adapter_config: '儲存配置',
+        no_config_schema: '該適配器未宣告配置 Schema（無可用配置項）',
+        config_validation_failed: '配置驗證失敗',
+        adapter_config_saved: '適配器配置已儲存',
+        account_removed: '帳戶已刪除',
+        account_added: '帳戶已新增',
+        confirm_remove_account: '確認刪除此帳戶？',
+        new_account_default_name: '新帳戶',
+        select_adapter_prompt: '請從左側選擇一個適配器以查看配置',
         fw_version_note: '提示：部分配置在低版本 ErisPulse 中可能不生效',
         fw_server_warn_title: '⚠ 確認修改伺服器配置',
         fw_server_warn_text: '您正在修改 ErisPulse 伺服器連接配置（host/port/ssl）。請確定您在幹什麼，否則不要修改此處！\n\n在 Docker 容器中操作此項可能導致您無法外部存取 ErisPulse 的 routers。',
+        fw_unknown_field: '未知欄位',
+        fw_unknown_field_desc: '此配置項不屬於當前版本的默認配置，建議刪除',
+        fw_reset_default: '恢復默認',
+        fw_reset_confirm: '確認將 {key} 恢復為默認值？',
+        fw_reset_done: '已恢復為默認值',
+        fw_delete_field: '刪除配置',
+        fw_delete_confirm: '確認刪除配置項 {key}？刪除後將使用默認值',
+        fw_delete_done: '配置項已刪除',
         fw_update_title: '框架更新',
         fw_current_version: '當前版本',
         fw_latest_version: '最新版本',
@@ -1135,9 +1213,34 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: 'コマンドプレフィックス前のスペースを許可',
         fw_field_event_command_must_at_bot: 'コマンド実行に@ボットが必要',
         fw_field_framework_enable_lazy_loading: 'モジュールの遅延読み込みを有効化',
-        fw_version_note: '注意: 一部の設定は古いバージョンのErisPulseでは無効な場合があります',
+        fw_field_logger_format: 'ログ形式: rich（カラー）/ plain',
+        fw_field_framework_uninit_timeout: '初期化解除のタイムアウト（秒）',
+        adapter_config: 'アダプター設定',
+        adapter_config_desc: 'プラットフォームアダプターの接続とアカウント設定を管理',
+        adapter_global_config: 'グローバル設定',
+        adapter_accounts: 'アカウント設定',
+        add_account: 'アカウント追加',
+        remove_account: 'アカウント削除',
+        account_name: 'アカウント名',
+        save_adapter_config: '設定を保存',
+        no_config_schema: 'このアダプターには設定スキーマがありません',
+        config_validation_failed: '設定の検証に失敗しました',
+        adapter_config_saved: 'アダプター設定を保存しました',
+        account_removed: 'アカウントを削除しました',
+        account_added: 'アカウントを追加しました',
+        confirm_remove_account: 'このアカウントを削除してもよろしいですか？',
+        new_account_default_name: 'new_account',
+        select_adapter_prompt: '左側からアダプターを選択して設定を表示',
         fw_server_warn_title: '⚠ サーバー設定変更の確認',
         fw_server_warn_text: 'ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。',
+        fw_unknown_field: '不明なフィールド',
+        fw_unknown_field_desc: 'この設定項目は現在のバージョンのデフォルト設定に含まれていません。削除をお勧めします。',
+        fw_reset_default: 'デフォルトに戻す',
+        fw_reset_confirm: '{key} をデフォルト値に戻しますか？',
+        fw_reset_done: 'デフォルト値に戻しました',
+        fw_delete_field: '設定を削除',
+        fw_delete_confirm: '設定項目 {key} を削除しますか？',
+        fw_delete_done: '設定項目を削除しました',
         fw_update_title: 'フレームワーク更新',
         fw_current_version: '現在のバージョン',
         fw_latest_version: '最新バージョン',
@@ -1439,9 +1542,34 @@ const I18N = {
         fw_field_event_command_allow_space_prefix: 'Разрешить пробелы перед префиксом',
         fw_field_event_command_must_at_bot: 'Требовать @bot для вызова команд',
         fw_field_framework_enable_lazy_loading: 'Включить отложенную загрузку модулей',
-        fw_version_note: 'Примечание: некоторые опции могут не работать в старых версиях ErisPulse',
+        fw_field_logger_format: 'Формат лога: rich (цветной) / plain',
+        fw_field_framework_uninit_timeout: 'Тайм-аут деинициализации (сек)',
+        adapter_config: 'Настройки адаптера',
+        adapter_config_desc: 'Управление подключениями и учетными записями адаптеров платформ',
+        adapter_global_config: 'Глобальные настройки',
+        adapter_accounts: 'Учетные записи',
+        add_account: 'Добавить аккаунт',
+        remove_account: 'Удалить аккаунт',
+        account_name: 'Имя аккаунта',
+        save_adapter_config: 'Сохранить',
+        no_config_schema: 'У этого адаптера нет схемы конфигурации',
+        config_validation_failed: 'Ошибка валидации конфигурации',
+        adapter_config_saved: 'Конфигурация адаптера сохранена',
+        account_removed: 'Аккаунт удален',
+        account_added: 'Аккаунт добавлен',
+        confirm_remove_account: 'Подтвердите удаление аккаунта?',
+        new_account_default_name: 'new_account',
+        select_adapter_prompt: 'Выберите адаптер слева для просмотра настроек',
         fw_server_warn_title: '⚠ Подтвердите изменение конфигурации сервера',
         fw_server_warn_text: 'Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.',
+        fw_unknown_field: 'Неизвестное поле',
+        fw_unknown_field_desc: 'Это поле не входит в стандартную конфигурацию текущей версии. Рекомендуется удалить.',
+        fw_reset_default: 'Сбросить',
+        fw_reset_confirm: 'Сбросить {key} к значению по умолчанию?',
+        fw_reset_done: 'Сброшено к умолчанию',
+        fw_delete_field: 'Удалить поле',
+        fw_delete_confirm: 'Удалить поле {key}?',
+        fw_delete_done: 'Поле удалено',
         fw_update_title: 'Обновление фреймворка',
         fw_current_version: 'Текущая версия',
         fw_latest_version: 'Последняя версия',
@@ -1848,6 +1976,7 @@ function toggleLang() {
             'files': function() { fmBrowse('.'); },
             'config': loadConfig,
             'framework-config': loadFrameworkConfig,
+            'adapter-config': loadAdapterConfigPage,
             'cluster': loadClusterPage,
             'about': loadAbout,
         };
@@ -2016,6 +2145,7 @@ function go(name, el) {
         'files': function() { fmBrowse('.'); },
         'config': loadConfig,
         'framework-config': loadFrameworkConfig,
+        'adapter-config': loadAdapterConfigPage,
         'cluster': loadClusterPage,
         'about': loadAbout,
     };
@@ -2205,6 +2335,39 @@ function showModal(title, text, actions) {
     });
 }
 function confirm2(title, text) { return showModal(title, text, [{ label: t('cancel'), value: false }, { label: t('ok'), value: true, primary: true }]) }
+function prompt2(title, text, defaultValue) {
+    return new Promise(function(r) {
+        var input = document.createElement('input');
+        input.className = 'fw-input modal-input';
+        input.type = 'text';
+        input.value = defaultValue || '';
+        input.placeholder = text || '';
+        input.style.width = '100%';
+        input.style.boxSizing = 'border-box';
+
+        var textEl = document.getElementById('modalText');
+        textEl.innerHTML = '';
+        textEl.appendChild(input);
+        document.getElementById('modalTitle').textContent = title;
+
+        var ac = document.getElementById('modalActions');
+        ac.innerHTML = '';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.textContent = t('cancel');
+        cancelBtn.onclick = function() { document.getElementById('modalOv').classList.remove('show'); r(null) };
+        ac.appendChild(cancelBtn);
+
+        var okBtn = document.createElement('button');
+        okBtn.className = 'btn btn-primary';
+        okBtn.textContent = t('ok');
+        okBtn.onclick = function() { document.getElementById('modalOv').classList.remove('show'); r(input.value) };
+        ac.appendChild(okBtn);
+
+        document.getElementById('modalOv').classList.add('show');
+        setTimeout(function() { input.focus(); input.select(); }, 100);
+    });
+}
 function toggleNavGroup(titleEl) { titleEl.parentElement.classList.toggle('collapsed') }
 function alert2(title, text) { return showModal(title, text, [{ label: t('ok'), value: true, primary: true }]) }
 
@@ -2950,7 +3113,7 @@ function kvTree(obj, mode, pfx, dep) {
 
 const _fwDefaults = {
     server: { host: '0.0.0.0', port: 8000, ssl_certfile: null, ssl_keyfile: null },
-    logger: { level: 'INFO', log_files: [], memory_limit: 1000 },
+    logger: { level: 'INFO', format: 'rich', log_files: [], memory_limit: 1000 },
     storage: { use_global_db: false },
     modules: {},
     adapters: {},
@@ -2958,7 +3121,7 @@ const _fwDefaults = {
         message: { ignore_self: true },
         command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
     },
-    framework: { enable_lazy_loading: true },
+    framework: { enable_lazy_loading: true, uninit_timeout: 30 },
 };
 
 const _fwFieldDescs = {
@@ -2966,7 +3129,7 @@ const _fwFieldDescs = {
     'server.port': '监听端口',
     'server.ssl_certfile': 'SSL 证书路径，设为 null 则不使用 SSL',
     'server.ssl_keyfile': 'SSL 密钥路径',
-    'logger.level': '日志级别: DEBUG / INFO / WARNING / ERROR',
+    'logger.level': '日志级别: DEBUG / INFO / WARNING / ERROR / CRITICAL',
     'logger.log_files': '日志文件列表，如 ["logs/app.log"]',
     'logger.memory_limit': '内存日志条数上限',
     'storage.use_global_db': '是否使用全局数据库（跨模块共享）',
@@ -2976,7 +3139,33 @@ const _fwFieldDescs = {
     'event.command.allow_space_prefix': '是否允许命令前缀前有空格',
     'event.command.must_at_bot': '是否必须 @Bot 才能触发命令',
     'framework.enable_lazy_loading': '是否启用模块懒加载（按需加载）',
+    'logger.format': '日志格式: rich（彩色）/ json',
+    'framework.uninit_timeout': '反初始化超时时间（秒）',
 };
+
+const _fwFieldWidgets = {
+    'logger.level': { widget: 'select', options: ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] },
+    'logger.format': { widget: 'select', options: ['rich', 'json'] },
+};
+
+var _fwKnownKeys = null;
+
+function _buildFwKnownKeys() {
+    if (_fwKnownKeys) return _fwKnownKeys;
+    _fwKnownKeys = {};
+    (function walk(obj, prefix) {
+        for (var k in obj) {
+            var key = prefix ? prefix + '.' + k : k;
+            var v = obj[k];
+            if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+                walk(v, key);
+            } else {
+                _fwKnownKeys[key] = true;
+            }
+        }
+    })(_fwDefaults, '');
+    return _fwKnownKeys;
+}
 
 function fwFieldDesc(fullKey) {
     const desc = _fwFieldDescs[fullKey];
@@ -3007,6 +3196,321 @@ function fwSectionI18nKey(key) {
     return label !== i18nKey ? label : key.replace(/\./g, ' › ');
 }
 
+// ========== 适配器配置页面 ==========
+
+var _adapterConfigPlatforms = [];
+var _adapterConfigCurrent = '';
+
+async function loadAdapterConfigPage() {
+    const d = await api('/api/adapters');
+    if (!d) return;
+    _adapterConfigPlatforms = d.adapters || [];
+    renderAdapterConfigList(_adapterConfigPlatforms);
+    if (_adapterConfigPlatforms.length > 0) {
+        loadAdapterConfigDetail(_adapterConfigPlatforms[0].platform);
+    }
+}
+
+function renderAdapterConfigList(adapters) {
+    const el = document.getElementById('adapterConfigList');
+    if (!el) return;
+    el.innerHTML = adapters.map(a => {
+        const on = a.running;
+        const logo = adapterLogoImg(a.platform, 18);
+        return '<div class="adapter-list-item' + (_adapterConfigCurrent === a.platform ? ' active' : '') + '" onclick="selectAdapter(\'' + esc(a.platform) + '\',this)">' +
+            logo +
+            '<span class="adapter-list-name">' + esc(a.platform) + '</span>' +
+            '<span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? 'var(--ok-c)' : 'var(--tx-t)') + '"></span>' +
+            '</div>';
+    }).join('');
+}
+
+function selectAdapter(platform, el) {
+    _adapterConfigCurrent = platform;
+    document.querySelectorAll('.adapter-list-item').forEach(e => e.classList.remove('active'));
+    if (el) el.classList.add('active');
+    loadAdapterConfigDetail(platform);
+}
+
+async function loadAdapterConfigDetail(platform) {
+    const panel = document.getElementById('adapterConfigPanel');
+    if (!panel) return;
+    panel.innerHTML = '<div class="loading-spinner" style="padding:40px;text-align:center"><div class="spinner"></div><p>' + t('loading') + '</p></div>';
+
+    const d = await api('/api/adapter/' + encodeURIComponent(platform) + '/config');
+    if (!d || d.error) {
+        panel.innerHTML = '<div class="empty-state"><p>' + esc(d ? d.error : t('unknown_error')) + '</p></div>';
+        return;
+    }
+
+    var html = '<div class="adapter-config-detail">';
+
+    if (d.has_config && d.schema) {
+        html += '<div class="fw-section"><div class="fw-section-title">' + t('adapter_global_config') + '</div><div class="fw-section-body">';
+        html += renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key);
+        html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveAdapterConfigAll(\'' + esc(platform) + '\')">' + t('save_adapter_config') + '</button></div>';
+        html += '</div></div>';
+    }
+
+    html += '</div>';
+
+    panel.innerHTML = html;
+
+    if (d.has_accounts) {
+        loadAdapterAccounts(platform);
+    }
+}
+
+function renderAdapterSchemaFields(fields, values, keyPrefix) {
+    if (!fields || Object.keys(fields).length === 0) return '<div style="padding:12px;color:var(--tx-s)">' + t('no_config_schema') + '</div>';
+
+    var groups = {};
+    var groupOrder = {};
+    for (const [name, fs] of Object.entries(fields)) {
+        var g = fs.group || '_default';
+        if (!groups[g]) { groups[g] = []; groupOrder[g] = 100; }
+        groups[g].push({ name: name, schema: fs, value: values[name] !== undefined ? values[name] : fs.default });
+    }
+
+    var html = '';
+    var sortedGroups = Object.keys(groups).sort(function(a, b) {
+        var oa = groupOrder[a] || 100, ob = groupOrder[b] || 100;
+        if (oa !== ob) return oa - ob;
+        return a.localeCompare(b);
+    });
+
+    for (const g of sortedGroups) {
+        var items = groups[g].sort(function(a, b) {
+            var oa = a.schema.order || 100, ob = b.schema.order || 100;
+            return oa - ob;
+        });
+        for (const item of items) {
+            html += renderAdapterConfigField(item.name, item.schema, item.value, keyPrefix);
+        }
+    }
+    return html;
+}
+
+function renderAdapterConfigField(name, schema, value, keyPrefix) {
+    var desc = schema.description || '';
+    var tp = schema.type || 'string';
+    var widget = schema.widget || '';
+    var fullKey = (keyPrefix ? keyPrefix + '.' : '') + name;
+
+    var ctrl = '';
+    if (widget === 'switch' || tp === 'boolean') {
+        var checked = value === true || value === 'true' || value === 1;
+        ctrl = '<label class="switch"><input type="checkbox" ' + (checked ? 'checked' : '') + ' data-ackey="' + esc(fullKey) + '" data-adapter-tp="boolean" data-adapter-widget="switch" onchange="saveAdapterConfigField(this)"><span class="switch-slider"></span></label>';
+    } else if (widget === 'password' || schema.secret) {
+        var masked = value && value !== '' ? '******' : '';
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="password" value="' + esc(masked) + '" placeholder="' + (value ? '••••••' : '') + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string" data-adapter-secret="1"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+    } else if (widget === 'select' || (schema.options && schema.options.length)) {
+        var options = schema.options || [];
+        var optsHtml = options.map(function(o) {
+            var optVal = typeof o === 'object' ? o.value : o;
+            var optLabel = typeof o === 'object' ? o.label : o;
+            var sel = String(value).toLowerCase() === String(optVal).toLowerCase() ? ' selected' : '';
+            return '<option value="' + esc(optVal) + '"' + sel + '>' + esc(optLabel) + '</option>';
+        }).join('');
+        ctrl = '<select class="settings-select" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string" onchange="saveAdapterConfigField(this)">' + optsHtml + '</select>';
+    } else if (widget === 'number' || tp === 'integer' || tp === 'float') {
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="number" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+    } else if (tp === 'array' || Array.isArray(value) || schema.widget === 'textarea') {
+        var strVal = Array.isArray(value) ? JSON.stringify(value) : String(value != null ? value : '');
+        ctrl = '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="2" data-ackey="' + esc(fullKey) + '" data-adapter-tp="object">' + esc(strVal) + '</textarea><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+    } else {
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="text" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+    }
+
+    var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + '</div>' : '';
+    return '<div class="fw-row"><div class="fw-label">' + esc(name) + descHtml + '</div><div class="fw-control">' + ctrl + '</div></div>';
+}
+
+async function saveAdapterConfigField(el) {
+    var ackey = el.dataset.ackey;
+    var tp = el.dataset.adapterTp || 'string';
+    var secret = el.dataset.adapterSecret;
+    var val = el.type === 'checkbox' ? el.checked : el.value;
+    if (tp === 'number' || tp === 'integer' || tp === 'float') val = Number(val);
+    else if (tp === 'object') { try { val = JSON.parse(val) } catch(e) { return toast(t('validation_failed'), 'er') } }
+
+    var d = await api('/api/config', { method: 'PUT', body: JSON.stringify({ key: ackey, value: val }) });
+    if (d && d.success) {
+        el.style.border = '2px solid var(--ok-c)';
+        setTimeout(function() { el.style.border = ''; }, 1200);
+        toast(t('adapter_config_saved'), 'ok');
+    } else {
+        toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
+    }
+}
+
+async function saveAdapterConfigAll(platform) {
+    var d = await api('/api/adapter/' + encodeURIComponent(platform) + '/config');
+    if (!d || !d.schema) return;
+
+    var values = {};
+    var inputs = document.querySelectorAll('#adapterConfigPanel [data-ackey]');
+    for (var i = 0; i < inputs.length; i++) {
+        var el = inputs[i];
+        var ackey = el.dataset.ackey;
+        var parts = ackey.split('.');
+        var keyName = parts[parts.length - 1];
+        var tp = el.dataset.adapterTp || 'string';
+        var val = el.type === 'checkbox' ? el.checked : el.value;
+        if (tp === 'number' || tp === 'integer' || tp === 'float') val = Number(val);
+        else if (tp === 'object') { try { val = JSON.parse(val) } catch(e) { continue } }
+        values[keyName] = val;
+    }
+
+    var result = await api('/api/adapter/' + encodeURIComponent(platform) + '/config', {
+        method: 'PUT',
+        body: JSON.stringify({ values: values })
+    });
+
+    if (result && result.success) {
+        toast(t('adapter_config_saved'), 'ok');
+        if (result.errors && result.errors.length > 0) {
+            toast(t('config_validation_failed') + ': ' + result.errors.join(', '), 'er');
+        }
+    } else {
+        toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
+        if (result?.errors) toast(result.errors.join(', '), 'er');
+    }
+}
+
+async function loadAdapterAccounts(platform) {
+    var panel = document.getElementById('adapterConfigPanel');
+    if (!panel) return;
+
+    var d = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts');
+    if (!d || d.error) return;
+
+    var html = '<div class="fw-section" style="margin-top:16px"><div class="fw-section-title">' + t('adapter_accounts') + '</div><div class="fw-section-body">';
+    html += '<div class="adapter-account-list">';
+
+    var accounts = d.accounts || {};
+    var schema = d.schema;
+    for (var aname in accounts) {
+        var adata = accounts[aname] || {};
+        html += renderAdapterAccountCard(platform, aname, adata, schema);
+    }
+
+    html += '</div>';
+    html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="addAdapterAccount(\'' + esc(platform) + '\')">+ ' + t('add_account') + '</button></div>';
+    html += '</div></div>';
+
+    panel.innerHTML += html;
+}
+
+function renderAdapterAccountCard(platform, accountName, accountData, schema) {
+    var fieldsHtml = '';
+    if (schema && schema.fields) {
+        var items = Object.entries(schema.fields).sort(function(a, b) {
+            var oa = a[1].order || 100, ob = b[1].order || 100;
+            return oa - ob;
+        });
+        for (var i = 0; i < items.length; i++) {
+            var fname = items[i][0], fschema = items[i][1];
+            if (fname === 'enabled' || fname === 'name') continue;
+            var fval = accountData[fname] !== undefined ? accountData[fname] : fschema.default;
+            fieldsHtml += renderAdapterConfigField(fname, fschema, fval, 'accounts.' + accountName + '.' + platform);
+        }
+    }
+
+    var isEnabled = accountData.enabled !== false;
+    return '<div class="account-card"><div class="account-card-header">' +
+        '<label class="switch" style="margin-right:8px"><input type="checkbox" ' + (isEnabled ? 'checked' : '') + ' onchange="saveAdapterAccountField(\'' + esc(platform) + '\',\'' + esc(accountName) + '\',\'enabled\',this.checked)"><span class="switch-slider"></span></label>' +
+        '<span class="account-card-name">' + esc(accountName) + '</span>' +
+        '<div style="flex:1"></div>' +
+        '<button class="btn btn-danger btn-xs" onclick="removeAdapterAccount(\'' + esc(platform) + '\',\'' + esc(accountName) + '\')">' + t('remove_account') + '</button>' +
+        '</div>' +
+        '<div class="account-card-body">' + fieldsHtml + '</div>' +
+        '<div class="account-card-footer"><button class="btn btn-primary btn-xs" onclick="saveAdapterAccount(\'' + esc(platform) + '\',\'' + esc(accountName) + '\')">' + t('save_adapter_config') + '</button></div>' +
+        '</div>';
+}
+
+async function saveAdapterAccountField(platform, accountName, fieldName, value) {
+    var d = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts');
+    if (!d || !d.accounts) return;
+    var accounts = d.accounts;
+    if (!accounts[accountName]) accounts[accountName] = {};
+    accounts[accountName][fieldName] = value;
+    var result = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts', {
+        method: 'PUT',
+        body: JSON.stringify({ accounts: accounts })
+    });
+    if (result && result.success) {
+        toast(t('adapter_config_saved'), 'ok');
+    } else {
+        toast(t('save_failed'), 'er');
+    }
+}
+
+async function saveAdapterAccount(platform, accountName) {
+    var accountData = {};
+    var inputs = document.querySelectorAll('#adapterConfigPanel [data-ackey]');
+    var prefix = 'accounts.' + accountName + '.' + platform + '.';
+    for (var i = 0; i < inputs.length; i++) {
+        var el = inputs[i];
+        var ackey = el.dataset.ackey;
+        if (!ackey.startsWith(prefix)) continue;
+        var keyName = ackey.substring(prefix.length);
+        var tp = el.dataset.adapterTp || 'string';
+        var val = el.type === 'checkbox' ? el.checked : el.value;
+        if (tp === 'number' || tp === 'integer' || tp === 'float') val = Number(val);
+        else if (tp === 'object') { try { val = JSON.parse(val) } catch(e) { continue } }
+        accountData[keyName] = val;
+    }
+
+    var d = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts');
+    if (!d || !d.accounts) return;
+    var accounts = d.accounts;
+    accounts[accountName] = accountData;
+
+    var result = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts', {
+        method: 'PUT',
+        body: JSON.stringify({ accounts: accounts })
+    });
+    if (result && result.success) {
+        toast(t('adapter_config_saved'), 'ok');
+        if (result.errors && result.errors.length > 0) {
+            toast(t('config_validation_failed') + ': ' + result.errors.join(', '), 'er');
+        }
+    } else {
+        toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
+        if (result?.errors) toast(result.errors.join(', '), 'er');
+    }
+}
+
+async function addAdapterAccount(platform) {
+    var name = await prompt2(t('add_account'), t('account_name'), t('new_account_default_name'));
+    if (!name) return;
+    var result = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts/add', {
+        method: 'POST',
+        body: JSON.stringify({ name: name })
+    });
+    if (result && result.success) {
+        toast(t('account_added'), 'ok');
+        loadAdapterConfigDetail(platform);
+    } else {
+        toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
+    }
+}
+
+async function removeAdapterAccount(platform, accountName) {
+    var ok = await confirm2(t('confirm_remove_account'), t('remove_account') + ': ' + esc(accountName));
+    if (!ok) return;
+    var result = await api('/api/adapter/' + encodeURIComponent(platform) + '/accounts/' + encodeURIComponent(accountName), {
+        method: 'DELETE'
+    });
+    if (result && result.success) {
+        toast(t('account_removed'), 'ok');
+        loadAdapterConfigDetail(platform);
+    } else {
+        toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
+    }
+}
+
 async function loadFrameworkConfig() {
     const c = await api('/api/config');
     if (!c || !c.config) return;
@@ -3022,6 +3526,7 @@ async function loadFrameworkConfig() {
 
 function flattenFwSections(obj, prefix) {
     prefix = prefix || '';
+    var knownKeys = _buildFwKnownKeys();
     const sections = [];
     for (const [k, v] of Object.entries(obj)) {
         if (k === 'ErisPulse') continue;
@@ -3029,7 +3534,13 @@ function flattenFwSections(obj, prefix) {
         if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
             const allLeaf = Object.values(v).every(x => x === null || typeof x !== 'object' || Array.isArray(x));
             if (allLeaf) {
-                sections.push({ key, values: v });
+                var annotated = {};
+                for (var fk in v) {
+                    var fullKey = key + '.' + fk;
+                    var isKnown = !!knownKeys[fullKey] || fullKey.startsWith('adapters.') || fullKey.startsWith('modules.');
+                    annotated[fk] = { value: v[fk], known: isKnown };
+                }
+                sections.push({ key, values: annotated });
             } else {
                 sections.push(...flattenFwSections(v, key));
             }
@@ -3040,13 +3551,28 @@ function flattenFwSections(obj, prefix) {
 
 function renderFwSection(s) {
     const displayName = fwSectionI18nKey(s.key);
-    const rows = Object.entries(s.values).map(([field, val]) => {
+    const knownKeys = _buildFwKnownKeys();
+    const rows = Object.entries(s.values).map(([field, info]) => {
+        var val = info && typeof info === 'object' && 'value' in info ? info.value : info;
+        var keyForCheck = s.key + '.' + field;
+        var isKnown = info && typeof info === 'object' && 'known' in info ? info.known : !!knownKeys[keyForCheck];
+        isKnown = isKnown || keyForCheck.startsWith('adapters.') || keyForCheck.startsWith('modules.');
         const fk = 'ErisPulse.' + s.key + '.' + field;
         const descKey = s.key + '.' + field;
         const desc = fwFieldDesc(descKey);
         const tp = val === null ? 'null' : Array.isArray(val) ? 'object' : typeof val;
-        let ctrl = '';
-        if (tp === 'boolean') {
+        var rowClass = isKnown ? 'fw-row' : 'fw-row fw-row-unknown';
+        var unknownLabel = isKnown ? '' : '<span class="fw-unknown-badge" title="' + esc(t('fw_unknown_field_desc')) + '">' + esc(t('fw_unknown_field')) + '</span>';
+
+        var widgetDef = _fwFieldWidgets[descKey];
+        var ctrl = '';
+        if (widgetDef && widgetDef.widget === 'select') {
+            var optsHtml = widgetDef.options.map(function(o) {
+                var sel = String(val).toLowerCase() === String(o).toLowerCase() ? ' selected' : '';
+                return '<option value="' + esc(o) + '"' + sel + '>' + esc(o) + '</option>';
+            }).join('');
+            ctrl = '<select class="settings-select" data-fk="' + esc(fk) + '" data-tp="string" onchange="saveFwConfig(this)">' + optsHtml + '</select>';
+        } else if (tp === 'boolean') {
             ctrl = '<label class="switch"><input type="checkbox" ' + (val ? 'checked' : '') + ' data-fk="' + esc(fk) + '" data-tp="' + tp + '" onchange="saveFwConfig(this)"><span class="switch-slider"></span></label>';
         } else if (tp === 'number') {
             ctrl = '<input class="fw-input" type="number" value="' + esc(String(val)) + '" data-fk="' + esc(fk) + '" data-tp="' + tp + '">';
@@ -3055,9 +3581,10 @@ function renderFwSection(s) {
         } else {
             ctrl = '<input class="fw-input" type="text" value="' + esc(String(val)) + '" data-fk="' + esc(fk) + '" data-tp="' + tp + '">';
         }
-        const saveBtn = tp === 'boolean' ? '' : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
-        const descHtml = desc ? '<div class="fw-desc">' + esc(desc) + '</div>' : '';
-        return '<div class="fw-row"><div class="fw-label">' + esc(field) + descHtml + '</div><div class="fw-control">' + ctrl + saveBtn + '</div></div>';
+        var saveBtn = tp === 'boolean' ? '' : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
+        var resetBtn = '<button class="kv-btn kv-btn-del" onclick="resetFwField(\'' + esc(fk) + '\')" title="' + esc(isKnown ? t('fw_reset_default') : t('fw_delete_field')) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>';
+        var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + '</div>' : '';
+        return '<div class="' + rowClass + '"><div class="fw-label">' + esc(field) + unknownLabel + descHtml + '</div><div class="fw-control">' + ctrl + saveBtn + resetBtn + '</div></div>';
     }).join('');
     return '<div class="fw-section"><div class="fw-section-title">' + esc(displayName) + '</div><div class="fw-section-body">' + rows + '</div></div>';
 }
@@ -3077,6 +3604,22 @@ async function saveFwConfig(el) {
     setTimeout(() => el.style.border = '', 1200);
     if (d && d.success) toast(t('config_saved'), 'ok');
     else toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
+}
+
+async function resetFwField(fk) {
+    var knownKeys = _buildFwKnownKeys();
+    var plainKey = fk.replace('ErisPulse.', '');
+    var isKnown = !!knownKeys[plainKey];
+    var msg = isKnown ? t('fw_reset_confirm').replace('{key}', fk) : t('fw_delete_confirm').replace('{key}', fk);
+    var ok = await confirm2(isKnown ? t('fw_reset_default') : t('fw_delete_field'), msg);
+    if (!ok) return;
+    var d = await api('/api/config', { method: 'PUT', body: JSON.stringify({ key: fk, value: null }) });
+    if (d && d.success) {
+        toast(isKnown ? t('fw_reset_done') : t('fw_delete_done'), 'ok');
+        loadFrameworkConfig();
+    } else {
+        toast(t('save_failed') + ': ' + (d?.error || t('unknown_error')), 'er');
+    }
 }
 
 let _fwVersions = [];
@@ -5541,6 +6084,7 @@ var _PAGE_CAPABILITY_MAP = {
     'api-routes': 'routes',
     'config': 'config',
     'framework-config': 'config_source',
+    'adapter-config': 'config',
     'files': 'files',
 };
 

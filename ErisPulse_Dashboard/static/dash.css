@@ -5490,6 +5490,132 @@ input:focus, textarea:focus, select:focus {
     outline: none;
 }
 
+/* 适配器配置页面 */
+#p-adapter-config.page.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.adapter-config-layout {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    align-items: flex-start;
+}
+
+.adapter-list-panel {
+    width: 220px;
+    min-width: 220px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 6px;
+    align-self: flex-start;
+}
+
+.adapter-list-panel.card {
+    padding: 6px;
+}
+
+.adapter-config-panel {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+}
+
+.adapter-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px 9px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .15s;
+    border-left: 3px solid transparent;
+}
+
+.adapter-list-item:hover {
+    background: var(--bg-h);
+}
+
+.adapter-list-item.active {
+    background: var(--bg-a);
+    border-left-color: var(--accent);
+}
+
+.adapter-list-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.adapter-config-detail {
+    padding: 0;
+}
+
+.account-card {
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.account-card-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--bd);
+}
+
+.account-card-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.account-card-body {
+    padding: 12px 14px;
+}
+
+.account-card-body .fw-row {
+    margin-bottom: 8px;
+}
+
+.account-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 14px;
+    border-top: 1px solid var(--bd);
+    background: var(--bg2);
+}
+
+.adapter-account-list {
+    margin-bottom: 8px;
+}
+
+.fw-row-unknown {
+    opacity: .55;
+}
+
+.fw-unknown-badge {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--wr-c);
+    border: 1px solid var(--wr-c);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    cursor: help;
+}
+
+.modal-input {
+    margin-top: 8px;
+}
+
 /* 滚动条 - 极简风格 */
 ::-webkit-scrollbar {
     width: 5px;
