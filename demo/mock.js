@@ -635,6 +635,75 @@
     API_MAP['/api/files/compress'] = function () { return _json({ success: true }); };
     API_MAP['/api/files/decompress'] = function () { return _json({ success: true }); };
 
+    var _mockAdapterConfigs = {
+        qq: {
+            config_key: 'qq', has_config: true, has_accounts: true,
+            schema: { fields: {
+                appid: { type: 'string', description: 'QQ 开放平台 AppID', group: 'connection', order: 1 },
+                secret: { type: 'string', secret: true, description: 'QQ 开放平台 AppSecret', group: 'connection', order: 2 },
+                token: { type: 'string', secret: true, description: 'WebSocket 鉴权 Token', group: 'connection', order: 3 },
+                sandbox: { type: 'boolean', widget: 'switch', description: '是否使用沙箱环境', group: 'advanced', order: 10 },
+            }},
+            values: { appid: '102045273', secret: 'aB3xK9mP2qR7sV4w', token: 'wss_token_demo_value_123', sandbox: false },
+            account_schema: { fields: {
+                enabled: { type: 'boolean', widget: 'switch', order: 1 },
+                name: { type: 'string', order: 2 },
+                appid: { type: 'string', description: '机器人 AppID', order: 3 },
+                secret: { type: 'string', secret: true, description: '机器人 Secret', order: 4 },
+                token: { type: 'string', secret: true, description: '回调鉴权 Token', order: 5 },
+            }},
+            accounts: { default: { enabled: true, name: 'default', appid: '102045273', secret: 'bot_secret_abc123', token: 'callback_token_xyz' } }
+        },
+        telegram: {
+            config_key: 'telegram', has_config: true, has_accounts: false,
+            schema: { fields: {
+                token: { type: 'string', secret: true, description: 'Telegram Bot Token', order: 1 },
+                proxy: { type: 'string', description: 'HTTP 代理地址（可选）', order: 2 },
+            }},
+            values: { token: '7842139046:AAEhBO9xK_demo_token_FkMzqW', proxy: '' }
+        },
+        discord: {
+            config_key: 'discord', has_config: true, has_accounts: true,
+            schema: { fields: {
+                application_id: { type: 'string', description: 'Discord Application ID', order: 1 },
+                public_key: { type: 'string', description: 'Discord Public Key', order: 2 },
+            }},
+            values: { application_id: '1234567890123456789', public_key: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890' },
+            account_schema: { fields: {
+                enabled: { type: 'boolean', widget: 'switch', order: 1 },
+                name: { type: 'string', order: 2 },
+                token: { type: 'string', secret: true, description: 'Bot Token', order: 3 },
+            }},
+            accounts: { 'main-bot': { enabled: true, name: 'main-bot', token: 'MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GabcDE.demo_token_hash_FkMzqW' } }
+        },
+        onebot: {
+            config_key: 'onebot', has_config: true, has_accounts: true,
+            schema: { fields: {
+                host: { type: 'string', description: 'WebSocket 监听地址', order: 1 },
+                port: { type: 'integer', description: 'WebSocket 监听端口', order: 2 },
+                access_token: { type: 'string', secret: true, description: '访问令牌', order: 3 },
+            }},
+            values: { host: '0.0.0.0', port: 8080, access_token: 'onebot_access_token_demo' },
+            account_schema: { fields: {
+                enabled: { type: 'boolean', widget: 'switch', order: 1 },
+                name: { type: 'string', order: 2 },
+                host: { type: 'string', description: '连接地址', order: 3 },
+                port: { type: 'integer', description: '连接端口', order: 4 },
+                token: { type: 'string', secret: true, description: '鉴权 Token', order: 5 },
+                client_token: { type: 'string', secret: true, description: '客户端 Token', order: 6 },
+            }},
+            accounts: { default: { enabled: false, name: 'default', host: '127.0.0.1', port: 6700, token: '', client_token: 'ob12_client_token_demo' } }
+        },
+        kook: {
+            config_key: 'kook', has_config: true, has_accounts: false,
+            schema: { fields: {
+                token: { type: 'string', secret: true, description: 'KOOK Bot Token', order: 1 },
+                verify_token: { type: 'string', secret: true, description: 'Webhook 验证 Token', order: 2 },
+            }},
+            values: { token: '1/MTIzNDU=/demo-kook-token-abc', verify_token: 'verify_token_demo_kook' }
+        }
+    };
+
     var _realFetch = window.fetch;
     window.fetch = function (input, init) {
         if (typeof input === 'string' && input.indexOf('/api/') !== -1) {
@@ -657,6 +726,34 @@
             }
             if (init && init.method === 'DELETE' && matchPath.match(/\/api\/cluster\/nodes\//)) {
                 return _json({ success: true });
+            }
+            var adapterMatch = matchPath.match(/^\/api\/adapter\/([^/]+)\/(config|accounts)(\/.*)?$/);
+            if (adapterMatch) {
+                var aPlatform = adapterMatch[1];
+                var aAction = adapterMatch[2];
+                var aSub = adapterMatch[3] || '';
+                var aCfg = _mockAdapterConfigs[aPlatform];
+                if (!aCfg) return _json({ error: 'Adapter not found' }, 50);
+                if (aAction === 'config') {
+                    if (init && init.method === 'PUT') return _json({ success: true });
+                    return _json({
+                        platform: aPlatform, config_key: aCfg.config_key,
+                        has_config: aCfg.has_config, has_accounts: aCfg.has_accounts,
+                        schema: aCfg.schema, values: aCfg.values,
+                        account_schema: aCfg.account_schema, accounts: aCfg.accounts,
+                        accounts_key: aCfg.config_key + '.accounts',
+                    });
+                }
+                if (aAction === 'accounts') {
+                    if (aSub === '/add') return _json({ success: true });
+                    if (aSub && init && init.method === 'DELETE') return _json({ success: true });
+                    if (init && init.method === 'PUT') return _json({ success: true });
+                    return _json({
+                        schema: aCfg.account_schema,
+                        accounts: aCfg.accounts || {},
+                        accounts_key: aCfg.config_key + '.accounts',
+                    });
+                }
             }
             var handler = null;
             for (var key in API_MAP) {
