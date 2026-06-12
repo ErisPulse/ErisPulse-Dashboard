@@ -142,6 +142,10 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
                             <span data-i18n="cluster_management"></span>
                         </a>
+                        <a class="nav-item" data-page="adapter-config" onclick="go('adapter-config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            <span data-i18n="adapter_config"></span>
+                        </a>
                     </div>
                     <div class="nav-group">
                         <div class="nav-group-title" data-i18n="group_tools" onclick="toggleNavGroup(this)"></div>
@@ -1089,6 +1093,20 @@
                     <h1 class="page-title" data-i18n="cluster_management"></h1>
                     <p class="page-desc" data-i18n="cluster_desc"></p>
                     <div id="clusterContent"></div>
+                </div>
+
+                <div class="page" id="p-adapter-config">
+                    <h1 class="page-title" data-i18n="adapter_config"></h1>
+                    <p class="page-desc" data-i18n="adapter_config_desc"></p>
+                    <div class="adapter-config-layout">
+                        <div class="adapter-list-panel card" id="adapterConfigList"></div>
+                        <div class="adapter-config-panel" id="adapterConfigPanel">
+                            <div class="empty-state" id="adapterConfigEmpty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                                <p data-i18n="select_adapter_prompt"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page" id="p-about">
