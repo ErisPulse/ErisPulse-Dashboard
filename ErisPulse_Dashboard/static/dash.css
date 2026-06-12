@@ -5636,6 +5636,13 @@ input:focus, textarea:focus, select:focus {
 }
 
  
+.sidebar-about {
+    padding: 4px 8px 0;
+    border-top: 1px solid var(--bd);
+    margin-top: auto;
+}
+
+ 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

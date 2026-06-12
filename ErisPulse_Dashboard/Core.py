@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import os
 import secrets
@@ -1577,7 +1578,7 @@ class Main(BaseModule):
                 result["schema"] = get_config_schema(config_class)
             except Exception as e:
                 self.logger.debug(f"Failed to get config schema for {platform}: {e}")
-            result["values"] = self.sdk.config.getConfig(config_key) or {}
+            result["values"] = copy.deepcopy(self.sdk.config.getConfig(config_key) or {})
 
         if account_config_class is not None:
             try:
@@ -1592,7 +1593,7 @@ class Main(BaseModule):
                 accounts_key = config_key + ".bots"
                 accounts_data = self.sdk.config.getConfig(accounts_key)
             result["accounts_key"] = accounts_key
-            result["accounts"] = accounts_data or {}
+            result["accounts"] = copy.deepcopy(accounts_data or {})
 
         return result
 
@@ -1603,11 +1604,6 @@ class Main(BaseModule):
         info = self._get_adapter_config_info(platform)
         if info is None:
             return JSONResponse({"error": "Adapter not found"}, status_code=404)
-
-        if info.get("schema") and info["schema"].get("fields"):
-            for fname, fschema in info["schema"]["fields"].items():
-                if fschema.get("secret") and info["values"].get(fname):
-                    info["values"][fname] = "******"
 
         return JSONResponse(info)
 
@@ -1625,14 +1621,12 @@ class Main(BaseModule):
 
         values = body.get("values")
         if values is not None:
+            current = self.sdk.config.getConfig(config_key) or {}
+            merged = {**current, **values}
+
             if config_class is not None:
                 try:
                     from ErisPulse.runtime.config_schema import dict_to_dataclass, validate_config
-                    current = self.sdk.config.getConfig(config_key) or {}
-                    merged = {**current, **values}
-                    for k, v in merged.items():
-                        if v == "******" and current.get(k):
-                            merged[k] = current[k]
                     instance = dict_to_dataclass(config_class, merged)
                     errors = validate_config(instance)
                     if errors:
@@ -1640,19 +1634,14 @@ class Main(BaseModule):
                 except Exception as e:
                     self.logger.debug(f"Config validation error: {e}")
 
-            current = self.sdk.config.getConfig(config_key) or {}
-            for k, v in values.items():
-                if v == "******" and current.get(k):
-                    continue
-                current[k] = v
-            self.sdk.config.setConfig(config_key, current)
+            self.sdk.config.setConfig(config_key, merged)
 
             try:
                 old_config = getattr(adapter_instance, '_config_instance', None)
                 adapter_instance._config_instance = None
                 if config_class is not None:
                     from ErisPulse.runtime.config_schema import dict_to_dataclass
-                    adapter_instance._config_instance = dict_to_dataclass(config_class, current)
+                    adapter_instance._config_instance = dict_to_dataclass(config_class, merged)
                 if hasattr(adapter_instance, 'on_config_update') and old_config:
                     adapter_instance.on_config_update(old_config, adapter_instance._config_instance)
             except Exception as e:
@@ -1665,9 +1654,6 @@ class Main(BaseModule):
         value = body.get("value")
         if not key:
             return JSONResponse({"error": "key or values required"}, status_code=400)
-
-        if value == "******":
-            return JSONResponse({"success": True})
 
         full_key = config_key + "." + key
         self.sdk.config.setConfig(full_key, value)
@@ -1685,12 +1671,6 @@ class Main(BaseModule):
             return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
 
         accounts = info.get("accounts", {})
-        if info.get("account_schema") and info["account_schema"].get("fields"):
-            for aname, adata in accounts.items():
-                if isinstance(adata, dict):
-                    for fname, fschema in info["account_schema"]["fields"].items():
-                        if fschema.get("secret") and adata.get(fname):
-                            accounts[aname][fname] = "******"
 
         return JSONResponse({
             "schema": info.get("account_schema"),
@@ -1724,11 +1704,8 @@ class Main(BaseModule):
 
         merged_accounts = {}
         for aname, adata in accounts.items():
-            merged = {**(old_accounts.get(aname, {}) or {}), **adata}
-            for k, v in merged.items():
-                if v == "******" and (old_accounts.get(aname) or {}).get(k):
-                    merged[k] = old_accounts[aname][k]
-            merged_accounts[aname] = merged
+            old = old_accounts.get(aname, {}) or {}
+            merged_accounts[aname] = {**old, **(adata if isinstance(adata, dict) else {})}
 
         all_errors = []
         try:
@@ -1791,6 +1768,10 @@ class Main(BaseModule):
             default_data.update(body.get("data", {}))
         except Exception:
             default_data = body.get("data", {"enabled": True, "name": account_name})
+
+        default_data["name"] = account_name
+        if "enabled" not in default_data:
+            default_data["enabled"] = True
 
         accounts_data[account_name] = default_data
         self.sdk.config.setConfig(accounts_key, accounts_data)
@@ -2109,6 +2090,9 @@ class Main(BaseModule):
         key, value = body.get("key", ""), body.get("value")
         if not key:
             return JSONResponse({"error": "key is required"}, status_code=400)
+        if value == "******":
+            self._add_audit_log("config_update", f"{key} (unchanged secret)", request)
+            return JSONResponse({"success": True})
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})

@@ -142,6 +142,10 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
                             <span data-i18n="cluster_management"></span>
                         </a>
+                        <a class="nav-item" data-page="adapter-config" onclick="go('adapter-config',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            <span data-i18n="adapter_config"></span>
+                        </a>
                     </div>
                     <div class="nav-group">
                         <div class="nav-group-title" data-i18n="group_tools" onclick="toggleNavGroup(this)"></div>
@@ -157,15 +161,13 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/></svg>
                             <span data-i18n="framework_config"></span>
                         </a>
-                        <a class="nav-item" data-page="adapter-config" onclick="go('adapter-config',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-                            <span data-i18n="adapter_config"></span>
-                        </a>
-                        <a class="nav-item" data-page="about" onclick="go('about',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                            <span data-i18n="about"></span>
-                        </a>
                     </div>
+                </div>
+                <div class="sidebar-about" id="sidebarAbout">
+                    <a class="nav-item" data-page="about" onclick="go('about',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        <span data-i18n="about"></span>
+                    </a>
                 </div>
                 <div class="sidebar-footer">
                     <span class="fw-ver" id="fwInfo">Loading...</span>
