@@ -239,6 +239,8 @@ const I18N = {
         adapter_config_saved: '适配器配置已保存',
         account_removed: '账户已删除',
         account_added: '账户已添加',
+        show_secret: '显示',
+        hide_secret: '隐藏',
         confirm_remove_account: '确认删除此账户？',
         new_account_default_name: '新账户',
         select_adapter_prompt: '请从左侧选择一个适配器以查看配置',
@@ -591,6 +593,8 @@ const I18N = {
         adapter_config_saved: 'Adapter config saved',
         account_removed: 'Account removed',
         account_added: 'Account added',
+        show_secret: 'Show',
+        hide_secret: 'Hide',
         confirm_remove_account: 'Confirm remove this account?',
         new_account_default_name: 'new_account',
         select_adapter_prompt: 'Select an adapter from the left to view its config',
@@ -3247,7 +3251,7 @@ async function loadAdapterConfigDetail(platform) {
 
     if (d.has_config && d.schema) {
         html += '<div class="fw-section"><div class="fw-section-title">' + t('adapter_global_config') + '</div><div class="fw-section-body">';
-        html += renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key);
+        html += '<div id="adapterGlobalConfigFields">' + renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key) + '</div>';
         html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveAdapterConfigAll(\'' + esc(platform) + '\')">' + t('save_adapter_config') + '</button></div>';
         html += '</div></div>';
     }
@@ -3291,19 +3295,40 @@ function renderAdapterSchemaFields(fields, values, keyPrefix) {
     return html;
 }
 
-function renderAdapterConfigField(name, schema, value, keyPrefix) {
+var EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var EYE_CLOSED_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function toggleSecretVisibility(btn) {
+    var input = btn.parentElement.querySelector('input');
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = EYE_CLOSED_SVG;
+        btn.title = t('hide_secret');
+    } else {
+        input.type = 'password';
+        btn.innerHTML = EYE_OPEN_SVG;
+        btn.title = t('show_secret');
+    }
+}
+
+function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
+    opts = opts || {};
+    var fieldSave = opts.fieldSave !== false;
     var desc = schema.description || '';
     var tp = schema.type || 'string';
     var widget = schema.widget || '';
     var fullKey = (keyPrefix ? keyPrefix + '.' : '') + name;
+    var onChg = fieldSave ? ' onchange="saveAdapterConfigField(this)"' : '';
+    var saveBtn = fieldSave ? '<button class="kv-btn" onclick="saveAdapterConfigField(this.parentElement.querySelector(\'input,textarea\'))" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>' : '';
 
     var ctrl = '';
     if (widget === 'switch' || tp === 'boolean') {
         var checked = value === true || value === 'true' || value === 1;
-        ctrl = '<label class="switch"><input type="checkbox" ' + (checked ? 'checked' : '') + ' data-ackey="' + esc(fullKey) + '" data-adapter-tp="boolean" data-adapter-widget="switch" onchange="saveAdapterConfigField(this)"><span class="switch-slider"></span></label>';
+        ctrl = '<label class="switch"><input type="checkbox" ' + (checked ? 'checked' : '') + ' data-ackey="' + esc(fullKey) + '" data-adapter-tp="boolean" data-adapter-widget="switch"' + onChg + '><span class="switch-slider"></span></label>';
     } else if (widget === 'password' || schema.secret) {
-        var masked = value && value !== '' ? '******' : '';
-        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="password" value="' + esc(masked) + '" placeholder="' + (value ? '••••••' : '') + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string" data-adapter-secret="1"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+        var eyeBtn = '<button class="kv-btn" type="button" onclick="toggleSecretVisibility(this)" title="' + esc(t('show_secret')) + '">' + EYE_OPEN_SVG + '</button>';
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="password" value="' + esc(String(value != null ? value : '')) + '" autocomplete="new-password" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string">' + eyeBtn + saveBtn + '</div>';
     } else if (widget === 'select' || (schema.options && schema.options.length)) {
         var options = schema.options || [];
         var optsHtml = options.map(function(o) {
@@ -3312,14 +3337,14 @@ function renderAdapterConfigField(name, schema, value, keyPrefix) {
             var sel = String(value).toLowerCase() === String(optVal).toLowerCase() ? ' selected' : '';
             return '<option value="' + esc(optVal) + '"' + sel + '>' + esc(optLabel) + '</option>';
         }).join('');
-        ctrl = '<select class="settings-select" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string" onchange="saveAdapterConfigField(this)">' + optsHtml + '</select>';
+        ctrl = '<select class="settings-select" data-ackey="' + esc(fullKey) + '" data-adapter-tp="string"' + onChg + '>' + optsHtml + '</select>';
     } else if (widget === 'number' || tp === 'integer' || tp === 'float') {
-        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="number" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="number" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '">' + saveBtn + '</div>';
     } else if (tp === 'array' || Array.isArray(value) || schema.widget === 'textarea') {
         var strVal = Array.isArray(value) ? JSON.stringify(value) : String(value != null ? value : '');
-        ctrl = '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="2" data-ackey="' + esc(fullKey) + '" data-adapter-tp="object">' + esc(strVal) + '</textarea><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+        ctrl = '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="2" data-ackey="' + esc(fullKey) + '" data-adapter-tp="object">' + esc(strVal) + '</textarea>' + saveBtn + '</div>';
     } else {
-        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="text" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '"><button class="kv-btn" onclick="saveAdapterConfigField(this.previousElementSibling)" title="' + t('save_adapter_config') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button></div>';
+        ctrl = '<div style="display:flex;gap:4px"><input class="fw-input" type="text" value="' + esc(String(value != null ? value : '')) + '" data-ackey="' + esc(fullKey) + '" data-adapter-tp="' + esc(tp) + '">' + saveBtn + '</div>';
     }
 
     var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + '</div>' : '';
@@ -3329,7 +3354,6 @@ function renderAdapterConfigField(name, schema, value, keyPrefix) {
 async function saveAdapterConfigField(el) {
     var ackey = el.dataset.ackey;
     var tp = el.dataset.adapterTp || 'string';
-    var secret = el.dataset.adapterSecret;
     var val = el.type === 'checkbox' ? el.checked : el.value;
     if (tp === 'number' || tp === 'integer' || tp === 'float') val = Number(val);
     else if (tp === 'object') { try { val = JSON.parse(val) } catch(e) { return toast(t('validation_failed'), 'er') } }
@@ -3349,7 +3373,7 @@ async function saveAdapterConfigAll(platform) {
     if (!d || !d.schema) return;
 
     var values = {};
-    var inputs = document.querySelectorAll('#adapterConfigPanel [data-ackey]');
+    var inputs = document.querySelectorAll('#adapterGlobalConfigFields [data-ackey]');
     for (var i = 0; i < inputs.length; i++) {
         var el = inputs[i];
         var ackey = el.dataset.ackey;
@@ -3413,7 +3437,7 @@ function renderAdapterAccountCard(platform, accountName, accountData, schema) {
             var fname = items[i][0], fschema = items[i][1];
             if (fname === 'enabled' || fname === 'name') continue;
             var fval = accountData[fname] !== undefined ? accountData[fname] : fschema.default;
-            fieldsHtml += renderAdapterConfigField(fname, fschema, fval, 'accounts.' + accountName + '.' + platform);
+            fieldsHtml += renderAdapterConfigField(fname, fschema, fval, 'accounts.' + accountName + '.' + platform, { fieldSave: false });
         }
     }
 

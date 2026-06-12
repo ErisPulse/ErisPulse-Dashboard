@@ -5635,6 +5635,13 @@ input:focus, textarea:focus, select:focus {
     background: var(--bd-h);
 }
 
+/* 关于页面 - 始终底部 */
+.sidebar-about {
+    padding: 4px 8px 0;
+    border-top: 1px solid var(--bd);
+    margin-top: auto;
+}
+
 /* 减少动画模式 */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
