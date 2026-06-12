@@ -1678,6 +1678,20 @@ class Main(BaseModule):
             "accounts_key": info.get("accounts_key"),
         })
 
+    async def _reload_adapter_if_running(self, adapter_instance, platform, reload: bool = True) -> bool:
+        """刷新账户数据；reload=True 且适配器运行中时，交由框架执行完整重载（框架自动清理资源）"""
+        try:
+            adapter_instance._accounts_data = None
+            if hasattr(adapter_instance, '_load_accounts'):
+                adapter_instance._accounts_data = adapter_instance._load_accounts()
+
+            if reload and adapter_instance in getattr(self.sdk.adapter, '_started_instances', set()):
+                # 生命周期（shutdown + 资源清理 + start）由框架统一处理，模块无需关心
+                return await self.sdk.adapter.restart(platform)
+        except Exception as e:
+            self.logger.error(f"适配器重载失败: {e}")
+        return False
+
     async def _api_adapter_accounts_set(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
@@ -1725,15 +1739,13 @@ class Main(BaseModule):
 
         self.sdk.config.setConfig(accounts_key, merged_accounts)
 
-        try:
-            adapter_instance._accounts_data = None
-            if hasattr(adapter_instance, '_load_accounts'):
-                adapter_instance._accounts_data = adapter_instance._load_accounts()
-        except Exception as e:
-            self.logger.debug(f"Account hot-reload error: {e}")
+        reloaded = await self._reload_adapter_if_running(adapter_instance, platform)
 
         self._add_audit_log("adapter_accounts_update", platform, request)
-        return JSONResponse({"success": True})
+        response = {"success": True, "module": adapter_instance.__class__.__name__}
+        if reloaded:
+            response["message"] = "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+        return JSONResponse(response)
 
     async def _api_adapter_accounts_add(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -1776,12 +1788,8 @@ class Main(BaseModule):
         accounts_data[account_name] = default_data
         self.sdk.config.setConfig(accounts_key, accounts_data)
 
-        try:
-            adapter_instance._accounts_data = None
-            if hasattr(adapter_instance, '_load_accounts'):
-                adapter_instance._accounts_data = adapter_instance._load_accounts()
-        except Exception as e:
-            self.logger.debug(f"Account hot-reload error: {e}")
+        # 添加账户时只刷新内存数据，不重启适配器（用户尚未填写配置）
+        await self._reload_adapter_if_running(adapter_instance, platform, reload=False)
 
         self._add_audit_log("adapter_account_add", f"{platform}/{account_name}", request)
         return JSONResponse({"success": True})
@@ -1808,15 +1816,13 @@ class Main(BaseModule):
         del accounts_data[account_name]
         self.sdk.config.setConfig(accounts_key, accounts_data)
 
-        try:
-            adapter_instance._accounts_data = None
-            if hasattr(adapter_instance, '_load_accounts'):
-                adapter_instance._accounts_data = adapter_instance._load_accounts()
-        except Exception as e:
-            self.logger.debug(f"Account hot-reload error: {e}")
+        reloaded = await self._reload_adapter_if_running(adapter_instance, platform)
 
         self._add_audit_log("adapter_account_delete", f"{platform}/{account_name}", request)
-        return JSONResponse({"success": True})
+        response = {"success": True, "module": adapter_instance.__class__.__name__}
+        if reloaded:
+            response["message"] = "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+        return JSONResponse(response)
 
     async def _api_adapter_logos(self, request: Request) -> JSONResponse:
         import os as _os
