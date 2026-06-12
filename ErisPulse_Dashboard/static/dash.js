@@ -2392,6 +2392,75 @@ function showOutputModal(title, lines, actions) {
     });
 }
 
+function showAdapterReloadLog(module, displayName) {
+    var overlay = document.getElementById('outputOv');
+    document.getElementById('outputTitle').textContent = (displayName || module) + ' — 重载日志';
+    var pre = document.getElementById('outputPre');
+    var origMaxHeight = pre.style.maxHeight;
+    pre.style.maxHeight = '400px';
+    pre.textContent = '正在收集日志...\n';
+
+    var ac = document.getElementById('outputActions');
+    ac.innerHTML = '';
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-primary';
+    closeBtn.textContent = t('ok');
+    ac.appendChild(closeBtn);
+
+    var pollTimer = null;
+    var startTime = Date.now();
+    var seenLogs = new Set();
+    var stopped = false;
+
+    function stopPolling() {
+        stopped = true;
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    closeBtn.onclick = function () {
+        stopPolling();
+        pre.style.maxHeight = origMaxHeight;
+        overlay.classList.remove('show');
+    };
+
+    overlay.classList.add('show');
+
+    async function fetchLogs() {
+        if (stopped) return;
+        try {
+            var data = await api('/api/logs?module=' + encodeURIComponent(module) + '&limit=80');
+            if (!data || !data.logs) return;
+
+            var entries = data.logs.slice().reverse();
+            var newLines = [];
+            for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                var key = e.full || (e.timestamp + '|' + e.message);
+                if (!seenLogs.has(key)) {
+                    seenLogs.add(key);
+                    newLines.push(e.message || '');
+                }
+            }
+
+            if (newLines.length > 0) {
+                if (pre.textContent.indexOf('正在收集日志') === 0) {
+                    pre.textContent = '';
+                }
+                pre.textContent += newLines.join('\n') + '\n';
+                pre.scrollTop = pre.scrollHeight;
+            }
+        } catch (e) { }
+
+        if (Date.now() - startTime > 15000) {
+            stopPolling();
+            pre.textContent += '\n— 日志收集已自动停止 —';
+        }
+    }
+
+    fetchLogs();
+    pollTimer = setInterval(fetchLogs, 800);
+}
+
 function toast(msg, type) {
     const el = document.createElement('div');
     el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);padding:10px 24px;border-radius:8px;font-size:14px;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;opacity:0;transition:opacity .25s ease,transform .25s cubic-bezier(.4,0,.2,1);pointer-events:none';
@@ -3497,6 +3566,10 @@ async function saveAdapterAccount(platform, accountName) {
     });
     if (result && result.success) {
         toast(t('adapter_config_saved'), 'ok');
+        if (result.message) {
+            toast(result.message);
+            showAdapterReloadLog(result.module || platform, platform);
+        }
         if (result.errors && result.errors.length > 0) {
             toast(t('config_validation_failed') + ': ' + result.errors.join(', '), 'er');
         }
@@ -3515,6 +3588,7 @@ async function addAdapterAccount(platform) {
     });
     if (result && result.success) {
         toast(t('account_added'), 'ok');
+        if (result.message) toast(result.message);
         loadAdapterConfigDetail(platform);
     } else {
         toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
@@ -3529,6 +3603,10 @@ async function removeAdapterAccount(platform, accountName) {
     });
     if (result && result.success) {
         toast(t('account_removed'), 'ok');
+        if (result.message) {
+            toast(result.message);
+            showAdapterReloadLog(result.module || platform, platform);
+        }
         loadAdapterConfigDetail(platform);
     } else {
         toast(t('save_failed') + ': ' + (result?.error || t('unknown_error')), 'er');
