@@ -7,8 +7,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import threading
+import time
 from pathlib import Path
 
 from ErisPulse import sdk
@@ -16,8 +16,7 @@ from ErisPulse.Core.Bases import BaseModule
 from fastapi import Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
-from .Cluster import ClusterManager, PAGE_CAPABILITY_MAP
-
+from .Cluster import PAGE_CAPABILITY_MAP, ClusterManager
 
 DEFAULT_ERISPULSE_CONFIG = {
     "server": {
@@ -323,19 +322,32 @@ class Main(BaseModule):
 
                 event_config = get_event_config()
                 command_config = event_config.get("command", {})
-                prefix = command_config.get("prefix", "/")
+                raw_prefix = command_config.get("prefix", "/")
                 case_sensitive = command_config.get("case_sensitive", True)
             except Exception:
-                prefix = "/"
+                raw_prefix = "/"
                 case_sensitive = True
 
-            check_text = text if case_sensitive else text.lower()
-            check_prefix = prefix if case_sensitive else prefix.lower()
+            # 归一化前缀为列表
+            if isinstance(raw_prefix, list):
+                prefixes = [str(p) for p in raw_prefix] if raw_prefix else ["/"]
+            else:
+                prefixes = [str(raw_prefix)]
+            if not case_sensitive:
+                prefixes = [p.lower() for p in prefixes]
 
-            if not check_text.startswith(check_prefix):
+            check_text = text if case_sensitive else text.lower()
+
+            # 查找匹配的前缀（支持多个前缀）
+            matched_prefix = None
+            for p in prefixes:
+                if check_text.startswith(p):
+                    matched_prefix = p
+                    break
+            if matched_prefix is None:
                 return data
 
-            command_part = check_text[len(check_prefix) :].strip()
+            command_part = check_text[len(matched_prefix) :].strip()
             parts = command_part.split()
             if not parts:
                 return data
@@ -376,7 +388,7 @@ class Main(BaseModule):
 
             transform_to = rule.get("transform_to")
             if transform_to:
-                new_cmd_text = check_prefix + transform_to + " " + " ".join(parts[1:])
+                new_cmd_text = matched_prefix + transform_to + " " + " ".join(parts[1:])
                 new_cmd_text = new_cmd_text.strip()
                 for i, segment in enumerate(message_segments):
                     if segment.get("type") == "text":
@@ -721,8 +733,8 @@ class Main(BaseModule):
 
     def _dynamic_load_new_modules(self):
         try:
-            from ErisPulse.loaders import ModuleLoader, AdapterLoader
-            from ErisPulse.finders import ModuleFinder, AdapterFinder
+            from ErisPulse.finders import AdapterFinder, ModuleFinder
+            from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
             mf = ModuleFinder()
             af = AdapterFinder()
@@ -1557,8 +1569,8 @@ class Main(BaseModule):
             return None
 
         config_key = adapter_instance._get_config_key()
-        config_class = getattr(adapter_instance, 'ConfigClass', None)
-        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+        config_class = getattr(adapter_instance, "ConfigClass", None)
+        account_config_class = getattr(adapter_instance, "AccountConfigClass", None)
 
         result = {
             "platform": platform,
@@ -1575,17 +1587,23 @@ class Main(BaseModule):
         if config_class is not None:
             try:
                 from ErisPulse.runtime.config_schema import get_config_schema
+
                 result["schema"] = get_config_schema(config_class)
             except Exception as e:
                 self.logger.debug(f"Failed to get config schema for {platform}: {e}")
-            result["values"] = copy.deepcopy(self.sdk.config.getConfig(config_key) or {})
+            result["values"] = copy.deepcopy(
+                self.sdk.config.getConfig(config_key) or {}
+            )
 
         if account_config_class is not None:
             try:
                 from ErisPulse.runtime.config_schema import get_config_schema
+
                 result["account_schema"] = get_config_schema(account_config_class)
             except Exception as e:
-                self.logger.debug(f"Failed to get account config schema for {platform}: {e}")
+                self.logger.debug(
+                    f"Failed to get account config schema for {platform}: {e}"
+                )
 
             accounts_key = config_key + ".accounts"
             accounts_data = self.sdk.config.getConfig(accounts_key)
@@ -1617,7 +1635,7 @@ class Main(BaseModule):
 
         body = await request.json()
         config_key = adapter_instance._get_config_key()
-        config_class = getattr(adapter_instance, 'ConfigClass', None)
+        config_class = getattr(adapter_instance, "ConfigClass", None)
 
         values = body.get("values")
         if values is not None:
@@ -1626,24 +1644,35 @@ class Main(BaseModule):
 
             if config_class is not None:
                 try:
-                    from ErisPulse.runtime.config_schema import dict_to_dataclass, validate_config
+                    from ErisPulse.runtime.config_schema import (
+                        dict_to_dataclass,
+                        validate_config,
+                    )
+
                     instance = dict_to_dataclass(config_class, merged)
                     errors = validate_config(instance)
                     if errors:
-                        return JSONResponse({"success": False, "errors": errors}, status_code=400)
+                        return JSONResponse(
+                            {"success": False, "errors": errors}, status_code=400
+                        )
                 except Exception as e:
                     self.logger.debug(f"Config validation error: {e}")
 
             self.sdk.config.setConfig(config_key, merged)
 
             try:
-                old_config = getattr(adapter_instance, '_config_instance', None)
+                old_config = getattr(adapter_instance, "_config_instance", None)
                 adapter_instance._config_instance = None
                 if config_class is not None:
                     from ErisPulse.runtime.config_schema import dict_to_dataclass
-                    adapter_instance._config_instance = dict_to_dataclass(config_class, merged)
-                if hasattr(adapter_instance, 'on_config_update') and old_config:
-                    adapter_instance.on_config_update(old_config, adapter_instance._config_instance)
+
+                    adapter_instance._config_instance = dict_to_dataclass(
+                        config_class, merged
+                    )
+                if hasattr(adapter_instance, "on_config_update") and old_config:
+                    adapter_instance.on_config_update(
+                        old_config, adapter_instance._config_instance
+                    )
             except Exception as e:
                 self.logger.debug(f"Config hot-reload callback error: {e}")
 
@@ -1668,24 +1697,32 @@ class Main(BaseModule):
         if info is None:
             return JSONResponse({"error": "Adapter not found"}, status_code=404)
         if not info.get("has_accounts"):
-            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+            return JSONResponse(
+                {"error": "Adapter has no account config"}, status_code=400
+            )
 
         accounts = info.get("accounts", {})
 
-        return JSONResponse({
-            "schema": info.get("account_schema"),
-            "accounts": accounts,
-            "accounts_key": info.get("accounts_key"),
-        })
+        return JSONResponse(
+            {
+                "schema": info.get("account_schema"),
+                "accounts": accounts,
+                "accounts_key": info.get("accounts_key"),
+            }
+        )
 
-    async def _reload_adapter_if_running(self, adapter_instance, platform, reload: bool = True) -> bool:
+    async def _reload_adapter_if_running(
+        self, adapter_instance, platform, reload: bool = True
+    ) -> bool:
         """刷新账户数据；reload=True 且适配器运行中时，交由框架执行完整重载（框架自动清理资源）"""
         try:
             adapter_instance._accounts_data = None
-            if hasattr(adapter_instance, '_load_accounts'):
+            if hasattr(adapter_instance, "_load_accounts"):
                 adapter_instance._accounts_data = adapter_instance._load_accounts()
 
-            if reload and adapter_instance in getattr(self.sdk.adapter, '_started_instances', set()):
+            if reload and adapter_instance in getattr(
+                self.sdk.adapter, "_started_instances", set()
+            ):
                 # 生命周期（shutdown + 资源清理 + start）由框架统一处理，模块无需关心
                 return await self.sdk.adapter.restart(platform)
         except Exception as e:
@@ -1700,9 +1737,11 @@ class Main(BaseModule):
         if not adapter_instance:
             return JSONResponse({"error": "Adapter not found"}, status_code=404)
 
-        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+        account_config_class = getattr(adapter_instance, "AccountConfigClass", None)
         if not account_config_class:
-            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+            return JSONResponse(
+                {"error": "Adapter has no account config"}, status_code=400
+            )
 
         body = await request.json()
         accounts = body.get("accounts")
@@ -1719,11 +1758,18 @@ class Main(BaseModule):
         merged_accounts = {}
         for aname, adata in accounts.items():
             old = old_accounts.get(aname, {}) or {}
-            merged_accounts[aname] = {**old, **(adata if isinstance(adata, dict) else {})}
+            merged_accounts[aname] = {
+                **old,
+                **(adata if isinstance(adata, dict) else {}),
+            }
 
         all_errors = []
         try:
-            from ErisPulse.runtime.config_schema import dict_to_dataclass, validate_config
+            from ErisPulse.runtime.config_schema import (
+                dict_to_dataclass,
+                validate_config,
+            )
+
             for aname, adata in merged_accounts.items():
                 if not isinstance(adata, dict):
                     continue
@@ -1735,7 +1781,9 @@ class Main(BaseModule):
             self.logger.debug(f"Account validation error: {e}")
 
         if all_errors:
-            return JSONResponse({"success": False, "errors": all_errors}, status_code=400)
+            return JSONResponse(
+                {"success": False, "errors": all_errors}, status_code=400
+            )
 
         self.sdk.config.setConfig(accounts_key, merged_accounts)
 
@@ -1744,7 +1792,9 @@ class Main(BaseModule):
         self._add_audit_log("adapter_accounts_update", platform, request)
         response = {"success": True, "module": adapter_instance.__class__.__name__}
         if reloaded:
-            response["message"] = "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+            response["message"] = (
+                "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+            )
         return JSONResponse(response)
 
     async def _api_adapter_accounts_add(self, request: Request) -> JSONResponse:
@@ -1755,9 +1805,11 @@ class Main(BaseModule):
         if not adapter_instance:
             return JSONResponse({"error": "Adapter not found"}, status_code=404)
 
-        account_config_class = getattr(adapter_instance, 'AccountConfigClass', None)
+        account_config_class = getattr(adapter_instance, "AccountConfigClass", None)
         if not account_config_class:
-            return JSONResponse({"error": "Adapter has no account config"}, status_code=400)
+            return JSONResponse(
+                {"error": "Adapter has no account config"}, status_code=400
+            )
 
         body = await request.json()
         account_name = body.get("name", "")
@@ -1776,6 +1828,7 @@ class Main(BaseModule):
 
         try:
             from ErisPulse.runtime.config_schema import dataclass_to_defaults_dict
+
             default_data = dataclass_to_defaults_dict(account_config_class)
             default_data.update(body.get("data", {}))
         except Exception:
@@ -1791,7 +1844,9 @@ class Main(BaseModule):
         # 添加账户时只刷新内存数据，不重启适配器（用户尚未填写配置）
         await self._reload_adapter_if_running(adapter_instance, platform, reload=False)
 
-        self._add_audit_log("adapter_account_add", f"{platform}/{account_name}", request)
+        self._add_audit_log(
+            "adapter_account_add", f"{platform}/{account_name}", request
+        )
         return JSONResponse({"success": True})
 
     async def _api_adapter_accounts_delete(self, request: Request) -> JSONResponse:
@@ -1818,10 +1873,14 @@ class Main(BaseModule):
 
         reloaded = await self._reload_adapter_if_running(adapter_instance, platform)
 
-        self._add_audit_log("adapter_account_delete", f"{platform}/{account_name}", request)
+        self._add_audit_log(
+            "adapter_account_delete", f"{platform}/{account_name}", request
+        )
         response = {"success": True, "module": adapter_instance.__class__.__name__}
         if reloaded:
-            response["message"] = "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+            response["message"] = (
+                "部分缓存可能导致不可知的问题，如果发生错误，硬重启是一个不错的选择~"
+            )
         return JSONResponse(response)
 
     async def _api_adapter_logos(self, request: Request) -> JSONResponse:
@@ -2810,8 +2869,8 @@ class Main(BaseModule):
         )
 
     async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
-        import urllib.request
         import re
+        import urllib.request
 
         try:
             url = f"https://pypi.org/pypi/{package}/json"
@@ -3664,8 +3723,8 @@ class Main(BaseModule):
         archive_name = body.get("archive_name", "archive.zip")
         if not paths:
             return JSONResponse({"error": "paths required"}, status_code=400)
-        import zipfile
         import io
+        import zipfile
 
         buf = io.BytesIO()
         root = self._get_project_root().resolve()
@@ -3710,8 +3769,8 @@ class Main(BaseModule):
         target = self._resolve_safe_path(file_path)
         if target is None or not target.exists() or not target.is_file():
             return JSONResponse({"error": "File not found"}, status_code=404)
-        import zipfile
         import tarfile
+        import zipfile
 
         dest = target.parent
         try:
@@ -3754,8 +3813,16 @@ class Main(BaseModule):
             command_config = event_config.get("command", {})
         except Exception:
             command_config = {}
+        raw_prefix = command_config.get("prefix", "/")
+        if isinstance(raw_prefix, list):
+            all_prefixes = [str(p) for p in raw_prefix] if raw_prefix else ["/"]
+            main_prefix = all_prefixes[0]
+        else:
+            all_prefixes = [str(raw_prefix)]
+            main_prefix = str(raw_prefix)
         global_settings = {
-            "prefix": command_config.get("prefix", "/"),
+            "prefix": main_prefix,
+            "prefixes": all_prefixes,
             "case_sensitive": command_config.get("case_sensitive", True),
             "allow_space_prefix": command_config.get("allow_space_prefix", False),
             "must_at_bot": command_config.get("must_at_bot", False),

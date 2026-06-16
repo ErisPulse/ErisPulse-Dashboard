@@ -5651,3 +5651,36 @@ input:focus, textarea:focus, select:focus {
     }
     .page { opacity: 1; }
 }
+
+/* ========== Framework Config List Field ========== */
+.fw-list-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    max-width: 320px;
+}
+.fw-list-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.fw-list-input {
+    flex: 1;
+    min-width: 0;
+}
+.fw-list-add-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+.fw-list-save-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+/* ========== Framework Config Add Field Bar ========== */
+.fw-add-field-bar {
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--bd);
+}
