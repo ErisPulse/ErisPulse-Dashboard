@@ -708,24 +708,22 @@
                     </div>
                     <div class="sidebar-footer">
                         <span class="fw-ver" id="fwInfo">Loading...</span>
-                        <div class="footer-btns">
-                            <button
-                                class="sidebar-collapse-btn"
-                                onclick="toggleSidebarCollapse()"
-                                title="Toggle sidebar"
+                        <button
+                            class="sidebar-collapse-btn"
+                            onclick="toggleSidebarCollapse()"
+                            title="Toggle sidebar"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <polyline points="15 18 9 12 15 6" />
-                                </svg>
-                            </button>
-                        </div>
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                        </button>
                     </div>
                 </nav>
                 <div class="content">
@@ -2538,6 +2536,16 @@
                                 >
                                     <span data-i18n="pkg_install_new"></span>
                                 </button>
+                                <button
+                                    class="view-btn"
+                                    data-tab="pk-git"
+                                    onclick="
+                                        switchPkgTab('pk-git', this);
+                                        loadGitPackages();
+                                    "
+                                >
+                                    <span data-i18n="pkg_git_install"></span>
+                                </button>
                             </div>
                         </div>
                         <div id="pkInstalledTab">
@@ -2698,6 +2706,188 @@
                                         "
                                         data-i18n="pkg_install_hint"
                                     ></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pkGitTab" style="display: none">
+                            <div class="card">
+                                <div class="card-header">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 16px; height: 16px"
+                                    >
+                                        <circle cx="12" cy="12" r="4" />
+                                        <line
+                                            x1="1.05"
+                                            y1="12"
+                                            x2="7"
+                                            y2="12"
+                                        />
+                                        <line
+                                            x1="17.01"
+                                            y1="12"
+                                            x2="22.96"
+                                            y2="12"
+                                        />
+                                    </svg>
+                                    <span data-i18n="pkg_git_install"></span>
+                                </div>
+                                <div style="padding: 16px">
+                                    <div
+                                        style="
+                                            font-size: 13px;
+                                            color: var(--tx-s);
+                                            margin-bottom: 12px;
+                                        "
+                                        data-i18n="pkg_git_install_desc"
+                                    ></div>
+                                    <div
+                                        style="
+                                            display: flex;
+                                            gap: 8px;
+                                            align-items: center;
+                                            flex-wrap: wrap;
+                                        "
+                                    >
+                                        <input
+                                            type="text"
+                                            id="pkgGitInput"
+                                            data-i18n-placeholder="pkg_git_install_placeholder"
+                                            style="
+                                                flex: 1;
+                                                min-width: 200px;
+                                                padding: 8px 12px;
+                                                border: 1px solid var(--bd);
+                                                border-radius: 6px;
+                                                font-size: 13px;
+                                                background: var(--bg-s);
+                                                color: var(--tx-p);
+                                                font-family:
+                                                    Consolas, Monaco, monospace;
+                                            "
+                                            placeholder=""
+                                        />
+                                        <button
+                                            class="btn btn-primary btn-sm"
+                                            onclick="installNewGitPkg()"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                style="
+                                                    width: 14px;
+                                                    height: 14px;
+                                                    margin-right: 4px;
+                                                "
+                                            >
+                                                <path
+                                                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                                />
+                                                <polyline
+                                                    points="17 8 12 3 7 8"
+                                                />
+                                                <line
+                                                    x1="12"
+                                                    y1="3"
+                                                    x2="12"
+                                                    y2="15"
+                                                />
+                                            </svg>
+                                            <span data-i18n="install"></span>
+                                        </button>
+                                    </div>
+                                    <div
+                                        style="
+                                            font-size: 12px;
+                                            color: var(--tx-t);
+                                            margin-top: 8px;
+                                        "
+                                        data-i18n="pkg_git_examples"
+                                    ></div>
+                                </div>
+                            </div>
+                            <div class="card" style="margin-top: 16px">
+                                <div class="card-header">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 16px; height: 16px"
+                                    >
+                                        <path
+                                            d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                                        />
+                                    </svg>
+                                    <span data-i18n="pkg_git_installed"></span>
+                                    <div class="header-actions">
+                                        <button
+                                            class="btn-icon"
+                                            onclick="loadGitPackages()"
+                                            title="Refresh"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                style="
+                                                    width: 16px;
+                                                    height: 16px;
+                                                "
+                                            >
+                                                <polyline
+                                                    points="23 4 23 10 17 10"
+                                                />
+                                                <path
+                                                    d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    id="pkgGitList"
+                                    style="
+                                        max-height: calc(100vh - 380px);
+                                        overflow-y: auto;
+                                    "
+                                >
+                                    <div class="empty-state" id="pkgGitEmpty">
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            style="width: 32px; height: 32px"
+                                        >
+                                            <circle cx="12" cy="12" r="4" />
+                                            <line
+                                                x1="1.05"
+                                                y1="12"
+                                                x2="7"
+                                                y2="12"
+                                            />
+                                            <line
+                                                x1="17.01"
+                                                y1="12"
+                                                x2="22.96"
+                                                y2="12"
+                                            />
+                                        </svg>
+                                        <p data-i18n="pkg_git_no_packages"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3618,10 +3808,6 @@
                         ></p>
                         <div class="adapter-config-layout">
                             <div
-                                class="adapter-list-panel card"
-                                id="adapterConfigList"
-                            ></div>
-                            <div
                                 class="adapter-config-panel"
                                 id="adapterConfigPanel"
                             >
@@ -3634,6 +3820,11 @@
                                         fill="none"
                                         stroke="currentColor"
                                         stroke-width="1.5"
+                                        style="
+                                            width: 48px;
+                                            height: 48px;
+                                            opacity: 0.3;
+                                        "
                                     >
                                         <circle cx="12" cy="12" r="10" />
                                         <line x1="2" y1="12" x2="22" y2="12" />
@@ -3641,7 +3832,10 @@
                                             d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
                                         />
                                     </svg>
-                                    <p data-i18n="select_adapter_prompt"></p>
+                                    <p
+                                        id="adapterEmptyText"
+                                        data-i18n="adapter_no_adapters"
+                                    ></p>
                                 </div>
                             </div>
                         </div>
@@ -4269,6 +4463,50 @@
                                     id="settingsSidebar"
                                     onchange="
                                         applySettingSidebar(this.checked)
+                                    " /><span class="switch-slider"></span
+                            ></label>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div
+                                class="settings-label"
+                                data-i18n="settings_show_node_selector"
+                            ></div>
+                            <div
+                                class="settings-desc"
+                                data-i18n="settings_show_node_selector_desc"
+                            ></div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="switch"
+                                ><input
+                                    type="checkbox"
+                                    id="settingsNodeSelector"
+                                    onchange="
+                                        applySettingNodeSelector(this.checked)
+                                    " /><span class="switch-slider"></span
+                            ></label>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div
+                                class="settings-label"
+                                data-i18n="settings_remember_groups"
+                            ></div>
+                            <div
+                                class="settings-desc"
+                                data-i18n="settings_remember_groups_desc"
+                            ></div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="switch"
+                                ><input
+                                    type="checkbox"
+                                    id="settingsRememberGroups"
+                                    onchange="
+                                        applySettingRememberGroups(this.checked)
                                     " /><span class="switch-slider"></span
                             ></label>
                         </div>
