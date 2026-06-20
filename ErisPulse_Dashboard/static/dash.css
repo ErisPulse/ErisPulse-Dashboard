@@ -448,7 +448,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: var(--tx-t);
+    color: var(--tx-s);
     user-select: none;
     white-space: nowrap;
     overflow: hidden;
@@ -461,7 +461,7 @@ body {
         background 0.2s ease;
     border-radius: 6px;
     margin: 0 4px;
-    padding: 8px 10px;
+    padding: 8px 10px 8px 14px;
     position: relative;
 }
 
@@ -475,7 +475,7 @@ body {
     transform: rotate(45deg);
     transition: transform 0.25s ease;
     flex-shrink: 0;
-    margin-right: 4px;
+    margin-right: 6px;
     opacity: 0.5;
 }
 
@@ -486,7 +486,6 @@ body {
 .nav-group-title:hover {
     color: var(--tx-p);
     background: var(--bg-t);
-    box-shadow: 0 1px 3px var(--sh);
 }
 
 .nav-group-title:hover::before {
@@ -497,14 +496,51 @@ body {
     padding-top: 8px;
 }
 
+.nav-group .nav-item {
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
 .nav-group.collapsed .nav-item {
     display: none;
 }
 
-.nav-group + .nav-group .nav-group-title {
-    border-top: 1px solid var(--bd);
-    margin-top: 8px;
+/* 收起状态美学优化 */
+.nav-group.collapsed > .nav-group-title {
+    opacity: 0.5;
+}
+
+.nav-group.collapsed > .nav-group-title::before {
+    opacity: 0.25;
+}
+
+.nav-group + .nav-group {
+    margin-top: 4px;
     padding-top: 12px;
+    position: relative;
+}
+
+.nav-group + .nav-group::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 14px;
+    right: 14px;
+    height: 1px;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        var(--bd) 15%,
+        var(--bd) 85%,
+        transparent 100%
+    );
+}
+
+.nav-group + .nav-group .nav-group-title {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 8px;
 }
 
 .nav-item {
@@ -522,8 +558,7 @@ body {
     transition:
         background 0.2s ease,
         color 0.2s ease,
-        transform 0.15s ease,
-        box-shadow 0.2s ease;
+        transform 0.15s ease;
     color: var(--tx-s);
     text-decoration: none;
     font-size: 14px;
@@ -549,7 +584,6 @@ body {
     background: var(--bg-t);
     color: var(--tx-p);
     transform: translateX(2px);
-    box-shadow: 0 1px 4px var(--sh);
 }
 
 .nav-item:hover::before {
@@ -614,8 +648,7 @@ body {
 .sidebar.collapsed .nav-group-title,
 .sidebar.collapsed .nav-item span,
 .sidebar.collapsed .nav-badge,
-.sidebar.collapsed .fw-ver,
-.sidebar.collapsed .sidebar-collapse-btn + * {
+.sidebar.collapsed .fw-ver {
     opacity: 0;
     width: 0;
     max-height: 0;
@@ -629,8 +662,7 @@ body {
 .nav-group-title,
 .nav-item span,
 .nav-badge,
-.fw-ver,
-.sidebar-collapse-btn + * {
+.fw-ver {
     transition:
         opacity 0.2s ease,
         max-height 0.2s ease,
@@ -664,7 +696,12 @@ body {
 }
 
 .sidebar.collapsed .nav-item svg {
-    opacity: 0.85;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.sidebar.collapsed .nav-item span {
+    display: none;
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -702,40 +739,6 @@ body {
     margin-left: 4px;
 }
 
-.sidebar-collapse-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: transparent;
-    color: var(--tx-t);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-
-.sidebar-collapse-btn:hover {
-    background: var(--bg-t);
-    color: var(--tx-p);
-}
-
-.sidebar-collapse-btn svg {
-    width: 16px;
-    height: 16px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar.collapsed .sidebar-collapse-btn svg {
-    transform: rotate(180deg);
-}
-
-.sidebar.collapsed .sidebar-collapse-btn {
-    margin: 0 auto;
-}
-
 .sidebar-footer {
     padding: 8px 12px;
     border-top: 1px solid var(--bd);
@@ -755,11 +758,41 @@ body {
     flex: 1;
 }
 
-.sidebar-footer .footer-btns {
+.sidebar-collapse-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--tx-t);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    border-radius: 6px;
     flex-shrink: 0;
+    opacity: 0.5;
+    transition:
+        opacity 0.2s ease,
+        background 0.2s ease;
+}
+
+.sidebar-collapse-btn:hover {
+    opacity: 0.8;
+    background: var(--bg-t);
+}
+
+.sidebar-collapse-btn svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn svg {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+    margin: 0 auto;
 }
 
 .content {
@@ -4646,10 +4679,6 @@ select.form-select::-ms-expand {
         gap: 4px;
     }
 
-    .sidebar-collapse-btn {
-        display: none;
-    }
-
     .grid-3 {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -4700,10 +4729,6 @@ select.form-select::-ms-expand {
 
     .sidebar.open {
         transform: translateX(0);
-    }
-
-    .sidebar-collapse-btn {
-        display: none;
     }
 
     .page {
@@ -6408,6 +6433,7 @@ select:focus {
 }
 
 /* 适配器配置页面 */
+/* ========== 适配器配置 ========== */
 #p-adapter-config.page.active {
     display: flex;
     flex-direction: column;
@@ -6415,22 +6441,9 @@ select:focus {
 
 .adapter-config-layout {
     display: flex;
-    gap: 16px;
-    margin-top: 12px;
-    align-items: flex-start;
-}
-
-.adapter-list-panel {
-    width: 220px;
-    min-width: 220px;
-    flex-shrink: 0;
-    overflow-y: auto;
-    padding: 6px;
-    align-self: flex-start;
-}
-
-.adapter-list-panel.card {
-    padding: 6px;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 0;
 }
 
 .adapter-config-panel {
@@ -6439,24 +6452,145 @@ select:focus {
     overflow-y: auto;
 }
 
-.adapter-list-item {
+/* 适配器选择器 */
+.adapter-selector-bar {
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px var(--sh);
+}
+
+.adapter-chip-list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.adapter-chip-list::-webkit-scrollbar {
+    height: 3px;
+}
+
+.adapter-chip-list::-webkit-scrollbar-thumb {
+    background: var(--bd);
+    border-radius: 2px;
+}
+
+.adapter-chip {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 9px 10px 9px 12px;
-    border-radius: 6px;
+    padding: 8px 14px 8px 10px;
+    border-radius: 10px;
+    border: 1.5px solid transparent;
+    background: var(--bg-s);
     cursor: pointer;
-    transition: background 0.15s;
-    border-left: 3px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    user-select: none;
+    position: relative;
 }
 
-.adapter-list-item:hover {
-    background: var(--bg-h);
+.adapter-chip:hover {
+    background: var(--bg-t);
+    border-color: var(--bd-h);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--sh);
 }
 
-.adapter-list-item.active {
-    background: var(--bg-a);
-    border-left-color: var(--accent);
+.adapter-chip.active {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.adapter-chip.active:hover {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.adapter-chip-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.adapter-chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ========== 适配器配置 - 移动端优化 ========== */
+@media (max-width: 768px) {
+    .adapter-config-layout {
+        flex-direction: column;
+    }
+
+    .adapter-list-panel {
+        width: 100%;
+        min-width: 0;
+        max-height: 40vh;
+    }
+
+    .adapter-config-panel .account-card-header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .adapter-config-panel .account-card-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .adapter-config-panel .fw-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .adapter-config-panel .fw-control {
+        width: 100%;
+    }
+
+    .adapter-config-panel .fw-input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .adapter-config-panel select.fw-input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .adapter-config-panel .account-card-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .adapter-config-panel .account-card-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .adapter-config-panel .fw-textarea {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #p-adapter-config .page-title {
+        font-size: 20px;
+    }
 }
 
 .adapter-list-name {

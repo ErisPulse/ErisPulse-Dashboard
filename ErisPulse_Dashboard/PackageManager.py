@@ -3,12 +3,11 @@ import json
 import subprocess
 import sys
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from typing import Optional
 
-from ErisPulse.finders import ModuleFinder, AdapterFinder
-
+from ErisPulse.finders import AdapterFinder, ModuleFinder
 
 REMOTE_SOURCES = [
     "https://erisdev.com/packages.json",
@@ -19,8 +18,7 @@ CACHE_EXPIRY = 3600
 
 
 class DashboardPackageManager:
-
-    def __init__(self):
+    def __init__(self, storage=None):
         self._remote_cache: Optional[dict] = None
         self._remote_cache_ts: float = 0
         self._installed_cache: Optional[dict] = None
@@ -31,6 +29,85 @@ class DashboardPackageManager:
         self._pypi_detail_cache: dict[str, tuple[dict, float]] = {}
         self._module_finder = ModuleFinder()
         self._adapter_finder = AdapterFinder()
+        self._storage = storage
+        self._git_packages: dict[str, dict] = {}
+        self._load_git_packages()
+
+    def _load_git_packages(self):
+        if self._storage:
+            try:
+                data = self._storage.get("__ep_git_packages__")
+                if isinstance(data, dict):
+                    self._git_packages = data
+            except Exception:
+                self._git_packages = {}
+
+    def _save_git_packages(self):
+        if self._storage:
+            try:
+                self._storage.set("__ep_git_packages__", self._git_packages)
+            except Exception:
+                pass
+
+    def register_git_package(
+        self, package_name: str, git_url: str, installed_version: str = ""
+    ):
+        self._git_packages[package_name.lower()] = {
+            "name": package_name,
+            "git_url": git_url,
+            "installed_version": installed_version,
+            "installed_at": time.time(),
+        }
+        self._save_git_packages()
+
+    def remove_git_package(self, package_name: str):
+        self._git_packages.pop(package_name.lower(), None)
+        self._save_git_packages()
+
+    def get_git_packages(self) -> dict:
+        return dict(self._git_packages)
+
+    def is_git_package(self, package_name: str) -> bool:
+        return package_name.lower() in self._git_packages
+
+    async def check_git_updates(self) -> list[dict]:
+        updates = []
+        for pkg_key, info in self._git_packages.items():
+            git_url = info.get("git_url", "")
+            installed_ver = info.get("installed_version", "")
+            latest_commit = await self._get_git_latest_commit(git_url)
+            if latest_commit and latest_commit != installed_ver:
+                updates.append(
+                    {
+                        "name": info.get("name", pkg_key),
+                        "current": installed_ver[:12] if installed_ver else "",
+                        "latest": latest_commit[:12],
+                        "source": "git",
+                        "git_url": git_url,
+                    }
+                )
+        return updates
+
+    async def _get_git_latest_commit(self, git_url: str) -> Optional[str]:
+        import asyncio
+
+        def _fetch():
+            try:
+                import subprocess
+
+                result = subprocess.run(
+                    ["git", "ls-remote", git_url, "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    return result.stdout.split()[0]
+            except Exception:
+                pass
+            return None
+
+        return await asyncio.get_event_loop().run_in_executor(None, _fetch)
 
     def invalidate_caches(self):
         self._installed_cache = None
@@ -40,7 +117,11 @@ class DashboardPackageManager:
         self._adapter_finder.clear_cache()
 
     async def get_remote_packages(self, force: bool = False) -> dict:
-        if not force and self._remote_cache and time.time() - self._remote_cache_ts < CACHE_EXPIRY:
+        if (
+            not force
+            and self._remote_cache
+            and time.time() - self._remote_cache_ts < CACHE_EXPIRY
+        ):
             return self._remote_cache
 
         result = {"modules": {}, "adapters": {}}
@@ -62,14 +143,20 @@ class DashboardPackageManager:
         import asyncio
 
         def _sync_fetch():
-            req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+            )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 return json.loads(resp.read().decode("utf-8"))
 
         return await asyncio.get_event_loop().run_in_executor(None, _sync_fetch)
 
     def get_installed_packages(self, force: bool = False) -> dict:
-        if not force and self._installed_cache and time.time() - self._installed_cache_ts < 300:
+        if (
+            not force
+            and self._installed_cache
+            and time.time() - self._installed_cache_ts < 300
+        ):
             return self._installed_cache
 
         self._module_finder.clear_cache()
@@ -118,8 +205,10 @@ class DashboardPackageManager:
                         "name": name,
                         "version": version,
                         "summary": summary,
-                        "is_module": erispulse_pkgs[name]["type"] in ("module", "module+adapter"),
-                        "is_adapter": erispulse_pkgs[name]["type"] in ("adapter", "module+adapter"),
+                        "is_module": erispulse_pkgs[name]["type"]
+                        in ("module", "module+adapter"),
+                        "is_adapter": erispulse_pkgs[name]["type"]
+                        in ("adapter", "module+adapter"),
                         "ep_names": erispulse_pkgs[name].get("name", ""),
                     }
                 else:
@@ -155,7 +244,11 @@ class DashboardPackageManager:
         return versions
 
     async def check_updates(self, force: bool = False) -> list[dict]:
-        if not force and self._updates_cache and time.time() - self._updates_cache_ts < 300:
+        if (
+            not force
+            and self._updates_cache
+            and time.time() - self._updates_cache_ts < 300
+        ):
             return self._updates_cache
 
         installed = self.get_installed_packages(force)
@@ -177,22 +270,26 @@ class DashboardPackageManager:
             pkg_lower = pkg["name"].lower()
             remote_ver = remote_index.get(pkg_lower)
             if remote_ver and self._compare_versions(remote_ver, current) > 0:
-                updates.append({
-                    "name": pkg["name"],
-                    "current": current,
-                    "latest": remote_ver,
-                    "source": "registry",
-                })
+                updates.append(
+                    {
+                        "name": pkg["name"],
+                        "current": current,
+                        "latest": remote_ver,
+                        "source": "registry",
+                    }
+                )
                 continue
 
             latest = await self._get_pypi_version(pkg["name"])
             if latest and self._compare_versions(latest, current) > 0:
-                updates.append({
-                    "name": pkg["name"],
-                    "current": current,
-                    "latest": latest,
-                    "source": "pypi",
-                })
+                updates.append(
+                    {
+                        "name": pkg["name"],
+                        "current": current,
+                        "latest": latest,
+                        "source": "pypi",
+                    }
+                )
 
         self._updates_cache = updates
         self._updates_cache_ts = time.time()
@@ -210,7 +307,9 @@ class DashboardPackageManager:
         def _fetch():
             url = f"https://pypi.org/pypi/{package_name}/json"
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+                req = urllib.request.Request(
+                    url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+                )
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     return data.get("info", {}).get("version")
@@ -226,6 +325,7 @@ class DashboardPackageManager:
     def _compare_versions(v1: str, v2: str) -> int:
         try:
             from packaging.version import parse as vp
+
             pv1, pv2 = vp(v1), vp(v2)
             return (pv1 > pv2) - (pv1 < pv2)
         except Exception:
@@ -248,7 +348,9 @@ class DashboardPackageManager:
         def _fetch():
             url = f"https://pypi.org/pypi/{package_name}/json"
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"})
+                req = urllib.request.Request(
+                    url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+                )
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     return json.loads(resp.read().decode("utf-8"))
             except Exception:
@@ -273,8 +375,12 @@ class DashboardPackageManager:
         if not pypi_data:
             result = {
                 "name": package_name,
-                "summary": registry_info.get("description", "") if registry_info else "",
-                "description": registry_info.get("description", "") if registry_info else "",
+                "summary": registry_info.get("description", "")
+                if registry_info
+                else "",
+                "description": registry_info.get("description", "")
+                if registry_info
+                else "",
                 "requires_dist": [],
                 "versions": [],
                 "installed_version": installed_version,

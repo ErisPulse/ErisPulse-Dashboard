@@ -94,7 +94,7 @@ class Main(BaseModule):
         if self._pkg_manager is None:
             from .PackageManager import DashboardPackageManager
 
-            self._pkg_manager = DashboardPackageManager()
+            self._pkg_manager = DashboardPackageManager(storage=self.storage)
         return self._pkg_manager
 
     async def on_load(self, event: dict) -> bool:
@@ -1140,6 +1140,18 @@ class Main(BaseModule):
             mn,
             "/api/packages/install",
             handler=self._api_packages_install,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/git",
+            handler=self._api_packages_git,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/packages/git-upgrade",
+            handler=self._api_packages_git_upgrade,
             methods=["POST"],
         )
         r.register_http_route(
@@ -2271,6 +2283,16 @@ class Main(BaseModule):
             return JSONResponse({"error": "packages required"}, status_code=400)
         force = body.get("force", False)
         index_url = body.get("index_url", "") or None
+
+        # Detect git+ URLs and register for tracking
+        git_urls = [p for p in packages if p.startswith("git+")]
+        for git_url in git_urls:
+            self._get_pkg_manager().register_git_package(
+                package_name=git_url,
+                git_url=git_url,
+                installed_version="pending",
+            )
+
         task_id = secrets.token_urlsafe(8)
         t = threading.Thread(
             target=self._run_pip_install,
@@ -2303,6 +2325,35 @@ class Main(BaseModule):
         t.start()
         self._add_audit_log("package_uninstall", package, request)
         self._get_pkg_manager().invalidate_caches()
+        return JSONResponse({"success": True, "task_id": task_id})
+
+    async def _api_packages_git(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        git_pkgs = self._get_pkg_manager().get_git_packages()
+        git_updates = await self._get_pkg_manager().check_git_updates()
+        return JSONResponse(
+            {
+                "packages": list(git_pkgs.values()),
+                "updates": git_updates,
+            }
+        )
+
+    async def _api_packages_git_upgrade(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        git_url = body.get("git_url", "")
+        if not git_url:
+            return JSONResponse({"error": "git_url required"}, status_code=400)
+        task_id = secrets.token_urlsafe(8)
+        t = threading.Thread(
+            target=self._run_pip_upgrade,
+            args=([git_url], task_id, None),
+            daemon=True,
+        )
+        t.start()
+        self._add_audit_log("package_git_upgrade", git_url, request)
         return JSONResponse({"success": True, "task_id": task_id})
 
     def _run_pip_upgrade(

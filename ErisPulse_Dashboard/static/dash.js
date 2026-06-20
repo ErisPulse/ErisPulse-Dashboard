@@ -423,6 +423,10 @@ const I18N = {
     settings_language: "语言",
     settings_ui_style: "界面风格",
     settings_sidebar: "折叠侧边栏",
+    settings_show_node_selector: "显示节点选择器",
+    settings_show_node_selector_desc: "开启后，仅当配置了远程节点时才会显示",
+    settings_remember_groups: "记住导航分组状态",
+    settings_remember_groups_desc: "刷新页面后保持导航分组的展开/收起状态",
     settings_refresh_interval: "刷新间隔",
     settings_event_limit: "事件流数量",
     settings_disabled: "关闭",
@@ -443,6 +447,16 @@ const I18N = {
     version_history: "版本历史",
     no_dependencies: "无外部依赖",
     pkg_detail_loading: "加载详情中...",
+    pkg_git_install: "Git 仓库安装",
+    pkg_git_install_desc: "从 Git 仓库直接安装模块，无需发布到 PyPI",
+    pkg_git_install_placeholder: "git+https://github.com/user/repo.git",
+    pkg_git_examples:
+      "示例：git+https://github.com/ErisPulse/erispulse-module-demo.git",
+    pkg_git_installed: "已安装的 Git 模块",
+    pkg_git_no_packages: "暂无 Git 安装的模块",
+    pkg_git_update_available: "有可用更新",
+    pkg_git_upgrade: "更新",
+    pkg_git_url: "仓库地址",
     pkg_detail_failed: "加载详情失败",
     view_detail: "详情",
     upload_complete: "上传完成",
@@ -501,7 +515,8 @@ const I18N = {
     hide_secret: "隐藏",
     confirm_remove_account: "确认删除此账户？",
     new_account_default_name: "新账户",
-    select_adapter_prompt: "请从左侧选择一个适配器以查看配置",
+    select_adapter_prompt: "请选择一个适配器进行配置",
+    adapter_no_adapters: "还没有安装任何适配器喔~",
     fw_version_note: "提示：部分配置在低版本 ErisPulse 中可能不生效",
     fw_server_warn_title: "⚠ 确认修改服务器配置",
     fw_server_warn_text:
@@ -1048,6 +1063,12 @@ const I18N = {
     settings_language: "Language",
     settings_ui_style: "UI Style",
     settings_sidebar: "Collapse Sidebar",
+    settings_show_node_selector: "Show Node Selector",
+    settings_show_node_selector_desc:
+      "When enabled, only shown if remote nodes are configured",
+    settings_remember_groups: "Remember nav group state",
+    settings_remember_groups_desc:
+      "Keep nav groups expanded/collapsed after page refresh",
     settings_refresh_interval: "Refresh Interval",
     settings_event_limit: "Event Limit",
     settings_disabled: "Disabled",
@@ -1071,6 +1092,17 @@ const I18N = {
     pkg_detail_loading: "Loading details...",
     pkg_detail_failed: "Failed to load details",
     view_detail: "Details",
+    pkg_git_install: "Git Install",
+    pkg_git_install_desc:
+      "Install directly from Git repository, no PyPI needed",
+    pkg_git_install_placeholder: "git+https://github.com/user/repo.git",
+    pkg_git_examples:
+      "Example: git+https://github.com/ErisPulse/erispulse-module-demo.git",
+    pkg_git_installed: "Installed Git Modules",
+    pkg_git_no_packages: "No Git-installed modules",
+    pkg_git_update_available: "Update available",
+    pkg_git_upgrade: "Upgrade",
+    pkg_git_url: "Repository URL",
     upload_complete: "Upload Complete",
     upload_file_too_large: "File too large",
     install_with_options: "Install Options",
@@ -1165,7 +1197,8 @@ const I18N = {
     hide_secret: "Hide",
     confirm_remove_account: "Confirm remove this account?",
     new_account_default_name: "new_account",
-    select_adapter_prompt: "Select an adapter from the left to view its config",
+    select_adapter_prompt: "Select an adapter to configure",
+    adapter_no_adapters: "No adapters installed yet~",
     cluster_management: "Cluster",
     cluster_desc: "Add, edit, remove remote nodes, view capability comparison",
     cluster_overview: "Overview",
@@ -1670,6 +1703,10 @@ const I18N = {
     settings_language: "語言",
     settings_ui_style: "介面風格",
     settings_sidebar: "摺疊側邊欄",
+    settings_show_node_selector: "顯示節點選擇器",
+    settings_show_node_selector_desc: "開啟後，僅當配置了遠端節點時才會顯示",
+    settings_remember_groups: "記住導航分組狀態",
+    settings_remember_groups_desc: "刷新頁面後保持導航分組的展開/收起狀態",
     settings_refresh_interval: "重新整理間隔",
     settings_event_limit: "事件流數量",
     settings_disabled: "關閉",
@@ -1692,6 +1729,16 @@ const I18N = {
     pkg_detail_loading: "載入詳情中...",
     pkg_detail_failed: "載入詳情失敗",
     view_detail: "詳情",
+    pkg_git_install: "Git 倉庫安裝",
+    pkg_git_install_desc: "從 Git 倉庫直接安裝模組，無需發布到 PyPI",
+    pkg_git_install_placeholder: "git+https://github.com/user/repo.git",
+    pkg_git_examples:
+      "範例：git+https://github.com/ErisPulse/erispulse-module-demo.git",
+    pkg_git_installed: "已安裝的 Git 模組",
+    pkg_git_no_packages: "暫無 Git 安裝的模組",
+    pkg_git_update_available: "有可用更新",
+    pkg_git_upgrade: "更新",
+    pkg_git_url: "倉庫地址",
     upload_complete: "上傳完成",
     upload_file_too_large: "檔案過大",
     install_with_options: "安裝選項",
@@ -1746,7 +1793,8 @@ const I18N = {
     account_added: "帳戶已新增",
     confirm_remove_account: "確認刪除此帳戶？",
     new_account_default_name: "新帳戶",
-    select_adapter_prompt: "請從左側選擇一個適配器以查看配置",
+    select_adapter_prompt: "請選擇一個適配器進行配置",
+    adapter_no_adapters: "還沒有安裝任何適配器喔~",
     fw_version_note: "提示：部分配置在低版本 ErisPulse 中可能不生效",
     fw_server_warn_title: "⚠ 確認修改伺服器配置",
     fw_server_warn_text:
@@ -2289,6 +2337,12 @@ const I18N = {
     settings_language: "言語",
     settings_ui_style: "UIスタイル",
     settings_sidebar: "サイドバーを折りたたむ",
+    settings_show_node_selector: "ノードセレクタを表示",
+    settings_show_node_selector_desc:
+      "有効にすると、リモートノードが設定されている場合のみ表示されます",
+    settings_remember_groups: "ナビグループの状態を記憶",
+    settings_remember_groups_desc:
+      "ページ更新後もナビグループの展開/折りたたみ状態を保持",
     settings_refresh_interval: "更新間隔",
     settings_event_limit: "イベント数制限",
     settings_disabled: "無効",
@@ -2312,6 +2366,16 @@ const I18N = {
     pkg_detail_loading: "詳細を読み込み中...",
     pkg_detail_failed: "詳細の読み込みに失敗",
     view_detail: "詳細",
+    pkg_git_install: "Git インストール",
+    pkg_git_install_desc: "Gitリポジトリから直接インストール、PyPI不要",
+    pkg_git_install_placeholder: "git+https://github.com/user/repo.git",
+    pkg_git_examples:
+      "例：git+https://github.com/ErisPulse/erispulse-module-demo.git",
+    pkg_git_installed: "インストール済みGitモジュール",
+    pkg_git_no_packages: "Gitインストールのモジュールはありません",
+    pkg_git_update_available: "更新あり",
+    pkg_git_upgrade: "更新",
+    pkg_git_url: "リポジトリURL",
     upload_complete: "アップロード完了",
     upload_file_too_large: "ファイルが大きすぎます",
     install_with_options: "インストールオプション",
@@ -2369,7 +2433,8 @@ const I18N = {
     account_added: "アカウントを追加しました",
     confirm_remove_account: "このアカウントを削除してもよろしいですか？",
     new_account_default_name: "new_account",
-    select_adapter_prompt: "左側からアダプターを選択して設定を表示",
+    select_adapter_prompt: "アダプターを選択して設定",
+    adapter_no_adapters: "まだアダプターがインストールされていません～",
     fw_server_warn_title: "⚠ サーバー設定変更の確認",
     fw_server_warn_text:
       "ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。",
@@ -2916,6 +2981,12 @@ const I18N = {
     settings_language: "Язык",
     settings_ui_style: "Стиль интерфейса",
     settings_sidebar: "Свернуть боковую панель",
+    settings_show_node_selector: "Показать селектор узлов",
+    settings_show_node_selector_desc:
+      "При включении отображается только если настроены удаленные узлы",
+    settings_remember_groups: "Запомнить состояние групп",
+    settings_remember_groups_desc:
+      "Сохранять развернутое/свернутое состояние групп после обновления",
     settings_refresh_interval: "Интервал обновления",
     settings_event_limit: "Лимит событий",
     settings_disabled: "Отключено",
@@ -2939,6 +3010,17 @@ const I18N = {
     pkg_detail_loading: "Загрузка деталей...",
     pkg_detail_failed: "Не удалось загрузить детали",
     view_detail: "Детали",
+    pkg_git_install: "Установка из Git",
+    pkg_git_install_desc:
+      "Установка напрямую из Git-репозитория, PyPI не требуется",
+    pkg_git_install_placeholder: "git+https://github.com/user/repo.git",
+    pkg_git_examples:
+      "Пример: git+https://github.com/ErisPulse/erispulse-module-demo.git",
+    pkg_git_installed: "Установленные Git-модули",
+    pkg_git_no_packages: "Нет модулей, установленных из Git",
+    pkg_git_update_available: "Доступно обновление",
+    pkg_git_upgrade: "Обновить",
+    pkg_git_url: "URL репозитория",
     upload_complete: "Загрузка завершена",
     upload_file_too_large: "Файл слишком большой",
     install_with_options: "Параметры установки",
@@ -3002,7 +3084,8 @@ const I18N = {
     account_added: "Аккаунт добавлен",
     confirm_remove_account: "Подтвердите удаление аккаунта?",
     new_account_default_name: "new_account",
-    select_adapter_prompt: "Выберите адаптер слева для просмотра настроек",
+    select_adapter_prompt: "Выберите адаптер для настройки",
+    adapter_no_adapters: "Адаптеры еще не установлены~",
     fw_server_warn_title: "⚠ Подтвердите изменение конфигурации сервера",
     fw_server_warn_text:
       "Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.",
@@ -4050,6 +4133,46 @@ function prompt2(title, text, defaultValue) {
 }
 function toggleNavGroup(titleEl) {
   titleEl.parentElement.classList.toggle("collapsed");
+  // 保存状态
+  saveNavGroupStates();
+}
+
+function saveNavGroupStates() {
+  var enabled = localStorage.getItem("ep_remember_groups") !== "false";
+  if (!enabled) return;
+  var state = {};
+  document.querySelectorAll(".sidebar-nav .nav-group").forEach(function (g) {
+    var title = g.querySelector(".nav-group-title");
+    if (!title) return;
+    var key = title.getAttribute("data-i18n") || "";
+    if (key) state[key] = g.classList.contains("collapsed");
+  });
+  localStorage.setItem("ep_nav_group_states", JSON.stringify(state));
+}
+
+function restoreNavGroupStates() {
+  var enabled = localStorage.getItem("ep_remember_groups") !== "false";
+  if (!enabled) return;
+  var raw = localStorage.getItem("ep_nav_group_states");
+  if (!raw) return;
+  try {
+    var state = JSON.parse(raw);
+    document.querySelectorAll(".sidebar-nav .nav-group").forEach(function (g) {
+      var title = g.querySelector(".nav-group-title");
+      if (!title) return;
+      var key = title.getAttribute("data-i18n") || "";
+      if (state[key]) g.classList.add("collapsed");
+    });
+  } catch (e) {}
+}
+
+function applySettingRememberGroups(enabled) {
+  localStorage.setItem("ep_remember_groups", enabled);
+  if (!enabled) {
+    localStorage.removeItem("ep_nav_group_states");
+  } else {
+    saveNavGroupStates();
+  }
 }
 function alert2(title, text) {
   return showModal(title, text, [
@@ -5342,6 +5465,10 @@ function showSettings() {
   document.getElementById("settingsSidebar").checked = document
     .getElementById("sidebar")
     .classList.contains("collapsed");
+  document.getElementById("settingsNodeSelector").checked =
+    localStorage.getItem("ep_show_node_selector") !== "false";
+  document.getElementById("settingsRememberGroups").checked =
+    localStorage.getItem("ep_remember_groups") !== "false";
   document.getElementById("settingsRefresh").value = getSetting(
     "refresh_interval",
     "5000",
@@ -5379,6 +5506,26 @@ function applySettingRefresh(val) {
 }
 function applySettingEventLimit(val) {
   setSetting("event_limit", val);
+}
+function applySettingNodeSelector(show) {
+  localStorage.setItem("ep_show_node_selector", show);
+  // 重新应用显隐逻辑
+  updateNodeSelectorVisibility();
+}
+
+function updateNodeSelectorVisibility() {
+  var nodeSelector = document.getElementById("nodeSelector");
+  if (!nodeSelector) return;
+  var showSetting = localStorage.getItem("ep_show_node_selector") !== "false"; // 默认开启
+  if (!showSetting) {
+    nodeSelector.style.display = "none";
+    return;
+  }
+  // 设置开启时：有远程节点才显示
+  var hasRemote = Object.keys(nodeRuntimeInfo).some(function (id) {
+    return id !== "local";
+  });
+  nodeSelector.style.display = hasRemote ? "" : "none";
 }
 
 let _refreshTimer = null;
@@ -5585,60 +5732,101 @@ async function loadAdapterConfigPage() {
   const d = await api("/api/adapters");
   if (!d) return;
   _adapterConfigPlatforms = d.adapters || [];
-  renderAdapterConfigList(_adapterConfigPlatforms);
-  if (_adapterConfigPlatforms.length > 0) {
-    loadAdapterConfigDetail(_adapterConfigPlatforms[0].platform);
+
+  const panel = document.getElementById("adapterConfigPanel");
+  const empty = document.getElementById("adapterConfigEmpty");
+
+  if (_adapterConfigPlatforms.length === 0) {
+    // 没适配器 — 显示空状态
+    if (empty) empty.style.display = "flex";
+    panel.innerHTML = "";
+    panel.appendChild(empty);
+    return;
   }
-}
 
-function renderAdapterConfigList(adapters) {
-  const el = document.getElementById("adapterConfigList");
-  if (!el) return;
-  el.innerHTML = adapters
-    .map((a) => {
-      const on = a.running;
-      const logo = adapterLogoImg(a.platform, 18);
-      return (
-        '<div class="adapter-list-item' +
-        (_adapterConfigCurrent === a.platform ? " active" : "") +
+  if (empty) empty.style.display = "none";
+
+  // 创建水平适配器选择列表
+  let selectorHtml = [
+    '<div class="adapter-selector-bar">',
+    '<div class="adapter-chip-list" id="adapterChipList">',
+  ];
+
+  _adapterConfigPlatforms.forEach((a) => {
+    const isActive = a.platform === _adapterConfigCurrent;
+    const cls = isActive ? " adapter-chip active" : " adapter-chip";
+    const logo = adapterLogoImg(a.platform, 22) || "";
+    const dotColor = a.running ? "var(--ok-c)" : "var(--tx-t)";
+    const plat = esc(a.platform);
+    selectorHtml.push(
+      '<div class="' +
+        cls +
+        '" data-platform="' +
+        plat +
         '" onclick="selectAdapter(\'' +
-        esc(a.platform) +
-        "',this)\">" +
-        logo +
-        '<span class="adapter-list-name">' +
-        esc(a.platform) +
-        "</span>" +
-        '<span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' +
-        (on ? "var(--ok-c)" : "var(--tx-t)") +
-        '"></span>' +
-        "</div>"
-      );
-    })
-    .join("");
+        plat +
+        "')\">",
+      logo,
+      '<span class="adapter-chip-name">' + plat + "</span>",
+      '<span class="adapter-chip-dot" style="background:' +
+        dotColor +
+        '"></span>',
+      "</div>",
+    );
+  });
+
+  selectorHtml.push("</div></div>");
+  selectorHtml = selectorHtml.join("");
+
+  // 先放选择器
+  panel.innerHTML = selectorHtml;
+
+  // 加载第一个适配器
+  if (
+    !_adapterConfigCurrent ||
+    !_adapterConfigPlatforms.some((a) => a.platform === _adapterConfigCurrent)
+  ) {
+    _adapterConfigCurrent = _adapterConfigPlatforms[0].platform;
+  }
+  // 高亮当前选中
+  document.querySelectorAll(".adapter-chip").forEach((el) => {
+    el.classList.toggle(
+      "active",
+      el.dataset.platform === _adapterConfigCurrent,
+    );
+  });
+  loadAdapterConfigDetail(_adapterConfigCurrent);
 }
 
-function selectAdapter(platform, el) {
+function selectAdapter(platform) {
   _adapterConfigCurrent = platform;
-  document
-    .querySelectorAll(".adapter-list-item")
-    .forEach((e) => e.classList.remove("active"));
-  if (el) el.classList.add("active");
+  document.querySelectorAll(".adapter-chip").forEach((el) => {
+    el.classList.toggle("active", el.dataset.platform === platform);
+  });
   loadAdapterConfigDetail(platform);
 }
 
 async function loadAdapterConfigDetail(platform) {
   const panel = document.getElementById("adapterConfigPanel");
   if (!panel) return;
-  panel.innerHTML =
-    '<div class="loading-spinner" style="padding:40px;text-align:center"><div class="spinner"></div><p>' +
+
+  // 保留选择器，只替换内容区
+  let container = document.getElementById("adapterConfigContent");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "adapterConfigContent";
+    panel.appendChild(container);
+  }
+  container.innerHTML =
+    '<div style="padding:40px;text-align:center;color:var(--tx-s)">' +
     t("loading") +
-    "</p></div>";
+    "...</div>";
 
   const d = await api(
     "/api/adapter/" + encodeURIComponent(platform) + "/config",
   );
   if (!d || d.error) {
-    panel.innerHTML =
+    container.innerHTML =
       '<div class="empty-state"><p>' +
       esc(d ? d.error : t("unknown_error")) +
       "</p></div>";
@@ -5667,7 +5855,7 @@ async function loadAdapterConfigDetail(platform) {
 
   html += "</div>";
 
-  panel.innerHTML = html;
+  container.innerHTML = html;
 
   if (d.has_accounts) {
     loadAdapterAccounts(platform);
@@ -5952,8 +6140,12 @@ async function loadAdapterAccounts(platform) {
   );
   if (!d || d.error) return;
 
+  // 先清除旧账户内容
+  var oldSection = document.getElementById("adapterAccountsSection");
+  if (oldSection) oldSection.remove();
+
   var html =
-    '<div class="fw-section" style="margin-top:16px"><div class="fw-section-title">' +
+    '<div id="adapterAccountsSection" class="fw-section" style="margin-top:16px"><div class="fw-section-title">' +
     t("adapter_accounts") +
     '</div><div class="fw-section-body">';
   html += '<div class="adapter-account-list">';
@@ -5974,7 +6166,13 @@ async function loadAdapterAccounts(platform) {
     "</button></div>";
   html += "</div></div>";
 
-  panel.innerHTML += html;
+  // 追加到内容区
+  var container = document.getElementById("adapterConfigContent");
+  if (container) {
+    container.insertAdjacentHTML("beforeend", html);
+  } else {
+    panel.innerHTML += html;
+  }
 }
 
 function renderAdapterAccountCard(platform, accountName, accountData, schema) {
@@ -9225,6 +9423,8 @@ function switchPkgTab(tab, btn) {
     tab === "pk-updates" ? "block" : "none";
   document.getElementById("pkInstallNewTab").style.display =
     tab === "pk-install-new" ? "block" : "none";
+  document.getElementById("pkGitTab").style.display =
+    tab === "pk-git" ? "block" : "none";
   if (tab === "pk-updates") loadPackageUpdates();
 }
 
@@ -9451,6 +9651,102 @@ async function installNewPkg() {
     input.value = "";
   } else {
     toast(t("install_failed") + ": " + (d?.error || ""), "er");
+  }
+}
+
+async function installNewGitPkg() {
+  if (!authed) return showLogin();
+  const input = document.getElementById("pkgGitInput");
+  const val = input.value.trim();
+  if (!val) return;
+  if (!val.startsWith("git+")) {
+    toast(t("install_failed") + ": URL must start with git+", "er");
+    return;
+  }
+  const ok = await confirm2(
+    t("install"),
+    t("install") + " <strong>" + esc(val) + "</strong>?",
+  );
+  if (!ok) return;
+  const d = await api("/api/packages/install", {
+    method: "POST",
+    body: JSON.stringify({ packages: [val] }),
+  });
+  if (d && d.success && d.task_id) {
+    _installTaskIds.set(d.task_id, val);
+    toast(t("installing"), "");
+    input.value = "";
+  } else {
+    toast(t("install_failed") + ": " + (d?.error || ""), "er");
+  }
+}
+
+async function loadGitPackages() {
+  if (!authed) return;
+  const d = await api("/api/packages/git");
+  if (!d) return;
+  const container = document.getElementById("pkgGitList");
+  const pkgs = d.packages || [];
+  const updates = d.updates || [];
+  const updateMap = {};
+  updates.forEach((u) => {
+    updateMap[u.git_url] = u;
+  });
+  if (pkgs.length === 0) {
+    container.innerHTML =
+      '<div class="empty-state" style="padding:32px 20px">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;opacity:0.3;margin-bottom:8px">' +
+      '<circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/>' +
+      "</svg>" +
+      '<p style="font-size:13px;color:var(--tx-s);margin:0">' +
+      t("pkg_git_no_packages") +
+      "</p>" +
+      "</div>";
+    return;
+  }
+  const html = pkgs
+    .map((p) => {
+      const isUpdatable = updateMap[p.git_url];
+      const urlEsc = esc(p.git_url);
+      const label = isUpdatable
+        ? `<span class="chip chip-wr">${t("pkg_git_update_available")}</span>`
+        : `<span class="chip chip-ok">${t("latest_version")}</span>`;
+      const btn = isUpdatable
+        ? `<button class="btn btn-primary btn-xs" onclick="upgradeGitPkg('${urlEsc}')">${t("pkg_git_upgrade")}</button>`
+        : "";
+      return `
+        <div class="kv-row" style="display:flex;align-items:center;gap:12px;padding:12px 18px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;word-break:break-all">${urlEsc}</div>
+            <div style="font-size:11px;color:var(--tx-s);margin-top:4px">
+              ${label}
+            </div>
+          </div>
+          <div style="flex-shrink:0;display:flex;gap:4px">
+            ${btn}
+          </div>
+        </div>`;
+    })
+    .join("");
+  container.innerHTML = html;
+}
+
+async function upgradeGitPkg(gitUrl) {
+  if (!authed) return showLogin();
+  const ok = await confirm2(
+    t("pkg_git_upgrade"),
+    t("pkg_upgrade_confirm") + " <strong>" + esc(gitUrl) + "</strong>?",
+  );
+  if (!ok) return;
+  const d = await api("/api/packages/git-upgrade", {
+    method: "POST",
+    body: JSON.stringify({ git_url: gitUrl }),
+  });
+  if (d && d.success && d.task_id) {
+    _installTaskIds.set(d.task_id, gitUrl);
+    toast(t("pkg_upgrading"), "");
+  } else {
+    toast(t("pkg_upgrade_failed") + ": " + (d?.error || ""), "er");
   }
 }
 
@@ -9759,8 +10055,14 @@ async function saveCmdEdit() {
   applyUiStyle(getUiStyle());
   applyI18n();
   updateNodeSelectorUI();
-  const collapsed = localStorage.getItem("ep_sidebar_collapsed") === "true";
-  if (collapsed) document.getElementById("sidebar").classList.add("collapsed");
+  const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
+  // 默认收起侧边栏（首次使用或无设置时）
+  const isCollapsed =
+    collapsedSetting === null ? true : collapsedSetting === "true";
+  if (isCollapsed)
+    document.getElementById("sidebar").classList.add("collapsed");
+  updateNodeSelectorVisibility();
+  restoreNavGroupStates();
   const tk = localStorage.getItem(TK);
   if (tk) {
     fetch(API + "/api/auth/status", {
@@ -9935,6 +10237,7 @@ async function loadClusterNodes() {
     });
   }
   renderNodeDropdown(d.nodes || []);
+  updateNodeSelectorVisibility();
 }
 
 function renderNodeDropdown(nodes) {
