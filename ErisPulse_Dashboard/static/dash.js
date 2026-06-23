@@ -3713,6 +3713,23 @@ function getTheme() {
 }
 function applyTheme(th) {
   document.documentElement.setAttribute("data-theme", th);
+  // 切换主题时重算背景遮罩与自动取色
+  onThemeChanged();
+}
+
+function onThemeChanged() {
+  var img = getSetting("bg_image", "");
+  if (img) {
+    applyBgImage(img); // 更新深/浅遮罩
+    if (bgAutoThemeEnabled()) {
+      extractImageColor(img, function (hex) {
+        applyAccentColor(hex);
+      });
+    }
+  } else if (bgAutoThemeEnabled()) {
+    var col = getSetting("bg_color", "");
+    if (col) applyAccentColor(deriveAccentFromBg(col));
+  }
 }
 function toggleTheme() {
   const th = getTheme() === "dark" ? "light" : "dark";
@@ -5699,8 +5716,8 @@ function applyBgImage(dataUrl) {
   // 背景图 + 半透明遮罩（保证内容可读）
   var dark = getTheme() === "dark";
   var overlay = dark
-    ? "linear-gradient(rgba(14,20,27,0.82),rgba(14,20,27,0.82))"
-    : "linear-gradient(rgba(244,247,251,0.78),rgba(244,247,251,0.78))";
+    ? "linear-gradient(rgba(8,12,18,0.9),rgba(8,12,18,0.9))"
+    : "linear-gradient(rgba(244,247,251,0.82),rgba(244,247,251,0.82))";
   document.body.style.backgroundImage = overlay + ', url("' + dataUrl + '")';
   document.body.style.backgroundSize = "cover";
   document.body.style.backgroundPosition = "center";
@@ -5781,7 +5798,11 @@ function extractImageColor(dataUrl, cb) {
       mn2 = Math.min(hr, hg, hb);
     if (mx2 - mn2 < 18) cb("#4fa6de");
     else
-      cb("#" + ((1 << 24) + (hr << 16) + (hg << 8) + hb).toString(16).slice(1));
+      cb(
+        themeAwareAccent(
+          "#" + ((1 << 24) + (hr << 16) + (hg << 8) + hb).toString(16).slice(1),
+        ),
+      );
   };
   img.onerror = function () {
     cb("#4fa6de");
@@ -5801,8 +5822,14 @@ function deriveAccentFromBg(hex) {
   var sat = mx === 0 ? 0 : (mx - mn) / mx;
   // 背景几乎无色彩 → 保持默认蓝，避免随灰色背景变灰
   if (sat < 0.12) return "#4fa6de";
-  // 有色彩 → 取背景主色但加深，保证作为强调/填充时可见
-  return shadeHex("#" + hex, -22);
+  // 有色彩 → 取背景主色，并按当前主题压暗/提亮
+  return themeAwareAccent("#" + hex);
+}
+
+// 按当前主题调整强调色亮度：深色模式提亮、浅色模式压暗
+function themeAwareAccent(hex) {
+  var dark = getTheme() === "dark";
+  return shadeHex(hex, dark ? 14 : -18);
 }
 
 function bgAutoThemeEnabled() {
