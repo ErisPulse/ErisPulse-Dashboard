@@ -29,6 +29,9 @@ window.fetch = function (input, init) {
 const I18N = {
   zh: {
     dashboard: "仪表盘",
+    home_quick: "快捷导航",
+    home_add: "添加",
+    home_empty: "还没有固定任何项目，点击编辑添加",
     bots: "机器人",
     events: "事件系统",
     modules: "插件管理",
@@ -422,6 +425,14 @@ const I18N = {
     settings_theme: "深色主题",
     settings_language: "语言",
     settings_ui_style: "界面风格",
+    settings_accent_color: "主题强调色",
+    settings_accent_desc: "选择点缀颜色，按钮/链接等会随之变化",
+    settings_background: "背景颜色",
+    settings_background_desc: "自定义页面背景色",
+    settings_custom: "自定义",
+    settings_reset: "重置",
+    settings_upload_image: "上传图片",
+    settings_bg_auto_theme: "从背景自动取色",
     settings_sidebar: "折叠侧边栏",
     settings_show_node_selector: "显示节点选择器",
     settings_show_node_selector_desc: "开启后，仅当配置了远程节点时才会显示",
@@ -659,6 +670,9 @@ const I18N = {
   },
   en: {
     dashboard: "Dashboard",
+    home_quick: "Quick Access",
+    home_add: "Add",
+    home_empty: "Nothing pinned yet — tap edit to add items",
     bots: "Bots",
     events: "Events",
     modules: "Plugins",
@@ -1062,6 +1076,15 @@ const I18N = {
     settings_theme: "Dark Theme",
     settings_language: "Language",
     settings_ui_style: "UI Style",
+    settings_accent_color: "Accent Color",
+    settings_accent_desc:
+      "Pick an accent — buttons, links and highlights follow it",
+    settings_background: "Background Color",
+    settings_background_desc: "Customize the page background",
+    settings_custom: "Custom",
+    settings_reset: "Reset",
+    settings_upload_image: "Upload Image",
+    settings_bg_auto_theme: "Auto color from background",
     settings_sidebar: "Collapse Sidebar",
     settings_show_node_selector: "Show Node Selector",
     settings_show_node_selector_desc:
@@ -1315,6 +1338,9 @@ const I18N = {
   },
   "zh-TW": {
     dashboard: "儀表盤",
+    home_quick: "快捷導航",
+    home_add: "新增",
+    home_empty: "尚未固定任何項目，點擊編輯來新增",
     bots: "機器人",
     events: "事件系統",
     modules: "插件管理",
@@ -1702,6 +1728,14 @@ const I18N = {
     settings_theme: "深色主題",
     settings_language: "語言",
     settings_ui_style: "介面風格",
+    settings_accent_color: "主題強調色",
+    settings_accent_desc: "選擇點綴顏色，按鈕/連結等會隨之變化",
+    settings_background: "背景顏色",
+    settings_background_desc: "自訂頁面背景色",
+    settings_custom: "自訂",
+    settings_reset: "重設",
+    settings_upload_image: "上傳圖片",
+    settings_bg_auto_theme: "從背景自動取色",
     settings_sidebar: "摺疊側邊欄",
     settings_show_node_selector: "顯示節點選擇器",
     settings_show_node_selector_desc: "開啟後，僅當配置了遠端節點時才會顯示",
@@ -1937,6 +1971,9 @@ const I18N = {
   },
   ja: {
     dashboard: "ダッシュボード",
+    home_quick: "クイックアクセス",
+    home_add: "追加",
+    home_empty: "まだピン留めされていません。編集から追加できます",
     bots: "ボット",
     events: "イベント",
     modules: "プラグイン",
@@ -2336,6 +2373,14 @@ const I18N = {
     settings_theme: "ダークテーマ",
     settings_language: "言語",
     settings_ui_style: "UIスタイル",
+    settings_accent_color: "アクセントカラー",
+    settings_accent_desc: "アクセントを選択すると、ボタンやリンクが連動します",
+    settings_background: "背景色",
+    settings_background_desc: "ページの背景色をカスタマイズ",
+    settings_custom: "カスタム",
+    settings_reset: "リセット",
+    settings_upload_image: "画像をアップロード",
+    settings_bg_auto_theme: "背景から自動で色を抽出",
     settings_sidebar: "サイドバーを折りたたむ",
     settings_show_node_selector: "ノードセレクタを表示",
     settings_show_node_selector_desc:
@@ -2581,6 +2626,9 @@ const I18N = {
 
   ru: {
     dashboard: "Панель управления",
+    home_quick: "Быстрый доступ",
+    home_add: "Добавить",
+    home_empty: "Ничего не закреплено — нажмите «изменить»",
     bots: "Боты",
     events: "События",
     modules: "Плагины",
@@ -2980,6 +3028,15 @@ const I18N = {
     settings_theme: "Тёмная тема",
     settings_language: "Язык",
     settings_ui_style: "Стиль интерфейса",
+    settings_accent_color: "Акцентный цвет",
+    settings_accent_desc:
+      "Выберите акцент — кнопки, ссылки и выделения изменятся",
+    settings_background: "Цвет фона",
+    settings_background_desc: "Настройте цвет фона страницы",
+    settings_custom: "Свой",
+    settings_reset: "Сбросить",
+    settings_upload_image: "Загрузить изображение",
+    settings_bg_auto_theme: "Авто-цвет из фона",
     settings_sidebar: "Свернуть боковую панель",
     settings_show_node_selector: "Показать селектор узлов",
     settings_show_node_selector_desc:
@@ -3825,7 +3882,15 @@ function go(name, el) {
     page.classList.add("anim-enter");
     setTimeout(() => page.classList.remove("anim-enter"), 600);
   }
-  if (el) el.classList.add("active");
+  if (el) {
+    el.classList.add("active");
+  } else {
+    // 非侧边栏入口（统计卡/快捷操作等）跳转时，同步高亮对应导航项
+    const navMatch = document.querySelector(
+      '.nav-item[data-page="' + name + '"]',
+    );
+    if (navMatch) navMatch.classList.add("active");
+  }
   closeSidebar();
 
   const loaders = {
@@ -4031,6 +4096,9 @@ function _renderModuleViews(views) {
   });
 
   _moduleViewsLoaded = true;
+
+  // 动态视图加载后，刷新主页 pin（已 pin 的动态视图会自动出现）
+  renderHomePins();
 }
 
 function _removeModuleView(viewId) {
@@ -4062,6 +4130,8 @@ function _removeModuleView(viewId) {
       el.remove();
     });
   delete _moduleViewLoaders[pageId];
+
+  renderHomePins();
 }
 
 function showModal(title, text, actions) {
@@ -4425,28 +4495,32 @@ async function refreshDashboard() {
     }),
   );
   document.getElementById("statGrid").innerHTML =
-    '<div class="card"><div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">' +
     statCard(
       Object.keys(ad).length,
       t("adapters"),
-      '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>',
+      '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+      "adapter-config",
     ) +
     statCard(
       Object.keys(mo).filter((k) => mo[k]).length,
       t("modules_label"),
-      '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>',
+      '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+      "modules",
     ) +
     statCard(
       ob,
       t("online_bots"),
-      '<rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><path d="M9 13v3a3 3 0 006 0v-3"/>',
+      '<rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/>',
+      "bots",
     ) +
     statCard(
       _totalEventCount,
       t("total_events"),
       '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
-    ) +
-    "</div></div>";
+      "event-stream",
+    );
+
+  renderHomePins();
 
   let aH = "";
   Object.entries(ad).forEach(([n, i]) => {
@@ -4490,9 +4564,12 @@ async function refreshDashboard() {
   platforms = Object.keys(ad);
 }
 
-function statCard(v, label, icon) {
+function statCard(v, label, icon, page) {
+  const tag = page
+    ? '<div class="stat-card is-link" onclick="go(' + "'" + page + "'" + ')">'
+    : '<div class="stat-card">';
   return (
-    '<div class="stat-card">' +
+    tag +
     (icon
       ? '<svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
         icon +
@@ -4612,7 +4689,9 @@ async function loadBots() {
         .join("")
     : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' +
       t("no_bots") +
-      "</h3></div>";
+      '</h3><button class="empty-action" onclick="go(\'adapter-config\')">' +
+      t("adapter_config") +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button></div>';
 }
 
 async function loadModules() {
@@ -4652,7 +4731,9 @@ async function loadModules() {
     ? modules.map((m) => renderPluginRow(m, false)).join("")
     : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
       t("no_modules") +
-      "</div>";
+      ' <a class="empty-action" style="margin-top:0;margin-left:6px;padding:3px 10px;font-size:12px" onclick="go(\'store\')">' +
+      t("store") +
+      "</a></div>";
 }
 function renderPluginRow(m, isAd) {
   let statusDot = "",
@@ -5477,6 +5558,17 @@ function showSettings() {
     "event_limit",
     "100",
   );
+  // 配色定制 UI
+  initAccentSwatches();
+  var savedAccent = getSetting("accent_color", "");
+  syncAccentUI(savedAccent || "#4fa6de");
+  var bgInput = document.getElementById("settingsBg");
+  if (bgInput) bgInput.value = getSetting("bg_color", "") || "#f4f7fb";
+  // 背景图自动取色选项：仅在设置了背景图时显示
+  var hasBgImg = !!getSetting("bg_image", "");
+  showBgAutoThemeRow(hasBgImg);
+  var autoChk = document.getElementById("settingsBgAutoTheme");
+  if (autoChk) autoChk.checked = bgAutoThemeEnabled();
   document.getElementById("settingsPanel").classList.add("open");
   document.getElementById("settingsBackdrop").classList.add("show");
 }
@@ -5511,6 +5603,507 @@ function applySettingNodeSelector(show) {
   localStorage.setItem("ep_show_node_selector", show);
   // 重新应用显隐逻辑
   updateNodeSelectorVisibility();
+}
+
+// ========== 配色定制（主题色 / 背景） ==========
+
+// 预设强调色（MD3 风格）
+var ACCENT_PRESETS = [
+  "#4fa6de", // ErisPulse 默认蓝
+  "#6750a4", // MD3 紫
+  "#006b3c", // 深绿
+  "#e8590c", // 橙
+  "#c92a2a", // 红
+  "#9c36b5", // 品红
+  "#2c7bb6", // 深蓝
+  "#495057", // 石板灰
+];
+
+// hex -> "r, g, b"
+function hexToRgbStr(hex) {
+  hex = hex.replace("#", "");
+  if (hex.length === 3)
+    hex = hex
+      .split("")
+      .map(function (c) {
+        return c + c;
+      })
+      .join("");
+  var r = parseInt(hex.substr(0, 2), 16);
+  var g = parseInt(hex.substr(2, 2), 16);
+  var b = parseInt(hex.substr(4, 2), 16);
+  return r + ", " + g + ", " + b;
+}
+
+// 调亮/调暗 hex，pct<0 变暗、>0 变亮
+function shadeHex(hex, pct) {
+  hex = hex.replace("#", "");
+  var num = parseInt(hex, 16);
+  var r = (num >> 16) & 255,
+    g = (num >> 8) & 255,
+    b = num & 255;
+  var amt = Math.round(2.55 * pct);
+  r = Math.max(0, Math.min(255, r + amt));
+  g = Math.max(0, Math.min(255, g + amt));
+  b = Math.max(0, Math.min(255, b + amt));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function applyAccentColor(hex) {
+  if (!hex) return;
+  setSetting("accent_color", hex);
+  var root = document.documentElement.style;
+  root.setProperty("--accent", hex);
+  root.setProperty("--accent-rgb", hexToRgbStr(hex));
+  // 填充色比点缀色更深，保证白字可读
+  root.setProperty("--accent-fill", shadeHex(hex, -18));
+  root.setProperty("--accent-fill-h", shadeHex(hex, -28));
+  root.setProperty("--accent-h", shadeHex(hex, -10));
+  syncAccentUI(hex);
+}
+
+// 背景纯色
+function applyBgColor(hex) {
+  if (!hex) return;
+  setSetting("bg_color", hex);
+  document.documentElement.style.setProperty("--bg-p", hex);
+  clearBgImage();
+  // 默认：背景色变化时同步推导一个柔和的强调色
+  if (bgAutoThemeEnabled()) {
+    applyAccentColor(deriveAccentFromBg(hex));
+  }
+  var bgInput = document.getElementById("settingsBg");
+  if (bgInput) bgInput.value = hex;
+}
+
+// 背景图片：上传
+function applyBgImageFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    var dataUrl = e.target.result;
+    setSetting("bg_image", dataUrl);
+    applyBgImage(dataUrl);
+    showBgAutoThemeRow(true);
+    if (bgAutoThemeEnabled()) {
+      extractImageColor(dataUrl, function (hex) {
+        applyAccentColor(hex);
+      });
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyBgImage(dataUrl) {
+  if (!dataUrl) return;
+  // 背景图 + 半透明遮罩（保证内容可读）
+  var dark = getTheme() === "dark";
+  var overlay = dark
+    ? "linear-gradient(rgba(14,20,27,0.82),rgba(14,20,27,0.82))"
+    : "linear-gradient(rgba(244,247,251,0.78),rgba(244,247,251,0.78))";
+  document.body.style.backgroundImage = overlay + ', url("' + dataUrl + '")';
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundAttachment = "fixed";
+  // 纯色背景失效
+  document.documentElement.style.removeProperty("--bg-p");
+}
+
+function clearBgImage() {
+  document.body.style.backgroundImage = "";
+  document.body.style.backgroundSize = "";
+  document.body.style.backgroundPosition = "";
+  document.body.style.backgroundAttachment = "";
+}
+
+// 从图片提取主色调
+function extractImageColor(dataUrl, cb) {
+  var img = new Image();
+  img.onload = function () {
+    var cw = 24,
+      ch = 24;
+    var c = document.createElement("canvas");
+    c.width = cw;
+    c.height = ch;
+    var ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0, cw, ch);
+    var data;
+    try {
+      data = ctx.getImageData(0, 0, cw, ch).data;
+    } catch (e) {
+      cb("#4fa6de");
+      return;
+    }
+    // 量化到 32 的颜色桶，统计频次并偏好饱和色
+    var buckets = {};
+    for (var i = 0; i < data.length; i += 4) {
+      var r = data[i],
+        g = data[i + 1],
+        b = data[i + 2],
+        a = data[i + 3];
+      if (a < 125) continue;
+      var qr = Math.round(r / 32) * 32,
+        qg = Math.round(g / 32) * 32,
+        qb = Math.round(b / 32) * 32;
+      var key = qr + "," + qg + "," + qb;
+      var mx = Math.max(r, g, b),
+        mn = Math.min(r, g, b);
+      var sat = mx === 0 ? 0 : (mx - mn) / mx; // 饱和度
+      if (!buckets[key]) buckets[key] = { n: 0, r: 0, g: 0, b: 0, sat: 0 };
+      var bk = buckets[key];
+      bk.n++;
+      bk.r += r;
+      bk.g += g;
+      bk.b += b;
+      bk.sat += sat;
+    }
+    var best = null,
+      bestScore = -1;
+    Object.keys(buckets).forEach(function (k) {
+      var bk = buckets[k];
+      var avgSat = bk.sat / bk.n;
+      // 评分：频次 × (饱和度加权)，避免选到灰白黑
+      var score = bk.n * (0.4 + avgSat * 1.6);
+      if (score > bestScore) {
+        bestScore = score;
+        best = bk;
+      }
+    });
+    if (!best) {
+      cb("#4fa6de");
+      return;
+    }
+    var hr = Math.round(best.r / best.n),
+      hg = Math.round(best.g / best.n),
+      hb = Math.round(best.b / best.n);
+    // 若提取色太灰，退回默认蓝
+    var mx2 = Math.max(hr, hg, hb),
+      mn2 = Math.min(hr, hg, hb);
+    if (mx2 - mn2 < 18) cb("#4fa6de");
+    else
+      cb("#" + ((1 << 24) + (hr << 16) + (hg << 8) + hb).toString(16).slice(1));
+  };
+  img.onerror = function () {
+    cb("#4fa6de");
+  };
+  img.src = dataUrl;
+}
+
+// 由背景纯色推导一个柔和强调色（默认行为）
+function deriveAccentFromBg(hex) {
+  hex = hex.replace("#", "");
+  var num = parseInt(hex, 16);
+  var r = (num >> 16) & 255,
+    g = (num >> 8) & 255,
+    b = num & 255;
+  var mx = Math.max(r, g, b),
+    mn = Math.min(r, g, b);
+  var sat = mx === 0 ? 0 : (mx - mn) / mx;
+  // 背景几乎无色彩 → 保持默认蓝，避免随灰色背景变灰
+  if (sat < 0.12) return "#4fa6de";
+  // 有色彩 → 取背景主色但加深，保证作为强调/填充时可见
+  return shadeHex("#" + hex, -22);
+}
+
+function bgAutoThemeEnabled() {
+  return localStorage.getItem("ep_setting_bg_auto_theme") !== "false";
+}
+
+function showBgAutoThemeRow(show) {
+  var row = document.getElementById("bgAutoThemeRow");
+  if (row) row.style.display = show ? "flex" : "none";
+}
+
+function onBgAutoThemeToggle(checked) {
+  localStorage.setItem("ep_setting_bg_auto_theme", checked);
+  if (checked) {
+    // 开启自动取色：立即按当前背景重算
+    var img = getSetting("bg_image", "");
+    var col = getSetting("bg_color", "");
+    if (img) {
+      extractImageColor(img, function (hex) {
+        applyAccentColor(hex);
+      });
+    } else if (col) {
+      applyAccentColor(deriveAccentFromBg(col));
+    } else {
+      resetAccent();
+    }
+  }
+}
+
+// 重置背景（颜色 + 图片）
+function resetBg() {
+  localStorage.removeItem("ep_setting_bg_color");
+  localStorage.removeItem("ep_setting_bg_image");
+  document.documentElement.style.removeProperty("--bg-p");
+  clearBgImage();
+  showBgAutoThemeRow(false);
+  var bgInput = document.getElementById("settingsBg");
+  if (bgInput) bgInput.value = "#f4f7fb";
+  var bgFile = document.getElementById("settingsBgFile");
+  if (bgFile) bgFile.value = "";
+  if (bgAutoThemeEnabled()) resetAccent();
+}
+
+// 重置强调色为默认
+function resetAccent() {
+  localStorage.removeItem("ep_setting_accent_color");
+  var root = document.documentElement.style;
+  root.removeProperty("--accent");
+  root.removeProperty("--accent-rgb");
+  root.removeProperty("--accent-fill");
+  root.removeProperty("--accent-fill-h");
+  root.removeProperty("--accent-h");
+  syncAccentUI("#4fa6de");
+}
+
+function syncAccentUI(hex) {
+  var swatches = document.querySelectorAll(".color-swatch");
+  swatches.forEach(function (s) {
+    s.classList.toggle("active", s.dataset.color === hex);
+  });
+  var accentInput = document.getElementById("settingsAccent");
+  if (accentInput) accentInput.value = hex;
+}
+
+function initAccentSwatches() {
+  var wrap = document.getElementById("accentSwatches");
+  if (!wrap || wrap.childElementCount) return;
+  ACCENT_PRESETS.forEach(function (c) {
+    var btn = document.createElement("button");
+    btn.className = "color-swatch";
+    btn.style.background = c;
+    btn.dataset.color = c;
+    btn.title = c;
+    btn.onclick = function () {
+      applyAccentColor(c);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+// 启动时恢复自定义配色
+function applyCustomTheme() {
+  var img = getSetting("bg_image", "");
+  var col = getSetting("bg_color", "");
+  var accent = getSetting("accent_color", "");
+  var auto = bgAutoThemeEnabled();
+  if (img) {
+    // 有背景图：应用图，并按自动取色推导强调色
+    applyBgImage(img);
+    if (auto) {
+      extractImageColor(img, function (hex) {
+        applyAccentColor(hex);
+      });
+    } else if (accent) {
+      applyAccentColor(accent);
+    }
+  } else if (col) {
+    applyBgColor(col);
+  } else if (accent && !auto) {
+    // 无背景、手动选过强调色
+    applyAccentColor(accent);
+  }
+}
+
+// ========== 主页快捷导航（可自定义 pin） ==========
+
+var HOME_PIN_DEFAULTS = ["adapter-config", "store", "logs", "files"];
+var _homePinsEditing = false;
+
+function getHomePins() {
+  var raw = localStorage.getItem("ep_home_pins");
+  if (raw) {
+    try {
+      var arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr;
+    } catch (e) {}
+  }
+  return HOME_PIN_DEFAULTS.slice();
+}
+
+function setHomePins(arr) {
+  localStorage.setItem("ep_home_pins", JSON.stringify(arr));
+}
+
+// 从侧边栏导航项读取图标+标题（动态加载的视图也能读到）
+function navItemContent(page) {
+  var item = document.querySelector('.nav-item[data-page="' + page + '"]');
+  if (!item) return null;
+  var svg = item.querySelector("svg");
+  var span = item.querySelector("span");
+  return {
+    svg: svg ? svg.outerHTML : "",
+    title: span ? span.textContent : page,
+  };
+}
+
+function renderHomePins() {
+  var wrap = document.getElementById("homePins");
+  if (!wrap) return;
+  var pins = getHomePins();
+  wrap.innerHTML = "";
+  var found = 0;
+  pins.forEach(function (page, idx) {
+    var c = navItemContent(page);
+    if (!c) return; // 该视图不存在（如动态视图已卸载），跳过
+    found++;
+    var card = document.createElement("div");
+    card.className = "home-pin" + (_homePinsEditing ? " editing" : "");
+    card.draggable = _homePinsEditing;
+    card.setAttribute("data-page", page);
+    card.setAttribute("data-idx", String(idx));
+    if (!_homePinsEditing) {
+      card.addEventListener("click", function () {
+        go(page);
+      });
+    }
+
+    var grip = document.createElement("span");
+    grip.className = "home-pin-grip";
+    grip.title = "Drag";
+    grip.textContent = "⋮⋮";
+    card.appendChild(grip);
+
+    var icon = document.createElement("span");
+    icon.innerHTML = c.svg;
+    card.appendChild(icon.firstChild || icon);
+
+    var label = document.createElement("span");
+    label.className = "home-pin-label";
+    label.textContent = c.title;
+    card.appendChild(label);
+
+    if (_homePinsEditing) {
+      var rm = document.createElement("button");
+      rm.className = "home-pin-remove";
+      rm.textContent = "×";
+      rm.addEventListener("click", function (e) {
+        e.stopPropagation();
+        removeHomePin(page);
+      });
+      card.appendChild(rm);
+    }
+    wrap.appendChild(card);
+  });
+  if (found === 0) {
+    var empty = document.createElement("div");
+    empty.className = "home-pin-empty";
+    empty.style.cssText = "color:var(--tx-t);font-size:13px;padding:12px 0";
+    empty.textContent = t("home_empty");
+    wrap.appendChild(empty);
+  }
+  bindHomePinDnd();
+
+  var addBar = document.getElementById("homePinAdd");
+  if (addBar) addBar.style.display = _homePinsEditing ? "block" : "none";
+}
+
+function toggleHomePinsEdit() {
+  _homePinsEditing = !_homePinsEditing;
+  var btn = document.getElementById("homePinsEditBtn");
+  if (btn) btn.classList.toggle("active", _homePinsEditing);
+  renderHomePins();
+}
+
+function removeHomePin(page) {
+  var pins = getHomePins().filter(function (p) {
+    return p !== page;
+  });
+  setHomePins(pins);
+  renderHomePins();
+}
+
+function toggleHomePinPicker() {
+  var picker = document.getElementById("homePinPicker");
+  if (!picker) return;
+  if (picker.style.display === "none") {
+    // 列出所有尚未 pin 的视图
+    var pinned = getHomePins();
+    var all = Array.prototype.map.call(
+      document.querySelectorAll(".nav-item[data-page]"),
+      function (a) {
+        return a.getAttribute("data-page");
+      },
+    );
+    picker.innerHTML = "";
+    var count = 0;
+    all.forEach(function (page) {
+      if (pinned.indexOf(page) !== -1) return;
+      var c = navItemContent(page);
+      if (!c) return;
+      count++;
+      var opt = document.createElement("div");
+      opt.className = "home-pin-option";
+      opt.addEventListener("click", function () {
+        addHomePin(page);
+      });
+      var icon = document.createElement("span");
+      icon.innerHTML = c.svg;
+      opt.appendChild(icon.firstChild || icon);
+      var span = document.createElement("span");
+      span.textContent = c.title;
+      opt.appendChild(span);
+      picker.appendChild(opt);
+    });
+    if (count === 0) {
+      var none = document.createElement("div");
+      none.style.cssText = "padding:8px;color:var(--tx-t)";
+      none.textContent = "—";
+      picker.appendChild(none);
+    }
+    picker.style.display = "block";
+  } else {
+    picker.style.display = "none";
+  }
+}
+
+function addHomePin(page) {
+  var pins = getHomePins();
+  if (pins.indexOf(page) === -1) {
+    pins.push(page);
+    setHomePins(pins);
+  }
+  var picker = document.getElementById("homePinPicker");
+  if (picker) picker.style.display = "none";
+  renderHomePins();
+}
+
+// 原生拖拽排序
+var _dragPinIdx = null;
+function bindHomePinDnd() {
+  var pins = document.querySelectorAll(".home-pin");
+  pins.forEach(function (el) {
+    el.addEventListener("dragstart", function (e) {
+      _dragPinIdx = parseInt(el.dataset.idx, 10);
+      el.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    el.addEventListener("dragend", function () {
+      el.classList.remove("dragging");
+    });
+    el.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      el.classList.add("drag-over");
+    });
+    el.addEventListener("dragleave", function () {
+      el.classList.remove("drag-over");
+    });
+    el.addEventListener("drop", function (e) {
+      e.preventDefault();
+      el.classList.remove("drag-over");
+      var targetIdx = parseInt(el.dataset.idx, 10);
+      if (_dragPinIdx === null || _dragPinIdx === targetIdx) return;
+      var arr = getHomePins();
+      var moved = arr.splice(_dragPinIdx, 1)[0];
+      arr.splice(targetIdx, 0, moved);
+      setHomePins(arr);
+      _dragPinIdx = null;
+      renderHomePins();
+    });
+  });
 }
 
 function updateNodeSelectorVisibility() {
@@ -5737,10 +6330,19 @@ async function loadAdapterConfigPage() {
   const empty = document.getElementById("adapterConfigEmpty");
 
   if (_adapterConfigPlatforms.length === 0) {
-    // 没适配器 — 显示空状态
+    // 没适配器 — 显示空状态 + 引导去商店安装
     if (empty) empty.style.display = "flex";
     panel.innerHTML = "";
     panel.appendChild(empty);
+    var cta = document.createElement("button");
+    cta.className = "empty-action";
+    cta.innerHTML =
+      t("store") +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
+    cta.onclick = function () {
+      go("store");
+    };
+    panel.appendChild(cta);
     return;
   }
 
@@ -10054,6 +10656,7 @@ async function saveCmdEdit() {
   applyTheme(getTheme());
   applyUiStyle(getUiStyle());
   applyI18n();
+  applyCustomTheme();
   updateNodeSelectorUI();
   const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
   // 默认收起侧边栏（首次使用或无设置时）
