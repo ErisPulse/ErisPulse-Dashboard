@@ -15,8 +15,17 @@
     --bd-h: #cccccc;
     --accent: #d4d4aa;
     --accent-h: #c4c49a;
-    --sh: rgba(0, 0, 0, 0.08);
+    --accent-rgb: 212, 212, 170;
+    --accent-fill: #7a7a4d;
+    --accent-fill-h: #686840;
+    --sh: rgba(0, 0, 0, 0.06);
     --modal: rgba(0, 0, 0, 0.5);
+    --shadow-card:
+        0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 18px rgba(0, 0, 0, 0.04);
+    --shadow-hover:
+        0 2px 8px rgba(0, 0, 0, 0.05), 0 10px 28px rgba(0, 0, 0, 0.06);
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-spring: cubic-bezier(0.34, 1.22, 0.5, 1);
     --ok-bg: #e8f5e9;
     --ok-c: #2e7d32;
     --ok-bd: #c8e6c9;
@@ -46,8 +55,15 @@
     --bd-h: #505050;
     --accent: #5a5a3a;
     --accent-h: #4a4a2a;
+    --accent-rgb: 90, 90, 58;
+    --accent-fill: #5a5a30;
+    --accent-fill-h: #4a4a24;
     --sh: rgba(0, 0, 0, 0.3);
     --modal: rgba(0, 0, 0, 0.7);
+    --shadow-card:
+        0 1px 3px rgba(0, 0, 0, 0.18), 0 6px 18px rgba(0, 0, 0, 0.24);
+    --shadow-hover:
+        0 2px 8px rgba(0, 0, 0, 0.22), 0 10px 28px rgba(0, 0, 0, 0.3);
     --ok-bg: #1b5e20;
     --ok-c: #a5d6a7;
     --ok-bd: #2e7d32;
@@ -68,18 +84,25 @@
 
 /* ========== ErisPulse Global Theme - Cream Blue ========== */
 [data-ui-style="eris"] {
-    --bg-p: #f8fafb;
-    --bg-s: #f0f5fa;
+    --bg-p: #f4f7fb;
+    --bg-s: #edf2f8;
     --bg-t: #ffffff;
-    --tx-p: #37474f;
-    --tx-s: #78909c;
-    --tx-t: #b0bec5;
-    --bd: #e0e8ee;
-    --bd-h: #cfd8dc;
-    --accent: #90caf9;
-    --accent-h: #64b5f6;
-    --sh: rgba(144, 202, 249, 0.08);
-    --modal: rgba(55, 71, 79, 0.45);
+    --tx-p: #2c3e50;
+    --tx-s: #5a6c7d;
+    --tx-t: #9aabba;
+    --bd: #e6ecf3;
+    --bd-h: #d5dee9;
+    --accent: #4fa6de;
+    --accent-h: #3e96ce;
+    --accent-rgb: 79, 166, 222;
+    --accent-fill: #2c7bb6;
+    --accent-fill-h: #225e8c;
+    --sh: rgba(0, 0, 0, 0.06);
+    --modal: rgba(0, 0, 0, 0.4);
+    --shadow-card:
+        0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 18px rgba(0, 0, 0, 0.04);
+    --shadow-hover:
+        0 2px 8px rgba(0, 0, 0, 0.05), 0 10px 28px rgba(0, 0, 0, 0.06);
     --ok-bg: #e8f5e9;
     --ok-c: #2e7d32;
     --ok-bd: #c8e6c9;
@@ -99,18 +122,25 @@
 }
 
 [data-theme="dark"][data-ui-style="eris"] {
-    --bg-p: #121820;
-    --bg-s: #1a2332;
-    --bg-t: #1e2a3a;
-    --tx-p: #e0e8f0;
-    --tx-s: #90a4ae;
-    --tx-t: #546e7a;
-    --bd: #2a3a4a;
-    --bd-h: #3a4f62;
-    --accent: #64b5f6;
-    --accent-h: #42a5f5;
+    --bg-p: #0e141b;
+    --bg-s: #131a23;
+    --bg-t: #19202a;
+    --tx-p: #e2e8f0;
+    --tx-s: #a0b0c0;
+    --tx-t: #6b7c8e;
+    --bd: #273140;
+    --bd-h: #36455a;
+    --accent: #62b5e6;
+    --accent-h: #4fa6de;
+    --accent-rgb: 98, 181, 230;
+    --accent-fill: #3a8fcc;
+    --accent-fill-h: #2e7bb3;
     --sh: rgba(0, 0, 0, 0.3);
     --modal: rgba(0, 0, 0, 0.6);
+    --shadow-card:
+        0 1px 3px rgba(0, 0, 0, 0.18), 0 6px 18px rgba(0, 0, 0, 0.24);
+    --shadow-hover:
+        0 2px 8px rgba(0, 0, 0, 0.22), 0 10px 28px rgba(0, 0, 0, 0.3);
     --ok-bg: #1b5e20;
     --ok-c: #a5d6a7;
     --ok-bd: #2e7d32;
@@ -164,6 +194,103 @@ body {
 
 .app.authed {
     display: flex;
+}
+
+/* ========== 页面加载器（Logo 揭示） ========== */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-p);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition:
+        opacity 0.5s var(--ease),
+        visibility 0.5s var(--ease);
+}
+
+.page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 20px;
+    object-fit: contain;
+    transform-origin: center;
+    animation:
+        loaderReveal 0.6s var(--ease) both,
+        loaderBreath 2.4s ease-in-out 0.5s infinite;
+}
+
+@keyframes loaderReveal {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes loaderBreath {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 14px rgba(var(--accent-rgb), 0.18));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 10px 26px rgba(var(--accent-rgb), 0.34));
+    }
+}
+
+/* 不定式进度条 - 彗星扫动 */
+.page-loader::before,
+.page-loader::after {
+    content: "";
+    position: absolute;
+    top: calc(50% + 64px);
+    left: 50%;
+    height: 3px;
+    border-radius: 3px;
+}
+
+.page-loader::before {
+    width: 96px;
+    transform: translateX(-50%);
+    background: var(--bd);
+    opacity: 0.6;
+}
+
+.page-loader::after {
+    width: 30px;
+    transform: translateX(calc(-50% - 33px));
+    background: var(--accent);
+    animation: loaderTrack 1.3s var(--ease) infinite;
+}
+
+@keyframes loaderTrack {
+    0% {
+        transform: translateX(calc(-50% - 33px));
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(-50% + 33px));
+        opacity: 0;
+    }
 }
 
 .header {
@@ -233,7 +360,7 @@ body {
 .conn-badge {
     display: flex;
     align-items: center;
-    padding: 4px 10px 4px 6px;
+    padding: 4px 10px;
     border-radius: 12px;
     border: 1px solid var(--bd);
     background: var(--bg-t);
@@ -258,7 +385,9 @@ body {
 }
 
 .conn-badge .status-icon-container {
-    gap: 0;
+    /* 暂时隐藏 bar 上常驻的连接状态图标，仅保留文字状态 */
+    /* 展开面板(conn-panel)内的连接成功图标不受影响，仍会显示 */
+    display: none;
 }
 
 .conn-badge-text {
@@ -358,8 +487,9 @@ body {
 }
 
 .btn-icon.active {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--accent-fill);
+    border-color: var(--accent-fill);
+    color: #fff;
 }
 
 .lang-btn {
@@ -412,7 +542,7 @@ body {
 }
 
 .sidebar {
-    width: 240px;
+    width: 252px;
     background: var(--bg-s);
     border-right: 1px solid var(--bd);
     display: flex;
@@ -420,6 +550,27 @@ body {
     flex-shrink: 0;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible;
+}
+
+/* 紧凑布局 - 可按需切换（JS 加 .compact 类） */
+.sidebar.compact {
+    width: 208px;
+}
+.sidebar.compact .nav-item {
+    padding: 7px 10px;
+    font-size: 13px;
+    gap: 10px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+.sidebar.compact .nav-item svg {
+    width: 18px;
+    height: 18px;
+}
+.sidebar.compact .nav-group-title {
+    padding: 12px 12px 5px;
+    font-size: 10px;
+    letter-spacing: 0.6px;
 }
 
 .sidebar-nav {
@@ -546,19 +697,18 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
+    gap: 11px;
+    padding: 10px 14px;
     margin-bottom: 2px;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 6px;
+    margin-right: 6px;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 9px;
     cursor: pointer;
     transition:
         background 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease;
+        color 0.2s ease;
     color: var(--tx-s);
     text-decoration: none;
     font-size: 14px;
@@ -583,7 +733,6 @@ body {
 .nav-item:hover {
     background: var(--bg-t);
     color: var(--tx-p);
-    transform: translateX(2px);
 }
 
 .nav-item:hover::before {
@@ -807,7 +956,7 @@ body {
     display: none;
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 28px;
 }
 
 .page.active {
@@ -842,40 +991,42 @@ body {
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 18px;
 }
 
 .grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 18px;
 }
 
 .grid-4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 18px;
 }
 
 .card {
     background: var(--bg-t);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px var(--sh);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid transparent;
+    transition:
+        box-shadow 0.3s var(--ease),
+        border-color 0.2s ease;
+    border: 1px solid var(--bd);
 }
 
 .card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-color: var(--bd);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--bd-h);
 }
 
 .card-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 16px 20px;
+    padding: 18px 22px;
     font-size: 14px;
     font-weight: 600;
     border-bottom: 1px solid var(--bd);
@@ -899,7 +1050,7 @@ body {
 }
 
 .card-body {
-    padding: 16px 20px;
+    padding: 18px 22px;
 }
 
 .card-header .header-actions {
@@ -910,22 +1061,23 @@ body {
 
 .stat-card {
     background: var(--bg-t);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 18px 20px;
-    box-shadow: 0 4px 12px var(--sh);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-card);
+    transition:
+        box-shadow 0.3s var(--ease),
+        border-color 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 6px;
-    border: 1px solid transparent;
+    border: 1px solid var(--bd);
 }
 
 .stat-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-color: var(--bd);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--bd-h);
 }
 
 .stat-card-icon {
@@ -933,12 +1085,6 @@ body {
     height: 28px;
     color: var(--tx-t);
     flex-shrink: 0;
-}
-
-.stat-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-color: var(--bd);
-    transform: translateY(-2px);
 }
 
 .stat-val {
@@ -1471,26 +1617,30 @@ body {
     font-weight: 600;
     border-radius: 8px;
     padding: 8px 16px;
-    transition: all 0.2s;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        filter 0.15s ease;
     white-space: nowrap;
 }
 
 .btn:hover {
-    transform: translateY(-1px);
+    filter: brightness(0.96);
 }
 
 .btn:active {
-    transform: translateY(0);
+    filter: brightness(0.9);
 }
 
 .btn-primary {
-    background: var(--accent);
-    color: var(--tx-p);
+    background: var(--accent-fill);
+    color: #fff;
     border: none;
 }
 
 .btn-primary:hover {
-    background: var(--accent-h);
+    background: var(--accent-fill-h);
 }
 
 .btn-secondary {
@@ -1876,11 +2026,11 @@ body {
 .modal-box {
     background: var(--bg-t);
     padding: 24px;
-    border-radius: 16px;
+    border-radius: 14px;
     width: 90%;
     max-width: 420px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    animation: scaleIn 0.2s ease-out;
+    box-shadow: var(--shadow-hover);
+    animation: modalIn 0.34s var(--ease-spring) both;
 }
 
 @keyframes scaleIn {
@@ -2517,9 +2667,9 @@ body {
 }
 
 .type-btn.active {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: var(--tx-p);
+    border-color: var(--accent-fill);
+    background: var(--accent-fill);
+    color: #fff;
     box-shadow: 0 2px 8px var(--sh);
 }
 
@@ -3160,8 +3310,8 @@ select.form-select::-ms-expand {
 }
 
 .card-header .header-actions .btn-icon:hover {
-    background: var(--accent);
-    color: var(--tx-p);
+    background: var(--accent-fill);
+    color: #fff;
     transform: scale(1.05);
 }
 
@@ -3254,7 +3404,7 @@ select.form-select::-ms-expand {
     color: #fff;
 }
 .log-level-badge.info {
-    background: var(--accent);
+    background: var(--accent-fill);
     color: #fff;
 }
 .log-level-badge.warning {
@@ -3728,8 +3878,8 @@ select.form-select::-ms-expand {
 }
 
 .fm-crumb:hover {
-    background: var(--accent);
-    color: var(--tx-p);
+    background: var(--accent-fill);
+    color: #fff;
 }
 
 .fm-crumb.active {
@@ -4441,8 +4591,8 @@ select.form-select::-ms-expand {
 }
 
 .cmd-platform-toggle:hover {
-    background: var(--accent);
-    color: var(--tx-p);
+    background: var(--accent-fill);
+    color: #fff;
 }
 
 .cmd-platform-toggle.active {
@@ -5483,7 +5633,7 @@ select.form-select::-ms-expand {
     background: var(--bg-s);
 }
 .node-dropdown-item.active {
-    background: var(--accent);
+    background: var(--accent-fill);
     color: #fff;
 }
 .node-dropdown-item.active .node-latency {
@@ -5991,8 +6141,8 @@ select.form-select::-ms-expand {
         box-shadow 0.2s;
 }
 .about-feature:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--bd-h);
 }
 .about-feature-icon {
     width: 40px;
@@ -6174,11 +6324,58 @@ select.form-select::-ms-expand {
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 有机不对称揭示 - 奇偶从左右飘入并轻微旋转后落定 */
+@keyframes revealFromLeft {
+    from {
+        opacity: 0;
+        transform: translate(-16px, 14px) rotate(-0.7deg);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0);
+    }
+}
+
+@keyframes revealFromRight {
+    from {
+        opacity: 0;
+        transform: translate(16px, 14px) rotate(0.7deg);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0);
+    }
+}
+
+/* 列表行 - 从左轻掘 */
+@keyframes rowReveal {
+    from {
+        opacity: 0;
+        transform: translateX(-14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 模态框 - 优雅落下 */
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -6202,74 +6399,88 @@ select.form-select::-ms-expand {
     }
 }
 
-/* 页面切换 - 简洁淡入 */
+/* 页面切换 - 优雅揭示 */
+@keyframes pageReveal {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.992);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 .page {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
 }
 
 .page.active {
     opacity: 1;
+    animation: pageReveal 0.46s var(--ease-spring) both;
 }
 
 /* 首次加载动画标记 - 由JS添加 */
 .anim-enter .card,
 .anim-enter .stat-card {
-    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation: revealFromLeft 0.55s var(--ease-spring) both;
 }
 
-.anim-enter .stat-card:nth-child(1) {
-    animation-delay: 0.05s;
+/* 偶数项从右侧飘入 - 制造不对称的有机动感 */
+.anim-enter .stat-card:nth-child(even),
+.anim-enter .card:nth-child(even) {
+    animation-name: revealFromRight;
 }
-.anim-enter .stat-card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-.anim-enter .stat-card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-.anim-enter .stat-card:nth-child(4) {
-    animation-delay: 0.2s;
-}
+
+/* 有机（非线性）交错延迟，避免机械感 */
+.anim-enter .stat-card:nth-child(1),
 .anim-enter .card:nth-child(1) {
-    animation-delay: 0.05s;
+    animation-delay: 0.04s;
 }
+.anim-enter .stat-card:nth-child(2),
 .anim-enter .card:nth-child(2) {
-    animation-delay: 0.1s;
+    animation-delay: 0.13s;
 }
+.anim-enter .stat-card:nth-child(3),
 .anim-enter .card:nth-child(3) {
-    animation-delay: 0.15s;
+    animation-delay: 0.23s;
+}
+.anim-enter .stat-card:nth-child(4),
+.anim-enter .card:nth-child(4) {
+    animation-delay: 0.34s;
 }
 
-/* 列表行 - 交错淡入 */
+/* 列表行 - 有机掘入 */
 .anim-enter .list-row,
 .anim-enter .ev-item,
 .anim-enter .bot-card {
-    animation: fadeIn 0.35s ease both;
+    animation: rowReveal 0.45s var(--ease-spring) both;
 }
 
 .anim-enter .list-row:nth-child(1),
 .anim-enter .ev-item:nth-child(1) {
-    animation-delay: 0.02s;
+    animation-delay: 0.03s;
 }
 .anim-enter .list-row:nth-child(2),
 .anim-enter .ev-item:nth-child(2) {
-    animation-delay: 0.04s;
+    animation-delay: 0.08s;
 }
 .anim-enter .list-row:nth-child(3),
 .anim-enter .ev-item:nth-child(3) {
-    animation-delay: 0.06s;
+    animation-delay: 0.15s;
 }
 .anim-enter .list-row:nth-child(4),
 .anim-enter .ev-item:nth-child(4) {
-    animation-delay: 0.08s;
+    animation-delay: 0.23s;
 }
 .anim-enter .list-row:nth-child(5),
 .anim-enter .ev-item:nth-child(5) {
-    animation-delay: 0.1s;
+    animation-delay: 0.32s;
 }
 .anim-enter .list-row:nth-child(6),
 .anim-enter .ev-item:nth-child(6) {
-    animation-delay: 0.12s;
+    animation-delay: 0.42s;
 }
 
 /* 通用过渡 */
@@ -6279,18 +6490,20 @@ select.form-select::-ms-expand {
 .chip,
 .list-row,
 .ev-item {
-    transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-/* 悬停 - 微妙提升 */
+/* 悬停 - 稳健的层次反馈（不再上浮） */
 .card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 .stat-card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 /* 按钮 */
@@ -6322,12 +6535,11 @@ select.form-select::-ms-expand {
 }
 
 .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    filter: brightness(0.96);
 }
 
 .btn:active {
-    transform: translateY(0) scale(0.98);
+    filter: brightness(0.9);
 }
 
 /* 侧边栏导航 - 极简指示器 */
@@ -6369,20 +6581,24 @@ select.form-select::-ms-expand {
 
 /* 特性卡片入场 */
 .anim-enter .about-feature {
-    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation: revealFromLeft 0.55s var(--ease-spring) both;
+}
+
+.anim-enter .about-feature:nth-child(even) {
+    animation-name: revealFromRight;
 }
 
 .anim-enter .about-feature:nth-child(1) {
-    animation-delay: 0.1s;
+    animation-delay: 0.08s;
 }
 .anim-enter .about-feature:nth-child(2) {
-    animation-delay: 0.15s;
+    animation-delay: 0.18s;
 }
 .anim-enter .about-feature:nth-child(3) {
-    animation-delay: 0.2s;
+    animation-delay: 0.29s;
 }
 .anim-enter .about-feature:nth-child(4) {
-    animation-delay: 0.25s;
+    animation-delay: 0.41s;
 }
 
 /* Star CTA - 呼吸光晕 */
