@@ -332,25 +332,6 @@
                             </a>
                             <a
                                 class="nav-item"
-                                data-page="event-builder"
-                                onclick="go('event-builder', this)"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path
-                                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-                                    />
-                                </svg>
-                                <span data-i18n="event_builder"></span>
-                            </a>
-                            <a
-                                class="nav-item"
                                 data-page="commands"
                                 onclick="go('commands', this)"
                             >
@@ -640,31 +621,6 @@
                                 </svg>
                                 <span data-i18n="config"></span>
                             </a>
-                            <a
-                                class="nav-item"
-                                data-page="framework-config"
-                                onclick="go('framework-config', this)"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <rect
-                                        x="3"
-                                        y="3"
-                                        width="18"
-                                        height="18"
-                                        rx="2"
-                                    />
-                                    <path d="M3 9h18" />
-                                    <path d="M9 3v18" />
-                                </svg>
-                                <span data-i18n="framework_config"></span>
-                            </a>
                         </div>
                         <div class="nav-group">
                             <div
@@ -746,39 +702,41 @@
                                 </svg>
                             </button>
                         </div>
-                        <div
-                            class="home-pins"
-                            id="homePins"
-                            style="margin-bottom: 24px"
-                        ></div>
-                        <div
-                            class="home-pin-add"
-                            id="homePinAdd"
-                            style="display: none"
-                        >
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="toggleHomePinPicker()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    width="14"
-                                    height="14"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                    stroke-linecap="round"
-                                >
-                                    <line x1="12" y1="5" x2="12" y2="19" />
-                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                </svg>
-                                <span data-i18n="home_add"></span>
-                            </button>
+                        <div class="home-pin-section">
                             <div
-                                class="home-pin-picker"
-                                id="homePinPicker"
-                                style="display: none"
+                                class="home-pins"
+                                id="homePins"
+                                style="margin-bottom: 24px"
                             ></div>
+                            <div
+                                class="home-pin-add"
+                                id="homePinAdd"
+                                style="display: none"
+                            >
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="toggleHomePinPicker()"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        width="14"
+                                        height="14"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                    >
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span data-i18n="home_add"></span>
+                                </button>
+                                <div
+                                    class="home-pin-picker"
+                                    id="homePinPicker"
+                                    style="display: none"
+                                ></div>
+                            </div>
                         </div>
                         <!-- 性能监控 -->
                         <div class="perf-grid" style="margin-bottom: 24px">
@@ -1271,129 +1229,428 @@
                     <div class="page" id="p-event-stream">
                         <h1 class="page-title" data-i18n="event_stream"></h1>
                         <p class="page-desc" data-i18n="event_stream_desc"></p>
-                        <div class="filter-bar">
-                            <select id="eTypeFilter" onchange="loadEvents()">
-                                <option value="">--</option>
-                                <option
-                                    value="message"
-                                    data-i18n-option="message"
-                                ></option>
-                                <option
-                                    value="notice"
-                                    data-i18n-option="notice"
-                                ></option>
-                                <option
-                                    value="request"
-                                    data-i18n-option="request"
-                                ></option>
-                                <option
-                                    value="meta"
-                                    data-i18n-option="meta"
-                                ></option>
-                            </select>
-                            <select id="ePlatFilter" onchange="loadEvents()">
-                                <option
-                                    value=""
-                                    data-i18n-option="all_platforms"
-                                ></option>
-                            </select>
-                            <div style="flex: 1"></div>
+                        <div class="view-toggle pkg-tabs">
                             <button
-                                class="btn btn-sm"
-                                id="eventLiveBtn"
-                                onclick="toggleEventLive()"
-                                data-i18n="live"
-                            ></button>
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="loadEvents()"
+                                class="view-btn pkg-tab active"
+                                data-subtab="event-stream:stream"
+                                data-pinlabel="事件流"
+                                onclick="switchEventTab('stream', this)"
                             >
                                 <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 14px; height: 14px"
+                                    style="width: 16px; height: 16px"
                                 >
-                                    <polyline points="23 4 23 10 17 10" />
                                     <path
-                                        d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                        d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"
                                     />
+                                    <path d="M13.73 21a2 2 0 01-3.46 0" />
                                 </svg>
+                                <span data-i18n="event_stream"></span>
                             </button>
                             <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="clearEvents()"
+                                class="view-btn pkg-tab"
+                                data-subtab="event-stream:builder"
+                                data-pinlabel="事件构建器"
+                                onclick="switchEventTab('builder', this)"
                             >
                                 <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 14px; height: 14px"
+                                    style="width: 16px; height: 16px"
                                 >
-                                    <polyline points="3 6 5 6 21 6" />
                                     <path
-                                        d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
                                     />
                                 </svg>
+                                <span data-i18n="event_builder"></span>
                             </button>
                         </div>
-                        <div class="card">
-                            <div
-                                id="eventList"
-                                style="
-                                    max-height: calc(100vh - 260px);
-                                    overflow-y: auto;
-                                "
-                            ></div>
-                        </div>
-                    </div>
-                    <div class="page" id="p-event-builder">
-                        <h1 class="page-title" data-i18n="event_builder"></h1>
-                        <p class="page-desc" data-i18n="event_builder_desc"></p>
-                        <div class="builder-toolbar">
-                            <div style="flex: 1"></div>
-                            <button
-                                class="btn btn-primary btn-sm"
-                                onclick="submitEvent()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 14px; height: 14px"
+                        <div id="eventStreamTab">
+                            <div class="filter-bar">
+                                <select
+                                    id="eTypeFilter"
+                                    onchange="loadEvents()"
                                 >
-                                    <line x1="22" y1="2" x2="11" y2="13" />
-                                    <polygon
-                                        points="22 2 15 22 11 13 2 9 22 2"
-                                    />
-                                </svg>
-                                <span data-i18n="submit_event"></span>
-                            </button>
+                                    <option value="">--</option>
+                                    <option
+                                        value="message"
+                                        data-i18n-option="message"
+                                    ></option>
+                                    <option
+                                        value="notice"
+                                        data-i18n-option="notice"
+                                    ></option>
+                                    <option
+                                        value="request"
+                                        data-i18n-option="request"
+                                    ></option>
+                                    <option
+                                        value="meta"
+                                        data-i18n-option="meta"
+                                    ></option>
+                                </select>
+                                <select
+                                    id="ePlatFilter"
+                                    onchange="loadEvents()"
+                                >
+                                    <option
+                                        value=""
+                                        data-i18n-option="all_platforms"
+                                    ></option>
+                                </select>
+                                <div style="flex: 1"></div>
+                                <button
+                                    class="btn btn-sm"
+                                    id="eventLiveBtn"
+                                    onclick="toggleEventLive()"
+                                    data-i18n="live"
+                                ></button>
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="loadEvents()"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 14px; height: 14px"
+                                    >
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path
+                                            d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="clearEvents()"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 14px; height: 14px"
+                                    >
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="card">
+                                <div
+                                    id="eventList"
+                                    style="
+                                        max-height: calc(100vh - 260px);
+                                        overflow-y: auto;
+                                    "
+                                ></div>
+                            </div>
                         </div>
+                        <div id="eventBuilderTab" style="display: none">
+                            <div class="builder-toolbar">
+                                <div style="flex: 1"></div>
+                                <button
+                                    class="btn btn-primary btn-sm"
+                                    onclick="submitEvent()"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 14px; height: 14px"
+                                    >
+                                        <line x1="22" y1="2" x2="11" y2="13" />
+                                        <polygon
+                                            points="22 2 15 22 11 13 2 9 22 2"
+                                        />
+                                    </svg>
+                                    <span data-i18n="submit_event"></span>
+                                </button>
+                            </div>
 
-                        <div class="builder-layout">
-                            <div class="builder-form">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span data-i18n="event_type"></span>
+                            <div class="builder-layout">
+                                <div class="builder-form">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span data-i18n="event_type"></span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="event-type-selector">
+                                                <button
+                                                    class="type-btn active"
+                                                    data-type="message"
+                                                    onclick="
+                                                        selectEventType(
+                                                            'message',
+                                                        )
+                                                    "
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                                                        />
+                                                        <path d="M8 10h.01" />
+                                                        <path d="M12 10h.01" />
+                                                        <path d="M16 10h.01" />
+                                                    </svg>
+                                                    <span
+                                                        data-i18n="message"
+                                                    ></span>
+                                                </button>
+                                                <button
+                                                    class="type-btn"
+                                                    data-type="notice"
+                                                    onclick="
+                                                        selectEventType(
+                                                            'notice',
+                                                        )
+                                                    "
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"
+                                                        />
+                                                        <path
+                                                            d="M13.73 21a2 2 0 01-3.46 0"
+                                                        />
+                                                    </svg>
+                                                    <span
+                                                        data-i18n="notice"
+                                                    ></span>
+                                                </button>
+                                                <button
+                                                    class="type-btn"
+                                                    data-type="request"
+                                                    onclick="
+                                                        selectEventType(
+                                                            'request',
+                                                        )
+                                                    "
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <rect
+                                                            x="2"
+                                                            y="4"
+                                                            width="20"
+                                                            height="16"
+                                                            rx="2"
+                                                        />
+                                                        <path
+                                                            d="M7 15h0M2 9.5h20"
+                                                        />
+                                                    </svg>
+                                                    <span
+                                                        data-i18n="request"
+                                                    ></span>
+                                                </button>
+                                                <button
+                                                    class="type-btn"
+                                                    data-type="meta"
+                                                    onclick="
+                                                        selectEventType('meta')
+                                                    "
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <circle
+                                                            cx="12"
+                                                            cy="12"
+                                                            r="3"
+                                                        />
+                                                        <path
+                                                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+                                                        />
+                                                    </svg>
+                                                    <span
+                                                        data-i18n="meta"
+                                                    ></span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="card-body">
-                                        <div class="event-type-selector">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span
+                                                data-i18n="detail_type"
+                                            ></span>
+                                        </div>
+                                        <div class="card-body">
+                                            <select
+                                                id="detailType"
+                                                class="form-select"
+                                                onchange="onDetailTypeChange()"
+                                            >
+                                                <option
+                                                    value=""
+                                                    data-i18n="select_detail_type"
+                                                ></option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span
+                                                data-i18n="platform_info"
+                                            ></span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label
+                                                    data-i18n="platform"
+                                                ></label>
+                                                <select
+                                                    id="platformSelect"
+                                                    class="form-select"
+                                                    onchange="
+                                                        onPlatformChange()
+                                                    "
+                                                >
+                                                    <option
+                                                        value=""
+                                                        data-i18n-option="loading"
+                                                    ></option>
+                                                </select>
+                                                <button
+                                                    class="btn-link"
+                                                    onclick="
+                                                        toggleCustomPlatform()
+                                                    "
+                                                    style="margin-left: 8px"
+                                                    data-i18n="custom"
+                                                ></button>
+                                            </div>
+                                            <div
+                                                class="form-group"
+                                                id="customPlatformGroup"
+                                                style="display: none"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    id="platformCustom"
+                                                    class="form-input"
+                                                    data-i18n-placeholder="custom_platform_placeholder"
+                                                    placeholder=""
+                                                />
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Bot</label>
+                                                <select
+                                                    id="botSelect"
+                                                    class="form-select"
+                                                    onchange="onBotChange()"
+                                                >
+                                                    <option
+                                                        value=""
+                                                        data-i18n-option="select_platform_placeholder"
+                                                    ></option>
+                                                </select>
+                                                <button
+                                                    class="btn-link"
+                                                    onclick="toggleCustomBot()"
+                                                    style="margin-left: 8px"
+                                                    data-i18n="custom"
+                                                ></button>
+                                            </div>
+                                            <div
+                                                class="form-group"
+                                                id="customBotGroup"
+                                                style="display: none"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    id="botCustom"
+                                                    class="form-input"
+                                                    data-i18n-placeholder="custom_bot_placeholder"
+                                                    placeholder=""
+                                                />
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label
+                                                    data-i18n="session_type"
+                                                ></label>
+                                                <select
+                                                    id="sessionType"
+                                                    class="form-select"
+                                                >
+                                                    <option
+                                                        value="private"
+                                                        data-i18n="session_private"
+                                                    ></option>
+                                                    <option
+                                                        value="group"
+                                                        data-i18n="session_group"
+                                                    ></option>
+                                                    <option
+                                                        value="channel"
+                                                        data-i18n="session_channel"
+                                                    ></option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label
+                                                    data-i18n="session_id"
+                                                ></label>
+                                                <input
+                                                    type="text"
+                                                    id="sessionId"
+                                                    class="form-input"
+                                                    data-i18n-placeholder="session_id_placeholder"
+                                                    placeholder=""
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card" id="messageBuilderCard">
+                                        <div class="card-header">
+                                            <span
+                                                data-i18n="message_content"
+                                            ></span>
                                             <button
-                                                class="type-btn active"
-                                                data-type="message"
-                                                onclick="
-                                                    selectEventType('message')
-                                                "
+                                                class="btn-icon"
+                                                onclick="addMessageSegment()"
+                                                title=""
+                                                data-i18n-title="add_segment"
                                             >
                                                 <svg
                                                     viewBox="0 0 24 24"
@@ -1401,45 +1658,79 @@
                                                     stroke="currentColor"
                                                     stroke-width="2"
                                                 >
-                                                    <path
-                                                        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                                                    <line
+                                                        x1="12"
+                                                        y1="5"
+                                                        x2="12"
+                                                        y2="19"
                                                     />
-                                                    <path d="M8 10h.01" />
-                                                    <path d="M12 10h.01" />
-                                                    <path d="M16 10h.01" />
+                                                    <line
+                                                        x1="5"
+                                                        y1="12"
+                                                        x2="19"
+                                                        y2="12"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div id="messageSegments"></div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span
+                                                data-i18n="optional_fields"
+                                            ></span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="optionalFields"></div>
+                                            <button
+                                                class="btn btn-secondary btn-sm"
+                                                onclick="addOptionalField()"
+                                            >
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    style="
+                                                        width: 12px;
+                                                        height: 12px;
+                                                        margin-right: 4px;
+                                                    "
+                                                >
+                                                    <line
+                                                        x1="12"
+                                                        y1="5"
+                                                        x2="12"
+                                                        y2="19"
+                                                    />
+                                                    <line
+                                                        x1="5"
+                                                        y1="12"
+                                                        x2="19"
+                                                        y2="12"
+                                                    />
                                                 </svg>
                                                 <span
-                                                    data-i18n="message"
+                                                    data-i18n="add_field"
                                                 ></span>
                                             </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="builder-preview">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span
+                                                data-i18n="json_preview"
+                                            ></span>
                                             <button
-                                                class="type-btn"
-                                                data-type="notice"
-                                                onclick="
-                                                    selectEventType('notice')
-                                                "
-                                            >
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                >
-                                                    <path
-                                                        d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"
-                                                    />
-                                                    <path
-                                                        d="M13.73 21a2 2 0 01-3.46 0"
-                                                    />
-                                                </svg>
-                                                <span data-i18n="notice"></span>
-                                            </button>
-                                            <button
-                                                class="type-btn"
-                                                data-type="request"
-                                                onclick="
-                                                    selectEventType('request')
-                                                "
+                                                class="btn-icon"
+                                                onclick="copyEventJson()"
+                                                title=""
+                                                data-i18n-title="copy"
                                             >
                                                 <svg
                                                     viewBox="0 0 24 24"
@@ -1448,287 +1739,25 @@
                                                     stroke-width="2"
                                                 >
                                                     <rect
-                                                        x="2"
-                                                        y="4"
-                                                        width="20"
-                                                        height="16"
+                                                        x="9"
+                                                        y="9"
+                                                        width="13"
+                                                        height="13"
                                                         rx="2"
+                                                        ry="2"
                                                     />
                                                     <path
-                                                        d="M7 15h0M2 9.5h20"
+                                                        d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
                                                     />
                                                 </svg>
-                                                <span
-                                                    data-i18n="request"
-                                                ></span>
-                                            </button>
-                                            <button
-                                                class="type-btn"
-                                                data-type="meta"
-                                                onclick="
-                                                    selectEventType('meta')
-                                                "
-                                            >
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                >
-                                                    <circle
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="3"
-                                                    />
-                                                    <path
-                                                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
-                                                    />
-                                                </svg>
-                                                <span data-i18n="meta"></span>
                                             </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span data-i18n="detail_type"></span>
-                                    </div>
-                                    <div class="card-body">
-                                        <select
-                                            id="detailType"
-                                            class="form-select"
-                                            onchange="onDetailTypeChange()"
-                                        >
-                                            <option
-                                                value=""
-                                                data-i18n="select_detail_type"
-                                            ></option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span data-i18n="platform_info"></span>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="form-group">
-                                            <label data-i18n="platform"></label>
-                                            <select
-                                                id="platformSelect"
-                                                class="form-select"
-                                                onchange="onPlatformChange()"
-                                            >
-                                                <option
-                                                    value=""
-                                                    data-i18n-option="loading"
-                                                ></option>
-                                            </select>
-                                            <button
-                                                class="btn-link"
-                                                onclick="toggleCustomPlatform()"
-                                                style="margin-left: 8px"
-                                                data-i18n="custom"
-                                            ></button>
+                                        <div class="card-body">
+                                            <pre
+                                                id="eventJsonPreview"
+                                                class="code-preview"
+                                            ></pre>
                                         </div>
-                                        <div
-                                            class="form-group"
-                                            id="customPlatformGroup"
-                                            style="display: none"
-                                        >
-                                            <input
-                                                type="text"
-                                                id="platformCustom"
-                                                class="form-input"
-                                                data-i18n-placeholder="custom_platform_placeholder"
-                                                placeholder=""
-                                            />
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Bot</label>
-                                            <select
-                                                id="botSelect"
-                                                class="form-select"
-                                                onchange="onBotChange()"
-                                            >
-                                                <option
-                                                    value=""
-                                                    data-i18n-option="select_platform_placeholder"
-                                                ></option>
-                                            </select>
-                                            <button
-                                                class="btn-link"
-                                                onclick="toggleCustomBot()"
-                                                style="margin-left: 8px"
-                                                data-i18n="custom"
-                                            ></button>
-                                        </div>
-                                        <div
-                                            class="form-group"
-                                            id="customBotGroup"
-                                            style="display: none"
-                                        >
-                                            <input
-                                                type="text"
-                                                id="botCustom"
-                                                class="form-input"
-                                                data-i18n-placeholder="custom_bot_placeholder"
-                                                placeholder=""
-                                            />
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label
-                                                data-i18n="session_type"
-                                            ></label>
-                                            <select
-                                                id="sessionType"
-                                                class="form-select"
-                                            >
-                                                <option
-                                                    value="private"
-                                                    data-i18n="session_private"
-                                                ></option>
-                                                <option
-                                                    value="group"
-                                                    data-i18n="session_group"
-                                                ></option>
-                                                <option
-                                                    value="channel"
-                                                    data-i18n="session_channel"
-                                                ></option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label
-                                                data-i18n="session_id"
-                                            ></label>
-                                            <input
-                                                type="text"
-                                                id="sessionId"
-                                                class="form-input"
-                                                data-i18n-placeholder="session_id_placeholder"
-                                                placeholder=""
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="card" id="messageBuilderCard">
-                                    <div class="card-header">
-                                        <span
-                                            data-i18n="message_content"
-                                        ></span>
-                                        <button
-                                            class="btn-icon"
-                                            onclick="addMessageSegment()"
-                                            title=""
-                                            data-i18n-title="add_segment"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-                                                <line
-                                                    x1="12"
-                                                    y1="5"
-                                                    x2="12"
-                                                    y2="19"
-                                                />
-                                                <line
-                                                    x1="5"
-                                                    y1="12"
-                                                    x2="19"
-                                                    y2="12"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div id="messageSegments"></div>
-                                </div>
-
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span
-                                            data-i18n="optional_fields"
-                                        ></span>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="optionalFields"></div>
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            onclick="addOptionalField()"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                style="
-                                                    width: 12px;
-                                                    height: 12px;
-                                                    margin-right: 4px;
-                                                "
-                                            >
-                                                <line
-                                                    x1="12"
-                                                    y1="5"
-                                                    x2="12"
-                                                    y2="19"
-                                                />
-                                                <line
-                                                    x1="5"
-                                                    y1="12"
-                                                    x2="19"
-                                                    y2="12"
-                                                />
-                                            </svg>
-                                            <span data-i18n="add_field"></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="builder-preview">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span data-i18n="json_preview"></span>
-                                        <button
-                                            class="btn-icon"
-                                            onclick="copyEventJson()"
-                                            title=""
-                                            data-i18n-title="copy"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-                                                <rect
-                                                    x="9"
-                                                    y="9"
-                                                    width="13"
-                                                    height="13"
-                                                    rx="2"
-                                                    ry="2"
-                                                />
-                                                <path
-                                                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="card-body">
-                                        <pre
-                                            id="eventJsonPreview"
-                                            class="code-preview"
-                                        ></pre>
                                     </div>
                                 </div>
                             </div>
@@ -2420,71 +2449,10 @@
                             </button>
                         </div>
                         <div
-                            class="card"
-                            style="margin-top: 12px; margin-bottom: 16px"
-                        >
-                            <div class="card-header">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 16px; height: 16px"
-                                >
-                                    <path
-                                        d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                                    />
-                                    <polyline points="17 8 12 3 7 8" />
-                                    <line x1="12" y1="3" x2="12" y2="15" /></svg
-                                ><span data-i18n="upload_title"></span>
-                            </div>
-                            <div
-                                style="
-                                    padding: 12px 16px;
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 12px;
-                                "
-                            >
-                                <span
-                                    style="font-size: 13px; color: var(--tx-s)"
-                                    data-i18n="upload_desc"
-                                ></span>
-                                <div style="flex: 1"></div>
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    onclick="openUploadModal()"
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        style="
-                                            width: 14px;
-                                            height: 14px;
-                                            margin-right: 4px;
-                                        "
-                                    >
-                                        <path
-                                            d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                                        />
-                                        <polyline points="17 8 12 3 7 8" />
-                                        <line
-                                            x1="12"
-                                            y1="3"
-                                            x2="12"
-                                            y2="15"
-                                        /></svg
-                                    ><span data-i18n="upload_btn"></span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="grid-3" id="storeGrid"></div>
+                            class="grid-3"
+                            id="storeGrid"
+                            style="margin-top: 12px"
+                        ></div>
                         <div
                             class="store-batch-bar"
                             id="storeBatchBar"
@@ -2501,110 +2469,97 @@
                     <div class="page" id="p-packages">
                         <h1 class="page-title" data-i18n="pkg_manager"></h1>
                         <p class="page-desc" data-i18n="pkg_manager_desc"></p>
-                        <div
-                            style="
-                                display: flex;
-                                gap: 8px;
-                                align-items: center;
-                                margin-top: 16px;
-                                margin-bottom: 16px;
-                                flex-wrap: wrap;
-                            "
-                        >
-                            <input
-                                type="text"
-                                id="pkgSearch"
-                                data-i18n-placeholder="search_packages"
-                                oninput="debouncePkgs()"
-                                style="
-                                    padding: 6px 12px;
-                                    border: 1px solid var(--bd);
-                                    border-radius: 6px;
-                                    font-size: 13px;
-                                    background: var(--bg-s);
-                                    color: var(--tx-p);
-                                    width: 200px;
-                                "
-                            />
+                        <div class="view-toggle pkg-tabs">
                             <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="loadPackages(true)"
-                                data-i18n-title="force_refresh"
+                                class="view-btn pkg-tab active"
+                                data-tab="pk-installed"
+                                data-subtab="packages:pk-installed"
+                                data-pinlabel="已安装"
+                                onclick="switchPkgTab('pk-installed', this)"
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 14px; height: 14px"
+                                <span data-i18n="pkg_installed"></span>
+                                <span
+                                    class="chip chip-sc pkg-tab-count"
+                                    id="pkgInstalledCount"
+                                    >0</span
                                 >
-                                    <polyline points="23 4 23 10 17 10" />
-                                    <path
-                                        d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                    />
-                                </svg>
                             </button>
-                            <div style="flex: 1"></div>
-                            <div class="view-toggle" style="margin: 0">
-                                <button
-                                    class="view-btn active"
-                                    data-tab="pk-installed"
-                                    onclick="switchPkgTab('pk-installed', this)"
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="pk-updates"
+                                data-subtab="packages:pk-updates"
+                                data-pinlabel="可更新"
+                                onclick="switchPkgTab('pk-updates', this)"
+                            >
+                                <span data-i18n="pkg_updates"></span>
+                                <span
+                                    class="chip chip-wr pkg-tab-count"
+                                    id="pkgUpdateCount"
+                                    style="display: none"
+                                    >0</span
                                 >
-                                    <span data-i18n="pkg_installed"></span>
-                                    <span
-                                        class="chip chip-sc"
-                                        id="pkgInstalledCount"
-                                        style="
-                                            margin-left: 4px;
-                                            font-size: 11px;
-                                            padding: 1px 6px;
-                                        "
-                                        >0</span
-                                    >
-                                </button>
-                                <button
-                                    class="view-btn"
-                                    data-tab="pk-updates"
-                                    onclick="switchPkgTab('pk-updates', this)"
-                                >
-                                    <span data-i18n="pkg_updates"></span>
-                                    <span
-                                        class="chip chip-wr"
-                                        id="pkgUpdateCount"
-                                        style="
-                                            margin-left: 4px;
-                                            font-size: 11px;
-                                            padding: 1px 6px;
-                                            display: none;
-                                        "
-                                        >0</span
-                                    >
-                                </button>
-                                <button
-                                    class="view-btn"
-                                    data-tab="pk-install-new"
-                                    onclick="
-                                        switchPkgTab('pk-install-new', this)
-                                    "
-                                >
-                                    <span data-i18n="pkg_install_new"></span>
-                                </button>
-                                <button
-                                    class="view-btn"
-                                    data-tab="pk-git"
-                                    onclick="
-                                        switchPkgTab('pk-git', this);
-                                        loadGitPackages();
-                                    "
-                                >
-                                    <span data-i18n="pkg_git_install"></span>
-                                </button>
-                            </div>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="pk-install-new"
+                                data-subtab="packages:pk-install-new"
+                                data-pinlabel="安装新包"
+                                onclick="switchPkgTab('pk-install-new', this)"
+                            >
+                                <span data-i18n="pkg_install_new"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="pk-git"
+                                data-subtab="packages:pk-git"
+                                data-pinlabel="Git安装"
+                                onclick="
+                                    switchPkgTab('pk-git', this);
+                                    loadGitPackages();
+                                "
+                            >
+                                <span data-i18n="pkg_git_install"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="pk-upload"
+                                data-subtab="packages:pk-upload"
+                                data-pinlabel="上传安装"
+                                onclick="switchPkgTab('pk-upload', this)"
+                            >
+                                <span data-i18n="upload_title"></span>
+                            </button>
                         </div>
                         <div id="pkInstalledTab">
+                            <div class="pkg-toolbar">
+                                <input
+                                    type="text"
+                                    id="pkgSearch"
+                                    class="pkg-search"
+                                    data-i18n-placeholder="search_packages"
+                                    oninput="debouncePkgs()"
+                                />
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="loadPackages(true)"
+                                    data-i18n-title="force_refresh"
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 14px; height: 14px"
+                                    >
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path
+                                            d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                             <div class="card">
                                 <div class="card-header">
                                     <svg
@@ -2943,6 +2898,56 @@
                                             />
                                         </svg>
                                         <p data-i18n="pkg_git_no_packages"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pkUploadTab" style="display: none">
+                            <div class="card">
+                                <div class="card-header">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        style="width: 16px; height: 16px"
+                                    >
+                                        <path
+                                            d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                        />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
+                                    <span data-i18n="upload_title"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div
+                                        class="upload-drop-zone"
+                                        onclick="openUploadModal()"
+                                        style="cursor: pointer"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        >
+                                            <path
+                                                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                            />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line
+                                                x1="12"
+                                                y1="3"
+                                                x2="12"
+                                                y2="15"
+                                            />
+                                        </svg>
+                                        <p data-i18n="upload_desc"></p>
                                     </div>
                                 </div>
                             </div>
@@ -3401,82 +3406,63 @@
                     <div class="page" id="p-config">
                         <h1 class="page-title" data-i18n="config"></h1>
                         <p class="page-desc" data-i18n="config_desc"></p>
-                        <div class="card" style="margin-top: 16px">
-                            <div class="card-header">
+                        <div class="view-toggle pkg-tabs">
+                            <button
+                                class="view-btn pkg-tab active"
+                                data-subtab="config:modules"
+                                data-pinlabel="模块配置"
+                                onclick="switchConfigTab('modules', this)"
+                            >
                                 <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    style="width: 16px; height: 16px"
                                 >
+                                    <circle cx="12" cy="12" r="3" />
                                     <path
-                                        d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"
                                     />
-                                    <polyline points="17 8 12 3 7 8" />
-                                    <line x1="12" y1="3" x2="12" y2="15" />
                                 </svg>
-                                <span data-i18n="backup_restore"></span>
-                            </div>
-                            <div
-                                style="
-                                    padding: 16px 20px;
-                                    display: flex;
-                                    gap: 12px;
-                                    flex-wrap: wrap;
-                                    align-items: center;
-                                "
+                                <span data-i18n="config"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-subtab="config:framework"
+                                data-pinlabel="框架配置"
+                                onclick="switchConfigTab('framework', this)"
                             >
-                                <span
-                                    style="
-                                        font-size: 13px;
-                                        color: var(--tx-s);
-                                        flex: 1;
-                                        min-width: 200px;
-                                    "
-                                    data-i18n="backup_desc"
-                                ></span>
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    onclick="exportBackup()"
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    style="width: 16px; height: 16px"
                                 >
+                                    <rect
+                                        x="3"
+                                        y="3"
+                                        width="18"
+                                        height="18"
+                                        rx="2"
+                                    />
+                                    <path d="M3 9h18" />
+                                    <path d="M9 3v18" />
+                                </svg>
+                                <span data-i18n="framework_config"></span>
+                            </button>
+                        </div>
+                        <div id="configModulesTab">
+                            <div class="card" style="margin-top: 16px">
+                                <div class="card-header">
                                     <svg
                                         viewBox="0 0 24 24"
                                         fill="none"
                                         stroke="currentColor"
                                         stroke-width="2"
-                                        style="width: 14px; height: 14px"
-                                    >
-                                        <path
-                                            d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                                        />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" y1="15" x2="12" y2="3" />
-                                    </svg>
-                                    <span data-i18n="backup_export"></span>
-                                </button>
-                                <input
-                                    type="file"
-                                    id="backupFileInput"
-                                    accept=".json"
-                                    style="display: none"
-                                    onchange="importBackup(this)"
-                                />
-                                <button
-                                    class="btn btn-secondary btn-sm"
-                                    onclick="
-                                        document
-                                            .getElementById('backupFileInput')
-                                            .click()
-                                    "
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        style="width: 14px; height: 14px"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
                                     >
                                         <path
                                             d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
@@ -3484,374 +3470,467 @@
                                         <polyline points="17 8 12 3 7 8" />
                                         <line x1="12" y1="3" x2="12" y2="15" />
                                     </svg>
-                                    <span data-i18n="backup_import"></span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card" style="margin-top: 16px">
-                            <div class="card-header">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <circle cx="12" cy="12" r="3" />
-                                    <path
-                                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"
-                                    /></svg
-                                ><span data-i18n="configuration"></span>
-                                <div class="header-actions">
-                                    <div class="view-toggle">
-                                        <button
-                                            class="view-btn active"
-                                            data-view="tree"
-                                            onclick="
-                                                switchConfigView('tree', this)
-                                            "
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                style="
-                                                    width: 14px;
-                                                    height: 14px;
-                                                "
-                                            >
-                                                <rect
-                                                    x="3"
-                                                    y="3"
-                                                    width="7"
-                                                    height="7"
-                                                    rx="1"
-                                                />
-                                                <rect
-                                                    x="14"
-                                                    y="3"
-                                                    width="7"
-                                                    height="7"
-                                                    rx="1"
-                                                />
-                                                <rect
-                                                    x="3"
-                                                    y="14"
-                                                    width="7"
-                                                    height="7"
-                                                    rx="1"
-                                                />
-                                                <rect
-                                                    x="14"
-                                                    y="14"
-                                                    width="7"
-                                                    height="7"
-                                                    rx="1"
-                                                />
-                                            </svg>
-                                            <span data-i18n="view_tree"></span>
-                                        </button>
-                                        <button
-                                            class="view-btn"
-                                            data-view="source"
-                                            onclick="
-                                                switchConfigView('source', this)
-                                            "
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                style="
-                                                    width: 14px;
-                                                    height: 14px;
-                                                "
-                                            >
-                                                <polyline
-                                                    points="16 18 22 12 16 6"
-                                                />
-                                                <polyline
-                                                    points="8 6 2 12 8 18"
-                                                />
-                                            </svg>
-                                            <span
-                                                data-i18n="view_source"
-                                            ></span>
-                                        </button>
-                                    </div>
-                                    <button
-                                        class="btn-icon"
-                                        onclick="loadConfig()"
-                                        title="Refresh"
-                                    >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            style="width: 16px; height: 16px"
-                                        >
-                                            <polyline
-                                                points="23 4 23 10 17 10"
-                                            />
-                                            <path
-                                                d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div
-                                id="configBodyTree"
-                                style="max-height: 65vh; overflow-y: auto"
-                            ></div>
-                            <div
-                                id="configBodySource"
-                                style="
-                                    display: none;
-                                    max-height: 65vh;
-                                    overflow-y: auto;
-                                "
-                            >
-                                <div style="padding: 12px 16px">
-                                    <textarea
-                                        id="configSourceEditor"
-                                        class="code-editor"
-                                        spellcheck="false"
-                                    ></textarea>
-                                    <div
-                                        style="
-                                            margin-top: 12px;
-                                            display: flex;
-                                            justify-content: flex-end;
-                                            gap: 8px;
-                                        "
-                                    >
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            onclick="loadConfigSource()"
-                                        >
-                                            <span
-                                                data-i18n="reload_config"
-                                            ></span>
-                                        </button>
-                                        <button
-                                            class="btn btn-primary btn-sm"
-                                            onclick="saveConfigSource()"
-                                        >
-                                            <span
-                                                data-i18n="save_config"
-                                            ></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card" style="margin-top: 16px">
-                            <div class="card-header">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
-                                    <path
-                                        d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"
-                                    />
-                                    <path
-                                        d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"
-                                    /></svg
-                                ><span data-i18n="storage"></span
-                                ><span
-                                    class="chip chip-pr"
-                                    id="storageCount"
-                                    style="margin-left: 8px"
-                                ></span>
-                                <div class="header-actions">
-                                    <button
-                                        class="btn-icon"
-                                        onclick="loadConfig()"
-                                        title="Refresh"
-                                    >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            style="width: 16px; height: 16px"
-                                        >
-                                            <polyline
-                                                points="23 4 23 10 17 10"
-                                            />
-                                            <path
-                                                d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div
-                                id="storageBody"
-                                style="max-height: 65vh; overflow-y: auto"
-                            ></div>
-                        </div>
-                    </div>
-                    <div class="page" id="p-framework-config">
-                        <h1
-                            class="page-title"
-                            data-i18n="framework_config"
-                        ></h1>
-                        <p
-                            class="page-desc"
-                            data-i18n="framework_config_desc"
-                        ></p>
-                        <div
-                            class="restart-banner"
-                            data-i18n="restart_required_hint"
-                        ></div>
-                        <div
-                            class="version-note"
-                            data-i18n="fw_version_note"
-                        ></div>
-                        <div
-                            class="fw-section"
-                            id="fwUpdateSection"
-                            style="margin-top: 16px"
-                        >
-                            <div
-                                class="fw-section-title"
-                                data-i18n="fw_update_title"
-                            ></div>
-                            <div class="fw-section-body">
-                                <div class="fw-row">
-                                    <div
-                                        class="fw-label"
-                                        data-i18n="fw_current_version"
-                                    ></div>
-                                    <div class="fw-control">
-                                        <span
-                                            id="fwCurrentVer"
-                                            style="font-weight: 500"
-                                            >-</span
-                                        >
-                                    </div>
-                                </div>
-                                <div class="fw-row">
-                                    <div
-                                        class="fw-label"
-                                        data-i18n="fw_latest_version"
-                                    ></div>
-                                    <div class="fw-control">
-                                        <span
-                                            id="fwLatestVer"
-                                            style="
-                                                font-weight: 600;
-                                                color: var(--accent);
-                                            "
-                                            >-</span
-                                        >
-                                    </div>
+                                    <span data-i18n="backup_restore"></span>
                                 </div>
                                 <div
-                                    class="fw-row"
-                                    id="fwVersionRow"
-                                    style="display: none"
-                                >
-                                    <div
-                                        class="fw-label"
-                                        data-i18n="fw_select_version"
-                                    ></div>
-                                    <div
-                                        class="fw-control"
-                                        style="
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 6px;
-                                        "
-                                    >
-                                        <select
-                                            id="fwVersionSelect"
-                                            class="settings-select"
-                                            style="
-                                                width: auto;
-                                                min-width: 160px;
-                                            "
-                                        ></select>
-                                        <label
-                                            class="switch"
-                                            title="Include pre-release versions"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                id="fwPreRelease"
-                                                onchange="
-                                                    loadFrameworkVersions()
-                                                "
-                                            />
-                                            <span class="switch-slider"></span>
-                                        </label>
-                                        <span
-                                            style="
-                                                font-size: 11px;
-                                                color: var(--tx-s);
-                                            "
-                                            >--pre</span
-                                        >
-                                    </div>
-                                </div>
-                                <div
-                                    class="fw-row"
                                     style="
-                                        justify-content: flex-end;
-                                        border: none;
-                                        padding-top: 12px;
+                                        padding: 16px 20px;
+                                        display: flex;
+                                        gap: 12px;
+                                        flex-wrap: wrap;
+                                        align-items: center;
                                     "
                                 >
+                                    <span
+                                        style="
+                                            font-size: 13px;
+                                            color: var(--tx-s);
+                                            flex: 1;
+                                            min-width: 200px;
+                                        "
+                                        data-i18n="backup_desc"
+                                    ></span>
                                     <button
                                         class="btn btn-primary btn-sm"
-                                        id="fwUpdateBtn"
-                                        onclick="doFrameworkUpdate()"
-                                        disabled
+                                        onclick="exportBackup()"
                                     >
-                                        <span
-                                            data-i18n="fw_install_update"
-                                        ></span>
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="width: 14px; height: 14px"
+                                        >
+                                            <path
+                                                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                            />
+                                            <polyline
+                                                points="7 10 12 15 17 10"
+                                            />
+                                            <line
+                                                x1="12"
+                                                y1="15"
+                                                x2="12"
+                                                y2="3"
+                                            />
+                                        </svg>
+                                        <span data-i18n="backup_export"></span>
                                     </button>
+                                    <input
+                                        type="file"
+                                        id="backupFileInput"
+                                        accept=".json"
+                                        style="display: none"
+                                        onchange="importBackup(this)"
+                                    />
                                     <button
                                         class="btn btn-secondary btn-sm"
-                                        onclick="loadFrameworkVersions()"
+                                        onclick="
+                                            document
+                                                .getElementById(
+                                                    'backupFileInput',
+                                                )
+                                                .click()
+                                        "
                                     >
-                                        <span
-                                            data-i18n="fw_check_updates"
-                                        ></span>
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="width: 14px; height: 14px"
+                                        >
+                                            <path
+                                                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                            />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line
+                                                x1="12"
+                                                y1="3"
+                                                x2="12"
+                                                y2="15"
+                                            />
+                                        </svg>
+                                        <span data-i18n="backup_import"></span>
                                     </button>
                                 </div>
                             </div>
+                            <div class="card" style="margin-top: 16px">
+                                <div class="card-header">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <circle cx="12" cy="12" r="3" />
+                                        <path
+                                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"
+                                        /></svg
+                                    ><span data-i18n="configuration"></span>
+                                    <div class="header-actions">
+                                        <div class="view-toggle">
+                                            <button
+                                                class="view-btn active"
+                                                data-view="tree"
+                                                onclick="
+                                                    switchConfigView(
+                                                        'tree',
+                                                        this,
+                                                    )
+                                                "
+                                            >
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    style="
+                                                        width: 14px;
+                                                        height: 14px;
+                                                    "
+                                                >
+                                                    <rect
+                                                        x="3"
+                                                        y="3"
+                                                        width="7"
+                                                        height="7"
+                                                        rx="1"
+                                                    />
+                                                    <rect
+                                                        x="14"
+                                                        y="3"
+                                                        width="7"
+                                                        height="7"
+                                                        rx="1"
+                                                    />
+                                                    <rect
+                                                        x="3"
+                                                        y="14"
+                                                        width="7"
+                                                        height="7"
+                                                        rx="1"
+                                                    />
+                                                    <rect
+                                                        x="14"
+                                                        y="14"
+                                                        width="7"
+                                                        height="7"
+                                                        rx="1"
+                                                    />
+                                                </svg>
+                                                <span
+                                                    data-i18n="view_tree"
+                                                ></span>
+                                            </button>
+                                            <button
+                                                class="view-btn"
+                                                data-view="source"
+                                                onclick="
+                                                    switchConfigView(
+                                                        'source',
+                                                        this,
+                                                    )
+                                                "
+                                            >
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    style="
+                                                        width: 14px;
+                                                        height: 14px;
+                                                    "
+                                                >
+                                                    <polyline
+                                                        points="16 18 22 12 16 6"
+                                                    />
+                                                    <polyline
+                                                        points="8 6 2 12 8 18"
+                                                    />
+                                                </svg>
+                                                <span
+                                                    data-i18n="view_source"
+                                                ></span>
+                                            </button>
+                                        </div>
+                                        <button
+                                            class="btn-icon"
+                                            onclick="loadConfig()"
+                                            title="Refresh"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                style="
+                                                    width: 16px;
+                                                    height: 16px;
+                                                "
+                                            >
+                                                <polyline
+                                                    points="23 4 23 10 17 10"
+                                                />
+                                                <path
+                                                    d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    id="configBodyTree"
+                                    style="max-height: 65vh; overflow-y: auto"
+                                ></div>
+                                <div
+                                    id="configBodySource"
+                                    style="
+                                        display: none;
+                                        max-height: 65vh;
+                                        overflow-y: auto;
+                                    "
+                                >
+                                    <div style="padding: 12px 16px">
+                                        <textarea
+                                            id="configSourceEditor"
+                                            class="code-editor"
+                                            spellcheck="false"
+                                        ></textarea>
+                                        <div
+                                            style="
+                                                margin-top: 12px;
+                                                display: flex;
+                                                justify-content: flex-end;
+                                                gap: 8px;
+                                            "
+                                        >
+                                            <button
+                                                class="btn btn-secondary btn-sm"
+                                                onclick="loadConfigSource()"
+                                            >
+                                                <span
+                                                    data-i18n="reload_config"
+                                                ></span>
+                                            </button>
+                                            <button
+                                                class="btn btn-primary btn-sm"
+                                                onclick="saveConfigSource()"
+                                            >
+                                                <span
+                                                    data-i18n="save_config"
+                                                ></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card" style="margin-top: 16px">
+                                <div class="card-header">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                        <path
+                                            d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"
+                                        />
+                                        <path
+                                            d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"
+                                        /></svg
+                                    ><span data-i18n="storage"></span
+                                    ><span
+                                        class="chip chip-pr"
+                                        id="storageCount"
+                                        style="margin-left: 8px"
+                                    ></span>
+                                    <div class="header-actions">
+                                        <button
+                                            class="btn-icon"
+                                            onclick="loadConfig()"
+                                            title="Refresh"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                style="
+                                                    width: 16px;
+                                                    height: 16px;
+                                                "
+                                            >
+                                                <polyline
+                                                    points="23 4 23 10 17 10"
+                                                />
+                                                <path
+                                                    d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    id="storageBody"
+                                    style="max-height: 65vh; overflow-y: auto"
+                                ></div>
+                            </div>
                         </div>
-                        <div id="fwConfigBody" style="margin-top: 16px"></div>
-                        <div
-                            style="
-                                margin-top: 16px;
-                                display: flex;
-                                justify-content: flex-end;
-                            "
-                        >
-                            <button
-                                class="btn btn-danger"
-                                onclick="restartFramework()"
+                        <div id="configFrameworkTab" style="display: none">
+                            <div
+                                class="restart-banner"
+                                data-i18n="restart_required_hint"
+                            ></div>
+                            <div
+                                class="version-note"
+                                data-i18n="fw_version_note"
+                            ></div>
+                            <div
+                                class="fw-section"
+                                id="fwUpdateSection"
+                                style="margin-top: 16px"
                             >
-                                <span data-i18n="restart"></span>
-                            </button>
+                                <div
+                                    class="fw-section-title"
+                                    data-i18n="fw_update_title"
+                                ></div>
+                                <div class="fw-section-body">
+                                    <div class="fw-row">
+                                        <div
+                                            class="fw-label"
+                                            data-i18n="fw_current_version"
+                                        ></div>
+                                        <div class="fw-control">
+                                            <span
+                                                id="fwCurrentVer"
+                                                style="font-weight: 500"
+                                                >-</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <div class="fw-row">
+                                        <div
+                                            class="fw-label"
+                                            data-i18n="fw_latest_version"
+                                        ></div>
+                                        <div class="fw-control">
+                                            <span
+                                                id="fwLatestVer"
+                                                style="
+                                                    font-weight: 600;
+                                                    color: var(--accent);
+                                                "
+                                                >-</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="fw-row"
+                                        id="fwVersionRow"
+                                        style="display: none"
+                                    >
+                                        <div
+                                            class="fw-label"
+                                            data-i18n="fw_select_version"
+                                        ></div>
+                                        <div
+                                            class="fw-control"
+                                            style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 6px;
+                                            "
+                                        >
+                                            <select
+                                                id="fwVersionSelect"
+                                                class="settings-select"
+                                                style="
+                                                    width: auto;
+                                                    min-width: 160px;
+                                                "
+                                            ></select>
+                                            <label
+                                                class="switch"
+                                                title="Include pre-release versions"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id="fwPreRelease"
+                                                    onchange="
+                                                        loadFrameworkVersions()
+                                                    "
+                                                />
+                                                <span
+                                                    class="switch-slider"
+                                                ></span>
+                                            </label>
+                                            <span
+                                                style="
+                                                    font-size: 11px;
+                                                    color: var(--tx-s);
+                                                "
+                                                >--pre</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="fw-row"
+                                        style="
+                                            justify-content: flex-end;
+                                            border: none;
+                                            padding-top: 12px;
+                                        "
+                                    >
+                                        <button
+                                            class="btn btn-primary btn-sm"
+                                            id="fwUpdateBtn"
+                                            onclick="doFrameworkUpdate()"
+                                            disabled
+                                        >
+                                            <span
+                                                data-i18n="fw_install_update"
+                                            ></span>
+                                        </button>
+                                        <button
+                                            class="btn btn-secondary btn-sm"
+                                            onclick="loadFrameworkVersions()"
+                                        >
+                                            <span
+                                                data-i18n="fw_check_updates"
+                                            ></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                id="fwConfigBody"
+                                style="margin-top: 16px"
+                            ></div>
+                            <div
+                                style="
+                                    margin-top: 16px;
+                                    display: flex;
+                                    justify-content: flex-end;
+                                "
+                            >
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="restartFramework()"
+                                >
+                                    <span data-i18n="restart"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 

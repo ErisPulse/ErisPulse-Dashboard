@@ -3636,7 +3636,6 @@ function toggleLang() {
       dashboard: refreshDashboard,
       bots: loadBots,
       "event-stream": loadEvents,
-      "event-builder": initEventBuilder,
       modules: loadModules,
       store: loadStore,
       packages: function () {
@@ -3652,7 +3651,6 @@ function toggleLang() {
         fmBrowse(".");
       },
       config: loadConfig,
-      "framework-config": loadFrameworkConfig,
       "adapter-config": loadAdapterConfigPage,
       cluster: loadClusterPage,
       about: loadAbout,
@@ -3914,7 +3912,6 @@ function go(name, el) {
     dashboard: refreshDashboard,
     bots: loadBots,
     "event-stream": loadEvents,
-    "event-builder": initEventBuilder,
     modules: loadModules,
     store: loadStore,
     packages: function () {
@@ -3930,7 +3927,6 @@ function go(name, el) {
       fmBrowse(".");
     },
     config: loadConfig,
-    "framework-config": loadFrameworkConfig,
     "adapter-config": loadAdapterConfigPage,
     cluster: loadClusterPage,
     about: loadAbout,
@@ -5966,24 +5962,63 @@ function navItemContent(page) {
   };
 }
 
+// ---- 子 tab pin 支持 ----
+// pinId 格式："page" 或 "page:tab"
+function parsePinId(pinId) {
+  var idx = pinId.indexOf(":");
+  if (idx === -1) return { page: pinId, tab: null };
+  return { page: pinId.substring(0, idx), tab: pinId.substring(idx + 1) };
+}
+
+// 获取 pin 的图标和标题（兼容页面级和子 tab 级）
+function pinContent(pinId) {
+  var parsed = parsePinId(pinId);
+  if (parsed.tab) {
+    var btn = document.querySelector('[data-subtab="' + pinId + '"]');
+    if (!btn) return null;
+    var svg = btn.querySelector("svg");
+    // 优先用 span 文本（支持 i18n），fallback 到 data-pinlabel
+    var sp = btn.querySelector("span:not(.chip)");
+    var label =
+      sp && sp.textContent.trim()
+        ? sp.textContent.trim()
+        : btn.getAttribute("data-pinlabel") || parsed.tab;
+    return {
+      svg: svg ? svg.outerHTML : "",
+      title: label,
+    };
+  }
+  return navItemContent(parsed.page);
+}
+
+// 导航到 pin（页面级或子 tab 级）
+function navigateToPin(pinId) {
+  var parsed = parsePinId(pinId);
+  go(parsed.page);
+  if (parsed.tab) {
+    var btn = document.querySelector('[data-subtab="' + pinId + '"]');
+    if (btn) btn.click();
+  }
+}
+
 function renderHomePins() {
   var wrap = document.getElementById("homePins");
   if (!wrap) return;
   var pins = getHomePins();
   wrap.innerHTML = "";
   var found = 0;
-  pins.forEach(function (page, idx) {
-    var c = navItemContent(page);
+  pins.forEach(function (pinId, idx) {
+    var c = pinContent(pinId);
     if (!c) return; // 该视图不存在（如动态视图已卸载），跳过
     found++;
     var card = document.createElement("div");
     card.className = "home-pin" + (_homePinsEditing ? " editing" : "");
     card.draggable = _homePinsEditing;
-    card.setAttribute("data-page", page);
+    card.setAttribute("data-page", pinId);
     card.setAttribute("data-idx", String(idx));
     if (!_homePinsEditing) {
       card.addEventListener("click", function () {
-        go(page);
+        navigateToPin(pinId);
       });
     }
 
@@ -6008,7 +6043,7 @@ function renderHomePins() {
       rm.textContent = "×";
       rm.addEventListener("click", function (e) {
         e.stopPropagation();
-        removeHomePin(page);
+        removeHomePin(pinId);
       });
       card.appendChild(rm);
     }
@@ -6048,32 +6083,45 @@ function toggleHomePinPicker() {
   if (picker.style.display === "none") {
     // 列出所有尚未 pin 的视图
     var pinned = getHomePins();
+    picker.innerHTML = "";
+    var count = 0;
+
+    function addOption(pinId, content) {
+      if (pinned.indexOf(pinId) !== -1) return;
+      if (!content) return;
+      count++;
+      var opt = document.createElement("div");
+      opt.className = "home-pin-option";
+      opt.addEventListener("click", function () {
+        addHomePin(pinId);
+      });
+      var icon = document.createElement("span");
+      icon.innerHTML = content.svg;
+      opt.appendChild(icon.firstChild || icon);
+      var span = document.createElement("span");
+      span.textContent = content.title;
+      opt.appendChild(span);
+      picker.appendChild(opt);
+    }
+
+    // 1. 页面级 pin（来自侧边栏导航项）
     var all = Array.prototype.map.call(
       document.querySelectorAll(".nav-item[data-page]"),
       function (a) {
         return a.getAttribute("data-page");
       },
     );
-    picker.innerHTML = "";
-    var count = 0;
     all.forEach(function (page) {
-      if (pinned.indexOf(page) !== -1) return;
-      var c = navItemContent(page);
-      if (!c) return;
-      count++;
-      var opt = document.createElement("div");
-      opt.className = "home-pin-option";
-      opt.addEventListener("click", function () {
-        addHomePin(page);
-      });
-      var icon = document.createElement("span");
-      icon.innerHTML = c.svg;
-      opt.appendChild(icon.firstChild || icon);
-      var span = document.createElement("span");
-      span.textContent = c.title;
-      opt.appendChild(span);
-      picker.appendChild(opt);
+      addOption(page, navItemContent(page));
     });
+
+    // 2. 子 tab pin（来自 data-subtab 属性）
+    var subTabs = document.querySelectorAll("[data-subtab]");
+    subTabs.forEach(function (btn) {
+      var pinId = btn.getAttribute("data-subtab");
+      addOption(pinId, pinContent(pinId));
+    });
+
     if (count === 0) {
       var none = document.createElement("div");
       none.style.cssText = "padding:8px;color:var(--tx-t)";
@@ -10054,7 +10102,35 @@ function switchPkgTab(tab, btn) {
     tab === "pk-install-new" ? "block" : "none";
   document.getElementById("pkGitTab").style.display =
     tab === "pk-git" ? "block" : "none";
+  document.getElementById("pkUploadTab").style.display =
+    tab === "pk-upload" ? "block" : "none";
   if (tab === "pk-updates") loadPackageUpdates();
+}
+
+function switchConfigTab(tab, btn) {
+  btn
+    .closest(".view-toggle")
+    .querySelectorAll(".view-btn")
+    .forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("configModulesTab").style.display =
+    tab === "modules" ? "block" : "none";
+  document.getElementById("configFrameworkTab").style.display =
+    tab === "framework" ? "block" : "none";
+  if (tab === "framework") loadFrameworkConfig();
+}
+
+function switchEventTab(tab, btn) {
+  btn
+    .closest(".view-toggle")
+    .querySelectorAll(".view-btn")
+    .forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("eventStreamTab").style.display =
+    tab === "stream" ? "block" : "none";
+  document.getElementById("eventBuilderTab").style.display =
+    tab === "builder" ? "block" : "none";
+  if (tab === "builder") initEventBuilder();
 }
 
 async function loadPackages(forceRefresh) {
@@ -10741,7 +10817,6 @@ async function saveCmdEdit() {
 var _PAGE_CAPABILITY_MAP = {
   bots: "bots",
   "event-stream": "events",
-  "event-builder": "event_builder",
   commands: "commands",
   modules: "modules",
   store: "store",
@@ -10751,7 +10826,6 @@ var _PAGE_CAPABILITY_MAP = {
   audit: "audit",
   "api-routes": "routes",
   config: "config",
-  "framework-config": "config_source",
   "adapter-config": "config",
   files: "files",
 };

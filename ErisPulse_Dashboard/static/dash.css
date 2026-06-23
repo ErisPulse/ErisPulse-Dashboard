@@ -3148,6 +3148,53 @@ select.form-select::-ms-expand {
     height: 14px;
 }
 
+/* 包管理 - 宽松大号 tab */
+.pkg-tabs {
+    gap: 2px;
+    padding: 4px;
+    margin: 16px 0;
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+.pkg-tab {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 7px;
+    border-radius: 8px;
+}
+.pkg-tab svg {
+    width: 16px;
+    height: 16px;
+}
+.pkg-tab-count {
+    font-size: 11px;
+    padding: 1px 7px;
+    min-width: 18px;
+    text-align: center;
+}
+.pkg-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.pkg-search {
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    width: 240px;
+    transition: border-color 0.2s ease;
+}
+.pkg-search:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 .code-editor {
     width: 100%;
     min-height: 300px;
@@ -3471,11 +3518,22 @@ select.form-select::-ms-expand {
 .home-pin.editing .home-pin-remove {
     display: flex;
 }
+.home-pin-section {
+    position: relative;
+}
 .home-pin-add {
-    margin-top: -8px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -18px;
+    z-index: 10;
+    margin-top: 0;
 }
 .home-pin-picker {
-    margin-top: 8px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% + 8px);
     padding: 8px;
     border: 1px solid var(--bd);
     border-radius: 10px;
@@ -3485,6 +3543,7 @@ select.form-select::-ms-expand {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 6px;
     max-height: 240px;
+    min-width: 300px;
     overflow-y: auto;
 }
 .home-pin-option {
