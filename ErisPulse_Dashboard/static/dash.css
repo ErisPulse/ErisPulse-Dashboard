@@ -542,7 +542,7 @@ body {
 }
 
 .sidebar {
-    width: 252px;
+    width: 232px;
     background: var(--bg-s);
     border-right: 1px solid var(--bd);
     display: flex;
@@ -554,30 +554,30 @@ body {
 
 /* 紧凑布局 - 可按需切换（JS 加 .compact 类） */
 .sidebar.compact {
-    width: 208px;
+    width: 196px;
 }
 .sidebar.compact .nav-item {
-    padding: 7px 10px;
-    font-size: 13px;
-    gap: 10px;
+    padding: 6px 8px 6px 18px;
+    font-size: 12px;
+    gap: 8px;
     margin-left: 4px;
     margin-right: 4px;
 }
 .sidebar.compact .nav-item svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 .sidebar.compact .nav-group-title {
-    padding: 12px 12px 5px;
+    padding: 10px 8px 4px 12px;
     font-size: 10px;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-nav {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 8px;
+    padding: 6px;
 }
 
 .sidebar-nav::-webkit-scrollbar {
@@ -612,11 +612,11 @@ body {
         background 0.2s ease;
     border-radius: 6px;
     margin: 0 4px;
-    padding: 8px 10px 8px 14px;
+    padding: 8px 10px 8px 12px;
     position: relative;
 }
 
-.nav-group-title::before {
+.nav-group-title::after {
     content: "";
     display: inline-block;
     width: 6px;
@@ -626,11 +626,11 @@ body {
     transform: rotate(45deg);
     transition: transform 0.25s ease;
     flex-shrink: 0;
-    margin-right: 6px;
+    margin-left: auto;
     opacity: 0.5;
 }
 
-.nav-group.collapsed .nav-group-title::before {
+.nav-group.collapsed .nav-group-title::after {
     transform: rotate(-45deg);
 }
 
@@ -639,7 +639,7 @@ body {
     background: var(--bg-t);
 }
 
-.nav-group-title:hover::before {
+.nav-group-title:hover::after {
     opacity: 0.8;
 }
 
@@ -679,13 +679,7 @@ body {
     left: 14px;
     right: 14px;
     height: 1px;
-    background: linear-gradient(
-        to right,
-        transparent 0%,
-        var(--bd) 15%,
-        var(--bd) 85%,
-        transparent 100%
-    );
+    background: var(--bd);
 }
 
 .nav-group + .nav-group .nav-group-title {
@@ -697,11 +691,11 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 11px;
-    padding: 10px 14px;
+    gap: 9px;
+    padding: 9px 12px 9px 24px;
     margin-bottom: 2px;
-    margin-left: 6px;
-    margin-right: 6px;
+    margin-left: 4px;
+    margin-right: 4px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 9px;
@@ -720,14 +714,12 @@ body {
     content: "";
     position: absolute;
     left: 0;
-    top: 6px;
-    bottom: 6px;
+    top: 0;
+    bottom: 0;
     width: 3px;
-    border-radius: 0 3px 3px 0;
+    border-radius: 3px;
     background: transparent;
-    transition:
-        background 0.25s ease,
-        height 0.25s ease;
+    transition: background 0.25s ease;
 }
 
 .nav-item:hover {
@@ -842,6 +834,24 @@ body {
     justify-content: center;
     padding: 10px;
     gap: 0;
+}
+
+/* 收起态：左侧竖线无意义，隐藏之 */
+.sidebar.collapsed .nav-item::before {
+    display: none;
+}
+
+/* 收起态激活指示：图标下方一小横条 */
+.sidebar.collapsed .nav-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--accent);
 }
 
 .sidebar.collapsed .nav-item svg {
