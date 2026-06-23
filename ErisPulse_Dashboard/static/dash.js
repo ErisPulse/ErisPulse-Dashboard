@@ -3637,21 +3637,13 @@ function toggleLang() {
       bots: loadBots,
       "event-stream": loadEvents,
       modules: loadModules,
-      store: loadStore,
-      packages: function () {
-        loadPackages();
-        loadPackageUpdates();
-      },
       logs: loadLogs,
-      lifecycle: loadLifecycle,
-      audit: loadAuditLog,
       "api-routes": loadApiRoutes,
       commands: loadCommands,
       files: function () {
         fmBrowse(".");
       },
       config: loadConfig,
-      "adapter-config": loadAdapterConfigPage,
       cluster: loadClusterPage,
       about: loadAbout,
     };
@@ -3874,9 +3866,47 @@ function _botAvatarFallback(el) {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>';
 }
 
+ 
+var PAGE_REDIRECTS = {
+  "framework-config": { page: "config", tab: "cfg-framework" },
+  "adapter-config": { page: "config", tab: "cfg-adapter" },
+  "event-builder": { page: "event-stream", tab: "ev-builder" },
+  store: { page: "modules", tab: "ext-store" },
+  packages: { page: "modules", tab: "ext-packages" },
+  lifecycle: { page: "logs", tab: "mon-lifecycle" },
+  audit: { page: "logs", tab: "mon-audit" },
+};
+
 function go(name, el) {
   if (!authed) {
     showLogin();
+    return;
+  }
+   
+  var redirect = PAGE_REDIRECTS[name];
+  if (redirect) {
+    var targetEl = el;
+     
+    if (el) {
+      var hostNav = document.querySelector(
+        '.nav-item[data-page="' + redirect.page + '"]',
+      );
+      if (hostNav) targetEl = hostNav;
+    }
+    go(redirect.page, targetEl);
+     
+    var tabBtn = document.querySelector(
+      "#" +
+        redirect.page.replace(/-/g, "") +
+        'TabBar [data-tab="' +
+        redirect.tab +
+        '"]',
+    );
+    if (!tabBtn) {
+       
+      tabBtn = document.querySelector('[data-tab="' + redirect.tab + '"]');
+    }
+    if (tabBtn) tabBtn.click();
     return;
   }
   var requiredCap = _PAGE_CAPABILITY_MAP[name];
@@ -3911,23 +3941,17 @@ function go(name, el) {
   const loaders = {
     dashboard: refreshDashboard,
     bots: loadBots,
-    "event-stream": loadEvents,
-    modules: loadModules,
-    store: loadStore,
-    packages: function () {
-      loadPackages();
-      loadPackageUpdates();
+    "event-stream": function () {
+      loadEvents();
     },
+    modules: loadModules,
     logs: loadLogs,
-    lifecycle: loadLifecycle,
-    audit: loadAuditLog,
     "api-routes": loadApiRoutes,
     commands: loadCommands,
     files: function () {
       fmBrowse(".");
     },
     config: loadConfig,
-    "adapter-config": loadAdapterConfigPage,
     cluster: loadClusterPage,
     about: loadAbout,
   };
@@ -5527,9 +5551,13 @@ async function saveConfigSource() {
 }
 
 function switchConfigView(view, btn) {
-  document
-    .querySelectorAll("#p-config .view-btn")
-    .forEach((b) => b.classList.remove("active"));
+   
+  var headerActions = btn.closest(".header-actions");
+  if (headerActions) {
+    headerActions
+      .querySelectorAll(".view-btn")
+      .forEach((b) => b.classList.remove("active"));
+  }
   btn.classList.add("active");
   const treeView = document.getElementById("configBodyTree");
   const sourceView = document.getElementById("configBodySource");
@@ -5932,8 +5960,35 @@ function applyCustomTheme() {
 
  
 
-var HOME_PIN_DEFAULTS = ["adapter-config", "store", "logs", "files"];
+var HOME_PIN_DEFAULTS = ["config", "modules", "logs", "files"];
 var _homePinsEditing = false;
+
+ 
+var MERGED_PAGE_TABS = {
+  config: [
+    { id: "cfg-editor", label: "configuration", i18n: "configuration" },
+    {
+      id: "cfg-framework",
+      label: "framework_config",
+      i18n: "framework_config",
+    },
+    { id: "cfg-adapter", label: "adapter_config", i18n: "adapter_config" },
+  ],
+  "event-stream": [
+    { id: "ev-stream", label: "event_stream", i18n: "event_stream" },
+    { id: "ev-builder", label: "event_builder", i18n: "event_builder" },
+  ],
+  modules: [
+    { id: "ext-modules", label: "registered", i18n: "registered" },
+    { id: "ext-store", label: "store", i18n: "store" },
+    { id: "ext-packages", label: "pkg_manager", i18n: "pkg_manager" },
+  ],
+  logs: [
+    { id: "mon-logs", label: "sys_logs", i18n: "sys_logs" },
+    { id: "mon-lifecycle", label: "lifecycle", i18n: "lifecycle" },
+    { id: "mon-audit", label: "audit_log", i18n: "audit_log" },
+  ],
+};
 
 function getHomePins() {
   var raw = localStorage.getItem("ep_home_pins");
@@ -5951,54 +6006,27 @@ function setHomePins(arr) {
 }
 
  
-function navItemContent(page) {
+function navItemContent(pinId) {
+  var parts = pinId.split(":");
+  var page = parts[0];
+  var tab = parts[1];
   var item = document.querySelector('.nav-item[data-page="' + page + '"]');
   if (!item) return null;
   var svg = item.querySelector("svg");
   var span = item.querySelector("span");
+  var title = span ? span.textContent : page;
+   
+  if (tab) {
+    var tabBtn = document.querySelector('[data-tab="' + tab + '"]');
+    if (tabBtn) {
+      var tabText = tabBtn.textContent.trim();
+      if (tabText) title = title + " · " + tabText;
+    }
+  }
   return {
     svg: svg ? svg.outerHTML : "",
-    title: span ? span.textContent : page,
+    title: title,
   };
-}
-
- 
- 
-function parsePinId(pinId) {
-  var idx = pinId.indexOf(":");
-  if (idx === -1) return { page: pinId, tab: null };
-  return { page: pinId.substring(0, idx), tab: pinId.substring(idx + 1) };
-}
-
- 
-function pinContent(pinId) {
-  var parsed = parsePinId(pinId);
-  if (parsed.tab) {
-    var btn = document.querySelector('[data-subtab="' + pinId + '"]');
-    if (!btn) return null;
-    var svg = btn.querySelector("svg");
-     
-    var sp = btn.querySelector("span:not(.chip)");
-    var label =
-      sp && sp.textContent.trim()
-        ? sp.textContent.trim()
-        : btn.getAttribute("data-pinlabel") || parsed.tab;
-    return {
-      svg: svg ? svg.outerHTML : "",
-      title: label,
-    };
-  }
-  return navItemContent(parsed.page);
-}
-
- 
-function navigateToPin(pinId) {
-  var parsed = parsePinId(pinId);
-  go(parsed.page);
-  if (parsed.tab) {
-    var btn = document.querySelector('[data-subtab="' + pinId + '"]');
-    if (btn) btn.click();
-  }
 }
 
 function renderHomePins() {
@@ -6008,7 +6036,7 @@ function renderHomePins() {
   wrap.innerHTML = "";
   var found = 0;
   pins.forEach(function (pinId, idx) {
-    var c = pinContent(pinId);
+    var c = navItemContent(pinId);
     if (!c) return;  
     found++;
     var card = document.createElement("div");
@@ -6018,7 +6046,15 @@ function renderHomePins() {
     card.setAttribute("data-idx", String(idx));
     if (!_homePinsEditing) {
       card.addEventListener("click", function () {
-        navigateToPin(pinId);
+        var parts = pinId.split(":");
+        if (parts[1]) {
+           
+          go(parts[0]);
+          var tabBtn = document.querySelector('[data-tab="' + parts[1] + '"]');
+          if (tabBtn) tabBtn.click();
+        } else {
+          go(pinId);
+        }
       });
     }
 
@@ -6081,47 +6117,58 @@ function toggleHomePinPicker() {
   var picker = document.getElementById("homePinPicker");
   if (!picker) return;
   if (picker.style.display === "none") {
-     
     var pinned = getHomePins();
-    picker.innerHTML = "";
-    var count = 0;
-
-    function addOption(pinId, content) {
-      if (pinned.indexOf(pinId) !== -1) return;
-      if (!content) return;
-      count++;
-      var opt = document.createElement("div");
-      opt.className = "home-pin-option";
-      opt.addEventListener("click", function () {
-        addHomePin(pinId);
-      });
-      var icon = document.createElement("span");
-      icon.innerHTML = content.svg;
-      opt.appendChild(icon.firstChild || icon);
-      var span = document.createElement("span");
-      span.textContent = content.title;
-      opt.appendChild(span);
-      picker.appendChild(opt);
-    }
-
-     
     var all = Array.prototype.map.call(
       document.querySelectorAll(".nav-item[data-page]"),
       function (a) {
         return a.getAttribute("data-page");
       },
     );
+    picker.innerHTML = "";
+    var count = 0;
+
+    function addOption(label, svgHtml, onClick, isSub) {
+      var opt = document.createElement("div");
+      opt.className = isSub ? "home-pin-suboption" : "home-pin-option";
+      opt.addEventListener("click", onClick);
+      var icon = document.createElement("span");
+      icon.innerHTML = svgHtml || "";
+      opt.appendChild(icon.firstChild || icon);
+      var span = document.createElement("span");
+      span.textContent = label;
+      opt.appendChild(span);
+      picker.appendChild(opt);
+      count++;
+    }
+
     all.forEach(function (page) {
-      addOption(page, navItemContent(page));
-    });
+      var c = navItemContent(page);
+      if (!c) return;
 
-     
-    var subTabs = document.querySelectorAll("[data-subtab]");
-    subTabs.forEach(function (btn) {
-      var pinId = btn.getAttribute("data-subtab");
-      addOption(pinId, pinContent(pinId));
-    });
+       
+      if (pinned.indexOf(page) === -1) {
+        addOption(c.title, c.svg, function () {
+          addHomePin(page);
+        });
+      }
 
+       
+      var tabs = MERGED_PAGE_TABS[page];
+      if (tabs) {
+        tabs.forEach(function (tabInfo) {
+          var pinId = page + ":" + tabInfo.id;
+          if (pinned.indexOf(pinId) !== -1) return;
+          addOption(
+            t(tabInfo.i18n) || tabInfo.label,
+            c.svg,
+            function () {
+              addHomePin(pinId);
+            },
+            true,
+          );
+        });
+      }
+    });
     if (count === 0) {
       var none = document.createElement("div");
       none.style.cssText = "padding:8px;color:var(--tx-t)";
@@ -10107,30 +10154,73 @@ function switchPkgTab(tab, btn) {
   if (tab === "pk-updates") loadPackageUpdates();
 }
 
-function switchConfigTab(tab, btn) {
-  btn
-    .closest(".view-toggle")
-    .querySelectorAll(".view-btn")
-    .forEach((b) => b.classList.remove("active"));
+
+
+
+
+
+
+function switchMergeTab(tabPrefix, btn, onSwitch) {
+   
+  var bar = btn.closest(".view-toggle");
+  if (bar) {
+    bar.querySelectorAll(".view-btn").forEach(function (b) {
+      b.classList.remove("active");
+    });
+  }
   btn.classList.add("active");
-  document.getElementById("configModulesTab").style.display =
-    tab === "modules" ? "block" : "none";
-  document.getElementById("configFrameworkTab").style.display =
-    tab === "framework" ? "block" : "none";
-  if (tab === "framework") loadFrameworkConfig();
+   
+  var section = document.getElementById(tabPrefix + "-tab");
+  if (section) {
+    var parent = section.parentElement;
+    parent.querySelectorAll(".tab-section").forEach(function (s) {
+      s.style.display = "none";
+    });
+    section.style.display = "block";
+  }
+  if (onSwitch) onSwitch();
 }
 
+ 
+function switchConfigTab(tab, btn) {
+  var loaders = {
+    "cfg-editor": loadConfig,
+    "cfg-framework": loadFrameworkConfig,
+    "cfg-adapter": loadAdapterConfigPage,
+  };
+  switchMergeTab(tab, btn, loaders[tab]);
+}
+
+ 
 function switchEventTab(tab, btn) {
-  btn
-    .closest(".view-toggle")
-    .querySelectorAll(".view-btn")
-    .forEach((b) => b.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("eventStreamTab").style.display =
-    tab === "stream" ? "block" : "none";
-  document.getElementById("eventBuilderTab").style.display =
-    tab === "builder" ? "block" : "none";
-  if (tab === "builder") initEventBuilder();
+  var loaders = {
+    "ev-stream": loadEvents,
+    "ev-builder": initEventBuilder,
+  };
+  switchMergeTab(tab, btn, loaders[tab]);
+}
+
+ 
+function switchExtensionTab(tab, btn) {
+  var loaders = {
+    "ext-modules": loadModules,
+    "ext-store": loadStore,
+    "ext-packages": function () {
+      loadPackages();
+      loadPackageUpdates();
+    },
+  };
+  switchMergeTab(tab, btn, loaders[tab]);
+}
+
+ 
+function switchMonitorTab(tab, btn) {
+  var loaders = {
+    "mon-logs": loadLogs,
+    "mon-lifecycle": loadLifecycle,
+    "mon-audit": loadAuditLog,
+  };
+  switchMergeTab(tab, btn, loaders[tab]);
 }
 
 async function loadPackages(forceRefresh) {
@@ -10817,6 +10907,7 @@ async function saveCmdEdit() {
 var _PAGE_CAPABILITY_MAP = {
   bots: "bots",
   "event-stream": "events",
+  "event-builder": "event_builder",
   commands: "commands",
   modules: "modules",
   store: "store",
@@ -10826,6 +10917,7 @@ var _PAGE_CAPABILITY_MAP = {
   audit: "audit",
   "api-routes": "routes",
   config: "config",
+  "framework-config": "config_source",
   "adapter-config": "config",
   files: "files",
 };
