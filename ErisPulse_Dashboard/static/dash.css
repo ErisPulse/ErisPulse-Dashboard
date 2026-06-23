@@ -7339,3 +7339,104 @@ select:focus {
     margin-bottom: 8px;
     border-bottom: 1px solid var(--bd);
 }
+
+/* ===== 统一控件风格 ===== */
+.ep-search {
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    width: 240px;
+    transition: border-color 0.2s ease;
+}
+.ep-search:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.ep-select {
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px;
+}
+.ep-select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.ep-input {
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    transition: border-color 0.2s ease;
+}
+.ep-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* ===== Pin 选择器子 tab ===== */
+.home-pin-subgroup {
+    margin-top: 4px;
+    padding-left: 12px;
+    border-left: 2px solid var(--bd);
+}
+.home-pin-suboption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--tx-s);
+    transition: background 0.15s ease;
+}
+.home-pin-suboption:hover {
+    background: var(--bg-s);
+    color: var(--tx-p);
+}
+.home-pin-suboption svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+.home-pin-group-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tx-t);
+    cursor: default;
+    margin-top: 4px;
+}
+.home-pin-group-label svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ===== 合并页面 tab section ===== */
+.tab-section {
+    display: none;
+}
+.tab-section.active {
+    display: block;
+}
