@@ -4638,6 +4638,46 @@ select.form-select::-ms-expand {
     .module-actions {
         flex-direction: column;
     }
+    /* 模块管理移动端紧凑布局 */
+    .module-row {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px 10px;
+    }
+    .module-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 3px;
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 4px;
+        padding-top: 4px;
+        border-top: 1px solid var(--bd);
+    }
+    .module-actions .btn-xs {
+        padding: 2px 6px;
+        font-size: 10px;
+        min-height: 22px;
+    }
+    .module-status-chip {
+        display: none;
+    }
+    .module-expand-btn {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+    }
+    .module-row-wrap {
+        position: relative;
+    }
+    .module-info {
+        min-width: 0;
+        flex: 1;
+    }
+    .module-name {
+        font-size: 13px;
+        padding-right: 28px;
+    }
     #fmEditorContainer {
         height: 300px !important;
     }
@@ -5797,6 +5837,30 @@ select.form-select::-ms-expand {
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
+}
+
+/* ========== 商店标签区域收起 ========== */
+.store-tags-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+.store-tags-toggle:hover {
+    opacity: 1;
+}
+.store-tags-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+.store-tags-body.collapsed {
+    display: none;
 }
 
 /* ========== 商店卡片内标签 ========== */
@@ -7636,111 +7700,58 @@ select:focus {
 @media (max-width: 768px) {
     /* 机器人卡片 */
     .bot-card {
-        gap: 8px;
-    }
-    .bot-avatar {
-        width: 36px;
-        height: 36px;
-    }
-    .bot-avatar img {
-        width: 36px;
-        height: 36px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
     .bot-card-body {
+        flex: 1 1 calc(100% - 68px);
         min-width: 0;
     }
-    .bot-name {
-        font-size: 12px;
-    }
-    .bot-platform-row {
-        font-size: 10px;
-    }
-    .bot-id-code {
-        font-size: 9px;
-    }
     .bot-card-right {
-        text-align: right;
-        flex-direction: column;
-        align-items: flex-end;
+        flex: 1 1 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        text-align: left;
+        padding-left: 58px;
     }
     .bot-status-row {
-        justify-content: flex-end;
-    }
-    .bot-status-row .dot {
-        width: 6px;
-        height: 6px;
-    }
-    .bot-status-row span {
-        font-size: 10px;
-    }
-    .bot-last-active {
-        font-size: 9px;
+        justify-content: flex-start;
     }
     .bot-caps {
         flex-wrap: wrap;
     }
     .bot-cap-tag {
         font-size: 8px;
-        padding: 0 3px;
+        padding: 0 4px;
     }
     .adapter-status-chip {
         font-size: 9px;
-        padding: 0 4px;
+        padding: 0 5px;
     }
 
-    /* 模块管理 */
+    /* 模块详情 */
     .module-row {
-        gap: 6px;
-        padding: 8px 10px;
-    }
-    .module-row .module-status-dot {
-        width: 6px;
-        height: 6px;
-        min-width: 6px;
-    }
-    .module-info .module-name {
-        font-size: 12px;
-    }
-    .module-meta {
-        font-size: 10px;
-    }
-    .module-meta span:not(:first-child) {
-        display: none;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     .module-actions {
-        gap: 2px;
-    }
-    .module-actions .btn-xs {
-        font-size: 10px;
-        padding: 1px 5px;
-        min-height: 22px;
-    }
-    .module-detail {
-        padding: 5px 10px 7px 10px;
-    }
-    .module-detail-row {
-        font-size: 10px;
+        flex: 1 1 100%;
+        justify-content: flex-start;
         gap: 4px;
     }
+    .module-detail-row {
+        gap: 6px;
+    }
     .module-detail-item {
-        font-size: 10px;
+        font-size: 11px;
     }
     .module-status-chip {
         display: none;
     }
-    .module-cap-tag {
-        font-size: 8px;
-        padding: 0 3px;
-    }
-    .module-git-chip {
-        font-size: 9px;
-        padding: 0 4px;
-    }
-    .dep-code {
-        font-size: 9px;
-    }
-    .module-detail-item strong {
-        font-weight: 500;
+    .module-expand-btn {
+        margin-left: auto;
     }
 
     /* 商店标签 */

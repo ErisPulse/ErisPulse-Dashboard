@@ -664,6 +664,8 @@ const I18N = {
     module_depends: "依赖",
     module_views_count: "注册视窗",
     capability: "能力",
+    expand: "展开",
+    collapse: "收起",
     store_tag_filter: "标签筛选",
     about: "关于",
     about_tagline: "事件驱动的多平台机器人开发框架",
@@ -1350,6 +1352,8 @@ const I18N = {
     module_depends: "Depends On",
     module_views_count: "Views",
     capability: "Capabilities",
+    expand: "Expand",
+    collapse: "Collapse",
     store_tag_filter: "Tag Filter",
     about: "About",
     about_tagline: "Event-driven multi-platform bot development framework",
@@ -5279,18 +5283,43 @@ function _renderStoreTags(data) {
         active +
         '" onclick="toggleStoreTag(\'' +
         esc(tg) +
-        "',this)\">" +
+        "',this)" +
+        '">' +
         esc(tg) +
         "</span>"
       );
     })
     .join("");
 
+  var collapsed = sessionStorage.getItem("_storeTagsCollapsed") === "1";
+  var bodyClass = collapsed ? " store-tags-body collapsed" : "";
+  var toggleLabel = collapsed ? t("expand") : t("collapse");
+
   container.innerHTML =
-    '<span style="font-size:12px;color:var(--tx-s);margin-right:4px;flex-shrink:0">' +
+    '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
+    '<span style="font-size:12px;color:var(--tx-s)">' +
     t("store_tag_filter") +
     ":</span>" +
-    tagsHtml;
+    '<button class="store-tags-toggle" onclick="toggleStoreTagsCollapse()">' +
+    toggleLabel +
+    "</button></div>" +
+    '<div class="store-tags-body' +
+    bodyClass +
+    '">' +
+    tagsHtml +
+    "</div>";
+}
+
+function toggleStoreTagsCollapse() {
+  var collapsed = sessionStorage.getItem("_storeTagsCollapsed") === "1";
+  sessionStorage.setItem("_storeTagsCollapsed", collapsed ? "0" : "1");
+  // 重新渲染
+  var d = JSON.parse(localStorage.getItem(STORE_CACHE_KEY));
+  if (d && d.data && d.data.packages) {
+    _renderStoreTags(d.data.packages);
+  } else {
+    loadStore();
+  }
 }
 
 async function loadStore(forceRefresh) {
