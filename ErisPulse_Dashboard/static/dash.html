@@ -357,8 +357,8 @@
                             ></div>
                             <a
                                 class="nav-item"
-                                data-page="modules"
-                                onclick="go('modules', this)"
+                                data-page="module-mgmt"
+                                onclick="go('module-mgmt', this)"
                             >
                                 <svg
                                     viewBox="0 0 24 24"
@@ -376,7 +376,47 @@
                                     />
                                     <line x1="12" y1="22.08" x2="12" y2="12" />
                                 </svg>
-                                <span data-i18n="registered"></span>
+                                <span data-i18n="module_mgmt"></span>
+                            </a>
+                            <a
+                                class="nav-item"
+                                data-page="adapter"
+                                onclick="go('adapter', this)"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                    <path d="M2 17l10 5 10-5" />
+                                    <path d="M2 12l10 5 10-5" />
+                                </svg>
+                                <span data-i18n="adapter_config"></span>
+                            </a>
+                            <a
+                                class="nav-item"
+                                data-page="store"
+                                onclick="go('store', this)"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+                                    />
+                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                    <path d="M16 10a4 4 0 01-8 0" />
+                                </svg>
+                                <span data-i18n="store"></span>
                             </a>
                         </div>
                         <div class="nav-group">
@@ -2173,80 +2213,16 @@
                         </div>
                         <div id="routeModulesContainer"></div>
                     </div>
-                    <div class="page" id="p-modules">
-                        <h1 class="page-title" data-i18n="registered"></h1>
-                        <p class="page-desc" data-i18n="registered_desc"></p>
-                        <div class="view-toggle pkg-tabs">
-                            <button
-                                class="view-btn pkg-tab active"
-                                data-tab="ext-modules"
-                                onclick="
-                                    switchExtensionTab('ext-modules', this)
-                                "
-                            >
-                                <span data-i18n="registered"></span>
-                            </button>
-                            <button
-                                class="view-btn pkg-tab"
-                                data-tab="ext-store"
-                                onclick="switchExtensionTab('ext-store', this)"
-                            >
-                                <span data-i18n="store"></span>
-                            </button>
-                            <button
-                                class="view-btn pkg-tab"
-                                data-tab="ext-packages"
-                                onclick="
-                                    switchExtensionTab('ext-packages', this)
-                                "
-                            >
-                                <span data-i18n="pkg_manager"></span>
-                            </button>
-                        </div>
+                    <div class="page" id="p-module-mgmt">
+                        <h1 class="page-title" data-i18n="module_mgmt"></h1>
+                        <p class="page-desc" data-i18n="module_mgmt_desc"></p>
                         <div
-                            id="ext-modules-tab"
-                            class="tab-section"
-                            style="display: block"
+                            class="grid-4"
+                            id="moduleStats"
+                            style="margin-top: 16px"
                         >
-                            <div class="filter-bar">
-                                <input
-                                    type="text"
-                                    id="moduleSearch"
-                                    class="ep-search"
-                                    data-i18n-placeholder="search_modules"
-                                    oninput="loadModules()"
-                                />
-                                <select
-                                    id="moduleStatus"
-                                    class="ep-select"
-                                    onchange="loadModules()"
-                                >
-                                    <option
-                                        value="all"
-                                        data-i18n-option="all_status"
-                                    ></option>
-                                    <option
-                                        value="active"
-                                        data-i18n-option="active"
-                                    ></option>
-                                    <option
-                                        value="inactive"
-                                        data-i18n-option="inactive"
-                                    ></option>
-                                    <option
-                                        value="loaded"
-                                        data-i18n-option="loaded_status"
-                                    ></option>
-                                    <option
-                                        value="disabled"
-                                        data-i18n-option="module_disabled"
-                                    ></option>
-                                </select>
-                                <div style="flex: 1"></div>
-                                <button
-                                    class="btn btn-secondary btn-sm"
-                                    onclick="loadModules()"
-                                >
+                            <div class="stat-card">
+                                <div class="stat-card-icon">
                                     <svg
                                         viewBox="0 0 24 24"
                                         fill="none"
@@ -2254,68 +2230,22 @@
                                         stroke-width="2"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        style="width: 14px; height: 14px"
                                     >
-                                        <polyline points="23 4 23 10 17 10" />
-                                        <path
-                                            d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                        />
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                        <path d="M2 17l10 5 10-5" />
+                                        <path d="M2 12l10 5 10-5" />
                                     </svg>
-                                </button>
-                            </div>
-                            <div class="card" style="margin-top: 16px">
-                                <div class="card-header">
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    >
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="2" y1="12" x2="22" y2="12" />
-                                        <path
-                                            d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
-                                        /></svg
-                                    ><span data-i18n="adapters"></span
-                                    ><span
-                                        class="chip chip-pr"
-                                        id="adapterCount"
-                                        style="margin-left: 6px"
-                                    ></span>
-                                    <div class="header-actions">
-                                        <button
-                                            class="btn-icon"
-                                            onclick="loadModules()"
-                                            title="Refresh"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            >
-                                                <polyline
-                                                    points="23 4 23 10 17 10"
-                                                />
-                                                <path
-                                                    d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
                                 </div>
-                                <div id="adapterList"></div>
+                                <div
+                                    class="stat-label"
+                                    data-i18n="adapters"
+                                ></div>
+                                <div class="stat-val" id="statAdapterTotal">
+                                    0
+                                </div>
                             </div>
-                            <div class="card" style="margin-top: 16px">
-                                <div class="card-header">
+                            <div class="stat-card">
+                                <div class="stat-card-icon">
                                     <svg
                                         viewBox="0 0 24 24"
                                         fill="none"
@@ -2335,45 +2265,248 @@
                                             y1="22.08"
                                             x2="12"
                                             y2="12"
-                                        /></svg
-                                    ><span data-i18n="modules_label"></span
-                                    ><span
-                                        class="chip chip-sc"
-                                        id="moduleCount"
-                                        style="margin-left: 6px"
-                                    ></span>
-                                    <div class="header-actions">
-                                        <button
-                                            class="btn-icon"
-                                            onclick="loadModules()"
-                                            title="Refresh"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            >
-                                                <polyline
-                                                    points="23 4 23 10 17 10"
-                                                />
-                                                <path
-                                                    d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
+                                        />
+                                    </svg>
                                 </div>
-                                <div id="moduleList"></div>
+                                <div
+                                    class="stat-label"
+                                    data-i18n="modules_label"
+                                ></div>
+                                <div class="stat-val" id="statModuleTotal">
+                                    0
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-card-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path
+                                            d="M22 11.08V12a10 10 0 11-5.93-9.14"
+                                        />
+                                        <polyline
+                                            points="22 4 12 14.01 9 11.01"
+                                        />
+                                    </svg>
+                                </div>
+                                <div
+                                    class="stat-label"
+                                    data-i18n="active"
+                                ></div>
+                                <div class="stat-val" id="statActive">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-card-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line
+                                            x1="4.93"
+                                            y1="4.93"
+                                            x2="19.07"
+                                            y2="19.07"
+                                        />
+                                    </svg>
+                                </div>
+                                <div
+                                    class="stat-label"
+                                    data-i18n="module_disabled"
+                                ></div>
+                                <div class="stat-val" id="statDisabled">0</div>
                             </div>
                         </div>
-                        <div id="ext-store-tab" class="tab-section">
+                        <div class="filter-bar" style="margin-top: 16px">
+                            <input
+                                type="text"
+                                id="moduleSearch"
+                                class="ep-search"
+                                data-i18n-placeholder="search_modules"
+                                oninput="loadModules()"
+                            />
+                            <select
+                                id="moduleStatus"
+                                class="ep-select"
+                                onchange="loadModules()"
+                            >
+                                <option
+                                    value="all"
+                                    data-i18n-option="all_status"
+                                ></option>
+                                <option
+                                    value="active"
+                                    data-i18n-option="active"
+                                ></option>
+                                <option
+                                    value="inactive"
+                                    data-i18n-option="inactive"
+                                ></option>
+                                <option
+                                    value="loaded"
+                                    data-i18n-option="loaded_status"
+                                ></option>
+                                <option
+                                    value="disabled"
+                                    data-i18n-option="module_disabled"
+                                ></option>
+                            </select>
+                            <div style="flex: 1"></div>
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                onclick="loadModules()"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    style="width: 14px; height: 14px"
+                                >
+                                    <polyline points="23 4 23 10 17 10" />
+                                    <path
+                                        d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="card" style="margin-top: 16px">
+                            <div class="card-header">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                    <path d="M2 17l10 5 10-5" />
+                                    <path d="M2 12l10 5 10-5" /></svg
+                                ><span data-i18n="adapters"></span
+                                ><span
+                                    class="chip chip-pr"
+                                    id="adapterCount"
+                                    style="margin-left: 6px"
+                                ></span>
+                                <div class="header-actions">
+                                    <button
+                                        class="btn-icon"
+                                        onclick="loadModules()"
+                                        title="Refresh"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            style="width: 16px; height: 16px"
+                                        >
+                                            <polyline
+                                                points="23 4 23 10 17 10"
+                                            />
+                                            <path
+                                                d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="adapterList"></div>
+                        </div>
+                        <div class="card" style="margin-top: 16px">
+                            <div class="card-header">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
+                                    />
+                                    <polyline
+                                        points="3.27 6.96 12 12.01 20.73 6.96"
+                                    />
+                                    <line
+                                        x1="12"
+                                        y1="22.08"
+                                        x2="12"
+                                        y2="12"
+                                    /></svg
+                                ><span data-i18n="modules_label"></span
+                                ><span
+                                    class="chip chip-sc"
+                                    id="moduleCount"
+                                    style="margin-left: 6px"
+                                ></span>
+                                <div class="header-actions">
+                                    <button
+                                        class="btn-icon"
+                                        onclick="loadModules()"
+                                        title="Refresh"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            style="width: 16px; height: 16px"
+                                        >
+                                            <polyline
+                                                points="23 4 23 10 17 10"
+                                            />
+                                            <path
+                                                d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="moduleList"></div>
+                        </div>
+                    </div>
+                    <div class="page" id="p-store">
+                        <h1 class="page-title" data-i18n="store"></h1>
+                        <p class="page-desc" data-i18n="store_desc"></p>
+                        <div class="view-toggle pkg-tabs">
+                            <button
+                                class="view-btn pkg-tab active"
+                                data-tab="st-browse"
+                                onclick="switchStoreTab('st-browse', this)"
+                            >
+                                <span data-i18n="store"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="st-packages"
+                                onclick="switchStoreTab('st-packages', this)"
+                            >
+                                <span data-i18n="pkg_manager"></span>
+                            </button>
+                        </div>
+                        <div
+                            id="st-browse-tab"
+                            class="tab-section"
+                            style="display: block"
+                        >
                             <div class="filter-bar" style="margin-top: 16px">
                                 <input
                                     type="text"
@@ -2420,7 +2553,7 @@
                                 ></button>
                             </div>
                         </div>
-                        <div id="ext-packages-tab" class="tab-section">
+                        <div id="st-packages-tab" class="tab-section">
                             <div class="view-toggle pkg-tabs">
                                 <button
                                     class="view-btn pkg-tab active"
@@ -3387,13 +3520,6 @@
                             >
                                 <span data-i18n="framework_config"></span>
                             </button>
-                            <button
-                                class="view-btn pkg-tab"
-                                data-tab="cfg-adapter"
-                                onclick="switchConfigTab('cfg-adapter', this)"
-                            >
-                                <span data-i18n="adapter_config"></span>
-                            </button>
                         </div>
                         <div
                             id="cfg-editor-tab"
@@ -3878,43 +4004,41 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="cfg-adapter-tab" class="tab-section">
-                            <div class="adapter-config-layout">
+                    </div>
+                    <div class="page" id="p-adapter">
+                        <h1 class="page-title" data-i18n="adapter_config"></h1>
+                        <p
+                            class="page-desc"
+                            data-i18n="adapter_config_desc"
+                        ></p>
+                        <div class="adapter-config-layout">
+                            <div
+                                class="adapter-config-panel"
+                                id="adapterConfigPanel"
+                            >
                                 <div
-                                    class="adapter-config-panel"
-                                    id="adapterConfigPanel"
+                                    class="empty-state"
+                                    id="adapterConfigEmpty"
                                 >
-                                    <div
-                                        class="empty-state"
-                                        id="adapterConfigEmpty"
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        style="
+                                            width: 48px;
+                                            height: 48px;
+                                            opacity: 0.3;
+                                        "
                                     >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="1.5"
-                                            style="
-                                                width: 48px;
-                                                height: 48px;
-                                                opacity: 0.3;
-                                            "
-                                        >
-                                            <circle cx="12" cy="12" r="10" />
-                                            <line
-                                                x1="2"
-                                                y1="12"
-                                                x2="22"
-                                                y2="12"
-                                            />
-                                            <path
-                                                d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
-                                            />
-                                        </svg>
-                                        <p
-                                            id="adapterEmptyText"
-                                            data-i18n="adapter_no_adapters"
-                                        ></p>
-                                    </div>
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                        <path d="M2 17l10 5 10-5" />
+                                        <path d="M2 12l10 5 10-5" />
+                                    </svg>
+                                    <p
+                                        id="adapterEmptyText"
+                                        data-i18n="adapter_no_adapters"
+                                    ></p>
                                 </div>
                             </div>
                         </div>
