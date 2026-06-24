@@ -2113,8 +2113,40 @@ class Main(BaseModule):
     async def _api_bots(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
+         
+        all_bots = self.sdk.adapter.list_bots()
+        platforms = list(all_bots.keys())
+        if not platforms:
+            return JSONResponse({"bots": []})
+
+         
+        async def _fetch_caps(p: str):
+            try:
+                 
+                loop = asyncio.get_running_loop()
+                return p, await loop.run_in_executor(
+                    None, lambda pp=p: self.sdk.adapter.list_sends(pp) or []
+                )
+            except Exception:
+                try:
+                    return p, self.sdk.adapter.list_sends(p) or []
+                except Exception:
+                    return p, []
+
+        cap_results = await asyncio.gather(*[_fetch_caps(p) for p in platforms])
+        capabilities_cache = dict(cap_results)
+
+         
         bots = []
-        for p, bs in self.sdk.adapter.list_bots().items():
+        for p, bs in all_bots.items():
+            try:
+                running = self.sdk.adapter.is_running(p)
+            except Exception:
+                running = False
+            try:
+                enabled = self.sdk.adapter.is_enabled(p)
+            except Exception:
+                enabled = False
             for bid, bd in bs.items():
                 bots.append(
                     {
@@ -2123,6 +2155,12 @@ class Main(BaseModule):
                         "status": bd.get("status", "unknown"),
                         "last_active": bd.get("last_active", 0),
                         "info": bd.get("info", {}),
+                        "capabilities": capabilities_cache.get(p, []),
+                        "adapter_running": running,
+                        "adapter_enabled": enabled,
+                        "adapter_status": "started"
+                        if running
+                        else ("stopped" if enabled else "unknown"),
                     }
                 )
         return JSONResponse({"bots": bots})
@@ -2670,22 +2708,104 @@ class Main(BaseModule):
     async def _api_modules(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+        module_manager = self.sdk.module
+        adapter_list = self.sdk.adapter.list_registered()
+
+         
+        async def _compute_meta():
+            """计算路由和视窗计数"""
+            routes_counts: dict[str, int] = {}
+            views_counts: dict[str, int] = {}
+            try:
+                router_manager = self.sdk.router
+                for mn, paths in router_manager._http_routes.items():
+                    routes_counts[mn] = routes_counts.get(mn, 0) + sum(
+                        len(methods) for methods in paths.values()
+                    )
+                for mn, paths in router_manager._websocket_routes.items():
+                    routes_counts[mn] = routes_counts.get(mn, 0) + len(paths)
+            except Exception:
+                pass
+            try:
+                for view in self.get_registered_views():
+                    vid = view.get("id", "")
+                    views_counts[vid] = views_counts.get(vid, 0) + 1
+            except Exception:
+                pass
+            return routes_counts, views_counts
+
+        async def _compute_adapter_extras():
+            """计算 Bot 计数和适配器能力"""
+            bot_counts: dict[str, int] = {}
+            caps: dict[str, list] = {}
+            try:
+                all_bots = self.sdk.adapter.list_bots()
+                for p, bs in all_bots.items():
+                    bot_counts[p] = len(bs)
+            except Exception:
+                pass
+
+             
+            async def _one_cap(p: str):
+                try:
+                    return p, self.sdk.adapter.list_sends(p) or []
+                except Exception:
+                    return p, []
+
+            if adapter_list:
+                for coro in asyncio.as_completed([_one_cap(p) for p in adapter_list]):
+                    p, val = await coro
+                    caps[p] = val
+            return bot_counts, caps
+
+         
+        (
+            (routes_counts, views_counts),
+            (adapter_bot_counts, adapter_capabilities),
+        ) = await asyncio.gather(_compute_meta(), _compute_adapter_extras())
+
+         
+        git_packages: dict[str, dict] = {}
+        try:
+            git_packages = self._get_pkg_manager().get_git_packages()
+        except Exception:
+            pass
+
         modules = []
-        for name in self.sdk.module.list_registered():
-            info = self.sdk.module.get_info(name) or {}
+        for name in module_manager.list_registered():
+            info = module_manager.get_info(name) or {}
+            load_strategy = None
+            try:
+                mc = module_manager._module_classes.get(name)
+                if mc and hasattr(mc, "get_load_strategy"):
+                    ls = mc.get_load_strategy()
+                    load_strategy = {
+                        "lazy_load": getattr(ls, "lazy_load", None),
+                        "priority": getattr(ls, "priority", None),
+                        "depends": getattr(ls, "depends", None) or [],
+                    }
+            except Exception:
+                pass
+            pkg_name = info.get("package", "")
+            is_git = pkg_name.lower() in git_packages if pkg_name else False
             modules.append(
                 {
                     "name": name,
                     "type": "module",
-                    "enabled": self.sdk.module.is_enabled(name),
-                    "loaded": self.sdk.module.is_loaded(name),
+                    "enabled": module_manager.is_enabled(name),
+                    "loaded": module_manager.is_loaded(name),
                     "version": info.get("version", ""),
                     "description": info.get("description", ""),
                     "author": info.get("author", ""),
-                    "package": info.get("package", ""),
+                    "package": pkg_name,
+                    "load_strategy": load_strategy,
+                    "routes_count": routes_counts.get(name, 0),
+                    "views_count": views_counts.get(name, 0),
+                    "is_git": is_git,
                 }
             )
-        for name in self.sdk.adapter.list_registered():
+        for name in adapter_list:
             modules.append(
                 {
                     "name": name,
@@ -2696,6 +2816,8 @@ class Main(BaseModule):
                     "description": "",
                     "author": "",
                     "package": "",
+                    "bots_count": adapter_bot_counts.get(name, 0),
+                    "capabilities": adapter_capabilities.get(name, []),
                 }
             )
         return JSONResponse({"modules": modules})
@@ -3022,17 +3144,16 @@ class Main(BaseModule):
             for log_entry in logs:
                  
                  
-                 
                 timestamp_str = ""
                 message = ""
+                log_module = module_name
+                bracket_level = None
 
                 if " - " in log_entry:
                     parts = log_entry.split(" - ", 1)
                     timestamp_str = parts[0]
                     message = parts[1]
                 else:
-                     
-                     
                     match = re.match(
                         r"^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.+)$",
                         log_entry,
@@ -3042,28 +3163,10 @@ class Main(BaseModule):
                         log_module = match.group(2)
                         message = match.group(3)
                     else:
-                         
                         message = log_entry
 
                  
-                if level_filter:
-                    level = level_filter.upper()
-                     
-                    level_match = re.search(
-                        r"\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]", message
-                    )
-                    if level_match:
-                        log_level = level_match.group(1)
-                        if log_level != level:
-                            continue
-
-                 
                 log_level = ""
-                level_match = re.search(
-                    r"\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]", message
-                )
-                if level_match:
-                    log_level = level_match.group(1)
 
                  
                 if search and search not in message.lower():
