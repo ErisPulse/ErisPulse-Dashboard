@@ -35,7 +35,7 @@ const I18N = {
     bots: "机器人",
     events: "事件系统",
     modules: "插件管理",
-    store: "模块商店",
+    store: "应用商店",
     config: "配置管理",
     sys_logs: "系统日志",
     logs: "日志",
@@ -86,6 +86,10 @@ const I18N = {
     bots_desc: "各平台已发现的机器人",
     events_desc: "事件流查看/构建",
     modules_desc: "管理已注册的模块和适配器",
+    runtime: "运行时",
+    runtime_desc: "查看系统运行状态和扩展概览",
+    module_mgmt: "模块管理",
+    module_mgmt_desc: "管理已注册的模块和适配器",
     store_desc: "浏览并安装包",
     config_desc: "查看和管理配置与存储",
     configuration: "配置",
@@ -676,7 +680,7 @@ const I18N = {
     bots: "Bots",
     events: "Events",
     modules: "Plugins",
-    store: "Module Store",
+    store: "App Store",
     config: "Configuration",
     sys_logs: "System Logs",
     logs: "Logs",
@@ -727,6 +731,10 @@ const I18N = {
     bots_desc: "Discovered bots across platforms",
     events_desc: "Event stream view/builder",
     modules_desc: "Manage registered modules and adapters",
+    runtime: "Runtime",
+    runtime_desc: "View system runtime status and extension overview",
+    module_mgmt: "Module Management",
+    module_mgmt_desc: "Manage registered modules and adapters",
     store_desc: "Browse and install packages",
     config_desc: "View and manage configuration and storage",
     configuration: "Configuration",
@@ -1344,7 +1352,7 @@ const I18N = {
     bots: "機器人",
     events: "事件系統",
     modules: "插件管理",
-    store: "模組商店",
+    store: "應用商店",
     config: "配置管理",
     sys_logs: "系統日誌",
     logs: "日誌",
@@ -1395,6 +1403,10 @@ const I18N = {
     bots_desc: "各平台已發現的機器人",
     events_desc: "事件流查看/構建",
     modules_desc: "管理已註冊的模組和適配器",
+    runtime: "運行時",
+    runtime_desc: "查看系統運行狀態和擴展概覽",
+    module_mgmt: "模組管理",
+    module_mgmt_desc: "管理已註冊的模組和適配器",
     store_desc: "瀏覽並安裝套件",
     config_desc: "查看和管理配置與儲存",
     configuration: "配置",
@@ -1977,7 +1989,7 @@ const I18N = {
     bots: "ボット",
     events: "イベント",
     modules: "プラグイン",
-    store: "モジュールストア",
+    store: "アプリストア",
     config: "設定",
     sys_logs: "システムログ",
     logs: "ログ",
@@ -2028,6 +2040,10 @@ const I18N = {
     bots_desc: "各プラットフォームで検出されたボット",
     events_desc: "イベントストリームの表示/ビルド",
     modules_desc: "登録済みモジュールとアダプタの管理",
+    runtime: "ランタイム",
+    runtime_desc: "システム実行状況と拡張機能の概要を表示",
+    module_mgmt: "モジュール管理",
+    module_mgmt_desc: "登録済みモジュールとアダプターを管理",
     store_desc: "パッケージの閲覧とインストール",
     config_desc: "設定とストレージの表示・管理",
     configuration: "設定",
@@ -2632,7 +2648,7 @@ const I18N = {
     bots: "Боты",
     events: "События",
     modules: "Плагины",
-    store: "Магазин модулей",
+    store: "Магазин приложений",
     config: "Конфигурация",
     sys_logs: "Системные журналы",
     logs: "Журналы",
@@ -2684,6 +2700,10 @@ const I18N = {
     bots_desc: "Обнаруженные боты на платформах",
     events_desc: "Просмотр/создание потока событий",
     modules_desc: "Управление зарегистрированными модулями и адаптерами",
+    runtime: "Среда выполнения",
+    runtime_desc: "Просмотр состояния системы и обзор расширений",
+    module_mgmt: "Управление модулями",
+    module_mgmt_desc: "Управление зарегистрированными модулями и адаптерами",
     store_desc: "Просмотр и установка пакетов",
     config_desc: "Просмотр и управление конфигурацией и хранилищем",
     configuration: "Конфигурация",
@@ -3636,7 +3656,13 @@ function toggleLang() {
       dashboard: refreshDashboard,
       bots: loadBots,
       "event-stream": loadEvents,
-      modules: loadModules,
+      "module-mgmt": loadModules,
+      adapter: loadAdapterConfigPage,
+      store: function () {
+        loadStore();
+        loadPackages();
+        loadPackageUpdates();
+      },
       logs: loadLogs,
       "api-routes": loadApiRoutes,
       commands: loadCommands,
@@ -3869,10 +3895,13 @@ function _botAvatarFallback(el) {
 // 页面重定向：合并后的页面，旧 ID 重定向到宿主页 + 指定 tab
 var PAGE_REDIRECTS = {
   "framework-config": { page: "config", tab: "cfg-framework" },
-  "adapter-config": { page: "config", tab: "cfg-adapter" },
+  "adapter-config": { page: "adapter", tab: "adapter" },
   "event-builder": { page: "event-stream", tab: "ev-builder" },
-  store: { page: "modules", tab: "ext-store" },
-  packages: { page: "modules", tab: "ext-packages" },
+  modules: { page: "module-mgmt", tab: "module-mgmt" },
+  "ext-modules": { page: "module-mgmt", tab: "module-mgmt" },
+  "ext-store": { page: "store", tab: "st-browse" },
+  "ext-packages": { page: "store", tab: "st-packages" },
+  packages: { page: "store", tab: "st-packages" },
   lifecycle: { page: "logs", tab: "mon-lifecycle" },
   audit: { page: "logs", tab: "mon-audit" },
 };
@@ -3944,7 +3973,13 @@ function go(name, el) {
     "event-stream": function () {
       loadEvents();
     },
-    modules: loadModules,
+    "module-mgmt": loadModules,
+    adapter: loadAdapterConfigPage,
+    store: function () {
+      loadStore();
+      loadPackages();
+      loadPackageUpdates();
+    },
     logs: loadLogs,
     "api-routes": loadApiRoutes,
     commands: loadCommands,
@@ -4536,13 +4571,13 @@ async function refreshDashboard() {
       Object.keys(ad).length,
       t("adapters"),
       '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
-      "adapter-config",
+      "adapter",
     ) +
     statCard(
       Object.keys(mo).filter((k) => mo[k]).length,
       t("modules_label"),
       '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
-      "modules",
+      "module-mgmt",
     ) +
     statCard(
       ob,
@@ -4726,7 +4761,7 @@ async function loadBots() {
         .join("")
     : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' +
       t("no_bots") +
-      '</h3><button class="empty-action" onclick="go(\'adapter-config\')">' +
+      '</h3><button class="empty-action" onclick="go(\'adapter\')">' +
       t("adapter_config") +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button></div>';
 }
@@ -4759,6 +4794,29 @@ async function loadModules() {
   });
   document.getElementById("adapterCount").textContent = adapters.length;
   document.getElementById("moduleCount").textContent = modules.length;
+  // Update summary stats
+  var allItems = d.modules || [];
+  var allAdapters = allItems.filter(function (m) {
+    return m.type === "adapter";
+  });
+  var allModules = allItems.filter(function (m) {
+    return m.type === "module";
+  });
+  var activeCount = allItems.filter(function (m) {
+    return m.loaded;
+  }).length;
+  var disabledCount = allItems.filter(function (m) {
+    return !m.enabled;
+  }).length;
+  var el;
+  if ((el = document.getElementById("statAdapterTotal")))
+    el.textContent = allAdapters.length;
+  if ((el = document.getElementById("statModuleTotal")))
+    el.textContent = allModules.length;
+  if ((el = document.getElementById("statActive")))
+    el.textContent = activeCount;
+  if ((el = document.getElementById("statDisabled")))
+    el.textContent = disabledCount;
   document.getElementById("adapterList").innerHTML = adapters.length
     ? adapters.map((m) => renderPluginRow(m, true)).join("")
     : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
@@ -5960,7 +6018,7 @@ function applyCustomTheme() {
 
 // ========== 主页快捷导航（可自定义 pin） ==========
 
-var HOME_PIN_DEFAULTS = ["config", "modules", "logs", "files"];
+var HOME_PIN_DEFAULTS = ["config", "module-mgmt", "logs", "files"];
 var _homePinsEditing = false;
 
 // 合并页面的 tab 定义（用于 pin 选择器展示子 tab）
@@ -5972,16 +6030,14 @@ var MERGED_PAGE_TABS = {
       label: "framework_config",
       i18n: "framework_config",
     },
-    { id: "cfg-adapter", label: "adapter_config", i18n: "adapter_config" },
   ],
   "event-stream": [
     { id: "ev-stream", label: "event_stream", i18n: "event_stream" },
     { id: "ev-builder", label: "event_builder", i18n: "event_builder" },
   ],
-  modules: [
-    { id: "ext-modules", label: "registered", i18n: "registered" },
-    { id: "ext-store", label: "store", i18n: "store" },
-    { id: "ext-packages", label: "pkg_manager", i18n: "pkg_manager" },
+  store: [
+    { id: "st-browse", label: "store", i18n: "store" },
+    { id: "st-packages", label: "pkg_manager", i18n: "pkg_manager" },
   ],
   logs: [
     { id: "mon-logs", label: "sys_logs", i18n: "sys_logs" },
@@ -6015,12 +6071,12 @@ function navItemContent(pinId) {
   var svg = item.querySelector("svg");
   var span = item.querySelector("span");
   var title = span ? span.textContent : page;
-  // 如果有子 tab，追加 tab 名称
+  // 如果有子 tab，只显示 tab 名称（不显示父页面名）
   if (tab) {
     var tabBtn = document.querySelector('[data-tab="' + tab + '"]');
     if (tabBtn) {
       var tabText = tabBtn.textContent.trim();
-      if (tabText) title = title + " · " + tabText;
+      if (tabText) title = tabText;
     }
   }
   return {
@@ -6253,6 +6309,7 @@ function restartRefreshTimer() {
 }
 
 function toggleSidebarCollapse() {
+  if (window.innerWidth <= 768) return; // mobile: no collapsed state
   const sb = document.getElementById("sidebar");
   sb.classList.toggle("collapsed");
   localStorage.setItem(
@@ -8011,19 +8068,9 @@ function toggleCustomBot() {
 }
 
 function updateRequiredFields() {
-  // 根据事件类型显示不同的必填字段
+  // 清空附加字段区域（user_id 和 alt_message 现在自动处理）
   const container = document.getElementById("optionalFields");
   container.innerHTML = "";
-
-  if (builderState.eventType === "message") {
-    addOptionalField("user_id", "User ID", "");
-    addOptionalField("alt_message", "", t("alt_message"));
-  } else if (builderState.eventType === "notice") {
-    addOptionalField("user_id", "User ID", "");
-  } else if (builderState.eventType === "request") {
-    addOptionalField("user_id", "User ID", "");
-    addOptionalField("comment", "", t("request_comment"));
-  }
 }
 
 function addOptionalField(key = "", value = "", label = "") {
@@ -8031,9 +8078,15 @@ function addOptionalField(key = "", value = "", label = "") {
 
   const div = document.createElement("div");
   div.className = "optional-field";
+  div.dataset.key = key;
+  // 确定 placeholder
+  var ph = t("field_value_placeholder");
+  if (label) {
+    ph = t(label) || label;
+  }
   div.innerHTML = `
-        <input type="text" placeholder="${t("field_name_placeholder")}" value="${esc(key)}" onchange="updateOptionalFieldKey(this)">
-        <input type="text" placeholder="${t("field_value_placeholder")}" value="${esc(value)}" onchange="updateOptionalFieldValue(this)"${label ? ' data-label="' + esc(label) + '"' : ""}>
+        <input type="text" placeholder="${t("field_name_placeholder")}" value="${esc(key)}" onchange="updateOptionalFieldKey(this.parentElement)">
+        <input type="text" placeholder="${esc(ph)}" value="${esc(value)}" onchange="updateOptionalFieldValue(this)">
         <button class="optional-field-remove" onclick="removeOptionalField(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -8046,7 +8099,10 @@ function addOptionalField(key = "", value = "", label = "") {
   updateEventPreview();
 }
 
-function updateOptionalFieldKey(input) {
+function updateOptionalFieldKey(div) {
+  // 更新 data-key 以便 buildEventData 正确读取
+  var keyInput = div.querySelector("input:first-child");
+  if (keyInput) div.dataset.key = keyInput.value;
   updateEventPreview();
 }
 
@@ -8195,15 +8251,9 @@ function buildEventData() {
       type: seg.type,
       data: seg.fields,
     }));
-
-    // 从 alt_message 字段获取
-    const altMsgField = document.querySelector(
-      '.optional-field input[data-label="alt_message"]',
-    );
-    event.alt_message = altMsgField ? altMsgField.value : "";
   }
 
-  // 添加附加字段
+  // 添加附加字段（用户手动添加的）
   const optionalFields = document.querySelectorAll(".optional-field");
   optionalFields.forEach((field) => {
     const inputs = field.querySelectorAll("input");
@@ -8223,9 +8273,26 @@ function buildEventData() {
   if (sessionType === "private") {
     event.user_id = event.user_id || sessionId;
   } else if (sessionType === "group") {
-    event.group_id = sessionId;
+    event.group_id = event.group_id || sessionId;
   } else if (sessionType === "channel") {
-    event.channel_id = sessionId;
+    event.channel_id = event.channel_id || sessionId;
+  }
+
+  // user_id 默认使用 bot 的 ID（OneBot12 标准字段）
+  if (!event.user_id) {
+    event.user_id = botId || "test_user";
+  }
+
+  // alt_message 自动从消息段生成
+  if (builderState.eventType === "message") {
+    if (!event.alt_message) {
+      event.alt_message = (event.message || [])
+        .filter((seg) => seg.type === "text" && seg.data && seg.data.text)
+        .map((seg) => seg.data.text)
+        .join("");
+      // 没有文本段时给一个占位值，避免服务端校验拒绝
+      if (!event.alt_message) event.alt_message = "[test message]";
+    }
   }
 
   return event;
@@ -8266,19 +8333,6 @@ async function previewEvent() {
 async function submitEvent() {
   const event = buildEventData();
 
-  const validation = await api("/api/builder/validate", {
-    method: "POST",
-    body: JSON.stringify(event),
-  });
-
-  if (!validation || !validation.valid) {
-    const errors = validation?.errors || [t("validation_failed")];
-    showOutputModal(t("validate_error"), errors, [
-      { label: t("ok"), value: true, primary: true },
-    ]);
-    return;
-  }
-
   const result = await api("/api/builder/submit", {
     method: "POST",
     body: JSON.stringify(event),
@@ -8287,10 +8341,10 @@ async function submitEvent() {
   if (result && result.success) {
     toast(t("submit_success"), "ok");
   } else {
-    toast(
-      t("submit_failed") + ": " + (result?.error || t("unknown_error")),
-      "er",
-    );
+    var errs = result?.errors || [result?.error || t("unknown_error")];
+    showOutputModal(t("submit_failed"), errs, [
+      { label: t("ok"), value: true, primary: true },
+    ]);
   }
 }
 
@@ -10186,7 +10240,6 @@ function switchConfigTab(tab, btn) {
   var loaders = {
     "cfg-editor": loadConfig,
     "cfg-framework": loadFrameworkConfig,
-    "cfg-adapter": loadAdapterConfigPage,
   };
   switchMergeTab(tab, btn, loaders[tab]);
 }
@@ -10200,12 +10253,11 @@ function switchEventTab(tab, btn) {
   switchMergeTab(tab, btn, loaders[tab]);
 }
 
-// ===== 扩展中心 tab =====
-function switchExtensionTab(tab, btn) {
+// ===== 商店 tab =====
+function switchStoreTab(tab, btn) {
   var loaders = {
-    "ext-modules": loadModules,
-    "ext-store": loadStore,
-    "ext-packages": function () {
+    "st-browse": loadStore,
+    "st-packages": function () {
       loadPackages();
       loadPackageUpdates();
     },
@@ -10855,7 +10907,7 @@ async function saveCmdEdit() {
   // 默认收起侧边栏（首次使用或无设置时）
   const isCollapsed =
     collapsedSetting === null ? true : collapsedSetting === "true";
-  if (isCollapsed)
+  if (isCollapsed && window.innerWidth > 768)
     document.getElementById("sidebar").classList.add("collapsed");
   updateNodeSelectorVisibility();
   restoreNavGroupStates();
@@ -10909,7 +10961,8 @@ var _PAGE_CAPABILITY_MAP = {
   "event-stream": "events",
   "event-builder": "event_builder",
   commands: "commands",
-  modules: "modules",
+  "module-mgmt": "modules",
+  adapter: "config",
   store: "store",
   packages: "packages",
   logs: "logs",

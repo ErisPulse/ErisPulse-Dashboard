@@ -5243,6 +5243,10 @@ select.form-select::-ms-expand {
 }
 
 @media (max-width: 768px) {
+    .sidebar-collapse-btn {
+        display: none;
+    }
+
     .btn-hamburger {
         display: flex;
     }
@@ -5364,6 +5368,10 @@ select.form-select::-ms-expand {
 }
 
 @media (max-width: 480px) {
+    .sidebar-collapse-btn {
+        display: none;
+    }
+
     .header h1 {
         font-size: 14px;
     }
