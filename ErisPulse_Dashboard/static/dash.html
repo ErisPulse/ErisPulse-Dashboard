@@ -1729,6 +1729,7 @@
                                     <select
                                         id="logLevelFilter"
                                         onchange="loadLogs()"
+                                        style="display: none"
                                     >
                                         <option value="">All Levels</option>
                                         <option value="DEBUG">DEBUG</option>
@@ -2514,6 +2515,25 @@
                                     data-i18n-placeholder="search_packages"
                                     oninput="debounceStore()"
                                 />
+                                <select
+                                    id="storeTypeFilter"
+                                    class="ep-select"
+                                    onchange="debounceStore()"
+                                    style="width: auto; min-width: 90px"
+                                >
+                                    <option
+                                        value="all"
+                                        data-i18n-option="all_status"
+                                    ></option>
+                                    <option
+                                        value="module"
+                                        data-i18n-option="module"
+                                    ></option>
+                                    <option
+                                        value="adapter"
+                                        data-i18n-option="adapter"
+                                    ></option>
+                                </select>
                                 <button
                                     class="btn btn-secondary btn-sm"
                                     onclick="loadStore(true)"
@@ -2535,6 +2555,16 @@
                                     </svg>
                                 </button>
                             </div>
+                            <div
+                                class="store-tags"
+                                id="storeTags"
+                                style="
+                                    display: none;
+                                    flex-wrap: wrap;
+                                    gap: 6px;
+                                    margin-top: 8px;
+                                "
+                            ></div>
                             <div
                                 class="grid-3"
                                 id="storeGrid"
@@ -3871,7 +3901,7 @@
                             <div
                                 class="fw-section"
                                 id="fwUpdateSection"
-                                style="margin-top: 16px"
+                                style="margin-top: 16px; display: none"
                             >
                                 <div
                                     class="fw-section-title"

@@ -85,6 +85,8 @@ const I18N = {
     waiting_events: "等待事件...",
     bots_desc: "各平台已发现的机器人",
     events_desc: "事件流查看/构建",
+    module: "模块",
+    adapter: "适配器",
     modules_desc: "管理已注册的模块和适配器",
     runtime: "运行时",
     runtime_desc: "查看系统运行状态和扩展概览",
@@ -513,6 +515,9 @@ const I18N = {
     fw_field_framework_enable_lazy_loading: "启用模块懒加载",
     fw_field_logger_format: "日志格式: rich（彩色终端）/ plain",
     fw_field_framework_uninit_timeout: "反初始化超时时间（秒）",
+    fw_field_framework_strict_mode:
+      "严格模式：0=宽松 / 1=严格-跳过 / 2=严格-致命",
+    fw_field_framework_strict_mode_exceptions: "严格模式豁免清单",
     adapter_config: "适配器配置",
     adapter_config_desc: "管理各平台适配器的连接和账户配置",
     adapter_global_config: "全局配置",
@@ -650,6 +655,16 @@ const I18N = {
     dashboard_version: "Dashboard 版本",
     node_already_exists: "节点 ID 已存在",
     node_not_found: "节点未找到",
+    just_now: "刚刚",
+    time_ago: "前",
+    module_load_mode: "加载模式",
+    module_lazy: "懒加载",
+    module_eager: "即时加载",
+    module_priority: "优先级",
+    module_depends: "依赖",
+    module_views_count: "注册视窗",
+    capability: "能力",
+    store_tag_filter: "标签筛选",
     about: "关于",
     about_tagline: "事件驱动的多平台机器人开发框架",
     about_desc:
@@ -730,6 +745,8 @@ const I18N = {
     waiting_events: "Waiting for events...",
     bots_desc: "Discovered bots across platforms",
     events_desc: "Event stream view/builder",
+    module: "Module",
+    adapter: "Adapter",
     modules_desc: "Manage registered modules and adapters",
     runtime: "Runtime",
     runtime_desc: "View system runtime status and extension overview",
@@ -1210,6 +1227,9 @@ const I18N = {
     fw_field_framework_enable_lazy_loading: "Enable lazy-loading of modules",
     fw_field_logger_format: "Log format: rich (colored terminal) / plain",
     fw_field_framework_uninit_timeout: "Uninit timeout (seconds)",
+    fw_field_framework_strict_mode:
+      "Strict mode: 0=lenient / 1=strict-skip / 2=strict-fatal",
+    fw_field_framework_strict_mode_exceptions: "Strict mode exemptions",
     adapter_config: "Adapter Config",
     adapter_config_desc:
       "Manage adapter platform connections and account settings",
@@ -1321,6 +1341,16 @@ const I18N = {
     dashboard_version: "Dashboard Version",
     node_already_exists: "Node ID already exists",
     node_not_found: "Node not found",
+    just_now: "just now",
+    time_ago: "ago",
+    module_load_mode: "Load Mode",
+    module_lazy: "Lazy",
+    module_eager: "Eager",
+    module_priority: "Priority",
+    module_depends: "Depends On",
+    module_views_count: "Views",
+    capability: "Capabilities",
+    store_tag_filter: "Tag Filter",
     about: "About",
     about_tagline: "Event-driven multi-platform bot development framework",
     about_desc:
@@ -1824,6 +1854,9 @@ const I18N = {
     fw_field_framework_enable_lazy_loading: "啟用模組懶載入",
     fw_field_logger_format: "日誌格式: rich（彩色終端）/ plain",
     fw_field_framework_uninit_timeout: "反初始化超時時間（秒）",
+    fw_field_framework_strict_mode:
+      "嚴格模式：0=寬鬆 / 1=嚴格-跳過 / 2=嚴格-致命",
+    fw_field_framework_strict_mode_exceptions: "嚴格模式豁免清單",
     adapter_config: "適配器配置",
     adapter_config_desc: "管理各平台適配器的連接和帳戶配置",
     adapter_global_config: "全域配置",
@@ -1959,6 +1992,15 @@ const I18N = {
     dashboard_version: "Dashboard 版本",
     node_already_exists: "節點 ID 已存在",
     node_not_found: "節點未找到",
+    just_now: "剛剛",
+    time_ago: "前",
+    module_load_mode: "加載模式",
+    module_lazy: "懶加載",
+    module_eager: "即時加載",
+    module_priority: "優先級",
+    module_depends: "依賴",
+    module_views_count: "註冊視窗",
+    capability: "能力",
     about: "關於",
     about_tagline: "事件驅動的多平台機器人開發框架",
     about_desc:
@@ -2478,6 +2520,9 @@ const I18N = {
     fw_field_framework_enable_lazy_loading: "モジュールの遅延読み込みを有効化",
     fw_field_logger_format: "ログ形式: rich（カラー）/ plain",
     fw_field_framework_uninit_timeout: "初期化解除のタイムアウト（秒）",
+    fw_field_framework_strict_mode:
+      "厳格モード: 0=緩和 / 1=厳格-スキップ / 2=厳格-致命",
+    fw_field_framework_strict_mode_exceptions: "厳格モード除外リスト",
     adapter_config: "アダプター設定",
     adapter_config_desc:
       "プラットフォームアダプターの接続とアカウント設定を管理",
@@ -2615,6 +2660,15 @@ const I18N = {
     dashboard_version: "Dashboard バージョン",
     node_already_exists: "ノード ID は既に存在します",
     node_not_found: "ノードが見つかりません",
+    just_now: "たった今",
+    time_ago: "前",
+    module_load_mode: "ロードモード",
+    module_lazy: "遅延",
+    module_eager: "即時",
+    module_priority: "優先度",
+    module_depends: "依存",
+    module_views_count: "ビュー",
+    capability: "機能",
     about: "について",
     about_tagline:
       "イベント駆動型マルチプラットフォームボット開発フレームワーク",
@@ -3145,6 +3199,9 @@ const I18N = {
       "Включить отложенную загрузку модулей",
     fw_field_logger_format: "Формат лога: rich (цветной) / plain",
     fw_field_framework_uninit_timeout: "Тайм-аут деинициализации (сек)",
+    fw_field_framework_strict_mode:
+      "Строгий режим: 0=мягкий / 1=строгий-пропуск / 2=строгий-фатальный",
+    fw_field_framework_strict_mode_exceptions: "Исключения строгого режима",
     adapter_config: "Настройки адаптера",
     adapter_config_desc:
       "Управление подключениями и учетными записями адаптеров платформ",
@@ -3302,6 +3359,15 @@ const I18N = {
     dashboard_version: "Версия Dashboard",
     node_already_exists: "ID узла уже существует",
     node_not_found: "Узел не найден",
+    just_now: "только что",
+    time_ago: "назад",
+    module_load_mode: "Режим загрузки",
+    module_lazy: "Отложенная",
+    module_eager: "Немедленная",
+    module_priority: "Приоритет",
+    module_depends: "Зависимости",
+    module_views_count: "Представления",
+    capability: "Возможности",
   },
 };
 
@@ -4555,6 +4621,7 @@ async function refreshDashboard() {
   const d = await api("/api/status");
   if (!d) return;
   const fw = d.framework || {};
+  window._fwStatus = fw;
   document.getElementById("fwDesc").textContent =
     "ErisPulse v" + fw.version + " | Python " + fw.python_version;
   document.getElementById("fwInfo").textContent = "ErisPulse v" + fw.version;
@@ -4700,6 +4767,53 @@ async function clearEvents() {
   loadEvents();
 }
 
+function _relativeTime(ts) {
+  if (!ts) return t("never");
+  var now = Date.now() / 1000;
+  var diff = Math.floor(now - ts);
+  if (diff < 10) return t("just_now");
+  if (diff < 60) return diff + "s " + t("time_ago");
+  if (diff < 3600) return Math.floor(diff / 60) + "min " + t("time_ago");
+  if (diff < 86400) return Math.floor(diff / 3600) + "h " + t("time_ago");
+  if (diff < 604800) return Math.floor(diff / 86400) + "d " + t("time_ago");
+  return new Date(ts * 1000).toLocaleDateString(getLocale());
+}
+
+function _capabilityBadges(caps) {
+  if (!caps || !caps.length) return "";
+  var popular = ["Text", "Image", "Voice", "Markdown", "Video"];
+  var shown = caps.filter(function (c) {
+    return popular.indexOf(c) >= 0;
+  });
+  var rest = caps.length - shown.length;
+  var html = shown
+    .map(function (c) {
+      return '<span class="bot-cap-tag">' + esc(c) + "</span>";
+    })
+    .join("");
+  if (rest > 0)
+    html += '<span class="bot-cap-tag bot-cap-more">+' + rest + "</span>";
+  return '<div class="bot-caps">' + html + "</div>";
+}
+
+function _adapterStatusBadge(status) {
+  var map = {
+    started: { cls: "chip-ok", label: "running" },
+    starting: { cls: "chip-wr", label: "starting" },
+    stopping: { cls: "chip-wr", label: "stopping" },
+    stopped: { cls: "chip-er", label: "stopped" },
+    unknown: { cls: "chip-default", label: "unknown" },
+  };
+  var s = map[status] || map.unknown;
+  return (
+    '<span class="chip ' +
+    s.cls +
+    ' adapter-status-chip">' +
+    esc(s.label) +
+    "</span>"
+  );
+}
+
 async function loadBots() {
   const d = await api("/api/bots");
   if (!d) return;
@@ -4710,13 +4824,13 @@ async function loadBots() {
           const i = x.info || {},
             nm = i.user_name || i.nickname || x.bot_id,
             av = i.avatar;
-          const la = x.last_active
-            ? new Date(x.last_active * 1000).toLocaleString(getLocale())
-            : "Never";
+          const la = _relativeTime(x.last_active);
           const on = x.status === "online";
           const logoSrc = getAdapterLogo(x.platform);
           const useLogo = !av && logoSrc;
           const avCls = useLogo ? "bot-avatar has-logo" : "bot-avatar";
+          const capsHtml = _capabilityBadges(x.capabilities);
+          const adStatusHtml = _adapterStatusBadge(x.adapter_status);
           let avatarHtml;
           if (av) {
             avatarHtml =
@@ -4741,21 +4855,30 @@ async function loadBots() {
             avCls +
             '">' +
             avatarHtml +
-            '</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">' +
+            '</div><div class="bot-card-body"><div class="bot-name-row">' +
+            '<span class="bot-name">' +
             esc(nm) +
-            '</div><div style="font-size:12px;color:var(--tx-s);margin-top:2px">' +
+            "</span>" +
+            '</div><div class="bot-platform-row">' +
             esc(x.platform) +
             " / " +
+            '<code class="bot-id-code">' +
             esc(x.bot_id) +
-            '</div></div><div style="text-align:right;flex-shrink:0"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' +
+            "</code>" +
+            "</div>" +
+            capsHtml +
+            '</div><div class="bot-card-right"><div class="bot-status-row">' +
+            '<span class="dot" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' +
             (on ? "var(--ok-c)" : "var(--tx-t)") +
             '"></span><span style="font-size:12px;font-weight:500;color:' +
             (on ? "var(--ok-c)" : "var(--tx-s)") +
             '">' +
             (on ? t("online") : t("offline")) +
-            '</span></div><div style="font-size:11px;color:var(--tx-t);margin-top:4px">' +
+            '</span></div><div class="bot-last-active">' +
             esc(la) +
-            "</div></div></div>"
+            "</div>" +
+            adStatusHtml +
+            "</div></div>"
           );
         })
         .join("")
@@ -4857,6 +4980,11 @@ function renderPluginRow(m, isAd) {
   if (!meta) meta = "<span>" + t("module_no_desc") + "</span>";
 
   let acts = "";
+  // Expand toggle always shown
+  acts +=
+    '<button class="btn btn-secondary btn-xs module-expand-btn" onclick="toggleModuleDetail(this)" title="' +
+    t("view_detail") +
+    '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg></button> ';
   if (m.loaded) {
     if (!isAd)
       acts +=
@@ -4917,8 +5045,95 @@ function renderPluginRow(m, isAd) {
       "</button> ";
   }
 
+  // Build detail section
+  var detailHtml = "";
+  var detailItems = [];
+  if (isAd) {
+    if (m.bots_count > 0) {
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("online_bots") +
+          ":</strong> " +
+          m.bots_count +
+          "</span>",
+      );
+    }
+    if (m.capabilities && m.capabilities.length) {
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("capability") +
+          ":</strong> " +
+          m.capabilities
+            .map(function (c) {
+              return '<span class="module-cap-tag">' + esc(c) + "</span>";
+            })
+            .join(" ") +
+          "</span>",
+      );
+    }
+  } else {
+    if (m.load_strategy) {
+      var ls = m.load_strategy;
+      if (ls.lazy_load != null)
+        detailItems.push(
+          '<span class="module-detail-item"><strong>' +
+            t("module_load_mode") +
+            ":</strong> " +
+            (ls.lazy_load ? t("module_lazy") : t("module_eager")) +
+            "</span>",
+        );
+      if (ls.priority != null)
+        detailItems.push(
+          '<span class="module-detail-item"><strong>' +
+            t("module_priority") +
+            ":</strong> " +
+            ls.priority +
+            "</span>",
+        );
+      if (ls.depends && ls.depends.length)
+        detailItems.push(
+          '<span class="module-detail-item"><strong>' +
+            t("module_depends") +
+            ":</strong> " +
+            ls.depends
+              .map(function (d) {
+                return '<code class="dep-code">' + esc(d) + "</code>";
+              })
+              .join(" ") +
+            "</span>",
+        );
+    }
+    if (m.routes_count > 0)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("registered_routes") +
+          ":</strong> " +
+          m.routes_count +
+          "</span>",
+      );
+    if (m.views_count > 0)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("module_views_count") +
+          ":</strong> " +
+          m.views_count +
+          "</span>",
+      );
+    if (m.is_git)
+      detailItems.push(
+        '<span class="module-detail-item"><span class="chip chip-pr module-git-chip">Git</span></span>',
+      );
+  }
+  if (detailItems.length) {
+    detailHtml =
+      '<div class="module-detail hidden"><div class="module-detail-row">' +
+      detailItems.join("") +
+      "</div></div>";
+  }
+
   const adLogo = isAd ? adapterLogoImg(m.name, 20) : "";
-  return (
+  var html =
+    '<div class="module-row-wrap">' +
     '<div class="module-row"><span class="module-status-dot ' +
     statusDot +
     '"></span>' +
@@ -4928,9 +5143,32 @@ function renderPluginRow(m, isAd) {
     '</div><div class="module-meta">' +
     meta +
     '</div></div><div class="module-actions">' +
+    '<span class="chip ' +
+    statusClass +
+    ' module-status-chip">' +
+    esc(statusText) +
+    "</span>" +
     acts +
-    "</div></div>"
-  );
+    "</div></div>" +
+    detailHtml +
+    "</div>";
+  return html;
+}
+function toggleModuleDetail(btn) {
+  var wrap = btn.closest(".module-row-wrap");
+  if (!wrap) return;
+  var detail = wrap.querySelector(".module-detail");
+  if (!detail) return;
+  var svg = btn.querySelector("svg");
+  if (detail.classList.contains("hidden")) {
+    detail.classList.remove("hidden");
+    wrap.classList.add("expanded");
+    if (svg) svg.innerHTML = '<polyline points="6 15 12 9 18 15"/>';
+  } else {
+    detail.classList.add("hidden");
+    wrap.classList.remove("expanded");
+    if (svg) svg.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+  }
 }
 async function moduleAction(name, action, type, pkg) {
   if (!authed) return showLogin();
@@ -4997,8 +5235,67 @@ function initMirrorSelects() {
     if (el && !el.children.length) el.innerHTML = mirrorOptionsHtml();
   });
 }
+var _selectedStoreTags = new Set();
+
+function toggleStoreTag(tag, el) {
+  if (_selectedStoreTags.has(tag)) {
+    _selectedStoreTags.delete(tag);
+    el.classList.remove("active");
+  } else {
+    _selectedStoreTags.add(tag);
+    el.classList.add("active");
+  }
+  loadStore();
+}
+
+function _renderStoreTags(data) {
+  var tagSet = new Set();
+  for (var key in data.modules || {}) {
+    var tg = data.modules[key].tags;
+    if (Array.isArray(tg))
+      tg.forEach(function (tag) {
+        tagSet.add(tag);
+      });
+  }
+  for (var key in data.adapters || {}) {
+    var tg = data.adapters[key].tags;
+    if (Array.isArray(tg))
+      tg.forEach(function (tag) {
+        tagSet.add(tag);
+      });
+  }
+  var container = document.getElementById("storeTags");
+  if (tagSet.size === 0) {
+    container.style.display = "none";
+    return;
+  }
+  container.style.display = "flex";
+  var tags = Array.from(tagSet).sort();
+  var tagsHtml = tags
+    .map(function (tg) {
+      var active = _selectedStoreTags.has(tg) ? " active" : "";
+      return (
+        '<span class="store-tag-chip' +
+        active +
+        '" onclick="toggleStoreTag(\'' +
+        esc(tg) +
+        "',this)\">" +
+        esc(tg) +
+        "</span>"
+      );
+    })
+    .join("");
+
+  container.innerHTML =
+    '<span style="font-size:12px;color:var(--tx-s);margin-right:4px;flex-shrink:0">' +
+    t("store_tag_filter") +
+    ":</span>" +
+    tagsHtml;
+}
+
 async function loadStore(forceRefresh) {
   const q = document.getElementById("storeSearch")?.value?.toLowerCase() || "";
+  const typeFilter = document.getElementById("storeTypeFilter")?.value || "all";
   let d = null;
   if (!forceRefresh) {
     try {
@@ -5022,6 +5319,10 @@ async function loadStore(forceRefresh) {
     return;
   }
   const pk = d.packages;
+
+  // 渲染标签筛选项
+  _renderStoreTags(pk);
+
   const installedVersions = d.installed_versions || {};
   const all = [
     ...Object.entries(pk.modules || {}).map(([n, i]) => ({
@@ -5035,11 +5336,28 @@ async function loadStore(forceRefresh) {
       type: "adapter",
     })),
   ];
-  const f = q
-    ? all.filter((i) =>
-        (i.name + i.description + i.package).toLowerCase().includes(q),
-      )
-    : all;
+  // 多层筛选
+  var f = all;
+  if (typeFilter !== "all") {
+    f = f.filter(function (i) {
+      return i.type === typeFilter;
+    });
+  }
+  if (q) {
+    f = f.filter(function (i) {
+      return (i.name + i.description + i.package).toLowerCase().indexOf(q) >= 0;
+    });
+  }
+  if (_selectedStoreTags.size > 0) {
+    f = f.filter(function (i) {
+      var tags = i.tags;
+      if (!Array.isArray(tags)) return false;
+      for (var ti = 0; ti < tags.length; ti++) {
+        if (_selectedStoreTags.has(tags[ti])) return true;
+      }
+      return false;
+    });
+  }
   document.getElementById("storeGrid").innerHTML = f.length
     ? f
         .map((i) => {
@@ -5077,6 +5395,18 @@ async function loadStore(forceRefresh) {
               t("install") +
               "</button>";
           }
+          // 标签徽章
+          var tagBadges = "";
+          if (Array.isArray(i.tags) && i.tags.length) {
+            tagBadges =
+              '<div class="store-card-tags">' +
+              i.tags
+                .map(function (t) {
+                  return '<span class="store-card-tag">' + esc(t) + "</span>";
+                })
+                .join("") +
+              "</div>";
+          }
           return (
             '<div class="store-card' +
             (hasUpdate ? " store-card-update" : "") +
@@ -5098,7 +5428,9 @@ async function loadStore(forceRefresh) {
             esc(i.package) +
             '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' +
             esc(i.description || "-") +
-            '</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' +
+            "</div>" +
+            tagBadges +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' +
             esc(i.version || "?") +
             (hasUpdate
               ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' +
@@ -6404,7 +6736,12 @@ const _fwDefaults = {
       must_at_bot: false,
     },
   },
-  framework: { enable_lazy_loading: true, uninit_timeout: 30 },
+  framework: {
+    enable_lazy_loading: true,
+    uninit_timeout: 30,
+    strict_mode: 1,
+    strict_mode_exceptions: { modules: [], adapters: [] },
+  },
   i18n: { language: "auto" },
 };
 
@@ -6425,6 +6762,10 @@ const _fwFieldDescs = {
   "framework.enable_lazy_loading": "是否启用模块懒加载（按需加载）",
   "logger.format": "日志格式: rich（彩色）/ json",
   "framework.uninit_timeout": "反初始化超时时间（秒）",
+  "framework.strict_mode":
+    "严格模式：0=宽松（仅警告）/1=严格-跳过不合规组件/2=严格-致命（中止启动）",
+  "framework.strict_mode_exceptions.modules": "严格模式豁免的模块名列表",
+  "framework.strict_mode_exceptions.adapters": "严格模式豁免的适配器名列表",
   "i18n.language": "语言设置（auto 为自动检测）",
 };
 
@@ -6434,6 +6775,10 @@ const _fwFieldWidgets = {
     options: ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
   },
   "logger.format": { widget: "select", options: ["rich", "json"] },
+  "framework.strict_mode": {
+    widget: "select",
+    options: [0, 1, 2],
+  },
   "i18n.language": {
     widget: "select",
     options: ["auto", "zh", "en", "zh-TW", "ja", "ru"],
@@ -7237,6 +7582,23 @@ function flattenFwSections(obj, prefix) {
         }
         sections.push({ key, values: annotated });
       } else {
+        // 混合类型：先收集原始值（boolean/number/string/array）为当前 section
+        var annotated = {};
+        for (var fk in v) {
+          var fv = v[fk];
+          if (fv === null || typeof fv !== "object" || Array.isArray(fv)) {
+            var fullKey = key + "." + fk;
+            var isKnown =
+              !!knownKeys[fullKey] ||
+              fullKey.startsWith("adapters.") ||
+              fullKey.startsWith("modules.");
+            annotated[fk] = { value: fv, known: isKnown };
+          }
+        }
+        if (Object.keys(annotated).length > 0) {
+          sections.push({ key, values: annotated });
+        }
+        // 再递归处理嵌套对象
         sections.push(...flattenFwSections(v, key));
       }
     }
@@ -7530,10 +7892,20 @@ async function loadFrameworkVersions() {
   if (!d) return;
 
   const section = document.getElementById("fwUpdateSection");
-  if (section && d.can_update === false) {
+  if (!section) return;
+
+  // 默认隐藏；仅在非 Windows 平台且服务端允许时显示
+  var isWindows = false;
+  var fwInfo = window._fwStatus || {};
+  if (fwInfo.platform && /win/i.test(fwInfo.platform)) isWindows = true;
+  if (d.platform && /win/i.test(d.platform)) isWindows = true;
+
+  if (isWindows || d.can_update === false) {
     section.style.display = "none";
     return;
   }
+
+  section.style.display = "";
 
   _fwCurrentVer = d.current;
   _fwVersions = d.versions || [];

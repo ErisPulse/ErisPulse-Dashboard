@@ -1809,6 +1809,81 @@ body {
     opacity: 0.7;
 }
 
+.bot-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.bot-name {
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bot-platform-row {
+    font-size: 11px;
+    color: var(--tx-s);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.bot-id-code {
+    font-family: monospace;
+    font-size: 10px;
+    color: var(--tx-t);
+    background: var(--bg-s);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.bot-caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+}
+.bot-cap-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    border: 1px solid var(--bd);
+}
+.bot-cap-tag.bot-cap-more {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    border-color: var(--accent);
+}
+.bot-card-right {
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+.bot-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+.bot-last-active {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+.adapter-status-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+}
+
 .store-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -4170,6 +4245,15 @@ select.form-select::-ms-expand {
 }
 
 /* ========== 模块管理增强样式 ========== */
+.module-row-wrap {
+    border-bottom: 1px solid var(--bd);
+}
+.module-row-wrap:last-child {
+    border-bottom: none;
+}
+.module-row-wrap .module-row:last-child {
+    border-bottom: none;
+}
 .module-row {
     display: flex;
     align-items: center;
@@ -4233,6 +4317,63 @@ select.form-select::-ms-expand {
     flex-shrink: 0;
     flex-wrap: wrap;
     justify-content: flex-end;
+    align-items: center;
+}
+.module-expand-btn {
+    transition: transform 0.2s;
+}
+.module-row-wrap.expanded .module-expand-btn {
+    transform: rotate(180deg);
+}
+.module-status-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+    margin-right: 4px;
+}
+.module-detail {
+    padding: 8px 16px 10px 16px;
+    border-top: 1px solid var(--bd);
+    background: var(--bg-s);
+    display: block;
+    transition: all 0.2s;
+}
+.module-detail.hidden {
+    display: none;
+}
+.module-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--tx-s);
+}
+.module-detail-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.module-cap-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--bg-t);
+    color: var(--tx-s);
+    border: 1px solid var(--bd);
+}
+.module-git-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+}
+.dep-code {
+    font-family: monospace;
+    font-size: 10px;
+    background: var(--bg-t);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent);
 }
 
 .module-search {
@@ -5632,6 +5773,48 @@ select.form-select::-ms-expand {
 
 .store-card-detail-btn:hover {
     color: var(--accent);
+}
+
+/* ========== 商店标签筛选芯片 ========== */
+.store-tag-chip {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--bg-t);
+    color: var(--tx-s);
+    border: 1px solid var(--bd);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+.store-tag-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.store-tag-chip.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+/* ========== 商店卡片内标签 ========== */
+.store-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+}
+.store-card-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-s);
+    color: var(--tx-t);
+    border: 1px solid var(--bd);
 }
 
 /* ========== 安装确认选项 ========== */
@@ -7447,4 +7630,132 @@ select:focus {
 }
 .tab-section.active {
     display: block;
+}
+
+/* ===== 移动端自适应：新增强化元素 ===== */
+@media (max-width: 768px) {
+    /* 机器人卡片 */
+    .bot-card {
+        gap: 8px;
+    }
+    .bot-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    .bot-avatar img {
+        width: 36px;
+        height: 36px;
+    }
+    .bot-card-body {
+        min-width: 0;
+    }
+    .bot-name {
+        font-size: 12px;
+    }
+    .bot-platform-row {
+        font-size: 10px;
+    }
+    .bot-id-code {
+        font-size: 9px;
+    }
+    .bot-card-right {
+        text-align: right;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .bot-status-row {
+        justify-content: flex-end;
+    }
+    .bot-status-row .dot {
+        width: 6px;
+        height: 6px;
+    }
+    .bot-status-row span {
+        font-size: 10px;
+    }
+    .bot-last-active {
+        font-size: 9px;
+    }
+    .bot-caps {
+        flex-wrap: wrap;
+    }
+    .bot-cap-tag {
+        font-size: 8px;
+        padding: 0 3px;
+    }
+    .adapter-status-chip {
+        font-size: 9px;
+        padding: 0 4px;
+    }
+
+    /* 模块管理 */
+    .module-row {
+        gap: 6px;
+        padding: 8px 10px;
+    }
+    .module-row .module-status-dot {
+        width: 6px;
+        height: 6px;
+        min-width: 6px;
+    }
+    .module-info .module-name {
+        font-size: 12px;
+    }
+    .module-meta {
+        font-size: 10px;
+    }
+    .module-meta span:not(:first-child) {
+        display: none;
+    }
+    .module-actions {
+        gap: 2px;
+    }
+    .module-actions .btn-xs {
+        font-size: 10px;
+        padding: 1px 5px;
+        min-height: 22px;
+    }
+    .module-detail {
+        padding: 5px 10px 7px 10px;
+    }
+    .module-detail-row {
+        font-size: 10px;
+        gap: 4px;
+    }
+    .module-detail-item {
+        font-size: 10px;
+    }
+    .module-status-chip {
+        display: none;
+    }
+    .module-cap-tag {
+        font-size: 8px;
+        padding: 0 3px;
+    }
+    .module-git-chip {
+        font-size: 9px;
+        padding: 0 4px;
+    }
+    .dep-code {
+        font-size: 9px;
+    }
+    .module-detail-item strong {
+        font-weight: 500;
+    }
+
+    /* 商店标签 */
+    .store-tag-chip {
+        font-size: 10px;
+        padding: 2px 7px;
+    }
+    #storeTags {
+        gap: 4px;
+    }
+    .store-card-tags {
+        gap: 3px;
+    }
+    .store-card-tag {
+        font-size: 8px;
+        padding: 0 4px;
+    }
 }
