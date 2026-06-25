@@ -19,7 +19,8 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=2" />
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
     <body>
@@ -106,7 +107,7 @@
                     </button>
                     <button
                         class="btn-icon"
-                        onclick="showSettings()"
+                        onclick="go('settings')"
                         title="Settings"
                     >
                         <svg
@@ -3083,260 +3084,277 @@
                         </div>
                     </div>
                     <div class="page" id="p-files">
-                        <div
-                            style="
-                                display: flex;
-                                align-items: center;
-                                justify-content: space-between;
-                                margin-bottom: 16px;
-                                flex-wrap: wrap;
-                                gap: 8px;
-                            "
-                        >
-                            <div>
-                                <h1
-                                    class="page-title"
-                                    style="margin-bottom: 2px"
-                                    data-i18n="files"
-                                ></h1>
-                                <p class="page-desc" data-i18n="files_desc"></p>
+                        <h1 class="page-title" data-i18n="files"></h1>
+                        <p class="page-desc" data-i18n="files_desc"></p>
+                        <div class="card fm-main-card" style="margin-top: 16px">
+                            <div class="card-header fm-toolbar-header">
+                                <div class="fm-breadcrumb" id="fmBreadcrumb">
+                                    <span
+                                        class="fm-crumb active"
+                                        onclick="fmNavigateTo('.')"
+                                        >/</span
+                                    >
+                                </div>
+                                <div class="header-actions">
+                                    <input
+                                        type="text"
+                                        id="fmSearch"
+                                        class="module-search fm-search"
+                                        data-i18n-placeholder="search_files"
+                                        placeholder=""
+                                        oninput="debounceFmSearch()"
+                                    />
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="fmGoUp()"
+                                        title="Go Up"
+                                        data-i18n-title="parent_dir"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="width: 14px; height: 14px"
+                                        >
+                                            <polyline
+                                                points="18 15 12 9 6 15"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="fmRefresh()"
+                                        title="Refresh"
+                                        data-i18n-title="refresh"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="width: 14px; height: 14px"
+                                        >
+                                            <polyline
+                                                points="23 4 23 10 17 10"
+                                            />
+                                            <path
+                                                d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="fm-toolbar">
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="fmGoUp()"
-                                title="Go Up"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="width: 14px; height: 14px"
-                                >
-                                    <polyline points="18 15 12 9 6 15" />
-                                </svg>
-                            </button>
-                            <div class="fm-breadcrumb" id="fmBreadcrumb">
+                            <div class="fm-action-bar">
+                                <div class="fm-action-group">
+                                    <button
+                                        class="btn btn-primary btn-sm"
+                                        onclick="fmNewFile()"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="
+                                                width: 14px;
+                                                height: 14px;
+                                                margin-right: 4px;
+                                            "
+                                        >
+                                            <path
+                                                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                                            />
+                                            <polyline points="14 2 14 8 20 8" />
+                                            <line
+                                                x1="12"
+                                                y1="18"
+                                                x2="12"
+                                                y2="12"
+                                            />
+                                            <line
+                                                x1="9"
+                                                y1="15"
+                                                x2="15"
+                                                y2="15"
+                                            />
+                                        </svg>
+                                        <span data-i18n="new_file"></span>
+                                    </button>
+                                    <button
+                                        class="btn btn-primary btn-sm"
+                                        onclick="fmNewFolder()"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="
+                                                width: 14px;
+                                                height: 14px;
+                                                margin-right: 4px;
+                                            "
+                                        >
+                                            <path
+                                                d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                                            />
+                                            <line
+                                                x1="12"
+                                                y1="11"
+                                                x2="12"
+                                                y2="17"
+                                            />
+                                            <line
+                                                x1="9"
+                                                y1="14"
+                                                x2="15"
+                                                y2="14"
+                                            />
+                                        </svg>
+                                        <span data-i18n="new_folder"></span>
+                                    </button>
+                                </div>
+                                <div class="fm-action-group">
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="fmUpload()"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="
+                                                width: 14px;
+                                                height: 14px;
+                                                margin-right: 4px;
+                                            "
+                                        >
+                                            <path
+                                                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                            />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line
+                                                x1="12"
+                                                y1="3"
+                                                x2="12"
+                                                y2="15"
+                                            />
+                                        </svg>
+                                        <span data-i18n="upload"></span>
+                                    </button>
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="
+                                            document
+                                                .getElementById(
+                                                    'fmUploadDirInput',
+                                                )
+                                                .click()
+                                        "
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="
+                                                width: 14px;
+                                                height: 14px;
+                                                margin-right: 4px;
+                                            "
+                                        >
+                                            <path
+                                                d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                                            />
+                                        </svg>
+                                        <span data-i18n="upload_folder"></span>
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="fmUploadInput"
+                                        multiple
+                                        style="display: none"
+                                        onchange="fmDoUpload(this)"
+                                    />
+                                    <input
+                                        type="file"
+                                        id="fmUploadDirInput"
+                                        webkitdirectory
+                                        multiple
+                                        style="display: none"
+                                        onchange="fmDoUpload(this)"
+                                    />
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="fmToggleHidden()"
+                                        id="fmHiddenBtn"
+                                        data-i18n-title="toggle_hidden"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            style="width: 14px; height: 14px"
+                                        >
+                                            <path
+                                                d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                                            />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                        <span data-i18n="show_hidden"></span>
+                                    </button>
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="fmCompress()"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            style="
+                                                width: 14px;
+                                                height: 14px;
+                                                margin-right: 4px;
+                                            "
+                                        >
+                                            <path
+                                                d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                                            />
+                                            <polyline points="12 11 12 17" />
+                                            <polyline
+                                                points="9 14 12 17 15 14"
+                                            />
+                                        </svg>
+                                        <span data-i18n="compress"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="fm-table-header">
                                 <span
-                                    class="fm-crumb active"
-                                    onclick="fmNavigateTo('.')"
-                                    >/</span
-                                >
-                            </div>
-                            <div style="flex: 1"></div>
-                            <input
-                                type="text"
-                                id="fmSearch"
-                                class="module-search"
-                                data-i18n-placeholder="search_files"
-                                placeholder=""
-                                oninput="debounceFmSearch()"
-                            />
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="fmToggleHidden()"
-                                id="fmHiddenBtn"
-                                title="Toggle Hidden"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="width: 14px; height: 14px"
-                                >
-                                    <path
-                                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                    />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                            </button>
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="fmRefresh()"
-                                title="Refresh"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="width: 14px; height: 14px"
-                                >
-                                    <polyline points="23 4 23 10 17 10" />
-                                    <path
-                                        d="M20.49 15a9 9 0 11-2.12-9.36L23 10"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="fm-toolbar" style="margin-top: 8px">
-                            <button
-                                class="btn btn-primary btn-sm"
-                                onclick="fmNewFile()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="
-                                        width: 14px;
-                                        height: 14px;
-                                        margin-right: 4px;
-                                    "
-                                >
-                                    <path
-                                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                                    />
-                                    <polyline points="14 2 14 8 20 8" />
-                                    <line x1="12" y1="18" x2="12" y2="12" />
-                                    <line x1="9" y1="15" x2="15" y2="15" />
-                                </svg>
-                                <span data-i18n="new_file"></span>
-                            </button>
-                            <button
-                                class="btn btn-primary btn-sm"
-                                onclick="fmNewFolder()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="
-                                        width: 14px;
-                                        height: 14px;
-                                        margin-right: 4px;
-                                    "
-                                >
-                                    <path
-                                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
-                                    />
-                                    <line x1="12" y1="11" x2="12" y2="17" />
-                                    <line x1="9" y1="14" x2="15" y2="14" />
-                                </svg>
-                                <span data-i18n="new_folder"></span>
-                            </button>
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="fmUpload()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="
-                                        width: 14px;
-                                        height: 14px;
-                                        margin-right: 4px;
-                                    "
-                                >
-                                    <path
-                                        d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                                    />
-                                    <polyline points="17 8 12 3 7 8" />
-                                    <line x1="12" y1="3" x2="12" y2="15" />
-                                </svg>
-                                <span data-i18n="upload"></span>
-                            </button>
-                            <input
-                                type="file"
-                                id="fmUploadInput"
-                                multiple
-                                style="display: none"
-                                onchange="fmDoUpload(this)"
-                            />
-                            <input
-                                type="file"
-                                id="fmUploadDirInput"
-                                webkitdirectory
-                                multiple
-                                style="display: none"
-                                onchange="fmDoUpload(this)"
-                            />
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="
-                                    document
-                                        .getElementById('fmUploadDirInput')
-                                        .click()
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="
-                                        width: 14px;
-                                        height: 14px;
-                                        margin-right: 4px;
-                                    "
-                                >
-                                    <path
-                                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
-                                    />
-                                </svg>
-                                <span data-i18n="upload_folder"></span>
-                            </button>
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="fmCompress()"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="width: 14px; height: 14px"
-                                >
-                                    <!-- 文件夹主体 -->
-                                    <path
-                                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
-                                    ></path>
-                                    <!-- 下载箭头 -->
-                                    <polyline points="12 11 12 17"></polyline>
-                                    <polyline
-                                        points="9 14 12 17 15 14"
-                                    ></polyline>
-                                </svg>
-                                <span data-i18n="compress"></span>
-                            </button>
-                        </div>
-                        <div class="card" style="margin-top: 12px">
-                            <div class="card-header">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    style="width: 18px; height: 18px"
-                                >
-                                    <path
-                                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
-                                    />
-                                </svg>
-                                <span id="fmCurrentPath">.</span>
+                                    class="fm-col-name"
+                                    data-i18n="file_name"
+                                ></span>
                                 <span
-                                    class="chip chip-pr"
-                                    id="fmItemCount"
-                                    style="margin-left: 8px"
-                                    >0</span
-                                >
+                                    class="fm-col-size"
+                                    data-i18n="file_size"
+                                ></span>
+                                <span
+                                    class="fm-col-perm"
+                                    data-i18n="file_perm"
+                                ></span>
+                                <span
+                                    class="fm-col-time"
+                                    data-i18n="file_modified"
+                                ></span>
+                                <span class="fm-col-actions"></span>
                             </div>
-                            <div
-                                id="fmFileList"
-                                style="
-                                    max-height: calc(100vh - 320px);
-                                    overflow-y: auto;
-                                "
-                            ></div>
+                            <div id="fmFileList" class="fm-file-list"></div>
                         </div>
                         <div
                             id="fmEditorPanel"
@@ -3786,6 +3804,24 @@
                                         </button>
                                     </div>
                                 </div>
+                                <input
+                                    type="text"
+                                    class="config-search"
+                                    id="configSearch"
+                                    data-i18n-placeholder="search_config"
+                                    oninput="filterConfigTree(this.value)"
+                                    style="
+                                        width: 100%;
+                                        margin-bottom: 8px;
+                                        padding: 8px 12px;
+                                        border: 1px solid var(--bd);
+                                        border-radius: 8px;
+                                        background: var(--bg-s);
+                                        color: var(--tx-p);
+                                        font-size: 13px;
+                                        box-sizing: border-box;
+                                    "
+                                />
                                 <div
                                     id="configBodyTree"
                                     style="max-height: 65vh; overflow-y: auto"
@@ -3899,123 +3935,6 @@
                                 data-i18n="fw_version_note"
                             ></div>
                             <div
-                                class="fw-section"
-                                id="fwUpdateSection"
-                                style="margin-top: 16px; display: none"
-                            >
-                                <div
-                                    class="fw-section-title"
-                                    data-i18n="fw_update_title"
-                                ></div>
-                                <div class="fw-section-body">
-                                    <div class="fw-row">
-                                        <div
-                                            class="fw-label"
-                                            data-i18n="fw_current_version"
-                                        ></div>
-                                        <div class="fw-control">
-                                            <span
-                                                id="fwCurrentVer"
-                                                style="font-weight: 500"
-                                                >-</span
-                                            >
-                                        </div>
-                                    </div>
-                                    <div class="fw-row">
-                                        <div
-                                            class="fw-label"
-                                            data-i18n="fw_latest_version"
-                                        ></div>
-                                        <div class="fw-control">
-                                            <span
-                                                id="fwLatestVer"
-                                                style="
-                                                    font-weight: 600;
-                                                    color: var(--accent);
-                                                "
-                                                >-</span
-                                            >
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="fw-row"
-                                        id="fwVersionRow"
-                                        style="display: none"
-                                    >
-                                        <div
-                                            class="fw-label"
-                                            data-i18n="fw_select_version"
-                                        ></div>
-                                        <div
-                                            class="fw-control"
-                                            style="
-                                                display: flex;
-                                                align-items: center;
-                                                gap: 6px;
-                                            "
-                                        >
-                                            <select
-                                                id="fwVersionSelect"
-                                                class="settings-select"
-                                                style="
-                                                    width: auto;
-                                                    min-width: 160px;
-                                                "
-                                            ></select>
-                                            <label
-                                                class="switch"
-                                                title="Include pre-release versions"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    id="fwPreRelease"
-                                                    onchange="
-                                                        loadFrameworkVersions()
-                                                    "
-                                                />
-                                                <span
-                                                    class="switch-slider"
-                                                ></span>
-                                            </label>
-                                            <span
-                                                style="
-                                                    font-size: 11px;
-                                                    color: var(--tx-s);
-                                                "
-                                                >--pre</span
-                                            >
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="fw-row"
-                                        style="
-                                            justify-content: flex-end;
-                                            border: none;
-                                            padding-top: 12px;
-                                        "
-                                    >
-                                        <button
-                                            class="btn btn-primary btn-sm"
-                                            id="fwUpdateBtn"
-                                            onclick="doFrameworkUpdate()"
-                                            disabled
-                                        >
-                                            <span
-                                                data-i18n="fw_install_update"
-                                            ></span>
-                                        </button>
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            onclick="loadFrameworkVersions()"
-                                        >
-                                            <span
-                                                data-i18n="fw_check_updates"
-                                            ></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
                                 id="fwConfigBody"
                                 style="margin-top: 16px"
                             ></div>
@@ -4082,6 +4001,920 @@
                         ></h1>
                         <p class="page-desc" data-i18n="cluster_desc"></p>
                         <div id="clusterContent"></div>
+                    </div>
+
+                    <div class="page" id="p-settings">
+                        <h1 class="page-title" data-i18n="settings_title"></h1>
+                        <p class="page-desc" data-i18n="settings_page_desc"></p>
+
+                        <div class="view-toggle pkg-tabs">
+                            <button
+                                class="view-btn pkg-tab active"
+                                data-tab="settings-appearance"
+                                onclick="
+                                    switchSettingsTab(
+                                        'settings-appearance',
+                                        this,
+                                    )
+                                "
+                            >
+                                <span
+                                    data-i18n="settings_appearance_behavior"
+                                ></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="settings-update"
+                                onclick="
+                                    switchSettingsTab('settings-update', this)
+                                "
+                            >
+                                <span data-i18n="fw_update_title"></span>
+                            </button>
+                        </div>
+
+                        <div
+                            id="settings-appearance-tab"
+                            class="tab-section"
+                            style="display: block"
+                        >
+                            <!-- 全局外观横幅 -->
+                            <div
+                                class="settings-banner"
+                                id="settingsGlobalBanner"
+                                style="display: none"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    style="
+                                        width: 20px;
+                                        height: 20px;
+                                        flex-shrink: 0;
+                                    "
+                                >
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path
+                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                                    />
+                                </svg>
+                                <span data-i18n="settings_global_active"></span>
+                            </div>
+
+                            <div class="settings-grid">
+                                <!-- 左列：外观 -->
+                                <div class="settings-col">
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <circle
+                                                    cx="13.5"
+                                                    cy="6.5"
+                                                    r=".5"
+                                                />
+                                                <circle
+                                                    cx="17.5"
+                                                    cy="10.5"
+                                                    r=".5"
+                                                />
+                                                <circle
+                                                    cx="8.5"
+                                                    cy="7.5"
+                                                    r=".5"
+                                                />
+                                                <circle
+                                                    cx="6.5"
+                                                    cy="12.5"
+                                                    r=".5"
+                                                />
+                                                <path
+                                                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
+                                                />
+                                            </svg>
+                                            <span
+                                                data-i18n="settings_appearance"
+                                            ></span>
+                                            <label
+                                                class="settings-scope-toggle"
+                                                title=""
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id="settingsGlobalScope"
+                                                    onchange="
+                                                        onSettingsScopeChange(
+                                                            this.checked,
+                                                        )
+                                                    "
+                                                />
+                                                <span
+                                                    class="settings-scope-track"
+                                                    ><span
+                                                        class="settings-scope-thumb"
+                                                    ></span
+                                                ></span>
+                                                <span
+                                                    class="settings-scope-label"
+                                                    data-i18n="settings_global_scope"
+                                                ></span>
+                                            </label>
+                                        </div>
+                                        <div
+                                            class="settings-card-body"
+                                            id="settingsAppearanceBody"
+                                        >
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_theme"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <label class="switch"
+                                                        ><input
+                                                            type="checkbox"
+                                                            id="settingsTheme"
+                                                            onchange="
+                                                                applySettingTheme(
+                                                                    this
+                                                                        .checked,
+                                                                )
+                                                            " /><span
+                                                            class="switch-slider"
+                                                        ></span
+                                                    ></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_ui_style"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <select
+                                                        class="settings-select"
+                                                        id="settingsUiStyle"
+                                                        onchange="
+                                                            applySettingUiStyle(
+                                                                this.value,
+                                                            )
+                                                        "
+                                                    >
+                                                        <option value="eris">
+                                                            ErisPulse
+                                                        </option>
+                                                        <option value="classic">
+                                                            Material Design 3
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="settings-item settings-item-block"
+                                            >
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_background"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_background_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <div class="bg-controls">
+                                                        <label
+                                                            class="btn btn-secondary btn-sm"
+                                                        >
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                id="settingsBgFile"
+                                                                style="
+                                                                    display: none;
+                                                                "
+                                                                onchange="
+                                                                    applyBgImageFile(
+                                                                        this
+                                                                            .files[0],
+                                                                    )
+                                                                "
+                                                            />
+                                                            <svg
+                                                                viewBox="0 0 24 24"
+                                                                width="14"
+                                                                height="14"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                stroke-width="2"
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                            >
+                                                                <rect
+                                                                    x="3"
+                                                                    y="3"
+                                                                    width="18"
+                                                                    height="18"
+                                                                    rx="2"
+                                                                />
+                                                                <circle
+                                                                    cx="8.5"
+                                                                    cy="8.5"
+                                                                    r="1.5"
+                                                                />
+                                                                <path
+                                                                    d="M21 15l-5-5L5 21"
+                                                                />
+                                                            </svg>
+                                                            <span
+                                                                data-i18n="settings_upload_image"
+                                                            ></span>
+                                                        </label>
+                                                        <label
+                                                            class="color-custom"
+                                                        >
+                                                            <input
+                                                                type="color"
+                                                                id="settingsBg"
+                                                                onchange="
+                                                                    applyBgColor(
+                                                                        this
+                                                                            .value,
+                                                                    )
+                                                                "
+                                                            />
+                                                            <span
+                                                                data-i18n="settings_custom"
+                                                            ></span>
+                                                        </label>
+                                                        <button
+                                                            class="btn btn-secondary btn-sm"
+                                                            onclick="resetBg()"
+                                                        >
+                                                            <span
+                                                                data-i18n="settings_reset"
+                                                            ></span>
+                                                        </button>
+                                                    </div>
+                                                    <label
+                                                        class="settings-check-row"
+                                                        id="bgAutoThemeRow"
+                                                        style="display: none"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            id="settingsBgAutoTheme"
+                                                            checked
+                                                            onchange="
+                                                                onBgAutoThemeToggle(
+                                                                    this
+                                                                        .checked,
+                                                                )
+                                                            "
+                                                        />
+                                                        <span
+                                                            data-i18n="settings_bg_auto_theme"
+                                                        ></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <details class="settings-foldout">
+                                                <summary
+                                                    data-i18n="settings_accent_color"
+                                                ></summary>
+                                                <div
+                                                    class="settings-foldout-body"
+                                                >
+                                                    <div
+                                                        class="color-swatches"
+                                                        id="accentSwatches"
+                                                    ></div>
+                                                    <label class="color-custom">
+                                                        <input
+                                                            type="color"
+                                                            id="settingsAccent"
+                                                            onchange="
+                                                                applyAccentColor(
+                                                                    this.value,
+                                                                )
+                                                            "
+                                                        />
+                                                        <span
+                                                            data-i18n="settings_custom"
+                                                        ></span>
+                                                    </label>
+                                                    <button
+                                                        class="btn btn-secondary btn-sm"
+                                                        style="margin-top: 8px"
+                                                        onclick="resetAccent()"
+                                                    >
+                                                        <span
+                                                            data-i18n="settings_reset"
+                                                        ></span>
+                                                    </button>
+                                                </div>
+                                            </details>
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_language"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <select
+                                                        class="settings-select"
+                                                        id="settingsLang"
+                                                        onchange="
+                                                            applySettingLang(
+                                                                this.value,
+                                                            )
+                                                        "
+                                                    >
+                                                        <option value="en">
+                                                            English
+                                                        </option>
+                                                        <option value="zh">
+                                                            简体中文
+                                                        </option>
+                                                        <option value="zh-TW">
+                                                            繁體中文
+                                                        </option>
+                                                        <option value="ja">
+                                                            日本語
+                                                        </option>
+                                                        <option value="ru">
+                                                            Русский
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="settings-item settings-item-block"
+                                            >
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_dash_title"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_dash_title_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <input
+                                                        type="text"
+                                                        class="settings-input"
+                                                        id="settingsDashTitle"
+                                                        placeholder="ErisPulse Dashboard"
+                                                        onchange="
+                                                            applyDashTitle(
+                                                                this.value,
+                                                            )
+                                                        "
+                                                        style="
+                                                            width: 100%;
+                                                            padding: 8px 12px;
+                                                            border: 1px solid
+                                                                var(--bd);
+                                                            border-radius: 8px;
+                                                            background: var(
+                                                                --bg-s
+                                                            );
+                                                            color: var(--tx-p);
+                                                            font-size: 13px;
+                                                            box-sizing: border-box;
+                                                        "
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 右列：布局与行为 -->
+                                <div class="settings-col">
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="8"
+                                                    y1="6"
+                                                    x2="21"
+                                                    y2="6"
+                                                />
+                                                <line
+                                                    x1="8"
+                                                    y1="12"
+                                                    x2="21"
+                                                    y2="12"
+                                                />
+                                                <line
+                                                    x1="8"
+                                                    y1="18"
+                                                    x2="21"
+                                                    y2="18"
+                                                />
+                                                <line
+                                                    x1="3"
+                                                    y1="6"
+                                                    x2="3.01"
+                                                    y2="6"
+                                                />
+                                                <line
+                                                    x1="3"
+                                                    y1="12"
+                                                    x2="3.01"
+                                                    y2="12"
+                                                />
+                                                <line
+                                                    x1="3"
+                                                    y1="18"
+                                                    x2="3.01"
+                                                    y2="18"
+                                                />
+                                            </svg>
+                                            <span
+                                                data-i18n="settings_layout"
+                                            ></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_sidebar"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <label class="switch"
+                                                        ><input
+                                                            type="checkbox"
+                                                            id="settingsSidebar"
+                                                            onchange="
+                                                                applySettingSidebar(
+                                                                    this
+                                                                        .checked,
+                                                                )
+                                                            " /><span
+                                                            class="switch-slider"
+                                                        ></span
+                                                    ></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_show_node_selector"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_show_node_selector_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <label class="switch"
+                                                        ><input
+                                                            type="checkbox"
+                                                            id="settingsNodeSelector"
+                                                            onchange="
+                                                                applySettingNodeSelector(
+                                                                    this
+                                                                        .checked,
+                                                                )
+                                                            " /><span
+                                                            class="switch-slider"
+                                                        ></span
+                                                    ></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_remember_groups"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_remember_groups_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <label class="switch"
+                                                        ><input
+                                                            type="checkbox"
+                                                            id="settingsRememberGroups"
+                                                            onchange="
+                                                                applySettingRememberGroups(
+                                                                    this
+                                                                        .checked,
+                                                                )
+                                                            " /><span
+                                                            class="switch-slider"
+                                                        ></span
+                                                    ></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="card settings-card"
+                                        style="margin-top: 16px"
+                                    >
+                                        <div class="card-header">
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <path
+                                                    d="M21 12a9 9 0 11-6.219-8.56"
+                                                />
+                                                <polyline
+                                                    points="21 4 21 10 15 10"
+                                                />
+                                            </svg>
+                                            <span
+                                                data-i18n="settings_behavior"
+                                            ></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_refresh_interval"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <select
+                                                        class="settings-select"
+                                                        id="settingsRefresh"
+                                                        onchange="
+                                                            applySettingRefresh(
+                                                                this.value,
+                                                            )
+                                                        "
+                                                    >
+                                                        <option value="3000">
+                                                            3s
+                                                        </option>
+                                                        <option
+                                                            value="5000"
+                                                            selected
+                                                        >
+                                                            5s
+                                                        </option>
+                                                        <option value="10000">
+                                                            10s
+                                                        </option>
+                                                        <option value="30000">
+                                                            30s
+                                                        </option>
+                                                        <option
+                                                            value="0"
+                                                            data-i18n="settings_disabled"
+                                                        ></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
+                                                    data-i18n="settings_event_limit"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <select
+                                                        class="settings-select"
+                                                        id="settingsEventLimit"
+                                                        onchange="
+                                                            applySettingEventLimit(
+                                                                this.value,
+                                                            )
+                                                        "
+                                                    >
+                                                        <option value="50">
+                                                            50
+                                                        </option>
+                                                        <option
+                                                            value="100"
+                                                            selected
+                                                        >
+                                                            100
+                                                        </option>
+                                                        <option value="200">
+                                                            200
+                                                        </option>
+                                                        <option value="500">
+                                                            500
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="card settings-card"
+                                        style="margin-top: 16px"
+                                    >
+                                        <div class="card-header">
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <path
+                                                    d="M18 8h1a4 4 0 010 8h-1"
+                                                />
+                                                <path
+                                                    d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"
+                                                />
+                                                <line
+                                                    x1="6"
+                                                    y1="1"
+                                                    x2="6"
+                                                    y2="4"
+                                                />
+                                                <line
+                                                    x1="10"
+                                                    y1="1"
+                                                    x2="10"
+                                                    y2="4"
+                                                />
+                                                <line
+                                                    x1="14"
+                                                    y1="1"
+                                                    x2="14"
+                                                    y2="4"
+                                                />
+                                            </svg>
+                                            <span
+                                                data-i18n="settings_system"
+                                            ></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="restart"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_restart_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <button
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="
+                                                            restartFramework()
+                                                        "
+                                                        data-i18n="restart"
+                                                    ></button>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_logout"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_logout_desc"
+                                                    ></div>
+                                                </div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <button
+                                                        class="btn btn-secondary btn-sm"
+                                                        onclick="doLogout()"
+                                                        data-i18n="settings_logout"
+                                                    ></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- settings-appearance-tab -->
+
+                        <div id="settings-update-tab" class="tab-section">
+                            <div
+                                class="card settings-card"
+                                style="margin-top: 16px"
+                            >
+                                <div class="card-header">
+                                    <img
+                                        src="/Dashboard/static/res/erispulse_logo_hp.png"
+                                        alt="ErisPulse LOGO"
+                                        height="50px"
+                                    />
+                                    <span data-i18n="fw_update_title"></span>
+                                </div>
+                                <div class="settings-card-body">
+                                    <div
+                                        id="fwWinWarn"
+                                        style="
+                                            display: none;
+                                            font-size: 12px;
+                                            color: var(--wr-c);
+                                            margin-bottom: 12px;
+                                            padding: 10px 14px;
+                                            border-radius: 8px;
+                                            background: var(--wr-bg);
+                                            border: 1px solid var(--wr-bd);
+                                        "
+                                        data-i18n="fw_win_warn"
+                                    ></div>
+                                    <div
+                                        class="fw-info-bar"
+                                        style="
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 20px;
+                                            flex-wrap: wrap;
+                                            margin-bottom: 16px;
+                                        "
+                                    >
+                                        <div>
+                                            <span
+                                                style="
+                                                    font-size: 12px;
+                                                    color: var(--tx-s);
+                                                "
+                                                data-i18n="fw_current_version"
+                                            ></span>
+                                            <span
+                                                id="fwCurrentVer"
+                                                style="
+                                                    font-weight: 600;
+                                                    font-family: monospace;
+                                                    margin-left: 4px;
+                                                "
+                                                >-</span
+                                            >
+                                        </div>
+                                        <div>
+                                            <span
+                                                style="
+                                                    font-size: 12px;
+                                                    color: var(--tx-s);
+                                                "
+                                                data-i18n="fw_latest_version"
+                                            ></span>
+                                            <span
+                                                id="fwLatestVer"
+                                                style="
+                                                    font-weight: 600;
+                                                    color: var(--accent);
+                                                    font-family: monospace;
+                                                    margin-left: 4px;
+                                                "
+                                                >-</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <div
+                                        id="fwVersionRow"
+                                        style="
+                                            display: none;
+                                            margin-bottom: 12px;
+                                        "
+                                    >
+                                        <div
+                                            style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                flex-wrap: wrap;
+                                            "
+                                        >
+                                            <span
+                                                style="
+                                                    font-size: 12px;
+                                                    color: var(--tx-s);
+                                                "
+                                                data-i18n="fw_select_version"
+                                            ></span>
+                                            <select
+                                                id="fwVersionSelect"
+                                                class="settings-select"
+                                                style="
+                                                    width: auto;
+                                                    min-width: 140px;
+                                                "
+                                                onchange="loadFwReleaseNotes()"
+                                            ></select>
+                                            <label
+                                                class="switch"
+                                                title="Pre-release"
+                                                ><input
+                                                    type="checkbox"
+                                                    id="fwPreRelease"
+                                                    onchange="
+                                                        loadFrameworkVersions()
+                                                    " /><span
+                                                    class="switch-slider"
+                                                ></span
+                                            ></label>
+                                            <span
+                                                style="
+                                                    font-size: 11px;
+                                                    color: var(--tx-s);
+                                                "
+                                                >--pre</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <div
+                                        id="fwReleaseNotes"
+                                        style="
+                                            display: none;
+                                            margin-bottom: 16px;
+                                            padding: 14px 16px;
+                                            border-radius: 10px;
+                                            border: 1px solid var(--bd);
+                                            background: var(--bg-s);
+                                            max-height: 260px;
+                                            overflow-y: auto;
+                                            font-size: 13px;
+                                            color: var(--tx-s);
+                                            white-space: pre-wrap;
+                                            line-height: 1.6;
+                                        "
+                                    ></div>
+                                    <div style="display: flex; gap: 8px">
+                                        <button
+                                            class="btn btn-primary btn-sm"
+                                            id="fwUpdateBtn"
+                                            onclick="doFrameworkUpdate()"
+                                            disabled
+                                        >
+                                            <span
+                                                data-i18n="fw_install_update"
+                                            ></span>
+                                        </button>
+                                        <button
+                                            class="btn btn-secondary btn-sm"
+                                            onclick="loadFrameworkVersions()"
+                                        >
+                                            <span
+                                                data-i18n="fw_check_updates"
+                                            ></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="page" id="p-about">
@@ -4580,367 +5413,6 @@
                 <div class="modal-actions" id="pkgDetailActions"></div>
             </div>
         </div>
-
-        <div class="settings-panel" id="settingsPanel">
-            <div class="settings-panel-hd">
-                <div style="display: flex; align-items: center; gap: 8px">
-                    <img
-                        src="/Dashboard/static/res/erispulse_logo_hp.png"
-                        alt="ErisPulse"
-                        style="height: 28px"
-                    />
-                    <span
-                        class="settings-panel-title"
-                        data-i18n="settings_title"
-                    ></span>
-                </div>
-                <button
-                    class="btn-icon"
-                    onclick="closeSettings()"
-                    style="width: 32px; height: 32px"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
-            </div>
-            <div class="settings-panel-body">
-                <div style="text-align: center; margin-bottom: 12px">
-                    <img
-                        src="/Dashboard/static/res/erispulse_logo_hp.png"
-                        alt="ErisPulse"
-                        style="height: 64px"
-                    />
-                </div>
-                <div style="margin-bottom: 8px">
-                    <div
-                        class="settings-section-title"
-                        data-i18n="settings_appearance"
-                    ></div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_theme"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <label class="switch"
-                                ><input
-                                    type="checkbox"
-                                    id="settingsTheme"
-                                    onchange="
-                                        applySettingTheme(this.checked)
-                                    " /><span class="switch-slider"></span
-                            ></label>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_ui_style"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <select
-                                class="settings-select"
-                                id="settingsUiStyle"
-                                onchange="applySettingUiStyle(this.value)"
-                            >
-                                <option value="eris">ErisPulse</option>
-                                <option value="classic">
-                                    Material Design 3
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_background"
-                            ></div>
-                            <div
-                                class="settings-desc"
-                                data-i18n="settings_background_desc"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <div class="bg-controls">
-                                <label class="btn btn-secondary btn-sm">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        id="settingsBgFile"
-                                        style="display: none"
-                                        onchange="
-                                            applyBgImageFile(this.files[0])
-                                        "
-                                    />
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        width="14"
-                                        height="14"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    >
-                                        <rect
-                                            x="3"
-                                            y="3"
-                                            width="18"
-                                            height="18"
-                                            rx="2"
-                                        />
-                                        <circle cx="8.5" cy="8.5" r="1.5" />
-                                        <path d="M21 15l-5-5L5 21" />
-                                    </svg>
-                                    <span
-                                        data-i18n="settings_upload_image"
-                                    ></span>
-                                </label>
-                                <label class="color-custom">
-                                    <input
-                                        type="color"
-                                        id="settingsBg"
-                                        onchange="applyBgColor(this.value)"
-                                    />
-                                    <span data-i18n="settings_custom"></span>
-                                </label>
-                                <button
-                                    class="btn btn-secondary btn-sm"
-                                    onclick="resetBg()"
-                                >
-                                    <span data-i18n="settings_reset"></span>
-                                </button>
-                            </div>
-                            <label
-                                class="settings-check-row"
-                                id="bgAutoThemeRow"
-                                style="display: none"
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="settingsBgAutoTheme"
-                                    checked
-                                    onchange="onBgAutoThemeToggle(this.checked)"
-                                />
-                                <span data-i18n="settings_bg_auto_theme"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <details class="settings-foldout">
-                        <summary data-i18n="settings_accent_color"></summary>
-                        <div class="settings-foldout-body">
-                            <div
-                                class="color-swatches"
-                                id="accentSwatches"
-                            ></div>
-                            <label class="color-custom">
-                                <input
-                                    type="color"
-                                    id="settingsAccent"
-                                    onchange="applyAccentColor(this.value)"
-                                />
-                                <span data-i18n="settings_custom"></span>
-                            </label>
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                style="margin-top: 8px"
-                                onclick="resetAccent()"
-                            >
-                                <span data-i18n="settings_reset"></span>
-                            </button>
-                        </div>
-                    </details>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_language"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <select
-                                class="settings-select"
-                                id="settingsLang"
-                                onchange="applySettingLang(this.value)"
-                            >
-                                <option value="en">English</option>
-                                <option value="zh">简体中文</option>
-                                <option value="zh-TW">繁體中文</option>
-                                <option value="ja">日本語</option>
-                                <option value="ru">Русский</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_sidebar"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <label class="switch"
-                                ><input
-                                    type="checkbox"
-                                    id="settingsSidebar"
-                                    onchange="
-                                        applySettingSidebar(this.checked)
-                                    " /><span class="switch-slider"></span
-                            ></label>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_show_node_selector"
-                            ></div>
-                            <div
-                                class="settings-desc"
-                                data-i18n="settings_show_node_selector_desc"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <label class="switch"
-                                ><input
-                                    type="checkbox"
-                                    id="settingsNodeSelector"
-                                    onchange="
-                                        applySettingNodeSelector(this.checked)
-                                    " /><span class="switch-slider"></span
-                            ></label>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_remember_groups"
-                            ></div>
-                            <div
-                                class="settings-desc"
-                                data-i18n="settings_remember_groups_desc"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <label class="switch"
-                                ><input
-                                    type="checkbox"
-                                    id="settingsRememberGroups"
-                                    onchange="
-                                        applySettingRememberGroups(this.checked)
-                                    " /><span class="switch-slider"></span
-                            ></label>
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-bottom: 8px">
-                    <div
-                        class="settings-section-title"
-                        data-i18n="settings_behavior"
-                    ></div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_refresh_interval"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <select
-                                class="settings-select"
-                                id="settingsRefresh"
-                                onchange="applySettingRefresh(this.value)"
-                            >
-                                <option value="3000">3s</option>
-                                <option value="5000" selected>5s</option>
-                                <option value="10000">10s</option>
-                                <option value="30000">30s</option>
-                                <option
-                                    value="0"
-                                    data-i18n="settings_disabled"
-                                ></option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_event_limit"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <select
-                                class="settings-select"
-                                id="settingsEventLimit"
-                                onchange="applySettingEventLimit(this.value)"
-                            >
-                                <option value="50">50</option>
-                                <option value="100" selected>100</option>
-                                <option value="200">200</option>
-                                <option value="500">500</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="restart"
-                            ></div>
-                            <div
-                                class="settings-desc"
-                                data-i18n="settings_restart_desc"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <button
-                                class="btn btn-danger btn-sm"
-                                onclick="restartFramework()"
-                                data-i18n="restart"
-                            ></button>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <div>
-                            <div
-                                class="settings-label"
-                                data-i18n="settings_logout"
-                            ></div>
-                            <div
-                                class="settings-desc"
-                                data-i18n="settings_logout_desc"
-                            ></div>
-                        </div>
-                        <div class="settings-control">
-                            <button
-                                class="btn btn-secondary btn-sm"
-                                onclick="doLogout()"
-                                data-i18n="settings_logout"
-                            ></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div
-            class="settings-backdrop"
-            id="settingsBackdrop"
-            onclick="closeSettings()"
-        ></div>
 
         <div class="login-overlay" id="loginOv">
             <div class="login-bg-loader" id="loginBgLoader"></div>
@@ -5463,6 +5935,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js"></script>
+        <script src="/Dashboard/static/dash.js?v=2"></script>
     </body>
 </html>

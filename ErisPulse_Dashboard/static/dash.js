@@ -35,7 +35,7 @@ const I18N = {
     bots: "机器人",
     events: "事件系统",
     modules: "插件管理",
-    store: "应用商店",
+    store: "模块商店",
     config: "配置管理",
     sys_logs: "系统日志",
     logs: "日志",
@@ -80,6 +80,7 @@ const I18N = {
     install: "安装",
     search_packages: "搜索包...",
     search_modules: "搜索模块...",
+    search_config: "搜索配置项...",
     all_status: "所有状态",
     live_events: "实时事件",
     waiting_events: "等待事件...",
@@ -154,6 +155,7 @@ const I18N = {
     failed_registry: "加载注册表失败",
     event_cleared: "事件已清除",
     empty_storage: "存储为空",
+    storage_items: "条",
     message: "消息",
     notice: "通知",
     request: "请求",
@@ -318,6 +320,13 @@ const I18N = {
     rename_success: "重命名成功",
     rename_failed: "重命名失败",
     new_file_name: "文件名",
+    file_name: "名称",
+    file_size: "大小",
+    file_perm: "权限",
+    file_modified: "修改时间",
+    parent_dir: "上级目录",
+    toggle_hidden: "显示/隐藏",
+    show_hidden: "隐藏项",
     new_folder_name: "文件夹名",
     enable_module: "启用",
     disable_module: "禁用",
@@ -427,6 +436,7 @@ const I18N = {
     lifecycle_desc: "查看系统启动和运行过程",
     settings_title: "仪表盘设置",
     settings_appearance: "外观",
+    settings_appearance_behavior: "外观与行为",
     settings_behavior: "行为",
     settings_theme: "深色主题",
     settings_language: "语言",
@@ -450,6 +460,13 @@ const I18N = {
     settings_restart_desc: "重新加载所有模块和适配器",
     settings_logout: "退出登录",
     settings_logout_desc: "清除令牌并返回登录页",
+    settings_page_desc: "自定义仪表盘的外观和行为",
+    settings_global_scope: "全局同步",
+    settings_global_active: "全局外观已启用，所有用户将看到相同的外观设置",
+    settings_layout: "布局",
+    settings_system: "系统",
+    settings_dash_title: "仪表盘标题",
+    settings_dash_title_desc: "设置顶部标题栏文字",
     upload_modal_title: "上传安装",
     upload_drop_hint: "拖拽文件到此处或点击选择",
     force_install: "强制安装",
@@ -542,6 +559,9 @@ const I18N = {
     fw_server_warn_text:
       "您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。",
     fw_unknown_field: "未知字段",
+    fw_win_warn:
+      "Windows 系统限制可能导致自动更新失败，请手动检查并更新 ErisPulse 框架",
+    fw_cannot_update: "当前环境不支持自动更新",
     fw_unknown_field_desc: "此配置项不属于当前版本的默认配置，建议删除",
     fw_reset_default: "恢复默认",
     fw_reset_confirm: "确认将 {key} 恢复为默认值？",
@@ -697,7 +717,7 @@ const I18N = {
     bots: "Bots",
     events: "Events",
     modules: "Plugins",
-    store: "App Store",
+    store: "Module Store",
     config: "Configuration",
     sys_logs: "System Logs",
     logs: "Logs",
@@ -742,6 +762,7 @@ const I18N = {
     install: "Install",
     search_packages: "Search packages...",
     search_modules: "Search modules...",
+    search_config: "Search config...",
     all_status: "All Status",
     live_events: "Live Events",
     waiting_events: "Waiting for events...",
@@ -820,6 +841,7 @@ const I18N = {
     failed_registry: "Failed to load registry",
     event_cleared: "Events cleared",
     empty_storage: "Storage is empty",
+    storage_items: "keys",
     message: "Message",
     notice: "Notice",
     request: "Request",
@@ -984,6 +1006,13 @@ const I18N = {
     rename_success: "Renamed",
     rename_failed: "Rename failed",
     new_file_name: "File name",
+    file_name: "Name",
+    file_size: "Size",
+    file_perm: "Perms",
+    file_modified: "Modified",
+    parent_dir: "Parent",
+    toggle_hidden: "Toggle Hidden",
+    show_hidden: "Hidden",
     new_folder_name: "Folder name",
     enable_module: "Enable",
     disable_module: "Disable",
@@ -1099,6 +1128,7 @@ const I18N = {
     lifecycle_desc: "View system startup and runtime process",
     settings_title: "Dashboard Settings",
     settings_appearance: "Appearance",
+    settings_appearance_behavior: "Appearance & Behavior",
     settings_behavior: "Behavior",
     settings_theme: "Dark Theme",
     settings_language: "Language",
@@ -1125,6 +1155,14 @@ const I18N = {
     settings_restart_desc: "Reload all modules and adapters",
     settings_logout: "Sign Out",
     settings_logout_desc: "Clear token and return to login",
+    settings_page_desc: "Customize dashboard appearance and behavior",
+    settings_global_scope: "Global Sync",
+    settings_global_active:
+      "Global appearance is enabled — all users see the same look",
+    settings_layout: "Layout",
+    settings_system: "System",
+    settings_dash_title: "Dashboard Title",
+    settings_dash_title_desc: "Customize the header title text",
     upload_modal_title: "Upload & Install",
     upload_drop_hint: "Drop file here or click to select",
     force_install: "Force Install",
@@ -1184,6 +1222,9 @@ const I18N = {
     fw_server_warn_text:
       "You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.",
     fw_unknown_field: "Unknown Field",
+    fw_win_warn:
+      "Windows system restrictions may prevent automatic updates. Please check and update ErisPulse manually.",
+    fw_cannot_update: "Auto-update is not supported in this environment",
     fw_unknown_field_desc:
       "This config field is not part of the current default config. Consider deleting it.",
     fw_reset_default: "Reset to Default",
@@ -1386,7 +1427,7 @@ const I18N = {
     bots: "機器人",
     events: "事件系統",
     modules: "插件管理",
-    store: "應用商店",
+    store: "模組商店",
     config: "配置管理",
     sys_logs: "系統日誌",
     logs: "日誌",
@@ -1431,6 +1472,7 @@ const I18N = {
     install: "安裝",
     search_packages: "搜尋套件...",
     search_modules: "搜尋模組...",
+    search_config: "搜尋設定項...",
     all_status: "所有狀態",
     live_events: "即時事件",
     waiting_events: "等待事件...",
@@ -1503,6 +1545,7 @@ const I18N = {
     failed_registry: "載入註冊表失敗",
     event_cleared: "事件已清除",
     empty_storage: "儲存為空",
+    storage_items: "條",
     message: "訊息",
     notice: "通知",
     request: "請求",
@@ -1660,6 +1703,13 @@ const I18N = {
     rename_success: "重新命名成功",
     rename_failed: "重新命名失敗",
     new_file_name: "檔案名",
+    file_name: "名稱",
+    file_size: "大小",
+    file_perm: "權限",
+    file_modified: "修改時間",
+    parent_dir: "上級目錄",
+    toggle_hidden: "顯示/隱藏",
+    show_hidden: "隱藏項",
     new_folder_name: "資料夾名",
     enable_module: "啟用",
     disable_module: "禁用",
@@ -1770,6 +1820,7 @@ const I18N = {
     lifecycle_desc: "查看系統啟動和運行過程",
     settings_title: "儀表盤設定",
     settings_appearance: "外觀",
+    settings_appearance_behavior: "外觀與行為",
     settings_behavior: "行為",
     settings_theme: "深色主題",
     settings_language: "語言",
@@ -1793,6 +1844,13 @@ const I18N = {
     settings_restart_desc: "重新載入所有模組和適配器",
     settings_logout: "登出",
     settings_logout_desc: "清除令牌並返回登入頁",
+    settings_page_desc: "自訂儀表盤的外觀和行為",
+    settings_global_scope: "全域同步",
+    settings_global_active: "全域外觀已啟用，所有使用者將看到相同的外觀設定",
+    settings_layout: "佈局",
+    settings_system: "系統",
+    settings_dash_title: "儀表盤標題",
+    settings_dash_title_desc: "設定頂部標題欄文字",
     upload_modal_title: "上傳安裝",
     upload_drop_hint: "拖拽檔案到此處或點擊選擇",
     force_install: "強制安裝",
@@ -1883,6 +1941,9 @@ const I18N = {
     fw_server_warn_text:
       "您正在修改 ErisPulse 伺服器連接配置（host/port/ssl）。請確定您在幹什麼，否則不要修改此處！\n\n在 Docker 容器中操作此項可能導致您無法外部存取 ErisPulse 的 routers。",
     fw_unknown_field: "未知欄位",
+    fw_win_warn:
+      "Windows 系統限制可能導致自動更新失敗，請手動檢查並更新 ErisPulse 框架",
+    fw_cannot_update: "當前環境不支援自動更新",
     fw_unknown_field_desc: "此配置項不屬於當前版本的默認配置，建議刪除",
     fw_reset_default: "恢復默認",
     fw_reset_confirm: "確認將 {key} 恢復為默認值？",
@@ -2035,7 +2096,7 @@ const I18N = {
     bots: "ボット",
     events: "イベント",
     modules: "プラグイン",
-    store: "アプリストア",
+    store: "モジュールストア",
     config: "設定",
     sys_logs: "システムログ",
     logs: "ログ",
@@ -2080,6 +2141,7 @@ const I18N = {
     install: "インストール",
     search_packages: "パッケージを検索...",
     search_modules: "モジュールを検索...",
+    search_config: "設定を検索...",
     all_status: "すべて",
     live_events: "ライブイベント",
     waiting_events: "イベントを待機中...",
@@ -2158,6 +2220,7 @@ const I18N = {
     failed_registry: "レジストリの読み込みに失敗",
     event_cleared: "イベントをクリアしました",
     empty_storage: "ストレージは空です",
+    storage_items: "件",
     message: "メッセージ",
     notice: "通知",
     request: "リクエスト",
@@ -2316,6 +2379,13 @@ const I18N = {
     rename_success: "名前を変更しました",
     rename_failed: "名前変更失敗",
     new_file_name: "ファイル名",
+    file_name: "名前",
+    file_size: "サイズ",
+    file_perm: "権限",
+    file_modified: "更新日時",
+    parent_dir: "親ディレクトリ",
+    toggle_hidden: "隠し表示",
+    show_hidden: "隠し",
     new_folder_name: "フォルダ名",
     enable_module: "有効化",
     disable_module: "無効化",
@@ -2431,6 +2501,7 @@ const I18N = {
     lifecycle_desc: "システムの起動と実行プロセスを表示",
     settings_title: "ダッシュボード設定",
     settings_appearance: "外観",
+    settings_appearance_behavior: "外観と動作",
     settings_behavior: "動作",
     settings_theme: "ダークテーマ",
     settings_language: "言語",
@@ -2456,6 +2527,14 @@ const I18N = {
     settings_restart_desc: "すべてのモジュールとアダプタを再読込",
     settings_logout: "ログアウト",
     settings_logout_desc: "トークンを消去してログインページに戻る",
+    settings_page_desc: "ダッシュボードの外観と動作をカスタマイズ",
+    settings_global_scope: "グローバル同期",
+    settings_global_active:
+      "グローバル外観が有効です — すべてのユーザーが同じ外観を表示します",
+    settings_layout: "レイアウト",
+    settings_system: "システム",
+    settings_dash_title: "ダッシュボードタイトル",
+    settings_dash_title_desc: "ヘッダータイトルのカスタマイズ",
     upload_modal_title: "アップロードインストール",
     upload_drop_hint: "ファイルをここにドラッグまたはクリックして選択",
     force_install: "強制インストール",
@@ -2549,6 +2628,9 @@ const I18N = {
     fw_server_warn_text:
       "ErisPulseサーバーの接続設定（host/port/ssl）を変更しようとしています。何をしているか確認してください！\n\nDockerコンテナでこれを変更すると、外部からErisPulseルーターにアクセスできなくなる可能性があります。",
     fw_unknown_field: "不明なフィールド",
+    fw_win_warn:
+      "Windowsシステムの制限により自動更新が失敗する可能性があります。手動でErisPulseを更新してください",
+    fw_cannot_update: "この環境では自動更新をサポートしていません",
     fw_unknown_field_desc:
       "この設定項目は現在のバージョンのデフォルト設定に含まれていません。削除をお勧めします。",
     fw_reset_default: "デフォルトに戻す",
@@ -2706,7 +2788,7 @@ const I18N = {
     bots: "Боты",
     events: "События",
     modules: "Плагины",
-    store: "Магазин приложений",
+    store: "Магазин модулей",
     config: "Конфигурация",
     sys_logs: "Системные журналы",
     logs: "Журналы",
@@ -2752,6 +2834,7 @@ const I18N = {
     install: "Установить",
     search_packages: "Поиск пакетов...",
     search_modules: "Поиск модулей...",
+    search_config: "Поиск конфигурации...",
     all_status: "Все",
     live_events: "События в реальном времени",
     waiting_events: "Ожидание событий...",
@@ -2828,6 +2911,7 @@ const I18N = {
     failed_registry: "Не удалось загрузить реестр",
     event_cleared: "События очищены",
     empty_storage: "Хранилище пусто",
+    storage_items: "записей",
     message: "Сообщение",
     notice: "Уведомление",
     request: "Запрос",
@@ -2986,6 +3070,13 @@ const I18N = {
     rename_success: "Переименовано",
     rename_failed: "Ошибка переименования",
     new_file_name: "Имя файла",
+    file_name: "Имя",
+    file_size: "Размер",
+    file_perm: "Права",
+    file_modified: "Изменён",
+    parent_dir: "Вверх",
+    toggle_hidden: "Скрытые",
+    show_hidden: "Скрытые",
     new_folder_name: "Имя папки",
     enable_module: "Включить",
     disable_module: "Отключить",
@@ -3102,6 +3193,7 @@ const I18N = {
     lifecycle_desc: "Просмотр процесса запуска и работы системы",
     settings_title: "Настройки панели",
     settings_appearance: "Внешний вид",
+    settings_appearance_behavior: "Внешний вид и поведение",
     settings_behavior: "Поведение",
     settings_theme: "Тёмная тема",
     settings_language: "Язык",
@@ -3128,6 +3220,14 @@ const I18N = {
     settings_restart_desc: "Перезагрузить все модули и адаптеры",
     settings_logout: "Выйти",
     settings_logout_desc: "Очистить токен и вернуться к входу",
+    settings_page_desc: "Настройте внешний вид и поведение панели",
+    settings_global_scope: "Глобальная синхронизация",
+    settings_global_active:
+      "Глобальный внешний вид включён — все пользователи видят одинаковое оформление",
+    settings_layout: "Макет",
+    settings_system: "Система",
+    settings_dash_title: "Заголовок панели",
+    settings_dash_title_desc: "Настройка текста заголовка",
     upload_modal_title: "Загрузка и установка",
     upload_drop_hint: "Перетащите файл или нажмите для выбора",
     force_install: "Принудительная установка",
@@ -3228,6 +3328,9 @@ const I18N = {
     fw_server_warn_text:
       "Вы изменяете настройки подключения сервера ErisPulse (host/port/ssl). Убедитесь, что вы знаете, что делаете!\n\nИзменение в Docker контейнере может сделать маршрутизаторы ErisPulse недоступными извне.",
     fw_unknown_field: "Неизвестное поле",
+    fw_win_warn:
+      "Ограничения Windows могут помешать автоматическому обновлению. Обновите ErisPulse вручную.",
+    fw_cannot_update: "Автообновление не поддерживается в этой среде",
     fw_unknown_field_desc:
       "Это поле не входит в стандартную конфигурацию текущей версии. Рекомендуется удалить.",
     fw_reset_default: "Сбросить",
@@ -3740,6 +3843,7 @@ function toggleLang() {
         fmBrowse(".");
       },
       config: loadConfig,
+      settings: loadSettings,
       cluster: loadClusterPage,
       about: loadAbout,
     };
@@ -3832,6 +3936,7 @@ function applyUiStyle(style) {
 function applySettingUiStyle(val) {
   localStorage.setItem("ep_ui_style", val);
   applyUiStyle(val);
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function toggleSidebar() {
@@ -4057,6 +4162,7 @@ function go(name, el) {
       fmBrowse(".");
     },
     config: loadConfig,
+    settings: loadSettings,
     cluster: loadClusterPage,
     about: loadAbout,
   };
@@ -4571,10 +4677,12 @@ async function doLogin() {
     authed = true;
     closeLogin();
     document.querySelector(".app").classList.add("authed");
-    loadAll();
-    wsConnect();
-    restartRefreshTimer();
-    loadClusterNodes();
+    loadGlobalAppearance().then(function () {
+      loadAll();
+      wsConnect();
+      restartRefreshTimer();
+      loadClusterNodes();
+    });
     toast(t("logged_in"), "ok");
   } else {
     if (!authed) localStorage.removeItem(TK);
@@ -5913,23 +6021,27 @@ async function loadConfig() {
     for (const [k, v] of Object.entries(c.config)) {
       if (k !== "ErisPulse") treeData[k] = v;
     }
-    document.getElementById("configBodyTree").innerHTML = kvTree(
-      treeData,
-      "config",
-      "",
-    );
+    requestAnimationFrame(function () {
+      document.getElementById("configBodyTree").innerHTML = kvTree(
+        treeData,
+        "config",
+        "",
+      );
+    });
   }
   const s = await api("/api/storage");
   if (s) {
     document.getElementById("storageCount").textContent =
-      (s.total || 0) + " " + t("store");
+      (s.total || 0) + " " + t("storage_items");
     const k = s.keys || [];
-    document.getElementById("storageBody").innerHTML = k.length
-      ? k
-          .slice(0, 200)
-          .map((x) => kvRow(esc(x), s.data[x], "storage", x))
-          .join("")
-      : '<div class="empty-state"><p>' + t("empty_storage") + "</p></div>";
+    requestAnimationFrame(function () {
+      document.getElementById("storageBody").innerHTML = k.length
+        ? k
+            .slice(0, 200)
+            .map((x) => kvRow(esc(x), s.data[x], "storage", x))
+            .join("")
+        : '<div class="empty-state"><p>' + t("empty_storage") + "</p></div>";
+    });
   }
 
   // 如果在源码视图，也加载源码
@@ -5980,14 +6092,79 @@ function switchConfigView(view, btn) {
   btn.classList.add("active");
   const treeView = document.getElementById("configBodyTree");
   const sourceView = document.getElementById("configBodySource");
+  var searchEl = document.getElementById("configSearch");
   if (view === "tree") {
     treeView.style.display = "block";
     sourceView.style.display = "none";
+    if (searchEl) searchEl.style.display = "";
   } else {
     treeView.style.display = "none";
     sourceView.style.display = "block";
+    if (searchEl) searchEl.style.display = "none";
     loadConfigSource();
   }
+}
+
+var _configFilterTimer = null;
+function filterConfigTree(q) {
+  clearTimeout(_configFilterTimer);
+  _configFilterTimer = setTimeout(function () {
+    _doFilterConfigTree(q.trim().toLowerCase());
+  }, 200);
+}
+
+function _doFilterConfigTree(q) {
+  var tree = document.getElementById("configBodyTree");
+  if (!tree) return;
+  if (!q) {
+    var rows = tree.querySelectorAll(".kv-row, .kv-group");
+    rows.forEach(function (el) {
+      el.style.display = "";
+      if (el.classList.contains("kv-group")) {
+        el.classList.add("collapsed");
+        var body = el.querySelector(".kv-group-body");
+        if (body) body.innerHTML = "";
+      }
+    });
+    return;
+  }
+  var matchedGroups = new Set();
+  var rows = tree.querySelectorAll(".kv-row");
+  rows.forEach(function (row) {
+    var keyEl = row.querySelector(".kv-key");
+    var inp = row.querySelector(".kv-input");
+    var keyText = keyEl ? keyEl.textContent.toLowerCase() : "";
+    var valText = inp ? inp.value.toLowerCase() : "";
+    if (keyText.indexOf(q) !== -1 || valText.indexOf(q) !== -1) {
+      row.style.display = "";
+      var parent = row.parentElement;
+      while (
+        parent &&
+        parent !== tree &&
+        !parent.classList.contains("kv-group")
+      ) {
+        parent = parent.parentElement;
+      }
+      while (
+        parent &&
+        parent !== tree &&
+        parent.classList.contains("kv-group")
+      ) {
+        matchedGroups.add(parent);
+        parent.classList.remove("collapsed");
+        parent.style.display = "";
+        parent = parent.parentElement;
+      }
+    } else {
+      row.style.display = "none";
+    }
+  });
+  var groups = tree.querySelectorAll(".kv-group");
+  groups.forEach(function (g) {
+    if (!matchedGroups.has(g)) {
+      g.style.display = "none";
+    }
+  });
 }
 
 function getSetting(key, def) {
@@ -5999,48 +6176,174 @@ function setSetting(key, val) {
 }
 
 function showSettings() {
-  closeSidebar();
-  document.getElementById("settingsTheme").checked = getTheme() === "dark";
-  document.getElementById("settingsUiStyle").value = getUiStyle();
-  document.getElementById("settingsLang").value = lang;
-  document.getElementById("settingsSidebar").checked = document
-    .getElementById("sidebar")
-    .classList.contains("collapsed");
-  document.getElementById("settingsNodeSelector").checked =
-    localStorage.getItem("ep_show_node_selector") !== "false";
-  document.getElementById("settingsRememberGroups").checked =
-    localStorage.getItem("ep_remember_groups") !== "false";
-  document.getElementById("settingsRefresh").value = getSetting(
-    "refresh_interval",
-    "5000",
-  );
-  document.getElementById("settingsEventLimit").value = getSetting(
-    "event_limit",
-    "100",
-  );
-  // 配色定制 UI
+  go("settings");
+}
+function closeSettings() {}
+
+function switchSettingsTab(tab, btn) {
+  var tabs = btn.closest(".pkg-tabs").querySelectorAll(".pkg-tab");
+  tabs.forEach(function (b) {
+    b.classList.remove("active");
+  });
+  btn.classList.add("active");
+  document.querySelectorAll("#p-settings .tab-section").forEach(function (s) {
+    s.style.display = "none";
+  });
+  var target = document.getElementById(tab + "-tab");
+  if (target) target.style.display = "block";
+  if (tab === "settings-update") loadFrameworkVersions();
+}
+
+var _settingsAppearanceScope = false;
+
+async function loadSettings() {
+  syncSettingsUI();
   initAccentSwatches();
+  await loadGlobalAppearance();
+}
+
+async function loadGlobalAppearance() {
+  try {
+    var d = await api("/api/appearance");
+    if (!d || !d.appearance) return;
+    var app = d.appearance;
+    var scopeEl = document.getElementById("settingsGlobalScope");
+    if (scopeEl) scopeEl.checked = !!app._global_enabled;
+    _settingsAppearanceScope = !!app._global_enabled;
+    updateGlobalBanner();
+    if (app._global_enabled) {
+      applyGlobalAppearanceData(app);
+    }
+  } catch (e) {
+    console.debug("Appearance API unavailable, using local settings");
+  }
+}
+
+function applyDashTitle(title) {
+  if (!title) title = "ErisPulse Dashboard";
+  setSetting("dash_title", title);
+  var el = document.getElementById("appTitle");
+  if (el) el.textContent = title;
+  document.title = title;
+  if (_settingsAppearanceScope) saveGlobalAppearance();
+}
+
+function applyGlobalAppearanceData(app) {
+  if (app.dash_title) {
+    setSetting("dash_title", app.dash_title);
+    applyDashTitle(app.dash_title);
+  }
+  if (app.theme) {
+    localStorage.setItem("ep_theme", app.theme);
+    applyTheme(app.theme);
+    var themeEl = document.getElementById("settingsTheme");
+    if (themeEl) themeEl.checked = app.theme === "dark";
+  }
+  if (app.ui_style) {
+    localStorage.setItem("ep_ui_style", app.ui_style);
+    applyUiStyle(app.ui_style);
+    var uiEl = document.getElementById("settingsUiStyle");
+    if (uiEl) uiEl.value = app.ui_style;
+  }
+  if (app.bg_color) {
+    applyBgColor(app.bg_color);
+  }
+  if (app.bg_image) {
+    setSetting("bg_image", app.bg_image);
+    applyBgImage(app.bg_image);
+  } else {
+    clearBgImage();
+  }
+  if (app.accent_color) {
+    applyAccentColor(app.accent_color);
+  }
+  if (app.bg_auto_theme !== undefined) {
+    localStorage.setItem("ep_setting_bg_auto_theme", app.bg_auto_theme);
+    var autoEl = document.getElementById("settingsBgAutoTheme");
+    if (autoEl) autoEl.checked = app.bg_auto_theme;
+  }
+}
+
+function collectAppearanceData() {
+  return {
+    dash_title: getSetting("dash_title", "ErisPulse Dashboard"),
+    theme: getTheme(),
+    ui_style: getUiStyle(),
+    bg_color: getSetting("bg_color", ""),
+    bg_image: getSetting("bg_image", ""),
+    accent_color: getSetting("accent_color", ""),
+    bg_auto_theme: bgAutoThemeEnabled(),
+    _global_enabled: _settingsAppearanceScope,
+  };
+}
+
+async function saveGlobalAppearance() {
+  if (!_settingsAppearanceScope) return;
+  var data = collectAppearanceData();
+  try {
+    await api("/api/appearance", { method: "PUT", body: JSON.stringify(data) });
+  } catch (e) {}
+}
+
+async function onSettingsScopeChange(global) {
+  _settingsAppearanceScope = global;
+  updateGlobalBanner();
+  // 无论开启还是关闭，都同步到服务器
+  try {
+    await api("/api/appearance", {
+      method: "PUT",
+      body: JSON.stringify({ _global_enabled: global }),
+    });
+  } catch (e) {}
+  if (global) {
+    await saveGlobalAppearance();
+  }
+}
+
+function updateGlobalBanner() {
+  var banner = document.getElementById("settingsGlobalBanner");
+  if (banner) banner.style.display = _settingsAppearanceScope ? "flex" : "none";
+}
+
+function syncSettingsUI() {
+  var themeEl = document.getElementById("settingsTheme");
+  if (themeEl) themeEl.checked = getTheme() === "dark";
+  var uiEl = document.getElementById("settingsUiStyle");
+  if (uiEl) uiEl.value = getUiStyle();
+  var langEl = document.getElementById("settingsLang");
+  if (langEl) langEl.value = lang;
+  var sbEl = document.getElementById("settingsSidebar");
+  if (sbEl)
+    sbEl.checked = document
+      .getElementById("sidebar")
+      .classList.contains("collapsed");
+  var nsEl = document.getElementById("settingsNodeSelector");
+  if (nsEl)
+    nsEl.checked = localStorage.getItem("ep_show_node_selector") !== "false";
+  var rgEl = document.getElementById("settingsRememberGroups");
+  if (rgEl)
+    rgEl.checked = localStorage.getItem("ep_remember_groups") !== "false";
+  var rfEl = document.getElementById("settingsRefresh");
+  if (rfEl) rfEl.value = getSetting("refresh_interval", "5000");
+  var elEl = document.getElementById("settingsEventLimit");
+  if (elEl) elEl.value = getSetting("event_limit", "100");
+  var dtEl = document.getElementById("settingsDashTitle");
+  if (dtEl) dtEl.value = getSetting("dash_title", "ErisPulse Dashboard");
   var savedAccent = getSetting("accent_color", "");
   syncAccentUI(savedAccent || "#4fa6de");
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = getSetting("bg_color", "") || "#f4f7fb";
-  // 背景图自动取色选项：仅在设置了背景图时显示
   var hasBgImg = !!getSetting("bg_image", "");
   showBgAutoThemeRow(hasBgImg);
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
-  document.getElementById("settingsPanel").classList.add("open");
-  document.getElementById("settingsBackdrop").classList.add("show");
-}
-function closeSettings() {
-  document.getElementById("settingsPanel").classList.remove("open");
-  document.getElementById("settingsBackdrop").classList.remove("show");
 }
 
 function applySettingTheme(dark) {
   const th = dark ? "dark" : "light";
   localStorage.setItem("ep_theme", th);
   applyTheme(th);
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 function applySettingLang(v) {
   lang = v;
@@ -6120,6 +6423,7 @@ function applyAccentColor(hex) {
   root.setProperty("--accent-fill-h", shadeHex(hex, -28));
   root.setProperty("--accent-h", shadeHex(hex, -10));
   syncAccentUI(hex);
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 背景纯色
@@ -6134,6 +6438,7 @@ function applyBgColor(hex) {
   }
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = hex;
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 背景图片：上传
@@ -6150,6 +6455,7 @@ function applyBgImageFile(file) {
         applyAccentColor(hex);
       });
     }
+    if (_settingsAppearanceScope) saveGlobalAppearance();
   };
   reader.readAsDataURL(file);
 }
@@ -6300,6 +6606,7 @@ function onBgAutoThemeToggle(checked) {
       resetAccent();
     }
   }
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 重置背景（颜色 + 图片）
@@ -6314,6 +6621,7 @@ function resetBg() {
   var bgFile = document.getElementById("settingsBgFile");
   if (bgFile) bgFile.value = "";
   if (bgAutoThemeEnabled()) resetAccent();
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 重置强调色为默认
@@ -6326,6 +6634,7 @@ function resetAccent() {
   root.removeProperty("--accent-fill-h");
   root.removeProperty("--accent-h");
   syncAccentUI("#4fa6de");
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function syncAccentUI(hex) {
@@ -7920,67 +8229,96 @@ async function loadFrameworkVersions() {
   );
   if (!d) return;
 
-  const section = document.getElementById("fwUpdateSection");
-  if (!section) return;
-
-  // 默认隐藏；仅在非 Windows 平台且服务端允许时显示
-  var isWindows = false;
-  var fwInfo = window._fwStatus || {};
-  if (fwInfo.platform && /win/i.test(fwInfo.platform)) isWindows = true;
-  if (d.platform && /win/i.test(d.platform)) isWindows = true;
-
-  if (isWindows || d.can_update === false) {
-    section.style.display = "none";
-    return;
-  }
-
-  section.style.display = "";
-
   _fwCurrentVer = d.current;
   _fwVersions = d.versions || [];
   document.getElementById("fwCurrentVer").textContent = d.current;
 
-  const sel = document.getElementById("fwVersionSelect");
-  const updateBtn = document.getElementById("fwUpdateBtn");
-  const versionRow = document.getElementById("fwVersionRow");
-  if (!sel || !updateBtn || !versionRow) return;
-
-  if (_fwVersions.length === 0) {
-    document.getElementById("fwLatestVer").textContent = "-";
-    versionRow.style.display = "none";
-    updateBtn.disabled = true;
-    return;
-  }
-
-  const latest = _fwVersions[0];
-  const hasUpdate = cmpVer(latest, d.current) > 0;
-  const latestEl = document.getElementById("fwLatestVer");
+  // 最新版本
+  var latest = _fwVersions.length > 0 ? _fwVersions[0] : "-";
+  var latestEl = document.getElementById("fwLatestVer");
+  if (latestEl) latestEl.textContent = latest;
+  var hasUpdate = latest !== "-" && cmpVer(latest, d.current) > 0;
   if (hasUpdate) {
-    latestEl.textContent = latest;
-    latestEl.style.color = "";
+    latestEl.style.color = "var(--wr-c)";
+    latestEl.textContent = latest + " ↑";
   } else {
-    latestEl.textContent = latest + " (" + t("fw_latest_already") + ")";
     latestEl.style.color = "var(--ok-c)";
   }
 
-  sel.innerHTML = _fwVersions
-    .map((v) => {
-      const isCurrent = v === d.current;
-      return (
-        '<option value="' +
-        esc(v) +
-        '"' +
-        (v === latest ? " selected" : "") +
-        ">" +
-        esc(v) +
-        (isCurrent ? " (" + t("fw_current") + ")" : "") +
-        "</option>"
-      );
-    })
-    .join("");
+  // Windows 警告
+  var isWindows = false;
+  if (d.platform && /win/i.test(d.platform)) isWindows = true;
+  var winWarn = document.getElementById("fwWinWarn");
+  if (winWarn) winWarn.style.display = isWindows ? "" : "none";
 
-  versionRow.style.display = "flex";
-  updateBtn.disabled = false;
+  // 更新按钮状态
+  var updateBtn = document.getElementById("fwUpdateBtn");
+  if (updateBtn) {
+    if (isWindows || d.can_update === false) {
+      updateBtn.disabled = true;
+      updateBtn.style.opacity = "0.5";
+      updateBtn.title = isWindows ? t("fw_win_warn") : t("fw_cannot_update");
+    } else if (hasUpdate) {
+      updateBtn.disabled = false;
+      updateBtn.style.opacity = "";
+      updateBtn.title = "";
+    } else {
+      updateBtn.disabled = true;
+      updateBtn.style.opacity = "0.5";
+    }
+  }
+
+  // 填充版本选择器
+  var sel = document.getElementById("fwVersionSelect");
+  var versionRow = document.getElementById("fwVersionRow");
+  if (sel && versionRow && _fwVersions.length > 0) {
+    versionRow.style.display = "";
+    sel.innerHTML = _fwVersions
+      .map(function (v) {
+        var isCurrent = v === d.current;
+        return (
+          '<option value="' +
+          esc(v) +
+          '"' +
+          (v === latest ? " selected" : "") +
+          ">" +
+          esc(v) +
+          (isCurrent ? " (" + t("fw_current") + ")" : "") +
+          "</option>"
+        );
+      })
+      .join("");
+  }
+
+  // 自动加载选中版本的发布说明
+  if (sel && sel.value) loadFwReleaseNotes();
+}
+
+async function loadFwReleaseNotes() {
+  var sel = document.getElementById("fwVersionSelect");
+  var notesEl = document.getElementById("fwReleaseNotes");
+  if (!sel || !notesEl) return;
+  var v = sel.value;
+  if (!v) {
+    notesEl.style.display = "none";
+    return;
+  }
+  notesEl.style.display = "";
+  notesEl.textContent = t("loading") + "...";
+  var d = await api("/api/framework/versions?notes=" + encodeURIComponent(v));
+  if (d && d.notes) {
+    try {
+      var html =
+        typeof marked !== "undefined"
+          ? marked.parse(d.notes)
+          : d.notes.replace(/</g, "&lt;");
+      notesEl.innerHTML = html;
+    } catch (e) {
+      notesEl.textContent = d.notes;
+    }
+  } else {
+    notesEl.textContent = "-";
+  }
 }
 
 async function doFrameworkUpdate() {
@@ -9882,7 +10220,7 @@ function fmGetIcon(type, name) {
   return '<svg class="fm-icon file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
 }
 
-function fmUpdateBreadcrumb(path) {
+function fmUpdateBreadcrumb(path, count) {
   const bc = document.getElementById("fmBreadcrumb");
   const parts = path === "." ? [] : path.split("/");
   let html =
@@ -9902,6 +10240,9 @@ function fmUpdateBreadcrumb(path) {
       esc(part) +
       "</span>";
   });
+  if (count !== undefined) {
+    html += '<span class="fm-crumb-count">(' + count + ")</span>";
+  }
   bc.innerHTML = html;
 }
 
@@ -9946,9 +10287,7 @@ async function fmBrowse(path) {
   }
 
   const entries = d.entries || d.results || [];
-  document.getElementById("fmCurrentPath").textContent = d.path || path;
-  document.getElementById("fmItemCount").textContent = entries.length;
-  fmUpdateBreadcrumb(d.path || path);
+  fmUpdateBreadcrumb(d.path || path, entries.length);
 
   const fileList = document.getElementById("fmFileList");
   if (entries.length === 0) {
@@ -11322,10 +11661,12 @@ async function saveCmdEdit() {
         if (d && d.authenticated) {
           authed = true;
           document.querySelector(".app").classList.add("authed");
-          loadAll();
-          wsConnect();
-          restartRefreshTimer();
-          loadClusterNodes();
+          loadGlobalAppearance().then(function () {
+            loadAll();
+            wsConnect();
+            restartRefreshTimer();
+            loadClusterNodes();
+          });
         } else {
           localStorage.removeItem(TK);
           showLogin();

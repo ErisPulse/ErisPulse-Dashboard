@@ -147,7 +147,7 @@ class Main(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("Dashboard")
         if not config:
-            default_config = {"title": "ErisPulse Dashboard", "max_event_log": 500}
+            default_config = {"max_event_log": 500}
             self.sdk.config.setConfig("Dashboard", default_config)
             return default_config
         return config
@@ -1088,6 +1088,12 @@ class Main(BaseModule):
             mn, "/api/config", handler=self._api_config_update, methods=["PUT"]
         )
         r.register_http_route(
+            mn, "/api/appearance", handler=self._api_appearance, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/appearance", handler=self._api_appearance_update, methods=["PUT"]
+        )
+        r.register_http_route(
             mn, "/api/storage", handler=self._api_storage, methods=["GET"]
         )
         r.register_http_route(
@@ -1433,6 +1439,7 @@ class Main(BaseModule):
             "/api/events/clear",
             "/api/config",
             "/api/config/source",
+            "/api/appearance",
             "/api/storage",
             "/api/storage/delete",
             "/api/store/remote",
@@ -2210,6 +2217,20 @@ class Main(BaseModule):
             return JSONResponse({"success": True})
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
+        return JSONResponse({"success": True})
+
+    async def _api_appearance(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        appearance = self.sdk.config.getConfig("Dashboard.appearance") or {}
+        return JSONResponse({"appearance": appearance})
+
+    async def _api_appearance_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        body = await request.json()
+        self.sdk.config.setConfig("Dashboard.appearance", body)
+        self._add_audit_log("appearance_update", "Dashboard.appearance", request)
         return JSONResponse({"success": True})
 
     async def _api_storage(self, request: Request) -> JSONResponse:
@@ -3033,13 +3054,68 @@ class Main(BaseModule):
     async def _api_framework_versions(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+        notes_ver = request.query_params.get("notes", "")
+        if notes_ver:
+            return await self._get_release_notes(notes_ver)
+
         pre = request.query_params.get("pre", "") == "true"
         current = self._get_framework_info()["version"]
         versions = await self._fetch_pypi_versions("ErisPulse", pre)
         can_update = sys.platform != "win32"
+
         return JSONResponse(
-            {"current": current, "versions": versions, "can_update": can_update}
+            {
+                "current": current,
+                "versions": versions,
+                "can_update": can_update,
+                "platform": sys.platform,
+            }
         )
+
+    async def _get_release_notes(self, version: str) -> JSONResponse:
+        """多源获取发行说明，支持国内镜像"""
+        from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError
+
+        headers = {"Accept": "application/vnd.github.v3+json"}
+
+        sources = [
+            f"https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
+            f"https://ghproxy.com/https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
+        ]
+
+        for url in sources:
+            try:
+                resp = await client.get(url, headers=headers, timeout=5)
+                if resp.status == 200:
+                    try:
+                        data = await resp.json()
+                        return JSONResponse({"notes": data.get("body", "")[:8000]})
+                    except Exception:
+                        continue
+            except ClientError:
+                continue
+
+        # 列表查询回退
+        try:
+            resp = await client.get(
+                "https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
+                headers=headers,
+                timeout=5,
+            )
+            if resp.status == 200:
+                try:
+                    releases = await resp.json()
+                    for rel in releases:
+                        if rel.get("tag_name", "") in [version, f"v{version}"]:
+                            return JSONResponse({"notes": rel.get("body", "")[:8000]})
+                except Exception:
+                    pass
+        except ClientError:
+            pass
+
+        return JSONResponse({"notes": "-"})
 
     async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
         import re

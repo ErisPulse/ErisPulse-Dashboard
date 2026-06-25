@@ -4396,11 +4396,8 @@ select.form-select::-ms-expand {
 }
 
 /* ========== 文件管理样式 ========== */
-.fm-toolbar {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
+.fm-toolbar-header {
+    padding: 12px 18px;
 }
 
 .fm-breadcrumb {
@@ -4412,7 +4409,8 @@ select.form-select::-ms-expand {
     color: var(--tx-s);
     overflow-x: auto;
     white-space: nowrap;
-    max-width: 500px;
+    flex: 1;
+    min-width: 0;
 }
 
 .fm-crumb {
@@ -4432,9 +4430,88 @@ select.form-select::-ms-expand {
     color: var(--tx-p);
 }
 
+.fm-crumb-count {
+    font-size: 11px;
+    color: var(--tx-t);
+    margin-left: 6px;
+}
+
 .fm-crumb-sep {
     color: var(--tx-t);
     font-size: 11px;
+}
+
+/* 搜索输入框 */
+.fm-search {
+    width: 180px;
+}
+
+/* 操作栏 */
+.fm-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 18px 12px;
+    border-bottom: 1px solid var(--bd);
+}
+
+.fm-action-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fm-action-group:first-child {
+    margin-right: auto;
+}
+
+/* 表头 */
+.fm-table-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--tx-t);
+    border-bottom: 1px solid var(--bd);
+    background: var(--bg-s);
+}
+
+.fm-table-header span {
+    flex-shrink: 0;
+}
+
+/* 文件列表容器 */
+.fm-file-list {
+    max-height: calc(100vh - 380px);
+    overflow-y: auto;
+}
+
+/* 列头 */
+.fm-col-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.fm-col-size {
+    min-width: 70px;
+    text-align: right;
+}
+
+.fm-col-perm {
+    min-width: 80px;
+}
+
+.fm-col-time {
+    min-width: 120px;
+}
+
+.fm-col-actions {
+    width: 60px;
 }
 
 .fm-file-row {
@@ -4469,7 +4546,7 @@ select.form-select::-ms-expand {
 }
 
 .fm-icon.folder {
-    color: var(--wr-c);
+    color: var(--accent, #4fa6de);
 }
 
 .fm-icon.file {
@@ -5368,6 +5445,215 @@ select.form-select::-ms-expand {
     .settings-select {
         max-width: 140px;
     }
+}
+
+/* ========== 设置页（独立 View） ========== */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.settings-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-card {
+    margin: 0;
+    margin-bottom: 16px;
+}
+
+.settings-card-body {
+    padding: 8px 20px 16px;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.settings-item + .settings-item {
+    border-top: 1px solid var(--bd);
+}
+
+.settings-item-block {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.settings-item-block .settings-item-control {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.settings-item-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tx-p);
+}
+
+.settings-item-desc {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 2px;
+}
+
+.settings-item-control {
+    flex-shrink: 0;
+}
+
+.settings-item-control .switch {
+    margin: 0;
+}
+
+/* 全局同步开关 */
+.settings-scope-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.settings-scope-toggle input {
+    display: none;
+}
+
+.settings-scope-track {
+    width: 34px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--bd);
+    position: relative;
+    transition: background 0.2s;
+}
+
+.settings-scope-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.settings-scope-toggle input:checked ~ .settings-scope-track {
+    background: var(--accent-fill, #4fa6de);
+}
+
+.settings-scope-toggle
+    input:checked
+    ~ .settings-scope-track
+    .settings-scope-thumb {
+    left: 18px;
+}
+
+.settings-scope-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 全局横幅 */
+.settings-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: color-mix(
+        in srgb,
+        var(--accent-fill, #4fa6de) 12%,
+        var(--bg-s)
+    );
+    border: 1px solid
+        color-mix(in srgb, var(--accent-fill, #4fa6de) 30%, var(--bd));
+    font-size: 13px;
+    color: var(--tx-p);
+}
+
+.settings-banner svg {
+    color: var(--accent-fill, #4fa6de);
+}
+
+@media (max-width: 768px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 发布说明 Markdown 样式 */
+#fwReleaseNotes h1,
+#fwReleaseNotes h2,
+#fwReleaseNotes h3 {
+    font-size: 15px;
+    margin: 12px 0 6px;
+    color: var(--tx-p);
+}
+
+#fwReleaseNotes h1:first-child,
+#fwReleaseNotes h2:first-child,
+#fwReleaseNotes h3:first-child {
+    margin-top: 0;
+}
+
+#fwReleaseNotes p {
+    margin: 4px 0;
+}
+
+#fwReleaseNotes ul,
+#fwReleaseNotes ol {
+    padding-left: 18px;
+    margin: 6px 0;
+}
+
+#fwReleaseNotes li {
+    margin: 2px 0;
+}
+
+#fwReleaseNotes code {
+    font-size: 12px;
+    background: var(--bg-p);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", "Fira Code", monospace;
+}
+
+#fwReleaseNotes pre {
+    font-size: 12px;
+    background: var(--bg-p);
+    padding: 10px 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+#fwReleaseNotes a {
+    color: var(--accent);
+}
+
+#fwReleaseNotes img {
+    max-width: 100%;
+}
+
+#fwReleaseNotes hr {
+    border: none;
+    border-top: 1px solid var(--bd);
+    margin: 12px 0;
+}
+
+#fwReleaseNotes table {
+    display: none;
 }
 
 .login-lang-select option {
