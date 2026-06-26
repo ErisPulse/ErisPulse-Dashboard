@@ -12,7 +12,9 @@ import time
 from pathlib import Path
 
 from ErisPulse import sdk
+from ErisPulse.Core import client
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Bases.errors import ClientError
 from fastapi import Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
@@ -3119,16 +3121,16 @@ class Main(BaseModule):
 
     async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
         import re
-        import urllib.request
 
         try:
             url = f"https://pypi.org/pypi/{package}/json"
-            req = urllib.request.Request(
-                url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+            resp = await client.get(
+                url,
+                headers={"User-Agent": "ErisPulse-Dashboard/1.0"},
+                timeout=15,
             )
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-        except Exception:
+            data = await resp.json()
+        except ClientError:
             return []
         releases = data.get("releases", {})
         all_versions = []
