@@ -1,12 +1,10 @@
 import importlib.metadata
-import json
 import subprocess
-import sys
 import time
-import urllib.error
-import urllib.request
 from typing import Optional
 
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientError
 from ErisPulse.finders import AdapterFinder, ModuleFinder
 
 REMOTE_SOURCES = [
@@ -140,16 +138,15 @@ class DashboardPackageManager:
         return result
 
     async def _fetch_json(self, url: str) -> Optional[dict]:
-        import asyncio
-
-        def _sync_fetch():
-            req = urllib.request.Request(
-                url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
+        try:
+            resp = await client.get(
+                url,
+                headers={"User-Agent": "ErisPulse-Dashboard/1.0"},
+                timeout=10,
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-
-        return await asyncio.get_event_loop().run_in_executor(None, _sync_fetch)
+            return await resp.json()
+        except ClientError:
+            return None
 
     def get_installed_packages(self, force: bool = False) -> dict:
         if (
@@ -296,30 +293,26 @@ class DashboardPackageManager:
         return updates
 
     async def _get_pypi_version(self, package_name: str) -> Optional[str]:
-        import asyncio
-
         cache_key = package_name.lower()
         if cache_key in self._pypi_cache:
             ver, ts = self._pypi_cache[cache_key]
             if time.time() - ts < CACHE_EXPIRY:
                 return ver
 
-        def _fetch():
+        try:
             url = f"https://pypi.org/pypi/{package_name}/json"
-            try:
-                req = urllib.request.Request(
-                    url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
-                )
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    return data.get("info", {}).get("version")
-            except Exception:
-                return None
-
-        version = await asyncio.get_event_loop().run_in_executor(None, _fetch)
-        if version:
-            self._pypi_cache[cache_key] = (version, time.time())
-        return version
+            resp = await client.get(
+                url,
+                headers={"User-Agent": "ErisPulse-Dashboard/1.0"},
+                timeout=10,
+            )
+            data = await resp.json()
+            version = data.get("info", {}).get("version")
+            if version:
+                self._pypi_cache[cache_key] = (version, time.time())
+            return version
+        except ClientError:
+            return None
 
     @staticmethod
     def _compare_versions(v1: str, v2: str) -> int:
@@ -337,26 +330,22 @@ class DashboardPackageManager:
         return {"packages": remote, "installed_versions": installed_versions}
 
     async def get_package_detail(self, package_name: str) -> dict:
-        import asyncio
-
         cache_key = package_name.lower()
         if cache_key in self._pypi_detail_cache:
             data, ts = self._pypi_detail_cache[cache_key]
             if time.time() - ts < 300:
                 return data
 
-        def _fetch():
+        try:
             url = f"https://pypi.org/pypi/{package_name}/json"
-            try:
-                req = urllib.request.Request(
-                    url, headers={"User-Agent": "ErisPulse-Dashboard/1.0"}
-                )
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    return json.loads(resp.read().decode("utf-8"))
-            except Exception:
-                return None
-
-        pypi_data = await asyncio.get_event_loop().run_in_executor(None, _fetch)
+            resp = await client.get(
+                url,
+                headers={"User-Agent": "ErisPulse-Dashboard/1.0"},
+                timeout=15,
+            )
+            pypi_data = await resp.json()
+        except ClientError:
+            pypi_data = None
 
         installed_versions = self.get_installed_versions()
         installed_version = installed_versions.get(package_name.lower(), "")

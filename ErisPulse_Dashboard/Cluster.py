@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 import time
 
-import aiohttp
+from ErisPulse.Core import HttpClient
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
 
 # 后备 API 探测列表（当自动发现失败时使用）
 FALLBACK_CAPABILITY_PROBES: dict[str, str] = {
@@ -134,8 +135,7 @@ class NodeProxy:
         self.node_id = node_id
         self.url = url.rstrip("/")
         self.token = token
-        self._session: aiohttp.ClientSession | None = None
-        self._connector: aiohttp.TCPConnector | None = None
+        self._client: HttpClient | None = None
         self._online = False
         self._latency_ms: int = -1
         self._last_ping: float = 0.0
@@ -143,24 +143,22 @@ class NodeProxy:
         self._dashboard_version: str = ""
         self._unsupported_pages: list[str] = []
 
-    async def get_session(self) -> aiohttp.ClientSession:
+    def _get_client(self) -> HttpClient:
         """
-        获取或创建 HTTP 会话
+        获取或创建 HTTP 客户端
 
-        如果会话不存在或已关闭，将创建新的会话。
-        每个会话限制 4 个并发连接。
+        如果客户端不存在，将创建新的客户端。
+        每个客户端有独立的配置。
 
-        :return: [aiohttp.ClientSession] HTTP 会话对象
+        :return: [HttpClient] HTTP 客户端对象
         """
-        if self._session is None or self._session.closed:
-            self._connector = aiohttp.TCPConnector(limit=4, force_close=False)
-            timeout = aiohttp.ClientTimeout(total=10)
-            self._session = aiohttp.ClientSession(
-                connector=self._connector,
-                timeout=timeout,
+        if self._client is None:
+            self._client = HttpClient(
+                timeout=10,
+                max_retries=0,
                 headers={"Authorization": f"Bearer {self.token}"},
             )
-        return self._session
+        return self._client
 
     async def request(self, method: str, path: str, **kwargs) -> dict | None:
         """
@@ -171,27 +169,41 @@ class NodeProxy:
 
         :param method: [str] HTTP 方法 (GET, POST, PUT, DELETE)
         :param path: [str] API 路径 (如: /api/status)
-        :param kwargs: 传递给 aiohttp 的额外参数
+        :param kwargs: 传递给 HttpClient 的额外参数
 
         :return: [dict | None] 响应数据或错误信息
             - 成功时返回解析后的 JSON 数据
             - 失败时返回包含 error 键的错误字典
         """
-        session = await self.get_session()
+        client = self._get_client()
         url = f"{self.url}/Dashboard{path}"
         try:
-            async with session.request(method, url, **kwargs) as resp:
-                if resp.status == 401:
-                    return {"error": "unauthorized", "status": 401}
-                if resp.status == 404:
-                    return {"error": "not_found", "status": 404}
-                try:
-                    return await resp.json()
-                except Exception:
-                    return {"error": "invalid_json", "status": resp.status}
-        except asyncio.TimeoutError:
+            # 映射 HTTP 方法到 HttpClient 方法
+            method_upper = method.upper()
+            if method_upper == "GET":
+                resp = await client.get(url, **kwargs)
+            elif method_upper == "POST":
+                resp = await client.post(url, **kwargs)
+            elif method_upper == "PUT":
+                resp = await client.put(url, **kwargs)
+            elif method_upper == "DELETE":
+                resp = await client.delete(url, **kwargs)
+            elif method_upper == "PATCH":
+                resp = await client.patch(url, **kwargs)
+            else:
+                resp = await client.request(method_upper, url, **kwargs)
+
+            if resp.status == 401:
+                return {"error": "unauthorized", "status": 401}
+            if resp.status == 404:
+                return {"error": "not_found", "status": 404}
+            try:
+                return await resp.json()
+            except Exception:
+                return {"error": "invalid_json", "status": resp.status}
+        except ClientTimeoutError:
             return {"error": "timeout"}
-        except aiohttp.ClientError:
+        except ClientError:
             return {"error": "connection_error"}
         except Exception:
             return {"error": "unknown_error"}
@@ -206,25 +218,39 @@ class NodeProxy:
 
         :param method: [str] HTTP 方法
         :param path: [str] 完整 URL 路径
-        :param kwargs: 传递给 aiohttp 的额外参数
+        :param kwargs: 传递给 HttpClient 的额外参数
 
         :return: [dict | None] 响应数据或错误信息
         """
-        session = await self.get_session()
+        client = self._get_client()
         url = f"{self.url}{path}"
         try:
-            async with session.request(method, url, **kwargs) as resp:
-                if resp.status == 401:
-                    return {"error": "unauthorized", "status": 401}
-                if resp.status == 404:
-                    return {"error": "not_found", "status": 404}
-                try:
-                    return await resp.json()
-                except Exception:
-                    return {"error": "invalid_json", "status": resp.status}
-        except asyncio.TimeoutError:
+            # 映射 HTTP 方法到 HttpClient 方法
+            method_upper = method.upper()
+            if method_upper == "GET":
+                resp = await client.get(url, **kwargs)
+            elif method_upper == "POST":
+                resp = await client.post(url, **kwargs)
+            elif method_upper == "PUT":
+                resp = await client.put(url, **kwargs)
+            elif method_upper == "DELETE":
+                resp = await client.delete(url, **kwargs)
+            elif method_upper == "PATCH":
+                resp = await client.patch(url, **kwargs)
+            else:
+                resp = await client.request(method_upper, url, **kwargs)
+
+            if resp.status == 401:
+                return {"error": "unauthorized", "status": 401}
+            if resp.status == 404:
+                return {"error": "not_found", "status": 404}
+            try:
+                return await resp.json()
+            except Exception:
+                return {"error": "invalid_json", "status": resp.status}
+        except ClientTimeoutError:
             return {"error": "timeout"}
-        except aiohttp.ClientError:
+        except ClientError:
             return {"error": "connection_error"}
         except Exception:
             return {"error": "unknown_error"}
@@ -409,12 +435,10 @@ class NodeProxy:
         return await self.request("GET", "/api/views")
 
     async def close(self):
-        if self._session and not self._session.closed:
-            await self._session.close()
-        if self._connector and not self._connector.closed:
-            await self._connector.close()
-        self._session = None
-        self._connector = None
+        if self._client:
+            if hasattr(self._client, "close"):
+                await self._client.close()
+            self._client = None
 
 
 class ClusterManager:
