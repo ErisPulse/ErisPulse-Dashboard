@@ -5628,35 +5628,144 @@ select.form-select::-ms-expand {
 }
 
 /* 发布说明 Markdown 样式 */
-#fwReleaseNotes h1,
-#fwReleaseNotes h2,
-#fwReleaseNotes h3 {
-    font-size: 15px;
-    margin: 12px 0 6px;
+/* Framework Update Page */
+.fw-update-card {
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+}
+
+.fw-update-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.fw-update-title {
+    font-size: 16px;
+    font-weight: 600;
     color: var(--tx-p);
 }
 
-#fwReleaseNotes h1:first-child,
-#fwReleaseNotes h2:first-child,
-#fwReleaseNotes h3:first-child {
+.fw-update-subtitle {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 2px;
+}
+
+.fw-win-warn {
+    font-size: 12px;
+    color: var(--wr-c);
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--wr-bg);
+    border: 1px solid var(--wr-bd);
+    margin-bottom: 16px;
+}
+
+.fw-version-grid {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--bg-s);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.fw-ver-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fw-ver-label {
+    font-size: 11px;
+    color: var(--tx-s);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fw-ver-value {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: "Cascadia Code", "Fira Code", monospace;
+}
+
+.fw-ver-latest {
+    color: var(--accent, #4fa6de);
+}
+
+.fw-ver-divider {
+    font-size: 18px;
+    color: var(--tx-t);
+    font-weight: 300;
+}
+
+.fw-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.fw-notes-box {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--bd);
+    background: var(--bg-s);
+    max-height: 340px;
+    overflow-y: auto;
+    font-size: 13px;
+    color: var(--tx-s);
+    line-height: 1.5;
+}
+
+.fw-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Release notes markdown styling */
+.fw-notes-box h1,
+.fw-notes-box h2,
+.fw-notes-box h3 {
+    font-size: 14px;
+    margin: 8px 0 3px;
+    color: var(--tx-p);
+}
+
+.fw-notes-box h1:first-child,
+.fw-notes-box h2:first-child,
+.fw-notes-box h3:first-child {
     margin-top: 0;
 }
 
-#fwReleaseNotes p {
-    margin: 4px 0;
-}
-
-#fwReleaseNotes ul,
-#fwReleaseNotes ol {
-    padding-left: 18px;
-    margin: 6px 0;
-}
-
-#fwReleaseNotes li {
+.fw-notes-box p {
     margin: 2px 0;
+    font-size: 13px;
+    line-height: 1.5;
 }
 
-#fwReleaseNotes code {
+.fw-notes-box ul,
+.fw-notes-box ol {
+    padding-left: 18px;
+    margin: 3px 0;
+    font-size: 13px;
+}
+
+.fw-notes-box li {
+    margin: 1px 0;
+    line-height: 1.5;
+}
+
+.fw-notes-box code {
     font-size: 12px;
     background: var(--bg-p);
     padding: 1px 5px;
@@ -5664,30 +5773,30 @@ select.form-select::-ms-expand {
     font-family: "Cascadia Code", "Fira Code", monospace;
 }
 
-#fwReleaseNotes pre {
+.fw-notes-box pre {
     font-size: 12px;
     background: var(--bg-p);
-    padding: 10px 14px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     overflow-x: auto;
-    margin: 8px 0;
+    margin: 5px 0;
 }
 
-#fwReleaseNotes a {
+.fw-notes-box a {
     color: var(--accent);
 }
 
-#fwReleaseNotes img {
+.fw-notes-box img {
     max-width: 100%;
 }
 
-#fwReleaseNotes hr {
+.fw-notes-box hr {
     border: none;
     border-top: 1px solid var(--bd);
-    margin: 12px 0;
+    margin: 8px 0;
 }
 
-#fwReleaseNotes table {
+.fw-notes-box table {
     display: none;
 }
 

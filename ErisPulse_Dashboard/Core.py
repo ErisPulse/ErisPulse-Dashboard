@@ -3237,6 +3237,11 @@ class Main(BaseModule):
         current = self._get_framework_info()["version"]
         versions = await self._fetch_pypi_versions("ErisPulse", pre)
         can_update = sys.platform != "win32"
+        error = (
+            None
+            if versions
+            else "无法获取版本列表，请前往 GitHub Releases 查看更新 https://github.com/ErisPulse/ErisPulse/releases"
+        )
 
         return JSONResponse(
             {
@@ -3244,65 +3249,109 @@ class Main(BaseModule):
                 "versions": versions,
                 "can_update": can_update,
                 "platform": sys.platform,
+                "error": error,
             }
         )
 
     async def _get_release_notes(self, version: str) -> JSONResponse:
-        """多源获取发行说明，支持国内镜像"""
+        """多源获取发行说明，支持 GitHub 官方 / ghproxy / fastgit 镜像"""
         from ErisPulse.Core import client
         from ErisPulse.Core.Bases.errors import ClientError
 
         headers = {"Accept": "application/vnd.github.v3+json"}
 
-        sources = [
+        # 标签查询（多源回退）
+        tag_sources = [
             f"https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
-            f"https://ghproxy.com/https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
+            f"https://ghproxy.net/https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
+            f"https://ghfast.top/https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
         ]
 
-        for url in sources:
+        for url in tag_sources:
             try:
-                resp = await client.get(url, headers=headers, timeout=5)
+                resp = await client.get(url, headers=headers, timeout=8)
                 if resp.status == 200:
                     try:
                         data = await resp.json()
-                        return JSONResponse({"notes": data.get("body", "")[:8000]})
-                    except Exception:
+                        body = data.get("body", "") or ""
+                        self.logger.info(
+                            f"Release notes fetched from {url}, {len(body)} chars"
+                        )
+                        return JSONResponse({"notes": body[:10000]})
+                    except Exception as e:
+                        self.logger.debug(f"JSON parse failed for {url}: {e}")
                         continue
-            except ClientError:
+                else:
+                    try:
+                        detail = await resp.text()
+                    except Exception:
+                        detail = "<read failed>"
+                    self.logger.debug(
+                        f"GitHub API returned {resp.status} for {url}: {detail[:200]}"
+                    )
+            except ClientError as e:
+                self.logger.debug(f"GitHub fetch failed for {url}: {e}")
                 continue
 
         # 列表查询回退
-        try:
-            resp = await client.get(
-                "https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
-                headers=headers,
-                timeout=5,
-            )
-            if resp.status == 200:
-                try:
-                    releases = await resp.json()
-                    for rel in releases:
-                        if rel.get("tag_name", "") in [version, f"v{version}"]:
-                            return JSONResponse({"notes": rel.get("body", "")[:8000]})
-                except Exception:
-                    pass
-        except ClientError:
-            pass
+        list_sources = [
+            "https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
+            "https://ghproxy.net/https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
+            "https://ghfast.top/https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
+        ]
+        for url in list_sources:
+            try:
+                resp = await client.get(url, headers=headers, timeout=10)
+                if resp.status == 200:
+                    try:
+                        releases = await resp.json()
+                        for rel in releases:
+                            tag = rel.get("tag_name", "")
+                            if tag in [version, f"v{version}"]:
+                                body = rel.get("body", "") or ""
+                                return JSONResponse({"notes": body[:10000]})
+                    except Exception as e:
+                        self.logger.debug(
+                            f"GitHub list JSON parse failed for {url}: {e}"
+                        )
+                        continue
+                else:
+                    try:
+                        detail = await resp.text()
+                    except Exception:
+                        detail = "<read failed>"
+                    self.logger.debug(
+                        f"GitHub list API returned {resp.status} for {url}: {detail[:200]}"
+                    )
+            except ClientError as e:
+                self.logger.debug(f"GitHub list fetch failed for {url}: {e}")
+                continue
 
-        return JSONResponse({"notes": "-"})
+        self.logger.warning(
+            f"所有 GitHub API 源均失败，请手动查看: "
+            f"https://github.com/ErisPulse/ErisPulse/releases/tag/v{version}"
+        )
+        return JSONResponse(
+            {
+                "notes": "",
+                "github_url": f"https://github.com/ErisPulse/ErisPulse/releases/tag/v{version}",
+            }
+        )
 
     async def _fetch_pypi_versions(self, package: str, pre: bool = False) -> list[str]:
         import re
 
         try:
             url = f"https://pypi.org/pypi/{package}/json"
+            self.logger.debug(f"Fetching PyPI versions from: {url}")
             resp = await client.get(
                 url,
-                headers={"User-Agent": "ErisPulse-Dashboard/1.0"},
-                timeout=15,
+                headers={"User-Agent": "ErisPulse-Dashboard/2.0"},
+                timeout=10,
             )
             data = await resp.json()
-        except ClientError:
+        except ClientError as e:
+            self.logger.warning(f"Failed to fetch PyPI versions for {package}: {e}")
             return []
         releases = data.get("releases", {})
         all_versions = []

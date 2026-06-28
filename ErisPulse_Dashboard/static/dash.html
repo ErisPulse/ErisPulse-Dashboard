@@ -19,7 +19,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=3" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=4" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -4748,170 +4748,110 @@
                         <!-- settings-appearance-tab -->
 
                         <div id="settings-update-tab" class="tab-section">
-                            <div
-                                class="card settings-card"
-                                style="margin-top: 16px"
-                            >
-                                <div class="card-header">
+                            <div class="fw-update-card">
+                                <div class="fw-update-header">
                                     <img
                                         src="/Dashboard/static/res/erispulse_logo_hp.png"
-                                        alt="ErisPulse LOGO"
-                                        height="50px"
+                                        alt="LOGO"
+                                        height="44"
                                     />
-                                    <span data-i18n="fw_update_title"></span>
-                                </div>
-                                <div class="settings-card-body">
-                                    <div
-                                        id="fwWinWarn"
-                                        style="
-                                            display: none;
-                                            font-size: 12px;
-                                            color: var(--wr-c);
-                                            margin-bottom: 12px;
-                                            padding: 10px 14px;
-                                            border-radius: 8px;
-                                            background: var(--wr-bg);
-                                            border: 1px solid var(--wr-bd);
-                                        "
-                                        data-i18n="fw_win_warn"
-                                    ></div>
-                                    <div
-                                        class="fw-info-bar"
-                                        style="
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 20px;
-                                            flex-wrap: wrap;
-                                            margin-bottom: 16px;
-                                        "
-                                    >
-                                        <div>
-                                            <span
-                                                style="
-                                                    font-size: 12px;
-                                                    color: var(--tx-s);
-                                                "
-                                                data-i18n="fw_current_version"
-                                            ></span>
-                                            <span
-                                                id="fwCurrentVer"
-                                                style="
-                                                    font-weight: 600;
-                                                    font-family: monospace;
-                                                    margin-left: 4px;
-                                                "
-                                                >-</span
-                                            >
-                                        </div>
-                                        <div>
-                                            <span
-                                                style="
-                                                    font-size: 12px;
-                                                    color: var(--tx-s);
-                                                "
-                                                data-i18n="fw_latest_version"
-                                            ></span>
-                                            <span
-                                                id="fwLatestVer"
-                                                style="
-                                                    font-weight: 600;
-                                                    color: var(--accent);
-                                                    font-family: monospace;
-                                                    margin-left: 4px;
-                                                "
-                                                >-</span
-                                            >
-                                        </div>
-                                    </div>
-                                    <div
-                                        id="fwVersionRow"
-                                        style="
-                                            display: none;
-                                            margin-bottom: 12px;
-                                        "
-                                    >
+                                    <div>
                                         <div
-                                            style="
-                                                display: flex;
-                                                align-items: center;
-                                                gap: 8px;
-                                                flex-wrap: wrap;
-                                            "
-                                        >
-                                            <span
-                                                style="
-                                                    font-size: 12px;
-                                                    color: var(--tx-s);
-                                                "
-                                                data-i18n="fw_select_version"
-                                            ></span>
-                                            <select
-                                                id="fwVersionSelect"
-                                                class="settings-select"
-                                                style="
-                                                    width: auto;
-                                                    min-width: 140px;
-                                                "
-                                                onchange="loadFwReleaseNotes()"
-                                            ></select>
-                                            <label
-                                                class="switch"
-                                                title="Pre-release"
-                                                ><input
-                                                    type="checkbox"
-                                                    id="fwPreRelease"
-                                                    onchange="
-                                                        loadFrameworkVersions()
-                                                    " /><span
-                                                    class="switch-slider"
-                                                ></span
-                                            ></label>
-                                            <span
-                                                style="
-                                                    font-size: 11px;
-                                                    color: var(--tx-s);
-                                                "
-                                                >--pre</span
-                                            >
-                                        </div>
+                                            class="fw-update-title"
+                                            data-i18n="fw_update_title"
+                                        ></div>
+                                        <div
+                                            class="fw-update-subtitle"
+                                            data-i18n="fw_update_title_desc"
+                                        ></div>
                                     </div>
-                                    <div
-                                        id="fwReleaseNotes"
+                                </div>
+                                <div
+                                    id="fwWinWarn"
+                                    class="fw-win-warn"
+                                    style="display: none"
+                                    data-i18n="fw_win_warn"
+                                ></div>
+                                <div class="fw-version-grid">
+                                    <div class="fw-ver-item">
+                                        <span
+                                            class="fw-ver-label"
+                                            data-i18n="fw_current_version"
+                                        ></span>
+                                        <span
+                                            class="fw-ver-value"
+                                            id="fwCurrentVer"
+                                            >-</span
+                                        >
+                                    </div>
+                                    <div class="fw-ver-divider">→</div>
+                                    <div class="fw-ver-item">
+                                        <span
+                                            class="fw-ver-label"
+                                            data-i18n="fw_latest_version"
+                                        ></span>
+                                        <span
+                                            class="fw-ver-value fw-ver-latest"
+                                            id="fwLatestVer"
+                                            >-</span
+                                        >
+                                    </div>
+                                </div>
+                                <div
+                                    id="fwVersionRow"
+                                    class="fw-selector-row"
+                                    style="display: none"
+                                >
+                                    <span
+                                        class="fw-ver-label"
+                                        data-i18n="fw_select_version"
+                                    ></span>
+                                    <select
+                                        id="fwVersionSelect"
+                                        class="settings-select"
+                                        style="min-width: 160px"
+                                        onchange="loadFwReleaseNotes()"
+                                    ></select>
+                                    <label class="switch" title="Pre-release">
+                                        <input
+                                            type="checkbox"
+                                            id="fwPreRelease"
+                                            onchange="loadFrameworkVersions()"
+                                        />
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                    <span
                                         style="
-                                            display: none;
-                                            margin-bottom: 16px;
-                                            padding: 14px 16px;
-                                            border-radius: 10px;
-                                            border: 1px solid var(--bd);
-                                            background: var(--bg-s);
-                                            max-height: 260px;
-                                            overflow-y: auto;
-                                            font-size: 13px;
-                                            color: var(--tx-s);
-                                            white-space: pre-wrap;
-                                            line-height: 1.6;
+                                            font-size: 11px;
+                                            color: var(--tx-t);
                                         "
-                                    ></div>
-                                    <div style="display: flex; gap: 8px">
-                                        <button
-                                            class="btn btn-primary btn-sm"
-                                            id="fwUpdateBtn"
-                                            onclick="doFrameworkUpdate()"
-                                            disabled
-                                        >
-                                            <span
-                                                data-i18n="fw_install_update"
-                                            ></span>
-                                        </button>
-                                        <button
-                                            class="btn btn-secondary btn-sm"
-                                            onclick="loadFrameworkVersions()"
-                                        >
-                                            <span
-                                                data-i18n="fw_check_updates"
-                                            ></span>
-                                        </button>
-                                    </div>
+                                        >--pre</span
+                                    >
+                                </div>
+                                <div
+                                    id="fwReleaseNotes"
+                                    class="fw-notes-box"
+                                    style="display: none"
+                                ></div>
+                                <div class="fw-actions">
+                                    <button
+                                        class="btn btn-primary btn-sm"
+                                        id="fwUpdateBtn"
+                                        onclick="doFrameworkUpdate()"
+                                        disabled
+                                    >
+                                        <span
+                                            data-i18n="fw_install_update"
+                                        ></span>
+                                    </button>
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        onclick="loadFrameworkVersions()"
+                                    >
+                                        <span
+                                            data-i18n="fw_check_updates"
+                                        ></span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -6032,6 +5972,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=3"></script>
+        <script src="/Dashboard/static/dash.js?v=4"></script>
     </body>
 </html>
