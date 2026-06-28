@@ -610,6 +610,7 @@ const I18N = {
     node_remove_confirm: "确定要移除此节点吗？",
     node_ping_success: "连接成功",
     node_ping_failed: "连接失败",
+    leave_empty_to_keep: "留空不修改",
     node_probing: "正在探测节点能力...",
     node_probe_complete: "能力探测完成",
     unsupported_on_node: "该节点不支持此功能",
@@ -1319,6 +1320,7 @@ const I18N = {
     node_remove_confirm: "Remove this node?",
     node_ping_success: "Connected",
     node_ping_failed: "Connection failed",
+    leave_empty_to_keep: "leave empty to keep",
     node_probing: "Probing capabilities...",
     node_probe_complete: "Probe complete",
     unsupported_on_node: "Not supported on this node",
@@ -1992,6 +1994,7 @@ const I18N = {
     node_remove_confirm: "確定要移除此節點嗎？",
     node_ping_success: "連接成功",
     node_ping_failed: "連接失敗",
+    leave_empty_to_keep: "留空不修改",
     node_probing: "正在探測節點能力...",
     node_probe_complete: "能力探測完成",
     unsupported_on_node: "該節點不支持此功能",
@@ -2681,6 +2684,7 @@ const I18N = {
     node_remove_confirm: "このノードを削除しますか？",
     node_ping_success: "接続成功",
     node_ping_failed: "接続失敗",
+    leave_empty_to_keep: "空欄は変更しない",
     node_probing: "ノード機能をプローブ中...",
     node_probe_complete: "プローブ完了",
     unsupported_on_node: "このノードではサポートされていません",
@@ -3407,6 +3411,7 @@ const I18N = {
     node_remove_confirm: "Удалить этот узел?",
     node_ping_success: "Подключено",
     node_ping_failed: "Ошибка подключения",
+    leave_empty_to_keep: "оставить без изменений",
     node_probing: "Проверка возможностей...",
     node_probe_complete: "Проверка завершена",
     unsupported_on_node: "Не поддерживается на этом узле",
@@ -4677,12 +4682,12 @@ async function doLogin() {
     authed = true;
     closeLogin();
     document.querySelector(".app").classList.add("authed");
-    loadGlobalAppearance().then(function () {
-      loadAll();
-      wsConnect();
-      restartRefreshTimer();
-      loadClusterNodes();
-    });
+    // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
+    loadAll();
+    wsConnect();
+    restartRefreshTimer();
+    loadClusterNodes();
+    loadGlobalAppearance();
     toast(t("logged_in"), "ok");
   } else {
     if (!authed) localStorage.removeItem(TK);
@@ -6447,7 +6452,7 @@ function applyBgImageFile(file) {
   var reader = new FileReader();
   reader.onload = function (e) {
     var dataUrl = e.target.result;
-    setSetting("bg_image", dataUrl);
+    // 本地预览（不存 base64 到 localStorage，避免塞满本地存储）
     applyBgImage(dataUrl);
     showBgAutoThemeRow(true);
     if (bgAutoThemeEnabled()) {
@@ -6455,9 +6460,32 @@ function applyBgImageFile(file) {
         applyAccentColor(hex);
       });
     }
-    if (_settingsAppearanceScope) saveGlobalAppearance();
+    // 上传到服务器，只保存 URL（避免 base64 污染配置）
+    uploadBgImage(file).then(function (url) {
+      if (url) {
+        setSetting("bg_image", url);
+        if (_settingsAppearanceScope) saveGlobalAppearance();
+      } else {
+        // 上传失败时回退到本地 base64（仅本地，不同步）
+        setSetting("bg_image", dataUrl);
+      }
+    });
   };
   reader.readAsDataURL(file);
+}
+
+// 上传背景图到服务器，返回 URL（避免 base64 污染配置）
+async function uploadBgImage(file) {
+  if (!file) return null;
+  try {
+    var fd = new FormData();
+    fd.append("file", file);
+    var d = await api("/api/appearance/upload", { method: "POST", body: fd });
+    return d && d.success ? d.url : null;
+  } catch (e) {
+    console.debug("bg upload failed:", e);
+    return null;
+  }
 }
 
 function applyBgImage(dataUrl) {
@@ -11661,12 +11689,12 @@ async function saveCmdEdit() {
         if (d && d.authenticated) {
           authed = true;
           document.querySelector(".app").classList.add("authed");
-          loadGlobalAppearance().then(function () {
-            loadAll();
-            wsConnect();
-            restartRefreshTimer();
-            loadClusterNodes();
-          });
+          // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
+          loadAll();
+          wsConnect();
+          restartRefreshTimer();
+          loadClusterNodes();
+          loadGlobalAppearance();
         } else {
           localStorage.removeItem(TK);
           showLogin();
@@ -11948,7 +11976,7 @@ function _clusterNodeCardHtml(n) {
   h += "</div>";
   h += '<div class="cluster-node-actions">';
   h +=
-    '<button class="btn-icon-sm" onclick="editClusterNode(\'' +
+    '<button class="btn-icon-sm" onclick="openClusterEditModal(\'' +
     esc(n.id) +
     '\')" title="' +
     esc(t("node_edit")) +
@@ -12063,44 +12091,6 @@ function toggleClusterCardDetail(cardId) {
       _lastOverview && _lastOverview.nodes && _lastOverview.nodes[nodeId];
     if (od) _fillClusterCardDetail(nodeId, od);
   }
-}
-
-function _clusterFormHtml(formId, title, fields, submitText, submitFn) {
-  var h =
-    '<div class="cluster-form-panel" id="' + formId + '" style="display:none">';
-  h += '<div class="cluster-form-header">' + esc(title) + "</div>";
-  h += '<div class="cluster-form-grid">';
-  fields.forEach(function (f) {
-    h += '<div class="cluster-form-field">';
-    h += "<label>" + esc(f.label) + "</label>";
-    h +=
-      '<input id="' +
-      f.id +
-      '" placeholder="' +
-      esc(f.placeholder || "") +
-      '"' +
-      (f.type ? ' type="' + f.type + '"' : "") +
-      ' value="' +
-      esc(f.value || "") +
-      '">';
-    h += "</div>";
-  });
-  h += "</div>";
-  h += '<div class="cluster-form-actions">';
-  h +=
-    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'' +
-    formId +
-    "').style.display='none'\">" +
-    esc(t("cancel") || "Cancel") +
-    "</button>";
-  h +=
-    '<button class="btn btn-primary btn-sm" onclick="' +
-    submitFn +
-    '">' +
-    esc(submitText) +
-    "</button>";
-  h += "</div></div>";
-  return h;
 }
 
 function _buildStatsHtml(overviewData) {
@@ -12238,50 +12228,10 @@ async function loadClusterPage() {
     ) +
     "</div>";
   html +=
-    '<button class="btn btn-primary btn-sm" onclick="showAddNodeForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+    '<button class="btn btn-primary btn-sm" onclick="openClusterAddModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     esc(t("node_add")) +
     "</button>";
   html += "</div>";
-
-  html += _clusterFormHtml(
-    "clusterAddForm",
-    t("node_add"),
-    [
-      { id: "addNodeId", label: t("node_id"), placeholder: "node_a" },
-      { id: "addNodeName", label: t("node_name"), placeholder: t("node_name") },
-      {
-        id: "addNodeUrl",
-        label: t("node_url"),
-        placeholder: t("node_url_placeholder"),
-      },
-      {
-        id: "addNodeToken",
-        label: t("node_token"),
-        placeholder: t("node_token_placeholder"),
-        type: "password",
-      },
-    ],
-    t("node_add"),
-    "submitClusterNode()",
-  );
-
-  html += _clusterFormHtml(
-    "clusterEditForm",
-    t("node_edit"),
-    [
-      { id: "editNodeId", label: t("node_id"), placeholder: "" },
-      { id: "editNodeName", label: t("node_name"), placeholder: "" },
-      { id: "editNodeUrl", label: t("node_url"), placeholder: "" },
-      {
-        id: "editNodeToken",
-        label: t("node_token"),
-        placeholder: t("node_token_placeholder"),
-        type: "password",
-      },
-    ],
-    t("save") || "Save",
-    "submitEditNode()",
-  );
 
   if (nodes.length === 0) {
     html +=
@@ -12309,50 +12259,60 @@ async function loadClusterPage() {
   }
 }
 
-function showAddNodeForm() {
-  document.getElementById("clusterAddForm").style.display = "block";
-  document.getElementById("clusterEditForm").style.display = "none";
-  ["addNodeId", "addNodeName", "addNodeUrl", "addNodeToken"].forEach(
-    function (id) {
-      var el = document.getElementById(id);
-      if (el) el.value = "";
-    },
-  );
+function openClusterAddModal() {
+  if (!authed) return showLogin();
+  ["addNodeName", "addNodeUrl", "addNodeToken"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  applyI18n();
+  document.getElementById("clusterAddOv").classList.add("show");
+  var urlInput = document.getElementById("addNodeUrl");
+  if (urlInput)
+    setTimeout(function () {
+      urlInput.focus();
+    }, 100);
 }
 
-function editClusterNode(nodeId) {
+function closeClusterAddModal() {
+  document.getElementById("clusterAddOv").classList.remove("show");
+}
+
+function openClusterEditModal(nodeId) {
+  if (!authed) return showLogin();
   var d = nodeRuntimeInfo[nodeId] || {};
-  document.getElementById("clusterEditForm").style.display = "block";
-  document.getElementById("clusterAddForm").style.display = "none";
   document.getElementById("editNodeId").value = nodeId;
-  document.getElementById("editNodeId").readOnly = true;
   document.getElementById("editNodeName").value = d.name || "";
   document.getElementById("editNodeUrl").value = d.url || "";
   document.getElementById("editNodeToken").value = "";
   document.getElementById("editNodeToken").placeholder =
-    t("node_token_placeholder") +
-    " (" +
-    (t("node_local") === "本地实例" ? "留空不修改" : "leave empty to keep") +
-    ")";
+    t("node_token_placeholder") + " (" + t("leave_empty_to_keep") + ")";
+  applyI18n();
+  document.getElementById("clusterEditOv").classList.add("show");
+}
+
+function closeClusterEditModal() {
+  document.getElementById("clusterEditOv").classList.remove("show");
 }
 
 async function submitClusterNode() {
-  var id = document.getElementById("addNodeId").value.trim();
   var name = document.getElementById("addNodeName").value.trim();
   var url = document.getElementById("addNodeUrl").value.trim();
   var token = document.getElementById("addNodeToken").value.trim();
-  if (!id || !url || !token) {
-    toast("ID, URL, Token required", "wr");
+  if (!url || !token) {
+    toast(t("node_add_failed") + ": URL, Token required", "er");
     return;
   }
   var d = await api("/api/cluster/nodes", {
     method: "POST",
-    body: JSON.stringify({ id: id, name: name, url: url, token: token }),
+    body: JSON.stringify({ name: name, url: url, token: token }),
   });
   if (d && d.success) {
     if (d.node) nodeRuntimeInfo[d.node.id] = d.node;
+    closeClusterAddModal();
     toast(t("node_add_success"), "ok");
     loadClusterPage();
+    loadClusterNodes();
   } else {
     toast(t("node_add_failed") + (d && d.error ? ": " + d.error : ""), "er");
   }
@@ -12373,6 +12333,7 @@ async function submitEditNode() {
   if (d && d.success) {
     if (d.node) nodeRuntimeInfo[d.node.id] = d.node;
     if (currentNode === nodeId) wsConnect();
+    closeClusterEditModal();
     toast(t("node_edit") + " OK", "ok");
     loadClusterPage();
   } else {

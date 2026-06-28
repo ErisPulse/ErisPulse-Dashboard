@@ -19,7 +19,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=2" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=3" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -5317,6 +5317,103 @@
             </div>
         </div>
 
+        <!-- 集群节点添加模态窗 -->
+        <div
+            class="modal-overlay"
+            id="clusterAddOv"
+            onclick="if (event.target === this) closeClusterAddModal();"
+        >
+            <div class="modal-box" style="max-width: 480px">
+                <div class="modal-title" data-i18n="node_add"></div>
+                <div class="modal-form-grid">
+                    <div class="modal-form-field">
+                        <label data-i18n="node_name"></label>
+                        <input id="addNodeName" placeholder="my-node" />
+                    </div>
+                    <div class="modal-form-field">
+                        <label data-i18n="node_url"></label>
+                        <input
+                            id="addNodeUrl"
+                            placeholder="http://192.168.1.100:8000"
+                        />
+                    </div>
+                    <div class="modal-form-field">
+                        <label data-i18n="node_token"></label>
+                        <input
+                            id="addNodeToken"
+                            type="password"
+                            placeholder="Dashboard access token"
+                        />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-secondary"
+                        onclick="closeClusterAddModal()"
+                        data-i18n="cancel"
+                    ></button>
+                    <button
+                        class="btn btn-primary"
+                        onclick="submitClusterNode()"
+                        data-i18n="node_add"
+                    ></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 集群节点编辑模态窗 -->
+        <div
+            class="modal-overlay"
+            id="clusterEditOv"
+            onclick="if (event.target === this) closeClusterEditModal();"
+        >
+            <div class="modal-box" style="max-width: 480px">
+                <div class="modal-title" data-i18n="node_edit"></div>
+                <div class="modal-form-grid">
+                    <div class="modal-form-field">
+                        <label data-i18n="node_id"></label>
+                        <input
+                            id="editNodeId"
+                            readonly
+                            style="
+                                background: var(--bg-m);
+                                color: var(--tx-t);
+                                cursor: default;
+                            "
+                        />
+                    </div>
+                    <div class="modal-form-field">
+                        <label data-i18n="node_name"></label>
+                        <input id="editNodeName" />
+                    </div>
+                    <div class="modal-form-field">
+                        <label data-i18n="node_url"></label>
+                        <input id="editNodeUrl" />
+                    </div>
+                    <div class="modal-form-field">
+                        <label data-i18n="node_token"></label>
+                        <input
+                            id="editNodeToken"
+                            type="password"
+                            placeholder=""
+                        />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-secondary"
+                        onclick="closeClusterEditModal()"
+                        data-i18n="cancel"
+                    ></button>
+                    <button
+                        class="btn btn-primary"
+                        onclick="submitEditNode()"
+                        data-i18n="node_edit"
+                    ></button>
+                </div>
+            </div>
+        </div>
+
         <div
             class="modal-overlay"
             id="pkgDetailOv"
@@ -5935,6 +6032,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=2"></script>
+        <script src="/Dashboard/static/dash.js?v=3"></script>
     </body>
 </html>

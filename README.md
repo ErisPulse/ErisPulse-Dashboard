@@ -52,8 +52,15 @@ http://<host>:<port>/Dashboard/
 模块首次加载时会自动生成一个访问 Token，并输出到框架日志中：
 
 ```
-[Dashboard] WebUI token generated: <your-token-here>
+[Dashboard] ╔══════════════════════════════════════════════╗
+[Dashboard] ║           ErisPulse Dashboard                ║
+[Dashboard] ║  访问地址: /Dashboard                       ║
+[Dashboard] ║  访问令牌: <your-token-here>                 ║
+[Dashboard] ║  令牌已保存至配置文件 Dashboard.token         ║
+[Dashboard] ╚══════════════════════════════════════════════╝
 ```
+
+为避免令牌泄露，仅在首次生成时在日志中明文输出。
 
 打开 Dashboard 时需输入该 Token 完成认证。您也可以在配置文件中预设 Token：
 
@@ -71,4 +78,3 @@ max_event_log = 500
 | `Dashboard.title` | `str` | `"ErisPulse Dashboard"` | 面板标题 |
 | `Dashboard.max_event_log` | `int` | `500` | 事件日志最大保留条数 |
 | `Dashboard.token` | `str` | 自动生成 | 访问 Token |
-

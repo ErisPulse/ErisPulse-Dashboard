@@ -101,6 +101,7 @@ class Main(BaseModule):
 
     async def on_load(self, event: dict) -> bool:
         self._loop = asyncio.get_running_loop()
+        self._register_i18n()
         self._restore_persisted_data()
         self._restore_audit_data()
         self._load_command_rules()
@@ -113,25 +114,105 @@ class Main(BaseModule):
         asyncio.create_task(self._show_token_later())
         return True
 
+    def _register_i18n(self):
+        """注册 Dashboard 模块的多语言翻译"""
+        try:
+            i18n = self.sdk.i18n
+            domain = "dashboard"
+            for lang, texts in {
+                "zh-CN": {
+                    "dashboard.banner.title": "ErisPulse Dashboard",
+                    "dashboard.banner.url": "访问地址: /Dashboard",
+                    "dashboard.banner.token": "访问令牌:",
+                    "dashboard.banner.token_saved": "令牌已保存至配置文件 Dashboard.token",
+                    "dashboard.banner.token_hidden_hint": "请在 config 配置文件查看 Dashboard.token",
+                },
+                "zh-TW": {
+                    "dashboard.banner.title": "ErisPulse Dashboard",
+                    "dashboard.banner.url": "訪問位址: /Dashboard",
+                    "dashboard.banner.token": "訪問令牌:",
+                    "dashboard.banner.token_saved": "令牌已儲存至設定檔 Dashboard.token",
+                    "dashboard.banner.token_hidden_hint": "請在 config 設定檔查看 Dashboard.token",
+                },
+                "en": {
+                    "dashboard.banner.title": "ErisPulse Dashboard",
+                    "dashboard.banner.url": "URL: /Dashboard",
+                    "dashboard.banner.token": "Access Token:",
+                    "dashboard.banner.token_saved": "Token saved to config Dashboard.token",
+                    "dashboard.banner.token_hidden_hint": "Check Dashboard.token in the config file",
+                },
+                "ja": {
+                    "dashboard.banner.title": "ErisPulse Dashboard",
+                    "dashboard.banner.url": "アクセス先: /Dashboard",
+                    "dashboard.banner.token": "アクセストークン:",
+                    "dashboard.banner.token_saved": "トークンは設定ファイル Dashboard.token に保存されました",
+                    "dashboard.banner.token_hidden_hint": "設定ファイルで Dashboard.token を確認してください",
+                },
+                "ru": {
+                    "dashboard.banner.title": "ErisPulse Dashboard",
+                    "dashboard.banner.url": "Адрес: /Dashboard",
+                    "dashboard.banner.token": "Токен доступа:",
+                    "dashboard.banner.token_saved": "Токен сохранён в конфиг Dashboard.token",
+                    "dashboard.banner.token_hidden_hint": "Проверьте Dashboard.token в файле конфигурации",
+                },
+            }.items():
+                i18n.register(lang, texts, domain=domain)
+        except Exception:
+            pass
+
+    @staticmethod
+    def _display_width(s: str) -> int:
+        """计算字符串的显示宽度（CJK 字符算 2 列）"""
+        import unicodedata
+
+        w = 0
+        for ch in s:
+            w += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+        return w
+
+    @classmethod
+    def _pad_banner(cls, text: str, width: int) -> str:
+        """按显示宽度右填充空格，对齐表格边框（兼容 CJK）"""
+        pad = width - cls._display_width(text)
+        return text + (" " * pad if pad > 0 else "")
+
     async def _show_token_later(self):
         await asyncio.sleep(2)
-        if getattr(self, "_token_new", False):
-            self.logger.warning("")
-            self.logger.warning("╔══════════════════════════════════════════════╗")
-            self.logger.warning("║           ErisPulse Dashboard                ║")
-            self.logger.warning("║  访问地址: /Dashboard                       ║")
-            self.logger.warning("║  访问令牌: %-34s", self._token)
-            self.logger.warning("║  令牌已保存至配置文件 Dashboard.token         ║")
-            self.logger.warning("╚══════════════════════════════════════════════╝")
-            self.logger.warning("")
+        i18n = self.sdk.i18n
+        title = i18n.t("dashboard.banner.title", default="ErisPulse Dashboard")
+        url = i18n.t("dashboard.banner.url", default="URL: /Dashboard")
+        token_label = i18n.t("dashboard.banner.token", default="Access Token:")
+        is_new = getattr(self, "_token_new", False)
+        if is_new:
+            saved = i18n.t(
+                "dashboard.banner.token_saved",
+                default="Token saved to config Dashboard.token",
+            )
+            token_display = self._token
+            extra_line = saved
         else:
-            self.logger.warning("")
-            self.logger.warning("╔══════════════════════════════════════════════╗")
-            self.logger.warning("║           ErisPulse Dashboard                ║")
-            self.logger.warning("║  访问地址: /Dashboard                       ║")
-            self.logger.warning("║  访问令牌: %-34s", self._token)
-            self.logger.warning("╚══════════════════════════════════════════════╝")
-            self.logger.warning("")
+            # 用星号脱敏，保持与令牌等长
+            token_display = "*" * len(self._token)
+            extra_line = i18n.t(
+                "dashboard.banner.token_hidden_hint",
+                default="Check Dashboard.token in the config file",
+            )
+
+        lines = [
+            "  " + title,
+            "  " + url,
+            f"  {token_label} {token_display}",
+            "  " + extra_line,
+        ]
+        # 根据最长行（含前导两空格）动态决定边框宽度，避免超长令牌/翻译溢出
+        W = max(self._display_width(ln) for ln in lines)
+        border = "═" * W
+        self.logger.warning("")
+        self.logger.warning("╔%s╗", border)
+        for ln in lines:
+            self.logger.warning("║%s║", self._pad_banner(ln, W))
+        self.logger.warning("╚%s╝", border)
+        self.logger.warning("")
 
     async def on_unload(self, event: dict) -> bool:
         if self._cluster:
@@ -777,12 +858,19 @@ class Main(BaseModule):
                             },
                             "module_class": module_class,
                         }
-                        self.sdk.module._config_register(ep_name, True)
+                        # 注册配置（默认禁用，遵守配置中已有的禁用状态）
+                        self.sdk.module._config_register(ep_name, False)
                         self.sdk.module.register(ep_name, module_class, module_info)
 
-                        if self._loop and not self._loop.is_closed():
-                            asyncio.run_coroutine_threadsafe(
-                                self.sdk.module.load(ep_name), self._loop
+                        # 仅当模块未被禁用时才加载
+                        if self.sdk.module.is_enabled(ep_name):
+                            if self._loop and not self._loop.is_closed():
+                                asyncio.run_coroutine_threadsafe(
+                                    self.sdk.module.load(ep_name), self._loop
+                                )
+                        else:
+                            self.logger.info(
+                                f"Module {ep_name} is disabled, skip loading"
                             )
 
                         self._safe_broadcast(
@@ -834,7 +922,7 @@ class Main(BaseModule):
                                 setattr(adapter_obj, "adapterInfo", {})
                             adapter_obj.adapterInfo[ep_name] = adapter_info
 
-                        self.sdk.adapter._config_register(ep_name, True)
+                        self.sdk.adapter._config_register(ep_name, False)
                         self.sdk.adapter.register(ep_name, adapter_class, adapter_info)
                         new_adapter_names.append(ep_name)
                         self.logger.info(f"Adapter {ep_name} registered successfully")
@@ -847,6 +935,12 @@ class Main(BaseModule):
 
                 async def _startup_new_adapters():
                     for platform in new_adapter_names:
+                        # 仅当适配器未被禁用时才启动
+                        if not self.sdk.adapter.is_enabled(platform):
+                            self.logger.info(
+                                f"Adapter {platform} is disabled, skip startup"
+                            )
+                            continue
                         try:
                             await self.sdk.adapter.startup(platform)
                             self.logger.info(f"Adapter {platform} started successfully")
@@ -1094,6 +1188,12 @@ class Main(BaseModule):
         )
         r.register_http_route(
             mn, "/api/appearance", handler=self._api_appearance_update, methods=["PUT"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/appearance/upload",
+            handler=self._api_appearance_upload,
+            methods=["POST"],
         )
         r.register_http_route(
             mn, "/api/storage", handler=self._api_storage, methods=["GET"]
@@ -1442,6 +1542,7 @@ class Main(BaseModule):
             "/api/config",
             "/api/config/source",
             "/api/appearance",
+            "/api/appearance/upload",
             "/api/storage",
             "/api/storage/delete",
             "/api/store/remote",
@@ -2205,6 +2306,18 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         config = dict(self.sdk.config._cache)
+        # 移除可能包含大型 base64 图片的外观配置，避免响应过大卡死前端
+        config.pop("Dashboard", None)
+        # 单独返回 Dashboard 配置（脱敏 token、移除 base64）
+        dash_cfg = self.sdk.config.getConfig("Dashboard") or {}
+        if isinstance(dash_cfg, dict):
+            safe_dash = dict(dash_cfg)
+            safe_dash.pop("token", None)
+            if "appearance" in safe_dash and isinstance(safe_dash["appearance"], dict):
+                safe_dash["appearance"] = self._sanitize_appearance(
+                    safe_dash["appearance"]
+                )
+            config["Dashboard"] = safe_dash
         return JSONResponse({"config": config})
 
     async def _api_config_update(self, request: Request) -> JSONResponse:
@@ -2225,15 +2338,74 @@ class Main(BaseModule):
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         appearance = self.sdk.config.getConfig("Dashboard.appearance") or {}
+        # 清理可能残留的 base64 图片数据（防止污染）
+        appearance = self._sanitize_appearance(appearance)
         return JSONResponse({"appearance": appearance})
+
+    def _sanitize_appearance(self, data: dict) -> dict:
+        """移除外观数据中的 base64 图片，避免污染配置与响应"""
+        if not isinstance(data, dict):
+            return {}
+        clean = dict(data)
+        img = clean.get("bg_image")
+        if isinstance(img, str) and img.startswith("data:"):
+            clean["bg_image"] = ""
+        return clean
 
     async def _api_appearance_update(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
-        self.sdk.config.setConfig("Dashboard.appearance", body)
+        # 过滤掉 base64 图片数据，避免污染配置文件
+        body = self._sanitize_appearance(body)
+        # 合并到已有配置，避免直接覆盖丢失字段
+        existing = self.sdk.config.getConfig("Dashboard.appearance") or {}
+        if not isinstance(existing, dict):
+            existing = {}
+        merged = {**existing, **body}
+        self.sdk.config.setConfig("Dashboard.appearance", merged)
         self._add_audit_log("appearance_update", "Dashboard.appearance", request)
         return JSONResponse({"success": True})
+
+    async def _api_appearance_upload(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        import uuid as _uuid
+
+        try:
+            form = await request.form()
+            file = form.get("file")
+            if file is None:
+                return JSONResponse({"error": "file is required"}, status_code=400)
+            content_type = getattr(file, "content_type", "") or ""
+            if not content_type.startswith("image/"):
+                return JSONResponse(
+                    {"error": "only image files are allowed"}, status_code=400
+                )
+            ext_map = {
+                "image/png": ".png",
+                "image/jpeg": ".jpg",
+                "image/jpg": ".jpg",
+                "image/gif": ".gif",
+                "image/webp": ".webp",
+            }
+            ext = ext_map.get(content_type, ".png")
+            upload_dir = Path(__file__).parent / "static" / "res" / "bg_upload"
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            filename = f"bg_{_uuid.uuid4().hex}{ext}"
+            file_path = upload_dir / filename
+            data = await file.read()
+            # 限制大小（5MB）
+            if len(data) > 5 * 1024 * 1024:
+                return JSONResponse(
+                    {"error": "image too large (max 5MB)"}, status_code=400
+                )
+            file_path.write_bytes(data)
+            url = f"/Dashboard/static/res/bg_upload/{filename}"
+            self._add_audit_log("appearance_upload", url, request)
+            return JSONResponse({"success": True, "url": url})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_storage(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -4171,10 +4343,11 @@ class Main(BaseModule):
         name = str(body.get("name", "")).strip()
         url = str(body.get("url", "")).strip()
         token = str(body.get("token", "")).strip()
-        if not node_id or not url or not token:
-            return JSONResponse(
-                {"error": "id, url, token are required"}, status_code=400
-            )
+        # 节点ID自动生成，简化用户操作
+        if not node_id:
+            node_id = "node_" + secrets.token_urlsafe(6)
+        if not url or not token:
+            return JSONResponse({"error": "url, token are required"}, status_code=400)
         if node_id == "local":
             return JSONResponse({"error": "reserved_id"}, status_code=400)
         if node_id in self._cluster._nodes:
