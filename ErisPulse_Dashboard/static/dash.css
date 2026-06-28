@@ -2156,6 +2156,41 @@ body {
     gap: 8px;
 }
 
+.modal-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.modal-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.modal-form-field label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tx-s);
+}
+
+.modal-form-field input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    background: var(--bg-s);
+    font-size: 14px;
+    color: var(--tx-p);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal-form-field input:focus {
+    border-color: var(--accent, #4fa6de);
+}
+
 .output-modal .modal-box {
     max-width: 600px;
 }

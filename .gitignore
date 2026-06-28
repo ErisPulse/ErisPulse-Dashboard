@@ -179,9 +179,9 @@ cython_debug/
 #.idea/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
 #  you could uncomment the following to ignore the enitre vscode folder
 # .vscode/
 
@@ -219,6 +219,9 @@ pyvenv.cfg
 # docs/it/
 # docs/ru/
 # docs/ar/
+
+# Dashboard 背景图上传目录
+ErisPulse_Dashboard/static/res/bg_upload/
 
 # 翻译缓存（已提交到版本控制）
 # .translate_cache/
