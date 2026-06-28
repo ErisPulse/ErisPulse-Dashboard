@@ -574,6 +574,8 @@ const I18N = {
     fw_add_field_name_hint: "输入字段名",
     fw_add_field_value_hint: "输入值（JSON 或文本）",
     fw_update_title: "框架更新",
+    fw_update_title_desc: "查看 ErisPulse 版本更新、发行说明并安装更新",
+    release_notes_unavailable: "无法获取发行说明",
     fw_current_version: "当前版本",
     fw_latest_version: "最新版本",
     fw_select_version: "选择版本",
@@ -1240,12 +1242,15 @@ const I18N = {
     fw_add_field_name_hint: "Field name",
     fw_add_field_value_hint: "Value (JSON or text)",
     fw_update_title: "Framework Update",
+    fw_update_title_desc:
+      "View version updates, release notes, and install updates",
+    release_notes_unavailable: "Failed to fetch release notes",
     fw_current_version: "Current Version",
     fw_latest_version: "Latest Version",
     fw_select_version: "Select Version",
     fw_check_updates: "Check Updates",
     fw_install_update: "Install Update",
-    fw_latest_already: "Up to date",
+    fw_latest_already: "Already latest",
     fw_current: "current",
     fw_downgrade_title: "⚠ Downgrade Confirmation",
     fw_downgrade_text:
@@ -1958,6 +1963,8 @@ const I18N = {
     fw_add_field_name_hint: "輸入欄位名",
     fw_add_field_value_hint: "輸入值（JSON 或文字）",
     fw_update_title: "框架更新",
+    fw_update_title_desc: "查看 ErisPulse 版本更新、發行說明並安裝更新",
+    release_notes_unavailable: "無法獲取發行說明",
     fw_current_version: "當前版本",
     fw_latest_version: "最新版本",
     fw_select_version: "選擇版本",
@@ -2648,6 +2655,9 @@ const I18N = {
     fw_add_field_name_hint: "フィールド名",
     fw_add_field_value_hint: "値（JSONまたはテキスト）",
     fw_update_title: "フレームワーク更新",
+    fw_update_title_desc:
+      "バージョン更新、リリースノートの確認、更新のインストール",
+    release_notes_unavailable: "リリースノートを取得できません",
     fw_current_version: "現在のバージョン",
     fw_latest_version: "最新バージョン",
     fw_select_version: "バージョン選択",
@@ -3349,6 +3359,9 @@ const I18N = {
     fw_add_field_name_hint: "Имя поля",
     fw_add_field_value_hint: "Значение (JSON или текст)",
     fw_update_title: "Обновление фреймворка",
+    fw_update_title_desc:
+      "Просмотр обновлений, заметок о выпуске и установка обновлений",
+    release_notes_unavailable: "Не удалось получить заметки о выпуске",
     fw_current_version: "Текущая версия",
     fw_latest_version: "Последняя версия",
     fw_select_version: "Выберите версию",
@@ -8344,6 +8357,17 @@ async function loadFwReleaseNotes() {
     } catch (e) {
       notesEl.textContent = d.notes;
     }
+  } else if (d && d.github_url) {
+    notesEl.innerHTML =
+      '<div style="text-align:center;padding:12px 0;color:var(--tx-s)">' +
+      '<p style="margin:0 0 8px">' +
+      esc(t("release_notes_unavailable") || "无法获取发行说明") +
+      "</p>" +
+      '<a href="' +
+      esc(d.github_url) +
+      '" target="_blank" rel="noopener" style="color:var(--accent,#4fa6de);font-size:13px">' +
+      esc(d.github_url) +
+      "</a></div>";
   } else {
     notesEl.textContent = "-";
   }
