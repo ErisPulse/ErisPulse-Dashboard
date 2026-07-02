@@ -859,7 +859,7 @@ class Main(BaseModule):
                             "module_class": module_class,
                         }
                         # 注册配置（默认禁用，遵守配置中已有的禁用状态）
-                        self.sdk.module._config_register(ep_name, False)
+                        self.sdk.module._config_register(ep_name, True)
                         self.sdk.module.register(ep_name, module_class, module_info)
 
                         # 仅当模块未被禁用时才加载
@@ -922,7 +922,7 @@ class Main(BaseModule):
                                 setattr(adapter_obj, "adapterInfo", {})
                             adapter_obj.adapterInfo[ep_name] = adapter_info
 
-                        self.sdk.adapter._config_register(ep_name, False)
+                        self.sdk.adapter._config_register(ep_name, True)
                         self.sdk.adapter.register(ep_name, adapter_class, adapter_info)
                         new_adapter_names.append(ep_name)
                         self.logger.info(f"Adapter {ep_name} registered successfully")
