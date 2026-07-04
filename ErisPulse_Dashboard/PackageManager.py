@@ -1,7 +1,10 @@
 import importlib.metadata
+import os
+import shutil
 import subprocess
+import sys
 import time
-from typing import Optional
+from typing import List, Optional
 
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientError
@@ -30,6 +33,9 @@ class DashboardPackageManager:
         self._storage = storage
         self._git_packages: dict[str, dict] = {}
         self._load_git_packages()
+        self._uv_command: Optional[List[str]] = None
+        self._uv_checked: bool = False
+        self.no_uv: bool = False
 
     def _load_git_packages(self):
         if self._storage:
@@ -46,6 +52,143 @@ class DashboardPackageManager:
                 self._storage.set("__ep_git_packages__", self._git_packages)
             except Exception:
                 pass
+
+    # ─── 后端检测：uv 优先，pip 回退 ───
+
+    def _is_uv_disabled(self) -> bool:
+        """是否禁用 uv：no_uv 属性优先，其次环境变量 ERISPULSE_NO_UV"""
+        if getattr(self, "no_uv", False):
+            return True
+        return str(os.environ.get("ERISPULSE_NO_UV", "")).lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+
+    def _detect_uv(self) -> Optional[List[str]]:
+        """
+        检测可用的 uv 命令。
+
+        优先使用 PATH 上的独立 uv 二进制，
+        其次回退到 python -m uv。
+
+        :return: 形如 ["uv"] 或 [python, "-m", "uv"] 的命令前缀；未找到返回 None
+        """
+        if self._uv_checked:
+            return self._uv_command
+
+        self._uv_checked = True
+
+        # 1. 独立的 uv 二进制（最常见，全局安装）
+        if shutil.which("uv"):
+            self._uv_command = ["uv"]
+            return self._uv_command
+
+        # 2. 作为 pip 包安装的 uv: python -m uv
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "uv", "--version"],
+                capture_output=True,
+                timeout=5,
+            )
+            if result.returncode == 0:
+                self._uv_command = [sys.executable, "-m", "uv"]
+        except Exception:
+            pass
+
+        return self._uv_command
+
+    def _get_uv_command(self) -> Optional[List[str]]:
+        """返回应使用的 uv 命令前缀；禁用或不可用时返回 None"""
+        if self._is_uv_disabled():
+            return None
+        return self._detect_uv()
+
+    def _get_target_python(self) -> str:
+        """
+        返回应当作为安装目标的 Python 解释器路径。
+
+        若用户激活了虚拟环境 (VIRTUAL_ENV) 但 Dashboard 自身运行在别处，
+        则返回该虚拟环境的 Python，以确保包安装到用户期望的环境中。
+        """
+        venv = os.environ.get("VIRTUAL_ENV")
+        if not venv:
+            return sys.executable
+
+        # Dashboard 已在该虚拟环境内运行
+        try:
+            venv_root = os.path.normcase(os.path.abspath(venv)) + os.sep
+            exe_root = os.path.normcase(os.path.abspath(sys.executable))
+            if exe_root.startswith(venv_root):
+                return sys.executable
+        except Exception:
+            pass
+
+        # 定位虚拟环境的 python
+        if sys.platform == "win32":
+            candidate = os.path.join(venv, "Scripts", "python.exe")
+        else:
+            candidate = os.path.join(venv, "bin", "python")
+
+        return candidate if os.path.exists(candidate) else sys.executable
+
+    def _build_subprocess_env(self) -> dict:
+        """构建子进程环境变量，继承当前环境"""
+        return os.environ.copy()
+
+    def _ensure_pip(self, target_python: str) -> bool:
+        """
+        确保目标 Python 环境中有 pip 可用。
+        
+        若 python -m pip 不可用，尝试通过 ensurepip 引导安装。
+        这是 Python 3.4+ 内置模块，用于修复 venv 缺少 pip 的情况。
+
+        :return: 现在 pip 是否可用
+        """
+        # 先试试 pip 是否已经可用
+        try:
+            result = subprocess.run(
+                [target_python, "-m", "pip", "--version"],
+                capture_output=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                return True
+        except Exception:
+            pass
+
+        # pip 不可用，尝试 ensurepip 引导安装
+        try:
+            result = subprocess.run(
+                [target_python, "-m", "ensurepip", "--default-pip"],
+                capture_output=True,
+                timeout=60,
+            )
+            if result.returncode == 0:
+                return True
+        except Exception:
+            pass
+
+        return False
+
+    def get_pip_backend(self) -> List[str]:
+        """
+        返回 pip 操作的命令前缀。
+
+        优先级：uv pip > python -m pip
+        当 uv 可用时返回 [uv, pip]，否则返回 [target_python, -m, pip]。
+        回退到 pip 前会自动 ensurepip 确保 pip 可用。
+
+        :return: 可用于 subprocess 的命令前缀列表
+        """
+        uv_cmd = self._get_uv_command()
+        if uv_cmd:
+            return uv_cmd + ["pip"]
+
+        # 回退 pip：先确保 venv 里有 pip（处理 --without-pip 创建的 venv）
+        target_python = self._get_target_python()
+        self._ensure_pip(target_python)
+        return [target_python, "-m", "pip"]
 
     def register_git_package(
         self, package_name: str, git_url: str, installed_version: str = ""

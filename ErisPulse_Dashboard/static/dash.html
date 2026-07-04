@@ -5,6 +5,14 @@
         <meta name="viewport" content="width=device-width,initial-scale=1.0" />
         <title>ErisPulse Dashboard</title>
         <link rel="icon" href="/Dashboard/static/res/erispulse_logo_hp.png" />
+        <!-- 阻止深色模式闪白：在 CSS 加载前同步设置 data-theme -->
+        <script>
+            (function () {
+                var t = localStorage.getItem("ep_theme");
+                if (!t) t = window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light";
+                document.documentElement.setAttribute("data-theme", t);
+            })();
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -24,6 +32,17 @@
     </head>
 
     <body>
+        <!-- 启动画面 -->
+        <div class="splash" id="splash">
+            <div class="splash-bg"></div>
+            <div class="splash-content">
+                <h1 class="splash-title">ErisPulse</h1>
+                <p class="splash-sub">Dashboard</p>
+                <div class="splash-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
         <div class="app">
             <header class="header">
                 <div class="header-left">
@@ -4312,7 +4331,7 @@
                                                             type="color"
                                                             id="settingsAccent"
                                                             onchange="
-                                                                applyAccentColor(
+                                                                applyAccentColorManual(
                                                                     this.value,
                                                                 )
                                                             "

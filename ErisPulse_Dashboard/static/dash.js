@@ -560,7 +560,7 @@ const I18N = {
       "您正在修改 ErisPulse 服务器连接配置（host/port/ssl）。请确定您在干什么，否则不要修改此处！\n\n在 Docker 容器中操作此项可能导致您无法外部访问 ErisPulse 的 routers。",
     fw_unknown_field: "未知字段",
     fw_win_warn:
-      "Windows 系统限制可能导致自动更新失败，请手动检查并更新 ErisPulse 框架",
+      "Windows 将通过新控制台窗口执行更新，完成后请手动重启 ErisPulse",
     fw_cannot_update: "当前环境不支持自动更新",
     fw_unknown_field_desc: "此配置项不属于当前版本的默认配置，建议删除",
     fw_reset_default: "恢复默认",
@@ -586,6 +586,11 @@ const I18N = {
     fw_downgrade_title: "⚠ 降级确认",
     fw_downgrade_text:
       "您正在将 ErisPulse 降级到 {v}。降级可能导致兼容性问题。确定要继续吗？",
+    fw_win_confirm_title: "Windows 更新提示",
+    fw_win_confirm_text:
+      "Windows 系统会锁定正在运行的文件。<br>将在新控制台窗口中执行更新，完成后请手动重启 ErisPulse。<br><br>是否继续？",
+    fw_win_update_started: "新窗口已打开，正在下载更新...",
+    fw_pending_restart: "更新完成，请重启框架",
     cluster_management: "集群管理",
     cluster_desc: "添加、编辑、删除远程节点，查看能力对比",
     cluster_overview: "聚合视图",
@@ -1226,7 +1231,7 @@ const I18N = {
       "You are modifying ErisPulse server connection settings (host/port/ssl). Make sure you know what you are doing!\n\nChanging these in a Docker container may make ErisPulse routers inaccessible from outside.",
     fw_unknown_field: "Unknown Field",
     fw_win_warn:
-      "Windows system restrictions may prevent automatic updates. Please check and update ErisPulse manually.",
+      "Windows will run the update in a new console window. Please restart ErisPulse manually afterwards.",
     fw_cannot_update: "Auto-update is not supported in this environment",
     fw_unknown_field_desc:
       "This config field is not part of the current default config. Consider deleting it.",
@@ -1255,6 +1260,11 @@ const I18N = {
     fw_downgrade_title: "⚠ Downgrade Confirmation",
     fw_downgrade_text:
       "You are about to downgrade ErisPulse to {v}. Downgrading may cause compatibility issues. Continue?",
+    fw_win_confirm_title: "Windows Update Notice",
+    fw_win_confirm_text:
+      "Windows locks running files.<br>A new console window will perform the update.<br>Please restart ErisPulse manually afterwards.<br><br>Continue?",
+    fw_win_update_started: "Update window opened, downloading...",
+    fw_pending_restart: "Update complete, please restart",
     fw_field_server_host: "Listen address",
     fw_field_server_port: "Listen port",
     fw_field_server_ssl_certfile:
@@ -4140,25 +4150,41 @@ function go(name, el) {
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));
   document
+    .querySelectorAll(".page-loader-strip")
+    .forEach((o) => o.remove());
+  document
     .querySelectorAll(".nav-item")
     .forEach((n) => n.classList.remove("active"));
   const page = document.getElementById("p-" + name);
   if (page) {
     page.classList.add("active");
-    // 首次入场动画
     page.classList.add("anim-enter");
     setTimeout(() => page.classList.remove("anim-enter"), 600);
   }
   if (el) {
     el.classList.add("active");
   } else {
-    // 非侧边栏入口（统计卡/快捷操作等）跳转时，同步高亮对应导航项
     const navMatch = document.querySelector(
       '.nav-item[data-page="' + name + '"]',
     );
     if (navMatch) navMatch.classList.add("active");
   }
   closeSidebar();
+
+  // 加载指示条
+  if (page) {
+    var strip = document.createElement("div");
+    strip.className = "page-loader-strip";
+    var navItem = el || document.querySelector('.nav-item[data-page="' + name + '"]');
+    var iconTitle = "";
+    if (navItem) {
+      var spanEl = navItem.querySelector("span");
+      if (spanEl) iconTitle = spanEl.textContent;
+    }
+    strip.innerHTML = '<span class="pl-label">' + (iconTitle || name) + "</span>";
+    page.appendChild(strip);
+  }
+  var minDelay = new Promise(function (r) { setTimeout(r, 800); });
 
   const loaders = {
     dashboard: refreshDashboard,
@@ -4185,9 +4211,23 @@ function go(name, el) {
     about: loadAbout,
   };
   if (loaders[name]) {
-    loaders[name]();
+    var result = loaders[name]();
+    Promise.resolve(result).then(function () {
+      return minDelay;
+    }).then(function () {
+      if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
+    });
   } else if (_moduleViewLoaders && _moduleViewLoaders[name]) {
-    _moduleViewLoaders[name]();
+    var result2 = _moduleViewLoaders[name]();
+    Promise.resolve(result2).then(function () {
+      return minDelay;
+    }).then(function () {
+      if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
+    });
+  } else {
+    minDelay.then(function () {
+      if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
+    });
   }
 
   if (name !== "logs" && _logAutoRefreshTimer) {
@@ -4313,18 +4353,27 @@ function _renderModuleViews(views) {
       const groupTitle = document.createElement("div");
       groupTitle.className = "nav-group-title";
       if (groupKey.startsWith("group_") && firstView.group_title) {
-        groupTitle.textContent = firstView.group_title;
+        // Use multi-language group_titles if available
+        var gtText =
+          (firstView.group_titles && firstView.group_titles[lang]) ||
+          firstView.group_title;
+        groupTitle.textContent = gtText;
         groupTitle.setAttribute("data-i18n", groupKey);
       } else if (groupKey.startsWith("group_")) {
         groupTitle.setAttribute("data-i18n", groupKey);
       } else {
-        const locale = lang;
-        if (locale === "zh" || locale === "zh-TW") {
-          groupTitle.textContent =
-            firstView.group_title || firstView.group_title_en || groupKey;
+        // Use multi-language group_titles if available
+        if (firstView.group_titles && firstView.group_titles[lang]) {
+          groupTitle.textContent = firstView.group_titles[lang];
         } else {
-          groupTitle.textContent =
-            firstView.group_title_en || firstView.group_title || groupKey;
+          const locale = lang;
+          if (locale === "zh" || locale === "zh-TW") {
+            groupTitle.textContent =
+              firstView.group_title || firstView.group_title_en || groupKey;
+          } else {
+            groupTitle.textContent =
+              firstView.group_title_en || firstView.group_title || groupKey;
+          }
         }
       }
       navGroup.appendChild(groupTitle);
@@ -4350,11 +4399,16 @@ function _renderModuleViews(views) {
       navItem.innerHTML = iconSvg;
 
       const span = document.createElement("span");
-      const locale = lang;
-      if (locale === "zh" || locale === "zh-TW") {
-        span.textContent = v.title || v.title_en || v.id;
+      // Use multi-language titles dict if available
+      if (v.titles && v.titles[lang]) {
+        span.textContent = v.titles[lang];
       } else {
-        span.textContent = v.title_en || v.title || v.id;
+        const locale = lang;
+        if (locale === "zh" || locale === "zh-TW") {
+          span.textContent = v.title || v.title_en || v.id;
+        } else {
+          span.textContent = v.title_en || v.title || v.id;
+        }
       }
       navItem.appendChild(span);
       navGroup.appendChild(navItem);
@@ -6347,8 +6401,10 @@ function syncSettingsUI() {
   if (elEl) elEl.value = getSetting("event_limit", "100");
   var dtEl = document.getElementById("settingsDashTitle");
   if (dtEl) dtEl.value = getSetting("dash_title", "ErisPulse Dashboard");
+  // Apply saved accent color to CSS variables (not just sync UI)
   var savedAccent = getSetting("accent_color", "");
-  syncAccentUI(savedAccent || "#4fa6de");
+  if (savedAccent) applyAccentColor(savedAccent);
+  else syncAccentUI("#4fa6de");
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = getSetting("bg_color", "") || "#f4f7fb";
   var hasBgImg = !!getSetting("bg_image", "");
@@ -6444,6 +6500,16 @@ function applyAccentColor(hex) {
   if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
+function applyAccentColorManual(hex) {
+  // 手动选择强调色时自动关闭自动取色，避免刷新后被覆盖
+  if (bgAutoThemeEnabled()) {
+    localStorage.setItem("ep_setting_bg_auto_theme", "false");
+    var autoChk = document.getElementById("settingsBgAutoTheme");
+    if (autoChk) autoChk.checked = false;
+  }
+  applyAccentColor(hex);
+}
+
 // 背景纯色
 function applyBgColor(hex) {
   if (!hex) return;
@@ -6517,10 +6583,10 @@ function applyBgImage(dataUrl) {
 }
 
 function clearBgImage() {
-  document.body.style.backgroundImage = "";
-  document.body.style.backgroundSize = "";
-  document.body.style.backgroundPosition = "";
-  document.body.style.backgroundAttachment = "";
+  document.body.style.removeProperty("background-image");
+  document.body.style.removeProperty("background-size");
+  document.body.style.removeProperty("background-position");
+  document.body.style.removeProperty("background-attachment");
 }
 
 // 从图片提取主色调
@@ -6697,7 +6763,7 @@ function initAccentSwatches() {
     btn.dataset.color = c;
     btn.title = c;
     btn.onclick = function () {
-      applyAccentColor(c);
+      applyAccentColorManual(c);
     };
     wrap.appendChild(btn);
   });
@@ -8286,31 +8352,31 @@ async function loadFrameworkVersions() {
     latestEl.style.color = "var(--ok-c)";
   }
 
-  // Windows 警告
-  var isWindows = false;
-  if (d.platform && /win/i.test(d.platform)) isWindows = true;
+  // Windows 提示（点击安装时弹窗确认，此处不显横幅）
+  var isWindows = /win/i.test(navigator.platform || "");
   var winWarn = document.getElementById("fwWinWarn");
-  if (winWarn) winWarn.style.display = isWindows ? "" : "none";
+  if (winWarn) winWarn.style.display = "none";
 
-  // 更新按钮状态
+  // 更新按钮：所选版本 > 当前版本即可启用
   var updateBtn = document.getElementById("fwUpdateBtn");
-  if (updateBtn) {
-    if (isWindows || d.can_update === false) {
+  var sel = document.getElementById("fwVersionSelect");
+  function refreshBtn() {
+    if (!updateBtn || !sel) return;
+    var sv = sel.value;
+    if (!sv || sv === _fwCurrentVer) {
       updateBtn.disabled = true;
       updateBtn.style.opacity = "0.5";
-      updateBtn.title = isWindows ? t("fw_win_warn") : t("fw_cannot_update");
-    } else if (hasUpdate) {
+    } else {
       updateBtn.disabled = false;
       updateBtn.style.opacity = "";
-      updateBtn.title = "";
-    } else {
-      updateBtn.disabled = true;
-      updateBtn.style.opacity = "0.5";
     }
   }
+  sel.onchange = function () {
+    refreshBtn();
+    loadFwReleaseNotes();
+  };
 
   // 填充版本选择器
-  var sel = document.getElementById("fwVersionSelect");
   var versionRow = document.getElementById("fwVersionRow");
   if (sel && versionRow && _fwVersions.length > 0) {
     versionRow.style.display = "";
@@ -8331,46 +8397,95 @@ async function loadFrameworkVersions() {
       .join("");
   }
 
-  // 自动加载选中版本的发布说明
+  refreshBtn();
   if (sel && sel.value) loadFwReleaseNotes();
 }
+
+var _changelogCache = null;
+var _changelogCacheTs = 0;
+var CHANGELOG_BASE = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/CHANGELOG.md";
+var CHANGELOG_PROXIES = [
+  "https://cdn.gh-proxy.org/",
+  "https://ghproxy.com/",
+  "https://gh-proxy.com/",
+  "",
+];
+
+async function fetchChangelog() {
+  if (_changelogCache && Date.now() - _changelogCacheTs < 600000) return _changelogCache;
+  for (var i = 0; i < CHANGELOG_PROXIES.length; i++) {
+    try {
+      var url = CHANGELOG_PROXIES[i] + CHANGELOG_BASE;
+      var resp = await fetch(url);
+      if (resp.ok) {
+        _changelogCache = await resp.text();
+        _changelogCacheTs = Date.now();
+        return _changelogCache;
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
+function parseChangelogSection(text, version) {
+  if (!text) return null;
+  // CHANGELOG 用横杠，PyPI 用点号，都要试
+  var variants = [version];
+  if (version.indexOf(".dev") !== -1) variants.push(version.replace(/\.dev/, "-dev."));
+  if (version.indexOf("-dev.") !== -1) variants.push(version.replace(/-dev\./, ".dev"));
+  if (version.indexOf("-de.") !== -1) variants.push(version.replace(/-de\./, "-dev."));
+  for (var i = 0; i < variants.length; i++) {
+    var re = new RegExp("## \\[" + escRegex(variants[i]) + "\\] - .*?(?=## \\[|$)", "s");
+    var m = text.match(re);
+    if (m) {
+      var lines = m[0].split("\n");
+      lines.shift();
+      return lines.join("\n").trim();
+    }
+  }
+  return null;
+}
+
+function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
 async function loadFwReleaseNotes() {
   var sel = document.getElementById("fwVersionSelect");
   var notesEl = document.getElementById("fwReleaseNotes");
   if (!sel || !notesEl) return;
   var v = sel.value;
-  if (!v) {
-    notesEl.style.display = "none";
-    return;
-  }
+  if (!v) { notesEl.style.display = "none"; return; }
   notesEl.style.display = "";
   notesEl.textContent = t("loading") + "...";
+
+  // 1. 尝试从 CHANGELOG.md 提取
+  var changelog = await fetchChangelog();
+  if (changelog) {
+    var section = parseChangelogSection(changelog, v);
+    if (section) {
+      notesEl.innerHTML = typeof marked !== "undefined"
+        ? marked.parse(section)
+        : section.replace(/</g, "&lt;");
+      return;
+    }
+  }
+
+  // 2. 回退后端
   var d = await api("/api/framework/versions?notes=" + encodeURIComponent(v));
   if (d && d.notes) {
-    try {
-      var html =
-        typeof marked !== "undefined"
-          ? marked.parse(d.notes)
-          : d.notes.replace(/</g, "&lt;");
-      notesEl.innerHTML = html;
-    } catch (e) {
-      notesEl.textContent = d.notes;
-    }
-  } else if (d && d.github_url) {
-    notesEl.innerHTML =
-      '<div style="text-align:center;padding:12px 0;color:var(--tx-s)">' +
-      '<p style="margin:0 0 8px">' +
-      esc(t("release_notes_unavailable") || "无法获取发行说明") +
-      "</p>" +
-      '<a href="' +
-      esc(d.github_url) +
-      '" target="_blank" rel="noopener" style="color:var(--accent,#4fa6de);font-size:13px">' +
-      esc(d.github_url) +
-      "</a></div>";
-  } else {
-    notesEl.textContent = "-";
+    notesEl.innerHTML = typeof marked !== "undefined"
+      ? marked.parse(d.notes)
+      : d.notes.replace(/</g, "&lt;");
+    return;
   }
+
+  // 3. 最后显示链接
+  var releaseUrl = "https://github.com/ErisPulse/ErisPulse/releases/tag/v" + v;
+  notesEl.innerHTML =
+    '<div style="text-align:center;padding:12px 0;color:var(--tx-s)">' +
+    '<p style="margin:0 0 8px">' + esc(t("release_notes_unavailable")) + "</p>" +
+    '<a href="' + esc(releaseUrl) +
+    '" target="_blank" rel="noopener" style="color:var(--accent,#4fa6de);font-size:13px">' +
+    esc(releaseUrl) + "</a></div>";
 }
 
 async function doFrameworkUpdate() {
@@ -8386,18 +8501,29 @@ async function doFrameworkUpdate() {
     if (!ok) return;
   }
 
+  // Windows 特别提示
+  var isWin = /win/i.test(navigator.platform || "");
+  if (isWin) {
+    var ok = await confirm2(t("fw_win_confirm_title"), t("fw_win_confirm_text"));
+    if (!ok) return;
+  }
+
   const btn = document.getElementById("fwUpdateBtn");
   btn.disabled = true;
   btn.innerHTML = "<span>" + t("installing") + "</span>";
 
   const d = await api("/api/framework/update", {
     method: "POST",
-    body: JSON.stringify({ version }),
+    body: JSON.stringify({ version, lang }),
   });
 
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, "ErisPulse==" + version);
-    toast(t("installing"), "");
+    if (isWin) {
+      toast(t("fw_win_update_started"), "ok");
+    } else {
+      toast(t("installing"), "");
+    }
   } else {
     toast(t("install_failed"), "er");
     btn.disabled = false;
@@ -11703,6 +11829,17 @@ async function saveCmdEdit() {
     document.getElementById("sidebar").classList.add("collapsed");
   updateNodeSelectorVisibility();
   restoreNavGroupStates();
+  // 启动画面在首次显示登录或仪表盘时消失
+  var splashEl = document.getElementById("splash");
+  var _splashReady = false;
+  var _splashDismissed = false;
+  setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1750);
+  function dismissSplash() {
+    _splashDismissed = true;
+    if (!_splashReady || !splashEl) return;
+    splashEl.classList.add("hide");
+    setTimeout(function () { if (splashEl) splashEl.remove(); }, 600);
+  }
   const tk = localStorage.getItem(TK);
   if (tk) {
     fetch(API + "/api/auth/status", {
@@ -11713,6 +11850,7 @@ async function saveCmdEdit() {
         if (d && d.authenticated) {
           authed = true;
           document.querySelector(".app").classList.add("authed");
+          dismissSplash();
           // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
           loadAll();
           wsConnect();
@@ -11721,13 +11859,16 @@ async function saveCmdEdit() {
           loadGlobalAppearance();
         } else {
           localStorage.removeItem(TK);
+          dismissSplash();
           showLogin();
         }
       })
       .catch(() => {
+        dismissSplash();
         showLogin();
       });
   } else {
+    dismissSplash();
     showLogin();
   }
   initMirrorSelects();

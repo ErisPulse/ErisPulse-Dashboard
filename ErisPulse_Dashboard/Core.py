@@ -258,6 +258,7 @@ class Main(BaseModule):
         id: str,
         title: str = "",
         title_en: str = "",
+        titles: dict = None,
         icon_svg: str = "",
         html_content: str = "",
         js_content: str = "",
@@ -267,6 +268,8 @@ class Main(BaseModule):
         group: str = "group_extensions",
         group_title: str = "",
         group_title_en: str = "",
+        group_titles: dict = None,
+        **kwargs,
     ) -> bool:
         if not id:
             self.logger.warning("register_view: id is required")
@@ -275,10 +278,32 @@ class Main(BaseModule):
             self.logger.warning(
                 f"register_view: view '{id}' already registered, overwriting"
             )
+        # Build multi-language titles dict
+        if titles and isinstance(titles, dict):
+            view_titles = dict(titles)
+        else:
+            view_titles = {
+                "zh": title or id,
+                "zh-TW": title or id,
+                "en": title_en or title or id,
+                "ja": title_en or title or id,
+                "ru": title_en or title or id,
+            }
+        if group_titles and isinstance(group_titles, dict):
+            grp_titles = dict(group_titles)
+        else:
+            grp_titles = {
+                "zh": group_title or "",
+                "zh-TW": group_title or "",
+                "en": group_title_en or group_title or "",
+                "ja": group_title_en or group_title or "",
+                "ru": group_title_en or group_title or "",
+            }
         view_data = {
             "id": id,
             "title": title or id,
             "title_en": title_en or title or id,
+            "titles": view_titles,
             "icon_svg": icon_svg,
             "html_content": html_content,
             "js_content": js_content,
@@ -288,6 +313,7 @@ class Main(BaseModule):
             "group": group,
             "group_title": group_title,
             "group_title_en": group_title_en,
+            "group_titles": grp_titles,
         }
         self._registered_views[id] = view_data
         self.logger.info(f"Module view registered: {id}")
@@ -706,7 +732,8 @@ class Main(BaseModule):
         force: bool = False,
         index_url: str = None,
     ):
-        cmd = [sys.executable, "-m", "pip", "install"]
+        backend = self._get_pkg_manager().get_pip_backend()
+        cmd = backend + ["install"]
         if force:
             cmd.append("--force-reinstall")
         if index_url:
@@ -2160,7 +2187,8 @@ class Main(BaseModule):
             }
         )
         try:
-            cmd = [sys.executable, "-m", "pip", "uninstall", "-y", package_name]
+            backend = self._get_pkg_manager().get_pip_backend()
+            cmd = backend + ["uninstall", "-y", package_name]
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if proc.returncode == 0:
                 self.sdk.module.unregister(module_name)
@@ -2592,7 +2620,8 @@ class Main(BaseModule):
     def _run_pip_upgrade(
         self, packages: list[str], task_id: str, index_url: str = None
     ):
-        cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
+        backend = self._get_pkg_manager().get_pip_backend()
+        cmd = backend + ["install", "--upgrade"]
         if index_url:
             cmd.extend(["--index-url", index_url])
         cmd.extend(packages)
@@ -2775,7 +2804,8 @@ class Main(BaseModule):
         )
 
         def _do_install(packages: list[str]) -> tuple[list[str], int]:
-            pip_cmd = [sys.executable, "-m", "pip", "install"]
+            backend = self._get_pkg_manager().get_pip_backend()
+            pip_cmd = backend + ["install"]
             if force:
                 pip_cmd.append("--force-reinstall")
             if index_url:
@@ -3374,17 +3404,103 @@ class Main(BaseModule):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         version = body.get("version", "")
+        lang = body.get("lang", "en")
         if not version:
             return JSONResponse({"error": "version required"}, status_code=400)
         task_id = secrets.token_urlsafe(8)
-        t = threading.Thread(
-            target=self._run_pip_install,
-            args=([f"ErisPulse=={version}"], task_id, True, None),
-            daemon=True,
-        )
-        t.start()
+
+        if sys.platform == "win32":
+            self._run_framework_update_windows(f"ErisPulse=={version}", task_id, lang)
+        else:
+            t = threading.Thread(
+                target=self._run_pip_install,
+                args=([f"ErisPulse=={version}"], task_id, True, None),
+                daemon=True,
+            )
+            t.start()
+
         self._add_audit_log("framework_update", f"ErisPulse=={version}", request)
         return JSONResponse({"success": True, "task_id": task_id})
+
+    def _run_framework_update_windows(self, package_spec: str, task_id: str, lang: str = "en"):
+        """Windows 更新：新控制台窗口执行，随后退出 Dashboard 进程释放文件锁"""
+        self._install_tasks[task_id] = {
+            "status": "running",
+            "started_at": time.time(),
+            "packages": [package_spec],
+        }
+
+        backend = self._get_pkg_manager().get_pip_backend()
+
+        update_script = f'''
+import subprocess, sys, time, os
+
+MSG = {{
+    "zh": {{"ok": "更新成功! 请手动重启 ErisPulse。", "fail": "更新失败:", "err": "出错:", "close": "按任意键关闭..."}},
+    "en": {{"ok": "Update successful! Please restart ErisPulse manually.", "fail": "Update failed:", "err": "Error:", "close": "Press any key to close..."}},
+}}
+lang = os.environ.get("EP_LANG", "")
+if lang.startswith("zh"):
+    m = MSG["zh"]
+else:
+    m = MSG["en"]
+
+time.sleep(10)
+cmd = {backend + ["install", "--upgrade", package_spec]!r}
+try:
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", timeout=300
+    )
+    if result.returncode == 0:
+        print(m["ok"])
+    else:
+        print(m["fail"], (result.stderr or "")[-800:])
+except Exception as e:
+    print(m["err"], e)
+print("\\n" + m["close"])
+try:
+    input()
+except Exception:
+    pass
+try:
+    os.remove(__file__)
+except Exception:
+    pass
+'''
+        import tempfile
+        script_path = os.path.join(tempfile.gettempdir(), "ep_fw_update.py")
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(update_script)
+
+        try:
+            subprocess.Popen(
+                ["cmd", "/c", "start", "ErisPulse Update", sys.executable, script_path],
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+                env={**os.environ, "EP_LANG": lang},
+            )
+        except Exception as e:
+            self.logger.error(f"Windows update spawn failed: {e}")
+            self._install_tasks[task_id]["status"] = "error"
+            self._install_tasks[task_id]["error"] = str(e)
+            return
+
+        self._install_tasks[task_id]["status"] = "pending_restart"
+        self._install_tasks[task_id]["message"] = "更新窗口已打开，Dashboard 即将退出"
+
+        # 先 uninit 清理（async，投到主事件循环），再延迟退出释放进程
+        def _shutdown_and_exit():
+            time.sleep(1)
+            try:
+                if self._loop and not self._loop.is_closed():
+                    future = asyncio.run_coroutine_threadsafe(
+                        self.sdk.uninit(), self._loop
+                    )
+                    future.result(timeout=15)
+            except Exception:
+                pass
+            os._exit(0)
+
+        threading.Thread(target=_shutdown_and_exit, daemon=True).start()
 
     # ========== 配置源码相关 API ==========
 
