@@ -22,8 +22,15 @@ Dashboard 支持其他 ErisPulse 模块将自定义的管理页面注册到 Dash
 ```python
 sdk.Dashboard.register_view(
     id="MyModule",                    # 必填，唯一标识
-    title="我的模块",                  # 中文名称
-    title_en="My Module",             # 英文名称
+    title="我的模块",                  # 中文名称（向后兼容）
+    title_en="My Module",             # 英文名称（向后兼容）
+    titles={                           # ✨ 多语言标题（优先于 title/title_en）
+        "zh": "我的模块",
+        "en": "My Module",
+        "zh-TW": "我的模組",
+        "ja": "マイモジュール",
+        "ru": "Мой модуль",
+    },
     icon_svg='<svg>...</svg>',        # 侧边栏图标 SVG
     html_content='<div>...</div>',     # 页面 HTML 内容
     js_content='function xxx() {}',    # 页面 JavaScript 逻辑
@@ -31,8 +38,15 @@ sdk.Dashboard.register_view(
     iframe_url='',                     # iframe 模式 URL（与 html_content 二选一）
     loader="loadMyModuleView",         # 切换到该页面时调用的 JS 函数名
     group="group_extensions",          # 侧边栏分组
-    group_title="",                    # 自定义分组中文名
-    group_title_en="",                 # 自定义分组英文名
+    group_title="",                    # 自定义分组中文名（向后兼容）
+    group_title_en="",                 # 自定义分组英文名（向后兼容）
+    group_titles={                     # ✨ 多语言分组标题（优先于 group_title/group_title_en）
+        "zh": "工具",
+        "en": "Tools",
+        "zh-TW": "工具",
+        "ja": "ツール",
+        "ru": "Инструменты",
+    },
 )
 ```
 
@@ -41,8 +55,9 @@ sdk.Dashboard.register_view(
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `id` | `str` | 是 | 视窗唯一标识，建议使用模块名称 |
-| `title` | `str` | 否 | 中文显示名称，默认使用 `id` |
-| `title_en` | `str` | 否 | 英文显示名称，默认使用 `title` |
+| `title` | `str` | 否 | 中文显示名称，默认使用 `id`（向后兼容，推荐使用 `titles`） |
+| `title_en` | `str` | 否 | 英文显示名称，默认使用 `title`（向后兼容，推荐使用 `titles`） |
+| `titles` | `dict` | 否 | **🆕** 多语言标题字典，键为语言代码（`zh`/`en`/`zh-TW`/`ja`/`ru`），优先于 `title`/`title_en` |
 | `icon_svg` | `str` | 否 | 侧边栏图标的完整 SVG 字符串 |
 | `html_content` | `str` | 否* | 注入模式的页面 HTML 内容 |
 | `js_content` | `str` | 否 | 页面 JavaScript 代码 |
@@ -50,10 +65,13 @@ sdk.Dashboard.register_view(
 | `iframe_url` | `str` | 否* | iframe 模式的 URL，设置后忽略 `html_content` |
 | `loader` | `str` | 否 | 页面激活时自动调用的 JS 函数名 |
 | `group` | `str` | 否 | 侧边栏分组标识，默认 `group_extensions` |
-| `group_title` | `str` | 否 | 自定义分组的中文标题 |
-| `group_title_en` | `str` | 否 | 自定义分组的英文标题 |
+| `group_title` | `str` | 否 | 自定义分组的中文标题（向后兼容，推荐使用 `group_titles`） |
+| `group_title_en` | `str` | 否 | 自定义分组的英文标题（向后兼容，推荐使用 `group_titles`） |
+| `group_titles` | `dict` | 否 | **🆕** 多语言分组标题字典，键为语言代码，优先于 `group_title`/`group_title_en` |
 
 > *`html_content` 和 `iframe_url` 至少提供一个，否则页面为空白。
+
+> **🆕 多语言支持**：`titles` 和 `group_titles` 支持所有 5 种前端语言（`zh`/`en`/`zh-TW`/`ja`/`ru`）。未提供的语言会自动回退到 `title`/`title_en` 或 `group_title`/`group_title_en`。
 
 ---
 
