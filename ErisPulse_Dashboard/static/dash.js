@@ -537,6 +537,16 @@ const I18N = {
     fw_field_framework_strict_mode_exceptions: "严格模式豁免清单",
     adapter_config: "适配器配置",
     adapter_config_desc: "管理各平台适配器的连接和账户配置",
+    components: "组件",
+    components_desc: "管理适配器和模块的配置",
+    components_config: "组件配置",
+    components_config_desc: "管理适配器和模块的配置",
+    ext_config: "扩展配置",
+    ext_config_desc: "管理适配器和模块的配置项",
+    ext_settings: "扩展设置",
+    ext_settings_desc: "管理适配器和模块的个性化配置",
+    plugin_config: "插件配置",
+    plugin_config_desc: "管理适配器和模块的配置项",
     adapter_global_config: "全局配置",
     adapter_accounts: "账户配置",
     add_account: "添加账户",
@@ -546,6 +556,11 @@ const I18N = {
     no_config_schema: "该适配器未声明配置 Schema（无可用配置项）",
     config_validation_failed: "配置校验失败",
     adapter_config_saved: "适配器配置已保存",
+    module_config: "模块配置",
+    module_config_desc: "管理各模块的配置项",
+    module_config_empty: "暂无模块声明配置 Schema",
+    save_module_config: "保存配置",
+    module_config_saved: "模块配置已保存",
     account_removed: "账户已删除",
     account_added: "账户已添加",
     show_secret: "显示",
@@ -1292,6 +1307,16 @@ const I18N = {
     adapter_config: "Adapter Config",
     adapter_config_desc:
       "Manage adapter platform connections and account settings",
+    components: "Components",
+    components_desc: "Manage adapter and module configurations",
+    components_config: "Component Config",
+    components_config_desc: "Manage adapter and module configurations",
+    ext_config: "Extension Config",
+    ext_config_desc: "Manage adapter and module configurations",
+    ext_settings: "Extension Settings",
+    ext_settings_desc: "Manage adapter and module configurations",
+    plugin_config: "Plugin Config",
+    plugin_config_desc: "Manage adapter and module configurations",
     adapter_global_config: "Global Config",
     adapter_accounts: "Accounts",
     add_account: "Add Account",
@@ -1301,6 +1326,11 @@ const I18N = {
     no_config_schema: "This adapter has no config schema",
     config_validation_failed: "Config validation failed",
     adapter_config_saved: "Adapter config saved",
+    module_config: "Module Config",
+    module_config_desc: "Manage configuration for each module",
+    module_config_empty: "No modules with config schema found",
+    save_module_config: "Save Config",
+    module_config_saved: "Module config saved",
     account_removed: "Account removed",
     account_added: "Account added",
     show_secret: "Show",
@@ -1938,6 +1968,16 @@ const I18N = {
     fw_field_framework_strict_mode_exceptions: "嚴格模式豁免清單",
     adapter_config: "適配器配置",
     adapter_config_desc: "管理各平台適配器的連接和帳戶配置",
+    components: "組件",
+    components_desc: "管理適配器和模組的配置",
+    components_config: "組件配置",
+    components_config_desc: "管理適配器和模組的配置",
+    ext_config: "擴展配置",
+    ext_config_desc: "管理適配器和模組的配置項",
+    ext_settings: "擴展設定",
+    ext_settings_desc: "管理適配器和模組的個性化配置",
+    plugin_config: "插件配置",
+    plugin_config_desc: "管理適配器和模組的配置項",
     adapter_global_config: "全域配置",
     adapter_accounts: "帳戶配置",
     add_account: "新增帳戶",
@@ -1947,6 +1987,11 @@ const I18N = {
     no_config_schema: "該適配器未宣告配置 Schema（無可用配置項）",
     config_validation_failed: "配置驗證失敗",
     adapter_config_saved: "適配器配置已儲存",
+    module_config: "模組配置",
+    module_config_desc: "管理各模組的配置項",
+    module_config_empty: "暫無模組宣告配置 Schema",
+    save_module_config: "儲存配置",
+    module_config_saved: "模組配置已儲存",
     account_removed: "帳戶已刪除",
     account_added: "帳戶已新增",
     confirm_remove_account: "確認刪除此帳戶？",
@@ -2629,6 +2674,16 @@ const I18N = {
     adapter_config: "アダプター設定",
     adapter_config_desc:
       "プラットフォームアダプターの接続とアカウント設定を管理",
+    components: "コンポーネント",
+    components_desc: "アダプターとモジュールの設定を管理",
+    components_config: "コンポーネント設定",
+    components_config_desc: "アダプターとモジュールの設定を管理",
+    ext_config: "拡張設定",
+    ext_config_desc: "アダプターとモジュールの設定を管理",
+    ext_settings: "拡張設定",
+    ext_settings_desc: "アダプターとモジュールの設定を管理",
+    plugin_config: "プラグイン設定",
+    plugin_config_desc: "アダプターとモジュールの設定を管理",
     adapter_global_config: "グローバル設定",
     adapter_accounts: "アカウント設定",
     add_account: "アカウント追加",
@@ -2638,6 +2693,11 @@ const I18N = {
     no_config_schema: "このアダプターには設定スキーマがありません",
     config_validation_failed: "設定の検証に失敗しました",
     adapter_config_saved: "アダプター設定を保存しました",
+    module_config: "モジュール設定",
+    module_config_desc: "各モジュールの設定項目を管理",
+    module_config_empty: "設定スキーマを持つモジュールがありません",
+    save_module_config: "設定を保存",
+    module_config_saved: "モジュール設定を保存しました",
     account_removed: "アカウントを削除しました",
     account_added: "アカウントを追加しました",
     confirm_remove_account: "このアカウントを削除してもよろしいですか？",
@@ -3333,6 +3393,16 @@ const I18N = {
     adapter_config: "Настройки адаптера",
     adapter_config_desc:
       "Управление подключениями и учетными записями адаптеров платформ",
+    components: "Компоненты",
+    components_desc: "Управление конфигурациями адаптеров и модулей",
+    components_config: "Конфиг компонентов",
+    components_config_desc: "Управление конфигурациями адаптеров и модулей",
+    ext_config: "Конфиг расширений",
+    ext_config_desc: "Управление конфигурациями адаптеров и модулей",
+    ext_settings: "Настройки расширений",
+    ext_settings_desc: "Управление конфигурациями адаптеров и модулей",
+    plugin_config: "Настройки плагинов",
+    plugin_config_desc: "Управление конфигурациями адаптеров и модулей",
     adapter_global_config: "Глобальные настройки",
     adapter_accounts: "Учетные записи",
     add_account: "Добавить аккаунт",
@@ -3342,6 +3412,11 @@ const I18N = {
     no_config_schema: "У этого адаптера нет схемы конфигурации",
     config_validation_failed: "Ошибка валидации конфигурации",
     adapter_config_saved: "Конфигурация адаптера сохранена",
+    module_config: "Настройки модулей",
+    module_config_desc: "Управление настройками модулей",
+    module_config_empty: "Нет модулей со схемой конфигурации",
+    save_module_config: "Сохранить",
+    module_config_saved: "Настройки модуля сохранены",
     account_removed: "Аккаунт удален",
     account_added: "Аккаунт добавлен",
     confirm_remove_account: "Подтвердите удаление аккаунта?",
@@ -3881,6 +3956,7 @@ function toggleLang() {
   }
   updateNodeSelectorUI();
 }
+
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const k = el.getAttribute("data-i18n");
@@ -4098,10 +4174,11 @@ function _botAvatarFallback(el) {
 // 页面重定向：合并后的页面，旧 ID 重定向到宿主页 + 指定 tab
 var PAGE_REDIRECTS = {
   "framework-config": { page: "config", tab: "cfg-framework" },
-  "adapter-config": { page: "adapter", tab: "adapter" },
+  "adapter-config": { page: "adapter", tab: "cfg-adapter" },
+  "module-config": { page: "adapter", tab: "cfg-module" },
   "event-builder": { page: "event-stream", tab: "ev-builder" },
-  modules: { page: "module-mgmt", tab: "module-mgmt" },
-  "ext-modules": { page: "module-mgmt", tab: "module-mgmt" },
+  modules: { page: "module-mgmt", tab: "mm-adapters" },
+  "ext-modules": { page: "module-mgmt", tab: "mm-adapters" },
   "ext-store": { page: "store", tab: "st-browse" },
   "ext-packages": { page: "store", tab: "st-packages" },
   packages: { page: "store", tab: "st-packages" },
@@ -5124,6 +5201,10 @@ async function loadModules() {
     el.textContent = activeCount;
   if ((el = document.getElementById("statDisabled")))
     el.textContent = disabledCount;
+  var mmAd = document.getElementById("mmAdaptersCount");
+  if (mmAd) mmAd.textContent = allAdapters.length;
+  var mmMo = document.getElementById("mmModulesCount");
+  if (mmMo) mmMo.textContent = allModules.length;
   document.getElementById("adapterList").innerHTML = adapters.length
     ? adapters.map((m) => renderPluginRow(m, true)).join("")
     : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
@@ -5232,6 +5313,21 @@ function renderPluginRow(m, isAd) {
   // Build detail section
   var detailHtml = "";
   var detailItems = [];
+  // 详情：状态说明（适配器/模块通用）
+  detailItems.push(
+    '<span class="module-detail-item"><strong>' +
+      t("loaded_status") +
+      ":</strong> " +
+      esc(statusText) +
+      "</span>",
+  );
+  // 详情：完整描述
+  if (m.description)
+    detailItems.push(
+      '<span class="module-detail-item">' +
+        esc(m.description) +
+        "</span>",
+    );
   if (isAd) {
     if (m.bots_count > 0) {
       detailItems.push(
@@ -5255,6 +5351,22 @@ function renderPluginRow(m, isAd) {
           "</span>",
       );
     }
+    if (m.has_config != null)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("config") +
+          ":</strong> " +
+          (m.has_config ? t("cmd_yes") : t("cmd_no")) +
+          "</span>",
+      );
+    if (m.has_accounts != null)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("adapter_accounts") +
+          ":</strong> " +
+          (m.has_accounts ? t("cmd_yes") : t("cmd_no")) +
+          "</span>",
+      );
   } else {
     if (m.load_strategy) {
       var ls = m.load_strategy;
@@ -5302,6 +5414,22 @@ function renderPluginRow(m, isAd) {
           ":</strong> " +
           m.views_count +
           "</span>",
+      );
+    if (m.has_config != null)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("config") +
+          ":</strong> " +
+          (m.has_config ? t("cmd_yes") : t("cmd_no")) +
+          "</span>",
+      );
+    if (m.package)
+      detailItems.push(
+        '<span class="module-detail-item"><strong>' +
+          t("pkg_name") +
+          ':</strong> <code class="dep-code">' +
+          esc(m.package) +
+          "</code></span>",
       );
     if (m.is_git)
       detailItems.push(
@@ -6821,6 +6949,14 @@ var MERGED_PAGE_TABS = {
     { id: "mon-lifecycle", label: "lifecycle", i18n: "lifecycle" },
     { id: "mon-audit", label: "audit_log", i18n: "audit_log" },
   ],
+  "module-mgmt": [
+    { id: "mm-adapters", label: "adapters", i18n: "adapters" },
+    { id: "mm-modules", label: "modules_label", i18n: "modules_label" },
+  ],
+  adapter: [
+    { id: "cfg-adapter", label: "adapter_config", i18n: "adapter_config" },
+    { id: "cfg-module", label: "module_config", i18n: "module_config" },
+  ],
 };
 
 function getHomePins() {
@@ -6978,28 +7114,32 @@ function toggleHomePinPicker() {
       var c = navItemContent(page);
       if (!c) return;
 
+      var isPinned = pinned.indexOf(page) !== -1;
+
       // 整页 pin 选项（仅当该页面未被 pin 时显示）
-      if (pinned.indexOf(page) === -1) {
+      if (!isPinned) {
         addOption(c.title, c.svg, function () {
           addHomePin(page);
         });
       }
 
-      // 如果是合并页面，列出子 tab
-      var tabs = MERGED_PAGE_TABS[page];
-      if (tabs) {
-        tabs.forEach(function (tabInfo) {
-          var pinId = page + ":" + tabInfo.id;
-          if (pinned.indexOf(pinId) !== -1) return;
-          addOption(
-            t(tabInfo.i18n) || tabInfo.label,
-            c.svg,
-            function () {
-              addHomePin(pinId);
-            },
-            true,
-          );
-        });
+      // 子 tab 选项（仅当父页面未被 pin 时显示，避免孤儿选项）
+      if (!isPinned) {
+        var tabs = MERGED_PAGE_TABS[page];
+        if (tabs) {
+          tabs.forEach(function (tabInfo) {
+            var pinId = page + ":" + tabInfo.id;
+            if (pinned.indexOf(pinId) !== -1) return;
+            addOption(
+              t(tabInfo.i18n) || tabInfo.label,
+              c.svg,
+              function () {
+                addHomePin(pinId);
+              },
+              true,
+            );
+          });
+        }
       }
     });
     if (count === 0) {
@@ -8792,6 +8932,204 @@ function loadAll() {
   loadPackageUpdates();
   loadModuleViews();
   restartRefreshTimer();
+}
+
+// ========== 模块配置页面 ==========
+
+var _moduleConfigNames = [];
+var _moduleConfigCurrent = "";
+
+async function loadModuleConfigPage() {
+  const d = await api("/api/modules");
+  if (!d) return;
+
+  // 只保留有配置 schema 的模块
+  _moduleConfigNames = (d.modules || []).filter(function (m) {
+    return m.type === "module" && m.has_config;
+  });
+
+  const panel = document.getElementById("moduleConfigPanel");
+  const empty = document.getElementById("moduleConfigEmpty");
+
+  if (_moduleConfigNames.length === 0) {
+    if (empty) empty.style.display = "flex";
+    let container = document.getElementById("moduleConfigContent");
+    if (container) container.remove();
+    return;
+  }
+
+  if (empty) empty.style.display = "none";
+
+  // 构建选择器（与适配器配置一致的芯片式布局）
+  var selectorHtml = [
+    '<div class="adapter-selector-bar">',
+    '<div class="adapter-chip-list" id="moduleChipList">',
+  ];
+  _moduleConfigNames.forEach(function (m) {
+    var isActive = m.name === _moduleConfigCurrent;
+    var cls = isActive ? " adapter-chip active" : " adapter-chip";
+    var dotColor = m.loaded ? "var(--ok-c)" : m.enabled ? "var(--wr-c)" : "var(--tx-t)";
+    var iconSvg =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+    selectorHtml.push(
+      '<div class="' +
+        cls +
+        '" data-module="' +
+        esc(m.name) +
+        '" onclick="selectModuleConfig(\'' +
+        esc(m.name) +
+        '\')">',
+      iconSvg,
+      '<span class="adapter-chip-name">' + esc(m.name) + "</span>",
+      '<span class="adapter-chip-dot" style="background:' +
+        dotColor +
+        '"></span>',
+      "</div>",
+    );
+  });
+  selectorHtml.push("</div></div>");
+
+  // 保留内容区
+  var existingContent = document.getElementById("moduleConfigContent");
+  panel.innerHTML = selectorHtml.join("");
+  if (existingContent) {
+    panel.appendChild(existingContent);
+  } else {
+    var c = document.createElement("div");
+    c.id = "moduleConfigContent";
+    panel.appendChild(c);
+  }
+
+  if (
+    !_moduleConfigCurrent ||
+    !_moduleConfigNames.some(function (m) {
+      return m.name === _moduleConfigCurrent;
+    })
+  ) {
+    _moduleConfigCurrent = _moduleConfigNames[0].name;
+  }
+
+  // 高亮当前
+  var chips = panel.querySelectorAll(".adapter-chip[data-module]");
+  chips.forEach(function (el) {
+    el.classList.toggle("active", el.dataset.module === _moduleConfigCurrent);
+  });
+
+  loadModuleConfigDetail(_moduleConfigCurrent);
+}
+
+function selectModuleConfig(name) {
+  _moduleConfigCurrent = name;
+  var panel = document.getElementById("moduleConfigPanel");
+  if (panel) {
+    var chips = panel.querySelectorAll(".adapter-chip[data-module]");
+    chips.forEach(function (el) {
+      el.classList.toggle("active", el.dataset.module === name);
+    });
+  }
+  loadModuleConfigDetail(name);
+}
+
+async function loadModuleConfigDetail(moduleName) {
+  let container = document.getElementById("moduleConfigContent");
+  if (!container) {
+    var panel = document.getElementById("moduleConfigPanel");
+    if (!panel) return;
+    container = document.createElement("div");
+    container.id = "moduleConfigContent";
+    panel.appendChild(container);
+  }
+  container.innerHTML =
+    '<div style="padding:40px;text-align:center;color:var(--tx-s)">' +
+    t("loading") +
+    "...</div>";
+
+  const d = await api(
+    "/api/module/" + encodeURIComponent(moduleName) + "/config",
+  );
+  if (!d || d.error) {
+    container.innerHTML =
+      '<div class="empty-state"><p>' +
+      esc(d ? d.error : t("unknown_error")) +
+      "</p></div>";
+    return;
+  }
+
+  var html = '<div class="adapter-config-detail">';
+
+  if (d.has_config && d.schema) {
+    html +=
+      '<div class="fw-section"><div class="fw-section-title">' +
+      esc(moduleName) +
+      '</div><div class="fw-section-body">';
+    html +=
+      '<div id="moduleConfigFields">' +
+      renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key) +
+      "</div>";
+    html +=
+      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveModuleConfigAll(\'' +
+      esc(moduleName) +
+      '\')">' +
+      t("save_module_config") +
+      "</button></div>";
+    html += "</div></div>";
+  } else {
+    html +=
+      '<div class="empty-state"><p>' +
+      t("no_config_schema") +
+      "</p></div>";
+  }
+
+  html += "</div>";
+  container.innerHTML = html;
+}
+
+async function saveModuleConfigAll(moduleName) {
+  var d = await api(
+    "/api/module/" + encodeURIComponent(moduleName) + "/config",
+  );
+  if (!d || !d.schema) return;
+
+  var values = {};
+  var inputs = document.querySelectorAll(
+    "#moduleConfigFields [data-ackey]",
+  );
+  for (var i = 0; i < inputs.length; i++) {
+    var el = inputs[i];
+    var ackey = el.dataset.ackey;
+    var parts = ackey.split(".");
+    var keyName = parts[parts.length - 1];
+    var tp = el.dataset.adapterTp || "string";
+    var val = el.type === "checkbox" ? el.checked : el.value;
+    if (tp === "number" || tp === "integer" || tp === "float")
+      val = Number(val);
+    else if (tp === "object") {
+      try {
+        val = JSON.parse(val);
+      } catch (e) {
+        continue;
+      }
+    }
+    values[keyName] = val;
+  }
+
+  var result = await api(
+    "/api/module/" + encodeURIComponent(moduleName) + "/config",
+    {
+      method: "PUT",
+      body: JSON.stringify({ values: values }),
+    },
+  );
+
+  if (result && result.success) {
+    toast(t("module_config_saved"), "ok");
+  } else {
+    toast(
+      t("save_failed") + ": " + (result?.error || t("unknown_error")),
+      "er",
+    );
+    if (result?.errors) toast(result.errors.join(", "), "er");
+  }
 }
 
 // ========== 事件构建器相关 ==========
@@ -11193,6 +11531,20 @@ function switchMonitorTab(tab, btn) {
   switchMergeTab(tab, btn, loaders[tab]);
 }
 
+// ===== 模块管理 tab（适配器 / 模块）=====
+function switchModuleMgmtTab(tab, btn) {
+  switchMergeTab(tab, btn, null);
+}
+
+// ===== 适配器配置 tab（适配器配置 / 模块配置）=====
+function switchExtConfigTab(tab, btn) {
+  var loaders = {
+    "cfg-adapter": loadAdapterConfigPage,
+    "cfg-module": loadModuleConfigPage,
+  };
+  switchMergeTab(tab, btn, loaders[tab]);
+}
+
 async function loadPackages(forceRefresh) {
   const force = forceRefresh === true;
   const params = force ? "?force=true" : "";
@@ -11898,6 +12250,7 @@ var _PAGE_CAPABILITY_MAP = {
   commands: "commands",
   "module-mgmt": "modules",
   adapter: "config",
+  "module-config": "config",
   store: "store",
   packages: "packages",
   logs: "logs",

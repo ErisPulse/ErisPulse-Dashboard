@@ -411,11 +411,10 @@
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                 >
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                    <path d="M2 17l10 5 10-5" />
-                                    <path d="M2 12l10 5 10-5" />
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
                                 </svg>
-                                <span data-i18n="adapter_config"></span>
+                                <span data-i18n="components_config"></span>
                             </a>
                             <a
                                 class="nav-item"
@@ -2402,7 +2401,36 @@
                                 </svg>
                             </button>
                         </div>
-                        <div class="card" style="margin-top: 16px">
+                        <div class="view-toggle pkg-tabs" style="margin-top: 16px">
+                            <button
+                                class="view-btn pkg-tab active"
+                                data-tab="mm-adapters"
+                                onclick="switchModuleMgmtTab('mm-adapters', this)"
+                            >
+                                <span data-i18n="adapters"></span>
+                                <span
+                                    class="pkg-tab-count"
+                                    id="mmAdaptersCount"
+                                ></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="mm-modules"
+                                onclick="switchModuleMgmtTab('mm-modules', this)"
+                            >
+                                <span data-i18n="modules_label"></span>
+                                <span
+                                    class="pkg-tab-count"
+                                    id="mmModulesCount"
+                                ></span>
+                            </button>
+                        </div>
+                        <div
+                            id="mm-adapters-tab"
+                            class="tab-section"
+                            style="display: block"
+                        >
+                        <div class="card" style="margin-top: 12px">
                             <div class="card-header">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -2448,7 +2476,9 @@
                             </div>
                             <div id="adapterList"></div>
                         </div>
-                        <div class="card" style="margin-top: 16px">
+                        </div>
+                        <div id="mm-modules-tab" class="tab-section">
+                        <div class="card" style="margin-top: 12px">
                             <div class="card-header">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -2502,6 +2532,7 @@
                                 </div>
                             </div>
                             <div id="moduleList"></div>
+                        </div>
                         </div>
                     </div>
                     <div class="page" id="p-store">
@@ -3974,11 +4005,28 @@
                         </div>
                     </div>
                     <div class="page" id="p-adapter">
-                        <h1 class="page-title" data-i18n="adapter_config"></h1>
+                        <h1 class="page-title" data-i18n="components_config"></h1>
                         <p
                             class="page-desc"
-                            data-i18n="adapter_config_desc"
+                            data-i18n="components_config_desc"
                         ></p>
+                        <div class="view-toggle pkg-tabs" style="margin-top: 16px">
+                            <button
+                                class="view-btn pkg-tab active"
+                                data-tab="cfg-adapter"
+                                onclick="switchExtConfigTab('cfg-adapter', this)"
+                            >
+                                <span data-i18n="adapter_config"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="cfg-module"
+                                onclick="switchExtConfigTab('cfg-module', this)"
+                            >
+                                <span data-i18n="module_config"></span>
+                            </button>
+                        </div>
+                        <div id="cfg-adapter-tab" class="tab-section" style="display:block">
                         <div class="adapter-config-layout">
                             <div
                                 class="adapter-config-panel"
@@ -4009,6 +4057,17 @@
                                     ></p>
                                 </div>
                             </div>
+                        </div>
+                        </div>
+                        <div id="cfg-module-tab" class="tab-section">
+                        <div class="adapter-config-layout">
+                            <div class="adapter-config-panel" id="moduleConfigPanel">
+                                <div class="empty-state" id="moduleConfigEmpty">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:0.3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                                    <p id="moduleConfigEmptyText" data-i18n="module_config_empty"></p>
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
 

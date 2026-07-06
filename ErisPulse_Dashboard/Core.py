@@ -1197,6 +1197,18 @@ class Main(BaseModule):
             handler=self._api_modules_action,
             methods=["POST"],
         )
+        r.register_http_route(
+            mn,
+            "/api/module/{name}/config",
+            handler=self._api_module_config_get,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/module/{name}/config",
+            handler=self._api_module_config_set,
+            methods=["PUT"],
+        )
         r.register_http_route(mn, "/api/bots", handler=self._api_bots, methods=["GET"])
         r.register_http_route(
             mn, "/api/events", handler=self._api_events, methods=["GET"]
@@ -1563,6 +1575,7 @@ class Main(BaseModule):
             "/api/adapters",
             "/api/modules",
             "/api/modules/action",
+            "/api/module/{name}/config",
             "/api/bots",
             "/api/events",
             "/api/events/clear",
@@ -1735,9 +1748,10 @@ class Main(BaseModule):
 
         if config_class is not None:
             try:
-                from ErisPulse.runtime.config_schema import get_config_schema
+                from ErisPulse.runtime.config_schema import resolve_config_schema
 
-                result["schema"] = get_config_schema(config_class)
+                # 使用 resolve_config_schema 解析 i18n 描述为当前语言文本
+                result["schema"] = resolve_config_schema(config_class)
             except Exception as e:
                 self.logger.debug(f"Failed to get config schema for {platform}: {e}")
             result["values"] = copy.deepcopy(
@@ -1746,9 +1760,9 @@ class Main(BaseModule):
 
         if account_config_class is not None:
             try:
-                from ErisPulse.runtime.config_schema import get_config_schema
+                from ErisPulse.runtime.config_schema import resolve_config_schema
 
-                result["account_schema"] = get_config_schema(account_config_class)
+                result["account_schema"] = resolve_config_schema(account_config_class)
             except Exception as e:
                 self.logger.debug(
                     f"Failed to get account config schema for {platform}: {e}"
@@ -1809,19 +1823,14 @@ class Main(BaseModule):
 
             self.sdk.config.setConfig(config_key, merged)
 
+            # 配置热更新回调（适配器配置现为实时读取，无需刷新缓存）
             try:
-                old_config = getattr(adapter_instance, "_config_instance", None)
-                adapter_instance._config_instance = None
-                if config_class is not None:
+                if config_class is not None and hasattr(adapter_instance, "on_config_update"):
                     from ErisPulse.runtime.config_schema import dict_to_dataclass
 
-                    adapter_instance._config_instance = dict_to_dataclass(
-                        config_class, merged
-                    )
-                if hasattr(adapter_instance, "on_config_update") and old_config:
-                    adapter_instance.on_config_update(
-                        old_config, adapter_instance._config_instance
-                    )
+                    old_config = getattr(adapter_instance, "_config_instance", None)
+                    new_config = dict_to_dataclass(config_class, merged)
+                    adapter_instance.on_config_update(old_config, new_config)
             except Exception as e:
                 self.logger.debug(f"Config hot-reload callback error: {e}")
 
@@ -1863,16 +1872,13 @@ class Main(BaseModule):
     async def _reload_adapter_if_running(
         self, adapter_instance, platform, reload: bool = True
     ) -> bool:
-        """刷新账户数据；reload=True 且适配器运行中时，交由框架执行完整重载（框架自动清理资源）"""
+        """刷新适配器；reload=True 且适配器运行中时，交由框架执行完整重载"""
         try:
-            adapter_instance._accounts_data = None
-            if hasattr(adapter_instance, "_load_accounts"):
-                adapter_instance._accounts_data = adapter_instance._load_accounts()
-
+            # 配置现在实时读取，无需手动刷新缓存
             if reload and adapter_instance in getattr(
                 self.sdk.adapter, "_started_instances", set()
             ):
-                # 生命周期（shutdown + 资源清理 + start）由框架统一处理，模块无需关心
+                # 生命周期（shutdown + 资源清理 + start）由框架统一处理
                 return await self.sdk.adapter.restart(platform)
         except Exception as e:
             self.logger.error(f"适配器重载失败: {e}")
@@ -2043,6 +2049,121 @@ class Main(BaseModule):
                     name = f[:-4]
                     logos[name] = "/Dashboard/static/res/adapter_logo/" + f
         return JSONResponse({"logos": logos})
+
+    # ========== 模块配置 Schema API ==========
+
+    def _get_module_config_info(self, module_name: str) -> dict | None:
+        """获取模块配置信息（schema + 当前值）"""
+        module_manager = self.sdk.module
+        module_class = module_manager._module_classes.get(module_name)
+        if module_class is None:
+            return None
+
+        config_class = getattr(module_class, "ConfigClass", None)
+
+        result = {
+            "module_name": module_name,
+            "has_config": config_class is not None,
+            "config_key": None,
+            "schema": None,
+            "values": None,
+        }
+
+        if config_class is not None:
+            # 配置键名 = 模块注册名（与 BaseModule._get_config_key 一致）
+            config_key = module_name
+
+            result["config_key"] = config_key
+
+            try:
+                from ErisPulse.runtime.config_schema import resolve_config_schema
+
+                result["schema"] = resolve_config_schema(config_class)
+            except Exception as e:
+                self.logger.debug(f"Failed to get config schema for module {module_name}: {e}")
+
+            result["values"] = copy.deepcopy(
+                self.sdk.config.getConfig(config_key) or {}
+            )
+
+        return result
+
+    async def _api_module_config_get(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        module_name = request.path_params.get("name", "")
+        info = self._get_module_config_info(module_name)
+        if info is None:
+            return JSONResponse({"error": "Module not found"}, status_code=404)
+        if not info.get("has_config"):
+            return JSONResponse({"error": "Module has no config schema"}, status_code=400)
+        return JSONResponse(info)
+
+    async def _api_module_config_set(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        module_name = request.path_params.get("name", "")
+        module_manager = self.sdk.module
+        module_class = module_manager._module_classes.get(module_name)
+        if module_class is None:
+            return JSONResponse({"error": "Module not found"}, status_code=404)
+
+        config_class = getattr(module_class, "ConfigClass", None)
+        if config_class is None:
+            return JSONResponse({"error": "Module has no config schema"}, status_code=400)
+
+        # 配置键名 = 模块注册名
+        config_key = module_name
+
+        body = await request.json()
+        values = body.get("values")
+        if values is not None:
+            current = self.sdk.config.getConfig(config_key) or {}
+            merged = {**current, **values}
+
+            # 校验配置
+            try:
+                from ErisPulse.runtime.config_schema import (
+                    dict_to_dataclass,
+                    validate_config,
+                )
+
+                config_instance = dict_to_dataclass(config_class, merged)
+                errors = validate_config(config_instance)
+                if errors:
+                    return JSONResponse(
+                        {"success": False, "errors": errors}, status_code=400
+                    )
+            except Exception as e:
+                self.logger.debug(f"Module config validation error: {e}")
+
+            self.sdk.config.setConfig(config_key, merged)
+
+            # 配置热更新回调
+            try:
+                instance = module_manager.get(module_name)
+                if instance and hasattr(instance, "on_config_update"):
+                    from ErisPulse.runtime.config_schema import dict_to_dataclass
+
+                    old_config = dict_to_dataclass(config_class, current) if current else None
+                    new_config = dict_to_dataclass(config_class, merged)
+                    instance.on_config_update(old_config, new_config)
+            except Exception as e:
+                self.logger.debug(f"Module config hot-reload callback error: {e}")
+
+            self._add_audit_log("module_config_update", module_name, request)
+            return JSONResponse({"success": True})
+
+        # 单个 key 更新
+        key = body.get("key", "")
+        value = body.get("value")
+        if not key:
+            return JSONResponse({"error": "key or values required"}, status_code=400)
+
+        full_key = config_key + "." + key
+        self.sdk.config.setConfig(full_key, value)
+        self._add_audit_log("module_config_update", f"{module_name}.{key}", request)
+        return JSONResponse({"success": True})
 
     async def _api_modules_action(self, request: Request) -> JSONResponse:
         if not self._verify_token(self._get_token_from_request(request)):
@@ -3028,9 +3149,13 @@ class Main(BaseModule):
                     "routes_count": routes_counts.get(name, 0),
                     "views_count": views_counts.get(name, 0),
                     "is_git": is_git,
+                    "has_config": getattr(
+                        module_manager._module_classes.get(name), "ConfigClass", None
+                    ) is not None,
                 }
             )
         for name in adapter_list:
+            adapter_instance = self.sdk.adapter.get(name)
             modules.append(
                 {
                     "name": name,
@@ -3043,6 +3168,8 @@ class Main(BaseModule):
                     "package": "",
                     "bots_count": adapter_bot_counts.get(name, 0),
                     "capabilities": adapter_capabilities.get(name, []),
+                    "has_config": getattr(adapter_instance, "ConfigClass", None) is not None if adapter_instance else False,
+                    "has_accounts": getattr(adapter_instance, "AccountConfigClass", None) is not None if adapter_instance else False,
                 }
             )
         return JSONResponse({"modules": modules})
