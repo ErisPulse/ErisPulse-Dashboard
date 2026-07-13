@@ -989,6 +989,8 @@ class Main(BaseModule):
             self.logger.warning(f"Dynamic module loading failed: {e}")
 
     def _get_framework_info(self) -> dict:
+        import platform as pf
+
         try:
             import importlib.metadata
 
@@ -998,6 +1000,8 @@ class Main(BaseModule):
         return {
             "version": version,
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            "platform": pf.system(),
+            "is_windows": sys.platform == "win32",
         }
 
     async def _get_system_status(self) -> dict:
