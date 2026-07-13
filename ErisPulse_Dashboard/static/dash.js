@@ -577,6 +577,7 @@ const I18N = {
     fw_win_warn:
       "Windows 将通过新控制台窗口执行更新，完成后请手动重启 ErisPulse",
     fw_cannot_update: "当前环境不支持自动更新",
+    fw_popup_msg: "ErisPulse 有新版本 v{latest} 可用",
     fw_unknown_field_desc: "此配置项不属于当前版本的默认配置，建议删除",
     fw_reset_default: "恢复默认",
     fw_reset_confirm: "确认将 {key} 恢复为默认值？",
@@ -1248,6 +1249,7 @@ const I18N = {
     fw_win_warn:
       "Windows will run the update in a new console window. Please restart ErisPulse manually afterwards.",
     fw_cannot_update: "Auto-update is not supported in this environment",
+    fw_popup_msg: "ErisPulse v{latest} is now available",
     fw_unknown_field_desc:
       "This config field is not part of the current default config. Consider deleting it.",
     fw_reset_default: "Reset to Default",
@@ -2006,6 +2008,7 @@ const I18N = {
     fw_win_warn:
       "Windows 系統限制可能導致自動更新失敗，請手動檢查並更新 ErisPulse 框架",
     fw_cannot_update: "當前環境不支援自動更新",
+    fw_popup_msg: "ErisPulse 有新版本 v{latest} 可用",
     fw_unknown_field_desc: "此配置項不屬於當前版本的默認配置，建議刪除",
     fw_reset_default: "恢復默認",
     fw_reset_confirm: "確認將 {key} 恢復為默認值？",
@@ -2711,6 +2714,7 @@ const I18N = {
     fw_win_warn:
       "Windowsシステムの制限により自動更新が失敗する可能性があります。手動でErisPulseを更新してください",
     fw_cannot_update: "この環境では自動更新をサポートしていません",
+    fw_popup_msg: "ErisPulse の新バージョン v{latest} が利用可能です",
     fw_unknown_field_desc:
       "この設定項目は現在のバージョンのデフォルト設定に含まれていません。削除をお勧めします。",
     fw_reset_default: "デフォルトに戻す",
@@ -3430,6 +3434,7 @@ const I18N = {
     fw_win_warn:
       "Ограничения Windows могут помешать автоматическому обновлению. Обновите ErisPulse вручную.",
     fw_cannot_update: "Автообновление не поддерживается в этой среде",
+    fw_popup_msg: "Доступна новая версия ErisPulse v{latest}",
     fw_unknown_field_desc:
       "Это поле не входит в стандартную конфигурацию текущей версии. Рекомендуется удалить.",
     fw_reset_default: "Сбросить",
@@ -4883,6 +4888,9 @@ async function refreshDashboard() {
   if (!d) return;
   const fw = d.framework || {};
   window._fwStatus = fw;
+  // 存储服务器平台（用于判断更新行为，而非客户端浏览器平台）
+  window._serverPlatform = fw.platform || "";
+  window._serverIsWindows = !!fw.is_windows;
   document.getElementById("fwDesc").textContent =
     "ErisPulse v" + fw.version + " | Python " + fw.python_version;
   document.getElementById("fwInfo").textContent = "ErisPulse v" + fw.version;
@@ -6391,7 +6399,10 @@ function switchSettingsTab(tab, btn) {
   });
   var target = document.getElementById(tab + "-tab");
   if (target) target.style.display = "block";
-  if (tab === "settings-update") loadFrameworkVersions();
+  if (tab === "settings-update") {
+    loadFrameworkVersions();
+    document.getElementById("settingsUpdateTab")?.classList.remove("show-update");
+  }
 }
 
 var _settingsAppearanceScope = false;
@@ -8469,6 +8480,56 @@ async function resetFwField(fk) {
 let _fwVersions = [];
 let _fwCurrentVer = "";
 
+/**
+ * 判断服务器是否为 Windows（使用 /api/status 或 /api/framework/versions 返回的平台信息）。
+ */
+function isServerWindows() {
+  if (typeof window._serverIsWindows === "boolean") return window._serverIsWindows;
+  var p = (window._serverPlatform || "").toLowerCase();
+  return p === "windows";
+}
+
+/**
+ * 启动时检查框架是否有新版本。
+ * - 有更新 → 设置按钮和框架更新 tab 显示红点，从设置按钮弹出提示气泡
+ * - 无更新 → 不做处理
+ */
+var _fwBadgeChecked = false;
+async function checkFwUpdateBadge() {
+  if (_fwBadgeChecked) return;
+  _fwBadgeChecked = true;
+  try {
+    var d = await api("/api/framework/versions");
+    if (!d || !d.current) return;
+    // 同步服务器平台
+    if (d.platform) {
+      window._serverPlatform = d.platform;
+      window._serverIsWindows = /^win/i.test(d.platform);
+    }
+    var versions = d.versions || [];
+    var latest = versions.length > 0 ? versions[0] : "";
+    var hasUpdate = latest && cmpVer(latest, d.current) > 0;
+    if (!hasUpdate) return;
+    // 红点
+    document.getElementById("settingsBtn")?.classList.add("show-update");
+    document.getElementById("settingsUpdateTab")?.classList.add("show-update");
+    // 弹出提示（延迟显示，避免与连接状态面板同时弹出）
+    var popupText = document.getElementById("fwUpdatePopupText");
+    if (popupText) {
+      popupText.textContent = t("fw_popup_msg").replace("{latest}", latest);
+    }
+    var popup = document.getElementById("fwUpdatePopup");
+    if (popup) {
+      setTimeout(function () {
+        popup.classList.add("expanded");
+        setTimeout(function () {
+          popup.classList.remove("expanded");
+        }, 4000);
+      }, 3000);
+    }
+  } catch (e) { /* 静默失败 */ }
+}
+
 async function loadFrameworkVersions() {
   const d = await api(
     "/api/framework/versions?pre=" +
@@ -8492,10 +8553,14 @@ async function loadFrameworkVersions() {
     latestEl.style.color = "var(--ok-c)";
   }
 
-  // Windows 提示（点击安装时弹窗确认，此处不显横幅）
-  var isWindows = /win/i.test(navigator.platform || "");
+  // 服务器平台提示（点击安装时弹窗确认，此处不显横幅）
+  if (d.platform) {
+    window._serverPlatform = d.platform;
+    window._serverIsWindows = /^win/i.test(d.platform);
+  }
+  var isWindows = isServerWindows();
   var winWarn = document.getElementById("fwWinWarn");
-  if (winWarn) winWarn.style.display = "none";
+  if (winWarn) winWarn.style.display = isWindows ? "" : "none";
 
   // 更新按钮：所选版本 > 当前版本即可启用
   var updateBtn = document.getElementById("fwUpdateBtn");
@@ -8641,8 +8706,8 @@ async function doFrameworkUpdate() {
     if (!ok) return;
   }
 
-  // Windows 特别提示
-  var isWin = /win/i.test(navigator.platform || "");
+  // Windows 特别提示（基于服务器平台而非客户端浏览器平台）
+  var isWin = isServerWindows();
   if (isWin) {
     var ok = await confirm2(t("fw_win_confirm_title"), t("fw_win_confirm_text"));
     if (!ok) return;
@@ -8920,6 +8985,7 @@ function loadAll() {
   initHeaderStatusIcon();
   fetchAdapterLogos();
   refreshDashboard();
+  checkFwUpdateBadge();
   loadEvents();
   loadBots();
   loadModules();
@@ -11318,6 +11384,21 @@ function toggleTaskPanel() {
   document.getElementById("taskPanel").classList.toggle("open", _taskPanelOpen);
   renderTaskPanel();
 }
+
+function closeTaskPanel() {
+  _taskPanelOpen = false;
+  document.getElementById("taskPanel").classList.remove("open");
+}
+
+// 点击面板外部自动关闭
+document.addEventListener("click", function (e) {
+  if (!_taskPanelOpen) return;
+  var panel = document.getElementById("taskPanel");
+  var badge = document.getElementById("taskBadge");
+  if (panel && !panel.contains(e.target) && badge && !badge.contains(e.target)) {
+    closeTaskPanel();
+  }
+});
 
 function clearAllTasks() {
   var removedIds = _tasks
