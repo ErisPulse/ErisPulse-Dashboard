@@ -438,7 +438,10 @@ const I18N = {
     settings_appearance: "外观",
     settings_appearance_behavior: "外观与行为",
     settings_behavior: "行为",
-    settings_theme: "深色主题",
+    settings_theme: "主题",
+    settings_theme_light: "浅色",
+    settings_theme_dark: "深色",
+    settings_theme_auto: "跟随系统",
     settings_language: "语言",
     settings_ui_style: "界面风格",
     settings_accent_color: "主题强调色",
@@ -1151,10 +1154,14 @@ const I18N = {
     event_builder_desc: "Build custom events for debugging and testing",
     lifecycle_desc: "View system startup and runtime process",
     settings_title: "Dashboard Settings",
+    settings_title: "Settings",
     settings_appearance: "Appearance",
     settings_appearance_behavior: "Appearance & Behavior",
     settings_behavior: "Behavior",
-    settings_theme: "Dark Theme",
+    settings_theme: "Theme",
+    settings_theme_light: "Light",
+    settings_theme_dark: "Dark",
+    settings_theme_auto: "System",
     settings_language: "Language",
     settings_ui_style: "UI Style",
     settings_accent_color: "Accent Color",
@@ -1867,11 +1874,14 @@ const I18N = {
     event_stream_desc: "即時查看系統事件流",
     event_builder_desc: "構建自定義事件用於除錯和測試",
     lifecycle_desc: "查看系統啟動和運行過程",
-    settings_title: "儀表盤設定",
+    settings_title: "儀表板設定",
     settings_appearance: "外觀",
     settings_appearance_behavior: "外觀與行為",
     settings_behavior: "行為",
-    settings_theme: "深色主題",
+    settings_theme: "主題",
+    settings_theme_light: "淺色",
+    settings_theme_dark: "深色",
+    settings_theme_auto: "跟隨系統",
     settings_language: "語言",
     settings_ui_style: "介面風格",
     settings_accent_color: "主題強調色",
@@ -2571,7 +2581,10 @@ const I18N = {
     settings_appearance: "外観",
     settings_appearance_behavior: "外観と動作",
     settings_behavior: "動作",
-    settings_theme: "ダークテーマ",
+    settings_theme: "テーマ",
+    settings_theme_light: "ライト",
+    settings_theme_dark: "ダーク",
+    settings_theme_auto: "システム",
     settings_language: "言語",
     settings_ui_style: "UIスタイル",
     settings_accent_color: "アクセントカラー",
@@ -3283,7 +3296,10 @@ const I18N = {
     settings_appearance: "Внешний вид",
     settings_appearance_behavior: "Внешний вид и поведение",
     settings_behavior: "Поведение",
-    settings_theme: "Тёмная тема",
+    settings_theme: "Тема",
+    settings_theme_light: "Светлая",
+    settings_theme_dark: "Тёмная",
+    settings_theme_auto: "Системная",
     settings_language: "Язык",
     settings_ui_style: "Стиль интерфейса",
     settings_accent_color: "Акцентный цвет",
@@ -4004,15 +4020,25 @@ function refreshConnBadgeText() {
 }
 
 function getTheme() {
-  const s = localStorage.getItem("ep_theme");
-  if (s) return s;
-  return window.matchMedia("(prefers-color-scheme:dark)").matches
-    ? "dark"
-    : "light";
+  var s = localStorage.getItem("ep_theme");
+  if (s === "light" || s === "dark") return s;
+  // auto or unset — follow system
+  return "auto";
+}
+function getEffectiveTheme() {
+  var th = getTheme();
+  if (th === "auto") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return th;
 }
 function applyTheme(th) {
-  document.documentElement.setAttribute("data-theme", th);
-  // 切换主题时重算背景遮罩与自动取色
+  if (th === "auto") {
+    document.documentElement.setAttribute("data-theme", "auto");
+    // The actual CSS is driven by @media (prefers-color-scheme) on [data-theme="auto"]
+  } else {
+    document.documentElement.setAttribute("data-theme", th);
+  }
   onThemeChanged();
 }
 
@@ -4031,9 +4057,10 @@ function onThemeChanged() {
   }
 }
 function toggleTheme() {
-  const th = getTheme() === "dark" ? "light" : "dark";
-  localStorage.setItem("ep_theme", th);
-  applyTheme(th);
+  var cur = getTheme();
+  var next = cur === "light" ? "dark" : cur === "dark" ? "auto" : "light";
+  localStorage.setItem("ep_theme", next);
+  applyTheme(next);
 }
 
 function getUiStyle() {
@@ -6447,8 +6474,7 @@ function applyGlobalAppearanceData(app) {
   if (app.theme) {
     localStorage.setItem("ep_theme", app.theme);
     applyTheme(app.theme);
-    var themeEl = document.getElementById("settingsTheme");
-    if (themeEl) themeEl.checked = app.theme === "dark";
+    syncSettingsUI();
   }
   if (app.ui_style) {
     localStorage.setItem("ep_ui_style", app.ui_style);
@@ -6517,8 +6543,18 @@ function updateGlobalBanner() {
 }
 
 function syncSettingsUI() {
-  var themeEl = document.getElementById("settingsTheme");
-  if (themeEl) themeEl.checked = getTheme() === "dark";
+  // Theme cards
+  var curTheme = getTheme();
+  document.querySelectorAll(".theme-card").forEach(function(card) {
+    card.classList.toggle("active", card.dataset.themeCard === curTheme);
+  });
+  var autoCard = document.querySelector('.theme-card[data-theme-card="auto"]');
+  if (autoCard) {
+    var eff = getEffectiveTheme();
+    var label = autoCard.querySelector(".theme-card-label-sm");
+    if (label) label.textContent = eff === "dark" ? "跟随系统 · 深色" : "跟随系统 · 浅色";
+  }
+  
   var uiEl = document.getElementById("settingsUiStyle");
   if (uiEl) uiEl.value = getUiStyle();
   var langEl = document.getElementById("settingsLang");
@@ -6552,10 +6588,11 @@ function syncSettingsUI() {
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
 }
 
-function applySettingTheme(dark) {
-  const th = dark ? "dark" : "light";
-  localStorage.setItem("ep_theme", th);
-  applyTheme(th);
+function applySettingTheme(theme) {
+  if (theme !== "light" && theme !== "dark" && theme !== "auto") return;
+  localStorage.setItem("ep_theme", theme);
+  applyTheme(theme);
+  syncSettingsUI();
   if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 function applySettingLang(v) {
@@ -6709,7 +6746,7 @@ async function uploadBgImage(file) {
 function applyBgImage(dataUrl) {
   if (!dataUrl) return;
   // 背景图 + 半透明遮罩（保证内容可读）
-  var dark = getTheme() === "dark";
+  var dark = getEffectiveTheme() === "dark";
   var overlay = dark
     ? "linear-gradient(rgba(8,12,18,0.9),rgba(8,12,18,0.9))"
     : "linear-gradient(rgba(244,247,251,0.82),rgba(244,247,251,0.82))";
@@ -6823,7 +6860,7 @@ function deriveAccentFromBg(hex) {
 
 // 按当前主题调整强调色亮度：深色模式提亮、浅色模式压暗
 function themeAwareAccent(hex) {
-  var dark = getTheme() === "dark";
+  var dark = getEffectiveTheme() === "dark";
   return shadeHex(hex, dark ? 14 : -18);
 }
 
@@ -6931,6 +6968,13 @@ function applyCustomTheme() {
     applyAccentColor(accent);
   }
 }
+
+// Listen for system theme changes when in auto mode
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function() {
+  if (getTheme() === "auto") {
+    onThemeChanged();
+  }
+});
 
 // ========== 主页快捷导航（可自定义 pin） ==========
 

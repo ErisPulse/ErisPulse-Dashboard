@@ -4225,27 +4225,119 @@
                                             class="settings-card-body"
                                             id="settingsAppearanceBody"
                                         >
-                                            <div class="settings-item">
-                                                <div
-                                                    class="settings-item-label"
-                                                    data-i18n="settings_theme"
-                                                ></div>
+                                            <div class="settings-item settings-item-block">
+                                                <div>
+                                                    <div
+                                                        class="settings-item-label"
+                                                        data-i18n="settings_theme"
+                                                    ></div>
+                                                    <div
+                                                        class="settings-item-desc"
+                                                        data-i18n="settings_appearance"
+                                                    ></div>
+                                                </div>
                                                 <div
                                                     class="settings-item-control"
+                                                    style="width:100%;margin-top:8px"
                                                 >
-                                                    <label class="switch"
-                                                        ><input
-                                                            type="checkbox"
-                                                            id="settingsTheme"
-                                                            onchange="
-                                                                applySettingTheme(
-                                                                    this
-                                                                        .checked,
-                                                                )
-                                                            " /><span
-                                                            class="switch-slider"
-                                                        ></span
-                                                    ></label>
+                                                    <div class="theme-selector">
+                                                        <!-- Light -->
+                                                        <div
+                                                            class="theme-card active"
+                                                            data-theme-card="light"
+                                                            onclick="applySettingTheme('light')"
+                                                        >
+                                                            <div
+                                                                class="theme-card-preview"
+                                                            >
+                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
+                                                                <div style="display:flex;flex:1">
+                                                                    <div class="tcp-sidebar"></div>
+                                                                    <div class="tcp-body">
+                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                                                                            <div class="tcp-card"></div>
+                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
+                                                                            <div style="display:flex;gap:3px;margin-top:2px">
+                                                                                <div class="tcp-card-sm"></div>
+                                                                                <div class="tcp-card-sm"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="theme-card-label"
+                                                                data-i18n="settings_theme_light"
+                                                            >
+                                                                Light
+                                                            </div>
+                                                        </div>
+                                                        <!-- Dark -->
+                                                        <div
+                                                            class="theme-card"
+                                                            data-theme-card="dark"
+                                                            onclick="applySettingTheme('dark')"
+                                                        >
+                                                            <div
+                                                                class="theme-card-preview"
+                                                            >
+                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
+                                                                <div style="display:flex;flex:1">
+                                                                    <div class="tcp-sidebar"></div>
+                                                                    <div class="tcp-body">
+                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                                                                            <div class="tcp-card"></div>
+                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
+                                                                            <div style="display:flex;gap:3px;margin-top:2px">
+                                                                                <div class="tcp-card-sm"></div>
+                                                                                <div class="tcp-card-sm"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="theme-card-label"
+                                                                data-i18n="settings_theme_dark"
+                                                            >
+                                                                Dark
+                                                            </div>
+                                                        </div>
+                                                        <!-- Auto -->
+                                                        <div
+                                                            class="theme-card"
+                                                            data-theme-card="auto"
+                                                            onclick="applySettingTheme('auto')"
+                                                        >
+                                                            <div
+                                                                class="theme-card-preview"
+                                                            >
+                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
+                                                                <div style="display:flex;flex:1">
+                                                                    <div class="tcp-sidebar"></div>
+                                                                    <div class="tcp-body">
+                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                                                                            <div class="tcp-card"></div>
+                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
+                                                                            <div style="display:flex;gap:3px;margin-top:2px">
+                                                                                <div class="tcp-card-sm"></div>
+                                                                                <div class="tcp-card-sm"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="theme-card-label"
+                                                                data-i18n="settings_theme_auto"
+                                                            >
+                                                                System
+                                                            </div>
+                                                            <div
+                                                                class="theme-card-label-sm"
+                                                            ></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="settings-item">
@@ -4482,19 +4574,6 @@
                                                             applyDashTitle(
                                                                 this.value,
                                                             )
-                                                        "
-                                                        style="
-                                                            width: 100%;
-                                                            padding: 8px 12px;
-                                                            border: 1px solid
-                                                                var(--bd);
-                                                            border-radius: 8px;
-                                                            background: var(
-                                                                --bg-s
-                                                            );
-                                                            color: var(--tx-p);
-                                                            font-size: 13px;
-                                                            box-sizing: border-box;
                                                         "
                                                     />
                                                 </div>
