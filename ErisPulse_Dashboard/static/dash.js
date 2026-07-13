@@ -80,7 +80,6 @@ const I18N = {
     install: "安装",
     search_packages: "搜索包...",
     search_modules: "搜索模块...",
-    search_config: "搜索配置项...",
     all_status: "所有状态",
     live_events: "实时事件",
     waiting_events: "等待事件...",
@@ -458,6 +457,9 @@ const I18N = {
     settings_remember_groups: "记住导航分组状态",
     settings_remember_groups_desc: "刷新页面后保持导航分组的展开/收起状态",
     settings_refresh_interval: "刷新间隔",
+    settings_anim_style: "动画效果",
+    settings_anim_subtle: "标准",
+    settings_anim_playful: "活泼",
     settings_event_limit: "事件流数量",
     settings_disabled: "关闭",
     settings_restart_desc: "重新加载所有模块和适配器",
@@ -789,7 +791,6 @@ const I18N = {
     install: "Install",
     search_packages: "Search packages...",
     search_modules: "Search modules...",
-    search_config: "Search config...",
     all_status: "All Status",
     live_events: "Live Events",
     waiting_events: "Waiting for events...",
@@ -1181,6 +1182,9 @@ const I18N = {
     settings_remember_groups_desc:
       "Keep nav groups expanded/collapsed after page refresh",
     settings_refresh_interval: "Refresh Interval",
+    settings_anim_style: "Animations",
+    settings_anim_subtle: "Standard",
+    settings_anim_playful: "Playful",
     settings_event_limit: "Event Limit",
     settings_disabled: "Disabled",
     settings_restart_desc: "Reload all modules and adapters",
@@ -1528,7 +1532,6 @@ const I18N = {
     install: "安裝",
     search_packages: "搜尋套件...",
     search_modules: "搜尋模組...",
-    search_config: "搜尋設定項...",
     all_status: "所有狀態",
     live_events: "即時事件",
     waiting_events: "等待事件...",
@@ -1898,6 +1901,9 @@ const I18N = {
     settings_remember_groups: "記住導航分組狀態",
     settings_remember_groups_desc: "刷新頁面後保持導航分組的展開/收起狀態",
     settings_refresh_interval: "重新整理間隔",
+    settings_anim_style: "動畫效果",
+    settings_anim_subtle: "標準",
+    settings_anim_playful: "活潑",
     settings_event_limit: "事件流數量",
     settings_disabled: "關閉",
     settings_restart_desc: "重新載入所有模組和適配器",
@@ -2219,7 +2225,6 @@ const I18N = {
     install: "インストール",
     search_packages: "パッケージを検索...",
     search_modules: "モジュールを検索...",
-    search_config: "設定を検索...",
     all_status: "すべて",
     live_events: "ライブイベント",
     waiting_events: "イベントを待機中...",
@@ -2603,6 +2608,9 @@ const I18N = {
     settings_remember_groups_desc:
       "ページ更新後もナビグループの展開/折りたたみ状態を保持",
     settings_refresh_interval: "更新間隔",
+    settings_anim_style: "アニメーション",
+    settings_anim_subtle: "標準",
+    settings_anim_playful: "活発",
     settings_event_limit: "イベント数制限",
     settings_disabled: "無効",
     settings_restart_desc: "すべてのモジュールとアダプタを再読込",
@@ -2935,7 +2943,6 @@ const I18N = {
     install: "Установить",
     search_packages: "Поиск пакетов...",
     search_modules: "Поиск модулей...",
-    search_config: "Поиск конфигурации...",
     all_status: "Все",
     live_events: "События в реальном времени",
     waiting_events: "Ожидание событий...",
@@ -3319,6 +3326,9 @@ const I18N = {
     settings_remember_groups_desc:
       "Сохранять развернутое/свернутое состояние групп после обновления",
     settings_refresh_interval: "Интервал обновления",
+    settings_anim_style: "Анимация",
+    settings_anim_subtle: "Стандартная",
+    settings_anim_playful: "Живая",
     settings_event_limit: "Лимит событий",
     settings_disabled: "Отключено",
     settings_restart_desc: "Перезагрузить все модули и адаптеры",
@@ -4072,6 +4082,7 @@ function applyUiStyle(style) {
 function applySettingUiStyle(val) {
   localStorage.setItem("ep_ui_style", val);
   applyUiStyle(val);
+  syncSettingsUI();
   if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
@@ -6327,79 +6338,14 @@ function switchConfigView(view, btn) {
   btn.classList.add("active");
   const treeView = document.getElementById("configBodyTree");
   const sourceView = document.getElementById("configBodySource");
-  var searchEl = document.getElementById("configSearch");
   if (view === "tree") {
     treeView.style.display = "block";
     sourceView.style.display = "none";
-    if (searchEl) searchEl.style.display = "";
   } else {
     treeView.style.display = "none";
     sourceView.style.display = "block";
-    if (searchEl) searchEl.style.display = "none";
     loadConfigSource();
   }
-}
-
-var _configFilterTimer = null;
-function filterConfigTree(q) {
-  clearTimeout(_configFilterTimer);
-  _configFilterTimer = setTimeout(function () {
-    _doFilterConfigTree(q.trim().toLowerCase());
-  }, 200);
-}
-
-function _doFilterConfigTree(q) {
-  var tree = document.getElementById("configBodyTree");
-  if (!tree) return;
-  if (!q) {
-    var rows = tree.querySelectorAll(".kv-row, .kv-group");
-    rows.forEach(function (el) {
-      el.style.display = "";
-      if (el.classList.contains("kv-group")) {
-        el.classList.add("collapsed");
-        var body = el.querySelector(".kv-group-body");
-        if (body) body.innerHTML = "";
-      }
-    });
-    return;
-  }
-  var matchedGroups = new Set();
-  var rows = tree.querySelectorAll(".kv-row");
-  rows.forEach(function (row) {
-    var keyEl = row.querySelector(".kv-key");
-    var inp = row.querySelector(".kv-input");
-    var keyText = keyEl ? keyEl.textContent.toLowerCase() : "";
-    var valText = inp ? inp.value.toLowerCase() : "";
-    if (keyText.indexOf(q) !== -1 || valText.indexOf(q) !== -1) {
-      row.style.display = "";
-      var parent = row.parentElement;
-      while (
-        parent &&
-        parent !== tree &&
-        !parent.classList.contains("kv-group")
-      ) {
-        parent = parent.parentElement;
-      }
-      while (
-        parent &&
-        parent !== tree &&
-        parent.classList.contains("kv-group")
-      ) {
-        matchedGroups.add(parent);
-        parent.classList.remove("collapsed");
-        parent.style.display = "";
-        parent = parent.parentElement;
-      }
-    } else {
-      row.style.display = "none";
-    }
-  });
-  var groups = tree.querySelectorAll(".kv-group");
-  groups.forEach(function (g) {
-    if (!matchedGroups.has(g)) {
-      g.style.display = "none";
-    }
-  });
 }
 
 function getSetting(key, def) {
@@ -6543,7 +6489,13 @@ function updateGlobalBanner() {
 }
 
 function syncSettingsUI() {
-  // Theme cards
+  // Style cards (ErisPulse / Classic)
+  var curStyle = getUiStyle();
+  document.querySelectorAll(".style-card").forEach(function(card) {
+    card.classList.toggle("active", card.dataset.style === curStyle);
+  });
+  
+  // Theme cards (Light / Dark / Auto)
   var curTheme = getTheme();
   document.querySelectorAll(".theme-card").forEach(function(card) {
     card.classList.toggle("active", card.dataset.themeCard === curTheme);
@@ -6554,9 +6506,6 @@ function syncSettingsUI() {
     var label = autoCard.querySelector(".theme-card-label-sm");
     if (label) label.textContent = eff === "dark" ? "跟随系统 · 深色" : "跟随系统 · 浅色";
   }
-  
-  var uiEl = document.getElementById("settingsUiStyle");
-  if (uiEl) uiEl.value = getUiStyle();
   var langEl = document.getElementById("settingsLang");
   if (langEl) langEl.value = lang;
   var sbEl = document.getElementById("settingsSidebar");
@@ -6574,6 +6523,8 @@ function syncSettingsUI() {
   if (rfEl) rfEl.value = getSetting("refresh_interval", "5000");
   var elEl = document.getElementById("settingsEventLimit");
   if (elEl) elEl.value = getSetting("event_limit", "100");
+  var animEl = document.getElementById("settingsAnimStyle");
+  if (animEl) animEl.value = getAnimStyle();
   var dtEl = document.getElementById("settingsDashTitle");
   if (dtEl) dtEl.value = getSetting("dash_title", "ErisPulse Dashboard");
   // Apply saved accent color to CSS variables (not just sync UI)
@@ -6616,6 +6567,17 @@ function applySettingNodeSelector(show) {
   localStorage.setItem("ep_show_node_selector", show);
   // 重新应用显隐逻辑
   updateNodeSelectorVisibility();
+}
+
+function getAnimStyle() {
+  return localStorage.getItem("ep_anim_style") || "subtle";
+}
+function applyAnimStyle(style) {
+  document.documentElement.setAttribute("data-anim", style);
+}
+function applySettingAnimStyle(val) {
+  localStorage.setItem("ep_anim_style", val);
+  applyAnimStyle(val);
 }
 
 // ========== 配色定制（主题色 / 背景） ==========
@@ -12297,6 +12259,8 @@ async function saveCmdEdit() {
   applyUiStyle(getUiStyle());
   applyI18n();
   applyCustomTheme();
+  // Apply saved animation style
+  applyAnimStyle(getAnimStyle());
   updateNodeSelectorUI();
   const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
   // 默认收起侧边栏（首次使用或无设置时）

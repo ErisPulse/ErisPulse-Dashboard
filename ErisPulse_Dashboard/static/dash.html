@@ -3864,24 +3864,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <input
-                                    type="text"
-                                    class="config-search"
-                                    id="configSearch"
-                                    data-i18n-placeholder="search_config"
-                                    oninput="filterConfigTree(this.value)"
-                                    style="
-                                        width: 100%;
-                                        margin-bottom: 8px;
-                                        padding: 8px 12px;
-                                        border: 1px solid var(--bd);
-                                        border-radius: 8px;
-                                        background: var(--bg-s);
-                                        color: var(--tx-p);
-                                        font-size: 13px;
-                                        box-sizing: border-box;
-                                    "
-                                />
+
                                 <div
                                     id="configBodyTree"
                                     style="max-height: 65vh; overflow-y: auto"
@@ -4225,22 +4208,52 @@
                                             class="settings-card-body"
                                             id="settingsAppearanceBody"
                                         >
-                                            <div class="settings-item settings-item-block">
+                                            <!-- Appearance Style + Theme combined -->
+                                            <div class="settings-item settings-item-block" style="border-top: none; padding-top: 4px;">
                                                 <div>
                                                     <div
                                                         class="settings-item-label"
-                                                        data-i18n="settings_theme"
+                                                        data-i18n="settings_ui_style"
                                                     ></div>
                                                     <div
                                                         class="settings-item-desc"
-                                                        data-i18n="settings_appearance"
-                                                    ></div>
+                                                    >选择界面风格与配色方案</div>
                                                 </div>
                                                 <div
                                                     class="settings-item-control"
-                                                    style="width:100%;margin-top:8px"
+                                                    style="width:100%;margin-top:12px"
                                                 >
-                                                    <div class="theme-selector">
+                                                    <div class="style-selector">
+                                                        <div
+                                                            class="style-card active"
+                                                            data-style="eris"
+                                                            onclick="applySettingUiStyle('eris')"
+                                                        >
+                                                            <div class="style-card-preview">
+                                                                <div class="scp-sidebar"></div>
+                                                                <div class="scp-body">
+                                                                    <span class="scp-dot"></span>
+                                                                    <div class="scp-bar"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="style-card-label">ErisPulse</div>
+                                                        </div>
+                                                        <div
+                                                            class="style-card"
+                                                            data-style="classic"
+                                                            onclick="applySettingUiStyle('classic')"
+                                                        >
+                                                            <div class="style-card-preview">
+                                                                <div class="scp-sidebar"></div>
+                                                                <div class="scp-body">
+                                                                    <span class="scp-dot"></span>
+                                                                    <div class="scp-bar"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="style-card-label">Classic</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="theme-selector" style="margin-top: 14px;">
                                                         <!-- Light -->
                                                         <div
                                                             class="theme-card active"
@@ -4338,32 +4351,6 @@
                                                             ></div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                            <div class="settings-item">
-                                                <div
-                                                    class="settings-item-label"
-                                                    data-i18n="settings_ui_style"
-                                                ></div>
-                                                <div
-                                                    class="settings-item-control"
-                                                >
-                                                    <select
-                                                        class="settings-select"
-                                                        id="settingsUiStyle"
-                                                        onchange="
-                                                            applySettingUiStyle(
-                                                                this.value,
-                                                            )
-                                                        "
-                                                    >
-                                                        <option value="eris">
-                                                            ErisPulse
-                                                        </option>
-                                                        <option value="classic">
-                                                            Material Design 3
-                                                        </option>
-                                                    </select>
                                                 </div>
                                             </div>
                                             <div
@@ -4787,6 +4774,28 @@
                                             <div class="settings-item">
                                                 <div
                                                     class="settings-item-label"
+                                                    data-i18n="settings_anim_style"
+                                                ></div>
+                                                <div
+                                                    class="settings-item-control"
+                                                >
+                                                    <select
+                                                        class="settings-select"
+                                                        id="settingsAnimStyle"
+                                                        onchange="applySettingAnimStyle(this.value)"
+                                                    >
+                                                        <option value="subtle">
+                                                            Standard
+                                                        </option>
+                                                        <option value="playful">
+                                                            Playful
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div
+                                                    class="settings-item-label"
                                                     data-i18n="settings_event_limit"
                                                 ></div>
                                                 <div
@@ -4918,6 +4927,7 @@
 
                         <div id="settings-update-tab" class="tab-section">
                             <div class="fw-update-card">
+                                <!-- Header -->
                                 <div class="fw-update-header">
                                     <img
                                         src="/Dashboard/static/res/erispulse_logo_hp.png"
@@ -4934,15 +4944,32 @@
                                             data-i18n="fw_update_title_desc"
                                         ></div>
                                     </div>
+                                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                                        <button
+                                            class="btn btn-secondary btn-sm"
+                                            onclick="loadFrameworkVersions()"
+                                            style="white-space: nowrap;"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="23 4 23 10 17 10"></polyline>
+                                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                            </svg>
+                                            <span data-i18n="refresh" style="margin-left: 4px;"></span>
+                                        </button>
+                                    </div>
                                 </div>
+
+                                <!-- Win Warning -->
                                 <div
                                     id="fwWinWarn"
                                     class="fw-win-warn"
                                     style="display: none"
                                     data-i18n="fw_win_warn"
                                 ></div>
+
+                                <!-- Version Comparison -->
                                 <div class="fw-version-grid">
-                                    <div class="fw-ver-item">
+                                    <div class="fw-ver-item" style="flex:1">
                                         <span
                                             class="fw-ver-label"
                                             data-i18n="fw_current_version"
@@ -4953,8 +4980,13 @@
                                             >-</span
                                         >
                                     </div>
-                                    <div class="fw-ver-divider">→</div>
-                                    <div class="fw-ver-item">
+                                    <div class="fw-ver-divider">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            <polyline points="12 5 19 12 12 19"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="fw-ver-item" style="flex:1; text-align: right;">
                                         <span
                                             class="fw-ver-label"
                                             data-i18n="fw_latest_version"
@@ -4966,6 +4998,8 @@
                                         >
                                     </div>
                                 </div>
+
+                                <!-- Version Selector -->
                                 <div
                                     id="fwVersionRow"
                                     class="fw-selector-row"
@@ -4978,7 +5012,7 @@
                                     <select
                                         id="fwVersionSelect"
                                         class="settings-select"
-                                        style="min-width: 160px"
+                                        style="min-width: 180px"
                                         onchange="loadFwReleaseNotes()"
                                     ></select>
                                     <label class="switch" title="Pre-release">
@@ -4997,29 +5031,28 @@
                                         >--pre</span
                                     >
                                 </div>
+
+                                <!-- Release Notes -->
                                 <div
                                     id="fwReleaseNotes"
                                     class="fw-notes-box"
                                     style="display: none"
                                 ></div>
+
+                                <!-- Action -->
                                 <div class="fw-actions">
                                     <button
-                                        class="btn btn-primary btn-sm"
+                                        class="btn btn-primary"
                                         id="fwUpdateBtn"
                                         onclick="doFrameworkUpdate()"
                                         disabled
                                     >
-                                        <span
-                                            data-i18n="fw_install_update"
-                                        ></span>
-                                    </button>
-                                    <button
-                                        class="btn btn-secondary btn-sm"
-                                        onclick="loadFrameworkVersions()"
-                                    >
-                                        <span
-                                            data-i18n="fw_check_updates"
-                                        ></span>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <polyline points="1 20 1 14 7 14"></polyline>
+                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                        </svg>
+                                        <span data-i18n="fw_install_update"></span>
                                     </button>
                                 </div>
                             </div>
