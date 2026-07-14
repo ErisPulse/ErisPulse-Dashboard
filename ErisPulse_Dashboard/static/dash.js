@@ -4279,7 +4279,7 @@ function go(name, el) {
   if (page) {
     page.classList.add("active");
     page.classList.add("anim-enter");
-    setTimeout(() => page.classList.remove("anim-enter"), 600);
+    setTimeout(() => page.classList.remove("anim-enter"), 850);
   }
   if (el) {
     el.classList.add("active");
@@ -6069,10 +6069,17 @@ async function openPkgDetail(name, pkg, type) {
       "</span>";
   document.getElementById("pkgDetailVersion").innerHTML = verHtml;
 
-  const descText = d.description || d.summary || "-";
-  const cleanDesc = descText.replace(/<[^>]*>/g, "").substring(0, 2000);
-  document.getElementById("pkgDetailDesc").innerHTML =
-    '<p style="white-space:pre-wrap">' + esc(cleanDesc) + "</p>";
+  const descText = d.description || d.summary || "";
+  if (descText && typeof marked !== "undefined") {
+    document.getElementById("pkgDetailDesc").innerHTML = marked.parse(descText);
+  } else if (descText) {
+    const cleanDesc = descText.replace(/<[^>]*>/g, "").substring(0, 2000);
+    document.getElementById("pkgDetailDesc").innerHTML =
+      '<p style="white-space:pre-wrap">' + esc(cleanDesc) + "</p>";
+  } else {
+    document.getElementById("pkgDetailDesc").innerHTML =
+      '<p style="color:var(--tx-t)">-</p>';
+  }
 
   let infoHtml = "";
   if (d.author)
@@ -12259,8 +12266,14 @@ async function saveCmdEdit() {
   applyUiStyle(getUiStyle());
   applyI18n();
   applyCustomTheme();
-  // Apply saved animation style
   applyAnimStyle(getAnimStyle());
+  // 恢复保存的仪表盘标题
+  var savedTitle = getSetting("dash_title", "");
+  if (savedTitle) {
+    var titleEl = document.getElementById("appTitle");
+    if (titleEl) titleEl.textContent = savedTitle;
+    document.title = savedTitle;
+  }
   updateNodeSelectorUI();
   const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
   // 默认收起侧边栏（首次使用或无设置时）
@@ -12279,7 +12292,7 @@ async function saveCmdEdit() {
     _splashDismissed = true;
     if (!_splashReady || !splashEl) return;
     splashEl.classList.add("hide");
-    setTimeout(function () { if (splashEl) splashEl.remove(); }, 600);
+    setTimeout(function () { if (splashEl) splashEl.remove(); }, 950);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {
