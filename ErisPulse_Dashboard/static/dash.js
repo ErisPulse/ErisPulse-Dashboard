@@ -421,10 +421,34 @@ const I18N = {
     cmd_yes: "是",
     cmd_no: "否",
     cmd_aliases_label: "别名",
+    cmd_prefix_hint: "多个前缀用英文逗号分隔，如 /,!,#",
+    cmd_settings_saved: "命令设置已保存",
+    master_title: "主人系统",
+    master_global_users: "全局主人",
+    master_global_users_hint: "所有平台生效的主人 ID",
+    master_platform_users: "平台主人",
+    master_platform_users_hint: "为指定平台单独设置主人",
+    master_add_platform: "选择平台",
+    master_user_id_placeholder: "输入用户 ID",
+    master_add: "添加",
+    master_add_title: "添加主人",
+    master_remove: "移除",
+    master_global: "全局",
+    master_empty: "暂无主人配置",
+    master_no_platforms: "暂无已注册适配器",
+    master_saved: "主人配置已保存",
+    master_merge_hint: "同时存在全局和平台主人时，全局主人将被合并到各平台中保存",
+    master_page_desc: "管理框架主人（所有者）列表。主人拥有最高权限，可执行管理命令。平台留空表示全局主人，对所有平台生效。",
+    master_list: "主人列表",
+    master_stat_total: "主人总数",
+    master_stat_global: "全局主人",
+    master_stat_platform: "平台主人",
     group_overview: "概览",
     group_events: "事件",
     group_extensions: "扩展",
     group_system: "系统",
+    group_management: "管理",
+    group_operations: "运维",
     group_tools: "工具",
     group_monitoring: "监控",
     group_network: "网络",
@@ -540,6 +564,9 @@ const I18N = {
     fw_field_framework_strict_mode:
       "严格模式：0=宽松 / 1=严格-跳过 / 2=严格-致命",
     fw_field_framework_strict_mode_exceptions: "严格模式豁免清单",
+    fw_field_framework_handler_max_concurrency: "事件处理器最大并发数（同时运行的 Task 数量，0 表示无限制）",
+    fw_field_framework_proactive_gc_interval: "主动 GC 间隔（秒），定期触发垃圾回收和离线 Bot 清理，0 表示禁用",
+    fw_field_framework_offline_bot_expiry: "离线 Bot 过期时间（秒），超过此时间的离线 Bot 将被自动清除，0 表示不过期",
     adapter_config: "适配器配置",
     adapter_config_desc: "管理各平台适配器的连接和账户配置",
     components: "组件",
@@ -1142,10 +1169,34 @@ const I18N = {
     cmd_yes: "Yes",
     cmd_no: "No",
     cmd_aliases_label: "Aliases",
+    cmd_prefix_hint: "Separate multiple prefixes with commas, e.g. /,!,#",
+    cmd_settings_saved: "Command settings saved",
+    master_title: "Master System",
+    master_global_users: "Global Masters",
+    master_global_users_hint: "Master IDs that apply to all platforms",
+    master_platform_users: "Platform Masters",
+    master_platform_users_hint: "Set masters for specific platforms",
+    master_add_platform: "Select platform",
+    master_user_id_placeholder: "Enter user ID",
+    master_add: "Add",
+    master_add_title: "Add Master",
+    master_remove: "Remove",
+    master_global: "Global",
+    master_empty: "No master configuration",
+    master_no_platforms: "No registered adapters",
+    master_saved: "Master configuration saved",
+    master_merge_hint: "When both global and platform masters exist, global masters will be merged into each platform on save",
+    master_page_desc: "Manage the framework master (owner) list. Masters have the highest privileges and can execute admin commands. Leave platform empty for global masters that apply to all platforms.",
+    master_list: "Master List",
+    master_stat_total: "Total Masters",
+    master_stat_global: "Global Masters",
+    master_stat_platform: "Platform Masters",
     group_overview: "Overview",
     group_events: "Events",
     group_extensions: "Extensions",
     group_system: "System",
+    group_management: "Management",
+    group_operations: "Operations",
     group_tools: "Tools",
     group_monitoring: "Monitoring",
     group_network: "Network",
@@ -1317,6 +1368,9 @@ const I18N = {
     fw_field_framework_strict_mode:
       "Strict mode: 0=lenient / 1=strict-skip / 2=strict-fatal",
     fw_field_framework_strict_mode_exceptions: "Strict mode exemptions",
+    fw_field_framework_handler_max_concurrency: "Maximum event handler concurrency (number of Tasks running simultaneously, 0 = unlimited)",
+    fw_field_framework_proactive_gc_interval: "Proactive GC interval (seconds), periodically triggers garbage collection and offline Bot cleanup, 0 = disabled",
+    fw_field_framework_offline_bot_expiry: "Offline Bot expiry (seconds), offline Bots exceeding this duration are automatically removed, 0 = never expire",
     adapter_config: "Adapter Config",
     adapter_config_desc:
       "Manage adapter platform connections and account settings",
@@ -1865,10 +1919,34 @@ const I18N = {
     cmd_yes: "是",
     cmd_no: "否",
     cmd_aliases_label: "別名",
+    cmd_prefix_hint: "多個前綴用英文逗號分隔，如 /,!,#",
+    cmd_settings_saved: "命令設定已儲存",
+    master_title: "主人系統",
+    master_global_users: "全局主人",
+    master_global_users_hint: "所有平台生效的主人 ID",
+    master_platform_users: "平台主人",
+    master_platform_users_hint: "為指定平台單獨設定主人",
+    master_add_platform: "選擇平台",
+    master_user_id_placeholder: "輸入用戶 ID",
+    master_add: "添加",
+    master_add_title: "添加主人",
+    master_remove: "移除",
+    master_global: "全局",
+    master_empty: "暫無主人配置",
+    master_no_platforms: "暫無已註冊適配器",
+    master_saved: "主人配置已儲存",
+    master_merge_hint: "同時存在全局和平台主人時，全局主人將被合併到各平台中儲存",
+    master_page_desc: "管理框架主人（擁有者）列表。主人擁有最高權限，可執行管理命令。平台留空表示全局主人，對所有平台生效。",
+    master_list: "主人列表",
+    master_stat_total: "主人總數",
+    master_stat_global: "全局主人",
+    master_stat_platform: "平台主人",
     group_overview: "概覽",
     group_events: "事件",
     group_extensions: "擴展",
     group_system: "系統",
+    group_management: "管理",
+    group_operations: "運維",
     group_tools: "工具",
     group_monitoring: "監控",
     group_network: "網路",
@@ -1984,6 +2062,9 @@ const I18N = {
     fw_field_framework_strict_mode:
       "嚴格模式：0=寬鬆 / 1=嚴格-跳過 / 2=嚴格-致命",
     fw_field_framework_strict_mode_exceptions: "嚴格模式豁免清單",
+    fw_field_framework_handler_max_concurrency: "事件處理器最大並發數（同時執行的 Task 數量，0 表示無限制）",
+    fw_field_framework_proactive_gc_interval: "主動 GC 間隔（秒），定期觸發垃圾回收和離線 Bot 清理，0 表示停用",
+    fw_field_framework_offline_bot_expiry: "離線 Bot 過期時間（秒），超過此時間的離線 Bot 將被自動清除，0 表示永不過期",
     adapter_config: "適配器配置",
     adapter_config_desc: "管理各平台適配器的連接和帳戶配置",
     components: "組件",
@@ -2570,10 +2651,34 @@ const I18N = {
     cmd_yes: "はい",
     cmd_no: "いいえ",
     cmd_aliases_label: "エイリアス",
+    cmd_prefix_hint: "複数のプレフィックスはカンマで区切ります（例: /,!,#）",
+    cmd_settings_saved: "コマンド設定を保存しました",
+    master_title: "マスターシステム",
+    master_global_users: "グローバルマスター",
+    master_global_users_hint: "すべてのプラットフォームで有効なマスターID",
+    master_platform_users: "プラットフォームマスター",
+    master_platform_users_hint: "特定のプラットフォーム用のマスターを設定",
+    master_add_platform: "プラットフォームを選択",
+    master_user_id_placeholder: "ユーザーIDを入力",
+    master_add: "追加",
+    master_add_title: "マスターを追加",
+    master_remove: "削除",
+    master_global: "グローバル",
+    master_empty: "マスター設定なし",
+    master_no_platforms: "登録済みアダプターなし",
+    master_saved: "マスター設定を保存しました",
+    master_merge_hint: "グローバルとプラットフォーム両方のマスターが存在する場合、グローバルマスターは各プラットフォームにマージされて保存されます",
+    master_page_desc: "フレームワークのマスター（所有者）リストを管理します。マスターは最高権限を持ち、管理コマンドを実行できます。プラットフォームを空のままにすると、すべてのプラットフォームに適用されるグローバルマスターになります。",
+    master_list: "マスターリスト",
+    master_stat_total: "マスター総数",
+    master_stat_global: "グローバルマスター",
+    master_stat_platform: "プラットフォームマスター",
     group_overview: "概要",
     group_events: "イベント",
     group_extensions: "拡張",
     group_system: "システム",
+    group_management: "管理",
+    group_operations: "運用",
     group_tools: "ツール",
     group_monitoring: "監視",
     group_network: "ネットワーク",
@@ -2695,6 +2800,9 @@ const I18N = {
     fw_field_framework_strict_mode:
       "厳格モード: 0=緩和 / 1=厳格-スキップ / 2=厳格-致命",
     fw_field_framework_strict_mode_exceptions: "厳格モード除外リスト",
+    fw_field_framework_handler_max_concurrency: "イベントハンドラの最大同時実行数（同時に実行される Task 数、0 = 無制限）",
+    fw_field_framework_proactive_gc_interval: "プロアクティブ GC 間隔（秒）、定期的にガベージコレクションとオフライン Bot のクリーンアップを実行、0 = 無効",
+    fw_field_framework_offline_bot_expiry: "オフライン Bot の有効期限（秒）、この時間を超えたオフライン Bot は自動的に削除されます、0 = 期限なし",
     adapter_config: "アダプター設定",
     adapter_config_desc:
       "プラットフォームアダプターの接続とアカウント設定を管理",
@@ -3286,10 +3394,34 @@ const I18N = {
     cmd_yes: "Да",
     cmd_no: "Нет",
     cmd_aliases_label: "Псевдонимы",
+    cmd_prefix_hint: "Разделяйте несколько префиксов запятыми, например /,!,#",
+    cmd_settings_saved: "Настройки команд сохранены",
+    master_title: "Система владельцев",
+    master_global_users: "Глобальные владельцы",
+    master_global_users_hint: "ID владельцев, действительные для всех платформ",
+    master_platform_users: "Владельцы платформ",
+    master_platform_users_hint: "Установить владельцев для отдельных платформ",
+    master_add_platform: "Выбрать платформу",
+    master_user_id_placeholder: "Введите ID пользователя",
+    master_add: "Добавить",
+    master_add_title: "Добавить владельца",
+    master_remove: "Удалить",
+    master_global: "Глобальный",
+    master_empty: "Конфигурация владельцев отсутствует",
+    master_no_platforms: "Нет зарегистрированных адаптеров",
+    master_saved: "Конфигурация владельцев сохранена",
+    master_merge_hint: "При наличии и глобальных, и платформенных владельцев, глобальные будут объединены с каждой платформой при сохранении",
+    master_page_desc: "Управление списком владельцев фреймворка. Владельцы имеют наивысшие привилегии и могут выполнять административные команды. Оставьте платформу пустой для глобальных владельцев, действующих на все платформы.",
+    master_list: "Список владельцев",
+    master_stat_total: "Всего владельцев",
+    master_stat_global: "Глобальные владельцы",
+    master_stat_platform: "Владельцы платформ",
     group_overview: "Обзор",
     group_events: "События",
     group_extensions: "Расширения",
     group_system: "Система",
+    group_management: "Управление",
+    group_operations: "Эксплуатация",
     group_tools: "Инструменты",
     group_monitoring: "Мониторинг",
     group_network: "Сеть",
@@ -3420,6 +3552,9 @@ const I18N = {
     fw_field_framework_strict_mode:
       "Строгий режим: 0=мягкий / 1=строгий-пропуск / 2=строгий-фатальный",
     fw_field_framework_strict_mode_exceptions: "Исключения строгого режима",
+    fw_field_framework_handler_max_concurrency: "Максимальный параллелизм обработчиков событий (количество одновременно выполняемых Task, 0 = без ограничений)",
+    fw_field_framework_proactive_gc_interval: "Интервал проактивного GC (сек), периодически запускает сборку мусора и очистку офлайн Bot, 0 = отключено",
+    fw_field_framework_offline_bot_expiry: "Срок действия офлайн Bot (сек), офлайн Bot превышающие этот срок автоматически удаляются, 0 = бессрочно",
     adapter_config: "Настройки адаптера",
     adapter_config_desc:
       "Управление подключениями и учетными записями адаптеров платформ",
@@ -3973,6 +4108,7 @@ function toggleLang() {
       logs: loadLogs,
       "api-routes": loadApiRoutes,
       commands: loadCommands,
+      master: loadMaster,
       files: function () {
         fmBrowse(".");
       },
@@ -4322,6 +4458,7 @@ function go(name, el) {
     logs: loadLogs,
     "api-routes": loadApiRoutes,
     commands: loadCommands,
+    master: loadMaster,
     files: function () {
       fmBrowse(".");
     },
@@ -4472,6 +4609,9 @@ function _renderModuleViews(views) {
       navGroup.className = "nav-group module-view-group";
       const groupTitle = document.createElement("div");
       groupTitle.className = "nav-group-title";
+      groupTitle.onclick = function () {
+        toggleNavGroup(this);
+      };
       if (groupKey.startsWith("group_") && firstView.group_title) {
         // Use multi-language group_titles if available
         var gtText =
@@ -4480,6 +4620,8 @@ function _renderModuleViews(views) {
         groupTitle.textContent = gtText;
         groupTitle.setAttribute("data-i18n", groupKey);
       } else if (groupKey.startsWith("group_")) {
+        var i18nText = t(groupKey);
+        groupTitle.textContent = i18nText !== groupKey ? i18nText : groupKey;
         groupTitle.setAttribute("data-i18n", groupKey);
       } else {
         // Use multi-language group_titles if available
@@ -4501,6 +4643,13 @@ function _renderModuleViews(views) {
         navGroup,
         sidebarNav.querySelector(".sidebar-footer"),
       );
+      var savedStates = null;
+      try {
+        savedStates = JSON.parse(localStorage.getItem("ep_nav_group_states") || "{}");
+      } catch (e) {}
+      if (savedStates && savedStates[groupKey]) {
+        navGroup.classList.add("collapsed");
+      }
     }
 
     groups[groupKey].forEach(function (v) {
@@ -4538,6 +4687,7 @@ function _renderModuleViews(views) {
   _moduleViewsLoaded = true;
 
   // 动态视图加载后，刷新主页 pin（已 pin 的动态视图会自动出现）
+  applyI18n();
   renderHomePins();
 }
 
@@ -7350,6 +7500,9 @@ const _fwDefaults = {
     uninit_timeout: 30,
     strict_mode: 1,
     strict_mode_exceptions: { modules: [], adapters: [] },
+    handler_max_concurrency: 64,
+    proactive_gc_interval: 300,
+    offline_bot_expiry: 3600,
   },
   i18n: { language: "auto" },
 };
@@ -7375,6 +7528,9 @@ const _fwFieldDescs = {
     "严格模式：0=宽松（仅警告）/1=严格-跳过不合规组件/2=严格-致命（中止启动）",
   "framework.strict_mode_exceptions.modules": "严格模式豁免的模块名列表",
   "framework.strict_mode_exceptions.adapters": "严格模式豁免的适配器名列表",
+  "framework.handler_max_concurrency": "事件处理器最大并发数（同时运行的 Task 数量，0 表示无限制）",
+  "framework.proactive_gc_interval": "主动 GC 间隔（秒），定期触发垃圾回收和离线 Bot 清理，0 表示禁用",
+  "framework.offline_bot_expiry": "离线 Bot 过期时间（秒），超过此时间的离线 Bot 将被自动清除，0 表示不过期",
   "i18n.language": "语言设置（auto 为自动检测）",
 };
 
@@ -9010,6 +9166,7 @@ function loadAll() {
   loadPackages();
   loadPackageUpdates();
   loadModuleViews();
+  loadMaster();
   restartRefreshTimer();
 }
 
@@ -11988,6 +12145,8 @@ let _cmdData = null,
   _editAllowed = [],
   _editBlocked = [],
   _cmdPlatforms = [];
+let _masterPlatforms = [];
+let _masterEntries = [];
 
 async function loadCommands() {
   const d = await api("/api/commands");
@@ -11995,26 +12154,7 @@ async function loadCommands() {
   _cmdData = d;
   _cmdPlatforms = d.platforms || [];
   const gs = d.global_settings || {};
-  var prefixes = gs.prefixes || [gs.prefix || "/"];
-  var prefixHtml = prefixes
-    .map(function (p) {
-      return (
-        '<code style="background:var(--bg-s);padding:2px 6px;border-radius:3px;font-size:12px">' +
-        esc(p) +
-        "</code>"
-      );
-    })
-    .join(" ");
-  document.getElementById("cmdPrefix").innerHTML = prefixHtml;
-  document.getElementById("cmdCaseSensitive").textContent = gs.case_sensitive
-    ? t("cmd_yes")
-    : t("cmd_no");
-  document.getElementById("cmdAllowSpace").textContent = gs.allow_space_prefix
-    ? t("cmd_yes")
-    : t("cmd_no");
-  document.getElementById("cmdMustAtBot").textContent = gs.must_at_bot
-    ? t("cmd_yes")
-    : t("cmd_no");
+  renderCmdGlobalSettings(gs);
   document.getElementById("cmdCount").textContent = d.total || 0;
   const cmds = d.commands || [];
   if (!cmds.length) {
@@ -12100,6 +12240,299 @@ async function loadCommands() {
       "</div>";
   }
   document.getElementById("cmdListBody").innerHTML = html;
+}
+
+function renderCmdGlobalSettings(gs) {
+  var prefixes = gs.prefixes || [gs.prefix || "/"];
+  var prefixStr = prefixes.join(",");
+  var html =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px">' +
+    '<div style="grid-column:1/-1">' +
+    '<div style="color:var(--tx-s);font-size:13px;margin-bottom:4px">' +
+    t("cmd_prefix") +
+    "</div>" +
+    '<input class="fw-input" id="cmdSetPrefix" value="' +
+    esc(prefixStr) +
+    '" placeholder="/" style="width:100%">' +
+    '<div style="font-size:11px;color:var(--tx-t);margin-top:2px">' +
+    t("cmd_prefix_hint") +
+    "</div>" +
+    "</div>" +
+    renderCmdToggleRow("cmdSetCaseSensitive", t("cmd_case_sensitive"), gs.case_sensitive) +
+    renderCmdToggleRow("cmdSetAllowSpace", t("cmd_allow_space_prefix"), gs.allow_space_prefix) +
+    renderCmdToggleRow("cmdSetMustAtBot", t("cmd_must_at_bot"), gs.must_at_bot) +
+    "</div>";
+  document.getElementById("cmdGlobalSettingsBody").innerHTML = html;
+}
+
+function renderCmdToggleRow(id, label, checked) {
+  return (
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">' +
+    '<span style="color:var(--tx-s);font-size:13px">' +
+    esc(label) +
+    "</span>" +
+    '<label class="switch"><input type="checkbox" id="' +
+    id +
+    '"' +
+    (checked ? " checked" : "") +
+    '><span class="switch-slider"></span></label></div>'
+  );
+}
+
+async function saveCmdGlobalSettings() {
+  if (!authed) return showLogin();
+  var prefix = document.getElementById("cmdSetPrefix").value;
+  var caseSensitive = document.getElementById("cmdSetCaseSensitive").checked;
+  var allowSpace = document.getElementById("cmdSetAllowSpace").checked;
+  var mustAtBot = document.getElementById("cmdSetMustAtBot").checked;
+  var d = await api("/api/commands/settings", {
+    method: "PUT",
+    body: JSON.stringify({
+      prefix: prefix,
+      case_sensitive: caseSensitive,
+      allow_space_prefix: allowSpace,
+      must_at_bot: mustAtBot,
+    }),
+  });
+  if (d && d.success) {
+    toast(t("cmd_settings_saved"), "ok");
+  } else {
+    toast(t("cmd_save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+  }
+}
+
+function initMasterState(masterConfig, platforms) {
+  _masterPlatforms = platforms || [];
+  _masterEntries = [];
+  var users = (masterConfig && masterConfig.users) || {};
+  if (Array.isArray(users)) {
+    for (var i = 0; i < users.length; i++) {
+      _masterEntries.push({ platform: "", userId: String(users[i]) });
+    }
+  } else if (typeof users === "object" && users !== null) {
+    for (var platform in users) {
+      var ids = users[platform];
+      if (!Array.isArray(ids)) ids = [ids];
+      for (var j = 0; j < ids.length; j++) {
+        _masterEntries.push({ platform: String(platform), userId: String(ids[j]) });
+      }
+    }
+  }
+}
+
+function renderMasterConfig() {
+  var body = document.getElementById("masterListBody");
+  if (!body) return;
+  var countEl = document.getElementById("masterCount");
+  if (countEl) countEl.textContent = _masterEntries.length;
+
+  // Update stats
+  var globalCount = 0;
+  var platformCount = 0;
+  for (var i = 0; i < _masterEntries.length; i++) {
+    if (_masterEntries[i].platform) platformCount++;
+    else globalCount++;
+  }
+  var statTotal = document.getElementById("masterStatTotal");
+  var statGlobal = document.getElementById("masterStatGlobal");
+  var statPlatform = document.getElementById("masterStatPlatform");
+  if (statTotal) statTotal.textContent = _masterEntries.length;
+  if (statGlobal) statGlobal.textContent = globalCount;
+  if (statPlatform) statPlatform.textContent = platformCount;
+
+  // Update add-form platform options
+  renderMasterAddPlatformOptions();
+
+  if (!_masterEntries.length) {
+    body.innerHTML =
+      '<div style="padding:40px 18px;text-align:center;color:var(--tx-t);font-size:13px">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;margin-bottom:12px"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>' +
+      "<div>" + t("master_empty") + "</div>" +
+      '<div style="margin-top:8px;font-size:12px">' + t("master_merge_hint") + "</div>" +
+      "</div>";
+    return;
+  }
+
+  // Group entries: global first, then by platform
+  var globalEntries = [];
+  var platformGroups = {};
+  for (var i = 0; i < _masterEntries.length; i++) {
+    var entry = _masterEntries[i];
+    if (!entry.platform) globalEntries.push(i);
+    else {
+      if (!platformGroups[entry.platform]) platformGroups[entry.platform] = [];
+      platformGroups[entry.platform].push(i);
+    }
+  }
+
+  var html = "";
+
+  // Global section
+  if (globalEntries.length > 0) {
+    html +=
+      '<div style="margin-bottom:16px">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:var(--accent)"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>' +
+      '<span style="font-size:12px;font-weight:600;color:var(--tx-s);text-transform:uppercase;letter-spacing:0.5px">' + t("master_global_users") + "</span>" +
+      '<span style="font-size:11px;color:var(--tx-t)">' + t("master_global_users_hint") + "</span>" +
+      "</div>" +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    for (var j = 0; j < globalEntries.length; j++) {
+      html += renderMasterTag(globalEntries[j]);
+    }
+    html += "</div></div>";
+  }
+
+  // Platform sections
+  for (var platform in platformGroups) {
+    var indices = platformGroups[platform];
+    html +=
+      '<div style="margin-bottom:16px">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:var(--accent)"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>' +
+      '<span style="font-size:12px;font-weight:600;color:var(--tx-s);text-transform:uppercase;letter-spacing:0.5px">' + esc(platform) + "</span>" +
+      '<span class="chip" style="font-size:10px;padding:1px 6px">' + indices.length + "</span>" +
+      "</div>" +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    for (var j = 0; j < indices.length; j++) {
+      html += renderMasterTag(indices[j]);
+    }
+    html += "</div></div>";
+  }
+
+  // Hint at bottom
+  html +=
+    '<div style="padding:8px 4px;font-size:11px;color:var(--tx-t);border-top:1px solid var(--bd);margin-top:8px">' +
+    t("master_merge_hint") +
+    "</div>";
+
+  body.innerHTML = html;
+}
+
+function renderMasterTag(idx) {
+  var entry = _masterEntries[idx];
+  return (
+    '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 8px;border-radius:20px;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);font-size:12px;font-weight:500;transition:all 0.2s" ' +
+    'onmouseenter="this.style.background=\'color-mix(in srgb,var(--accent) 18%,transparent)\'" ' +
+    'onmouseleave="this.style.background=\'color-mix(in srgb,var(--accent) 10%,transparent)\'">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent);flex-shrink:0"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>' +
+    '<span style="font-family:Consolas,Monaco,monospace;font-size:12px">' + esc(entry.userId) + "</span>" +
+    '<button onclick="removeMasterEntry(' + idx + ')" style="background:none;border:none;color:var(--tx-t);cursor:pointer;padding:0 2px;line-height:1;font-size:14px" title="' + t("master_remove") + '" onmouseenter="this.style.color=\'var(--danger,#e53e3e)\'" onmouseleave="this.style.color=\'var(--tx-t)\'">×</button>' +
+    "</span>"
+  );
+}
+
+function renderMasterAddPlatformOptions() {
+  var sel = document.getElementById("masterAddPlatform");
+  if (!sel) return;
+  var current = sel.value;
+  var html = '<option value="">' + t("master_global") + "</option>";
+  for (var i = 0; i < _masterPlatforms.length; i++) {
+    var p = _masterPlatforms[i];
+    html += '<option value="' + esc(p) + '">' + esc(p) + "</option>";
+  }
+  html += '<option value="__custom__">' + t("custom") + "</option>";
+  sel.innerHTML = html;
+  if (current && current !== "__custom__") sel.value = current;
+}
+
+function onMasterAddPlatformChange() {
+  var sel = document.getElementById("masterAddPlatform");
+  if (!sel || sel.value !== "__custom__") return;
+  // Replace select with text input for custom platform
+  var wrapper = sel.parentElement;
+  sel.outerHTML =
+    '<input id="masterAddPlatform" class="fw-input" style="width:150px;flex-shrink:0;font-size:13px" placeholder="' + t("master_add_platform") +
+    '" data-custom="1">';
+  var newInput = document.getElementById("masterAddPlatform");
+  if (newInput) newInput.focus();
+}
+
+function addMasterFromForm() {
+  var sel = document.getElementById("masterAddPlatform");
+  var idInput = document.getElementById("masterAddId");
+  if (!idInput) return;
+  var userId = idInput.value.trim();
+  if (!userId) {
+    idInput.focus();
+    return;
+  }
+  var platform = "";
+  if (sel) {
+    if (sel.value === "__custom__") return;
+    if (sel.dataset && sel.dataset.custom === "1") {
+      platform = sel.value.trim();
+      if (!platform) {
+        sel.focus();
+        return;
+      }
+    } else {
+      platform = sel.value;
+    }
+  }
+  _masterEntries.push({ platform: platform, userId: userId });
+  idInput.value = "";
+  // Reset platform selector if it was custom
+  if (sel && sel.dataset && sel.dataset.custom === "1") {
+    renderMasterConfig();
+  }
+  idInput.focus();
+  renderMasterConfig();
+}
+
+function removeMasterEntry(idx) {
+  _masterEntries.splice(idx, 1);
+  renderMasterConfig();
+}
+
+async function loadMaster() {
+  var d = await api("/api/master");
+  if (!d) return;
+  var platforms = d.platforms || [];
+  try {
+    var ad = await api("/api/adapters");
+    if (ad && ad.adapters) {
+      platforms = ad.adapters.map(function (a) { return a.platform; });
+    }
+  } catch (e) {}
+  initMasterState(d.master || {}, platforms);
+  renderMasterConfig();
+}
+
+function collectMasterEntries() {
+  return _masterEntries.filter(function (e) { return e.userId; });
+}
+
+async function saveMasterConfig() {
+  if (!authed) return showLogin();
+  var entries = collectMasterEntries();
+  var globalEntries = entries.filter(function (e) { return !e.platform; });
+  var platformEntries = entries.filter(function (e) { return e.platform; });
+  var users;
+  if (platformEntries.length === 0) {
+    users = globalEntries.map(function (e) { return e.userId; });
+  } else {
+    users = {};
+    for (var i = 0; i < platformEntries.length; i++) {
+      var p = platformEntries[i].platform;
+      if (!users[p]) users[p] = [];
+      if (users[p].indexOf(platformEntries[i].userId) === -1) users[p].push(platformEntries[i].userId);
+    }
+    for (var i = 0; i < globalEntries.length; i++) {
+      for (var p in users) {
+        if (users[p].indexOf(globalEntries[i].userId) === -1) users[p].push(globalEntries[i].userId);
+      }
+    }
+  }
+  var d = await api("/api/master", {
+    method: "PUT",
+    body: JSON.stringify({ users: users }),
+  });
+  if (d && d.success) {
+    toast(t("master_saved"), "ok");
+  } else {
+    toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+  }
 }
 
 function openCmdEdit(name) {

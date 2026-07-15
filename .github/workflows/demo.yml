@@ -1,0 +1,97 @@
+name: Build & Deploy Demo
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "ErisPulse_Dashboard/static/**"
+      - "demo/mock.js"
+      - ".github/workflows/demo.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "demo-deploy"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync static files to demo
+        run: |
+          # Copy latest static files from main code to demo folder
+          cp ErisPulse_Dashboard/static/dash.css demo/dash.css
+          cp ErisPulse_Dashboard/static/dash.js demo/dash.js
+
+          # Generate demo index.html from dash.html
+          # 1. Replace absolute paths with relative paths
+          # 2. Inject mock.js before dash.js
+          # 3. Remove the demo banner placeholder if not present
+          python3 - <<'PYEOF'
+          import re
+
+          with open("ErisPulse_Dashboard/static/dash.html", "r", encoding="utf-8") as f:
+              html = f.read()
+
+          # Replace absolute static paths with relative paths
+          html = html.replace('/Dashboard/static/dash.css', 'dash.css')
+          html = html.replace('/Dashboard/static/dash.js', 'dash.js')
+          html = html.replace('/Dashboard/static/res/', 'res/')
+
+          # Inject mock.js BEFORE dash.js script tag
+          # The main HTML has: <script src="/Dashboard/static/dash.js?v=..."></script>
+          # We need: <script src="mock.js"></script> before it
+          mock_script = '<script src="mock.js"></script>\n'
+
+          # Find the dash.js script tag and inject mock.js before it
+          # Match patterns like: <script src="...dash.js..."></script>
+          pattern = r'(<script[^>]*src="[^"]*dash\.js[^"]*"[^>]*>\s*</script>)'
+          match = re.search(pattern, html)
+          if match:
+              pos = match.start()
+              html = html[:pos] + mock_script + html[pos:]
+          else:
+              # Fallback: inject before </body>
+              html = html.replace('</body>', mock_script + '</body>')
+
+          # Add demo banner CSS + HTML (injected right after <body>)
+          banner_html = '''
+          <div id="demoBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.15)">
+              ⚠ Demo Mode — All data is simulated. <a href="https://github.com/ErisPulse/ErisPulse-Dashboard" target="_blank" style="color:#fff;text-decoration:underline">View Source</a>
+          </div>
+          '''
+          html = html.replace('<body>', '<body>' + banner_html, 1)
+
+          with open("demo/index.html", "w", encoding="utf-8") as f:
+              f.write(html)
+
+          print("Demo index.html generated successfully")
+          PYEOF
+
+      - name: Copy static resources
+        run: |
+          # Copy res/ folder (icons, logos, images)
+          if [ -d "ErisPulse_Dashboard/static/res" ]; then
+            cp -r ErisPulse_Dashboard/static/res/* demo/res/ 2>/dev/null || true
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-site
+          path: demo/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: demo/
+          publish_branch: gh-pages
+          destination_dir: demo

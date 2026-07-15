@@ -1452,11 +1452,24 @@ class Main(BaseModule):
         r.register_http_route(
             mn, "/api/commands", handler=self._api_commands, methods=["GET"]
         )
+        # 注意: 具体路径必须在参数化路径之前注册，否则会被 {name} 匹配
+        r.register_http_route(
+            mn,
+            "/api/commands/settings",
+            handler=self._api_command_settings_update,
+            methods=["PUT"],
+        )
         r.register_http_route(
             mn,
             "/api/commands/{name}",
             handler=self._api_command_update,
             methods=["PUT"],
+        )
+        r.register_http_route(
+            mn, "/api/master", handler=self._api_master_get, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/master", handler=self._api_master_update, methods=["PUT"]
         )
 
         r.register_http_route(
@@ -1631,6 +1644,8 @@ class Main(BaseModule):
             "/api/files/decompress",
             "/api/commands",
             "/api/commands/{name}",
+            "/api/commands/settings",
+            "/api/master",
             "/api/views",
             "/api/cluster/nodes",
             "/api/cluster/nodes/{node_id}",
@@ -2312,8 +2327,13 @@ class Main(BaseModule):
             }
         )
         try:
-            backend = self._get_pkg_manager().get_pip_backend()
-            cmd = backend + ["uninstall", "-y", package_name]
+            pkg_mgr = self._get_pkg_manager()
+            backend = pkg_mgr.get_pip_backend()
+            # uv pip uninstall 不支持 -y 参数（本身即为非交互式）
+            if pkg_mgr.is_using_uv():
+                cmd = backend + ["uninstall", package_name]
+            else:
+                cmd = backend + ["uninstall", "-y", package_name]
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if proc.returncode == 0:
                 self.sdk.module.unregister(module_name)
@@ -4601,6 +4621,117 @@ except Exception:
         self._sync_command_aliases()
         self._add_audit_log("command_update", cmd_name, request)
         return JSONResponse({"success": True, "rule": rule})
+
+    async def _api_command_settings_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "invalid_body"}, status_code=400)
+
+        allowed_keys = {
+            "prefix",
+            "case_sensitive",
+            "allow_space_prefix",
+            "must_at_bot",
+        }
+        updates = {}
+        for key in allowed_keys:
+            if key in body:
+                updates[key] = body[key]
+
+        if "prefix" in updates:
+            prefix_val = updates["prefix"]
+            if isinstance(prefix_val, str):
+                parts = [p.strip() for p in prefix_val.split(",") if p.strip()]
+                updates["prefix"] = parts if len(parts) > 1 else (parts[0] if parts else "/")
+            elif isinstance(prefix_val, list):
+                updates["prefix"] = [str(p) for p in prefix_val if str(p).strip()]
+            else:
+                return JSONResponse({"error": "invalid prefix type"}, status_code=400)
+        if "case_sensitive" in updates:
+            updates["case_sensitive"] = bool(updates["case_sensitive"])
+        if "allow_space_prefix" in updates:
+            updates["allow_space_prefix"] = bool(updates["allow_space_prefix"])
+        if "must_at_bot" in updates:
+            updates["must_at_bot"] = bool(updates["must_at_bot"])
+
+        if not updates:
+            return JSONResponse({"error": "no valid fields to update"}, status_code=400)
+
+        for key, value in updates.items():
+            self.sdk.config.setConfig(
+                f"ErisPulse.event.command.{key}", value, immediate=True
+            )
+
+        try:
+            from ErisPulse.runtime.frame_config import get_event_config
+
+            event_config = get_event_config()
+            new_command_config = event_config.get("command", {})
+        except Exception:
+            new_command_config = updates
+
+        self._add_audit_log(
+            "command_settings_update", ", ".join(sorted(updates.keys())), request
+        )
+        return JSONResponse({"success": True, "command": new_command_config})
+
+    async def _api_master_get(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        try:
+            from ErisPulse.runtime.frame_config import get_master_config
+
+            master_config = get_master_config()
+        except Exception:
+            master_config = {}
+        try:
+            all_platforms = list(self.sdk.adapter.list_items().keys())
+        except Exception:
+            all_platforms = self.sdk.adapter.list_registered()
+        return JSONResponse(
+            {"master": master_config, "platforms": all_platforms}
+        )
+
+    async def _api_master_update(self, request: Request) -> JSONResponse:
+        if not self._verify_token(self._get_token_from_request(request)):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "invalid_body"}, status_code=400)
+
+        users = body.get("users")
+        if users is None:
+            return JSONResponse({"error": "users is required"}, status_code=400)
+
+        if isinstance(users, list):
+            cleaned = [str(u).strip() for u in users if str(u).strip()]
+        elif isinstance(users, dict):
+            cleaned = {}
+            for platform, user_list in users.items():
+                if isinstance(user_list, list):
+                    cleaned[str(platform)] = [
+                        str(u).strip() for u in user_list if str(u).strip()
+                    ]
+                else:
+                    cleaned[str(platform)] = [str(user_list)]
+        else:
+            return JSONResponse({"error": "users must be a list or dict"}, status_code=400)
+
+        self.sdk.config.setConfig("ErisPulse.master.users", cleaned, immediate=True)
+
+        try:
+            from ErisPulse.runtime.frame_config import get_master_config
+
+            new_master = get_master_config()
+        except Exception:
+            new_master = {"users": cleaned}
+
+        self._add_audit_log("master_update", f"users_count={len(cleaned)}", request)
+        return JSONResponse({"success": True, "master": new_master})
 
     # ========== 模块视窗 API ==========
 

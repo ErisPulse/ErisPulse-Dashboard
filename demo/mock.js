@@ -484,9 +484,11 @@
         });
     };
 
+    API_MAP['/api/commands/settings'] = function () { return _json({ success: true, command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false } }); };
+
     API_MAP['/api/commands'] = function () {
         return _json({
-            global_settings: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
+            global_settings: { prefix: '/', prefixes: ['/'], case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
             commands: [
                 { name: 'help', help: '显示帮助信息', usage: '/help [命令名]', group: '通用', hidden: false, original_aliases: ['帮助'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
                 { name: 'echo', help: '回显消息', usage: '/echo <内容>', group: '测试', hidden: false, original_aliases: [], custom_aliases: ['say'], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
@@ -494,6 +496,14 @@
                 { name: 'status', help: '查看系统状态', usage: '/status', group: '管理', hidden: false, original_aliases: ['状态'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
                 { name: 'admin', help: '管理命令', usage: '/admin <操作>', group: '管理', hidden: true, original_aliases: [], custom_aliases: [], enabled: false, allowed_platforms: ['qq', 'telegram'], blocked_platforms: [], transform_to: null }
             ]
+        });
+    };
+
+    API_MAP['/api/master'] = function (opts) {
+        if (opts && opts.method === 'PUT') return _json({ success: true, master: { users: { qq: ['user_001'], telegram: ['user_002'] } } });
+        return _json({
+            master: { users: { qq: ['user_001', 'user_101'], telegram: ['user_002'], discord: ['user_555'] } },
+            platforms: ['qq', 'telegram', 'discord', 'onebot', 'kook']
         });
     };
 
