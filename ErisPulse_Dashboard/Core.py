@@ -107,6 +107,7 @@ class Main(BaseModule):
         self._load_command_rules()
         self._setup_event_interceptors()
         self._setup_command_middleware()
+        self._setup_log_streaming()
         asyncio.create_task(self._events_flush_loop())
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
@@ -217,6 +218,10 @@ class Main(BaseModule):
     async def on_unload(self, event: dict) -> bool:
         if self._cluster:
             await self._cluster.close()
+        try:
+            self.sdk.logger.remove_handler("dashboard_log_stream")
+        except Exception:
+            pass
         for ws in self._ws_clients:
             try:
                 await ws.close()
@@ -513,6 +518,30 @@ class Main(BaseModule):
             return data
 
         self._command_middleware_func = _command_middleware
+
+    def _setup_log_streaming(self):
+        """注册日志订阅器，通过 WebSocket 实时推送日志"""
+        try:
+            self.sdk.logger._register_handler(
+                "dashboard_log_stream",
+                self._on_log_entry,
+                "TRACE",
+            )
+        except Exception:
+            pass
+
+    def _on_log_entry(self, log_data: dict):
+        """日志订阅回调，通过 WebSocket 推送"""
+        self._safe_broadcast({
+            "type": "log_entry",
+            "data": {
+                "timestamp": log_data.get("timestamp", ""),
+                "level": log_data.get("level", ""),
+                "level_num": log_data.get("level_num", 0),
+                "module": log_data.get("module", ""),
+                "message": log_data.get("message", ""),
+            },
+        })
 
     def _setup_event_interceptors(self):
         _all_events = {
@@ -3691,66 +3720,75 @@ except Exception:
         if not self._verify_token(self._get_token_from_request(request)):
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
-        limit = int(request.query_params.get("limit", "100"))
+        limit = int(request.query_params.get("limit", "200"))
         module_filter = request.query_params.get("module", "")
-        level_filter = request.query_params.get("level", "")
+        level_filter = request.query_params.get("level", "").upper()
         search = request.query_params.get("search", "").lower()
 
-        # 获取所有日志
-        all_logs = self.sdk.logger.get_logs()
         logs_list = []
 
-        import re
-
-        for module_name, logs in all_logs.items():
-            # 模块过滤（支持部分匹配）
-            if module_filter and module_filter.lower() not in module_name.lower():
-                continue
-
-            for log_entry in logs:
-                # 解析日志条目
-                # 格式: "timestamp module message" 或 "timestamp [LEVEL] module message"
-                timestamp_str = ""
-                message = ""
-                log_module = module_name
-                bracket_level = None
-
-                if " - " in log_entry:
-                    parts = log_entry.split(" - ", 1)
-                    timestamp_str = parts[0]
-                    message = parts[1]
-                else:
-                    match = re.match(
-                        r"^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.+)$",
-                        log_entry,
-                    )
-                    if match:
-                        timestamp_str = match.group(1)
-                        log_module = match.group(2)
-                        message = match.group(3)
-                    else:
-                        message = log_entry
-
-                # 等级筛选暂不可用（ErisPulse logger 未存储等级信息）
-                log_level = ""
-
-                # 搜索过滤
-                if search and search not in message.lower():
+        # Try to access structured log data (newer ErisPulse versions)
+        try:
+            internal_logs = self.sdk.logger._logs
+            for module_name, entries in internal_logs.items():
+                if module_filter and module_filter.lower() not in module_name.lower():
                     continue
-
-                logs_list.append(
-                    {
+                for entry in entries:
+                    level_name = entry.get("level", "")
+                    level_num = entry.get("level_num", 0)
+                    # Level filter
+                    if level_filter:
+                        filter_num = self.sdk.logger._resolve_level(level_filter)
+                        if filter_num is not None and level_num < filter_num:
+                            continue
+                    message = entry.get("message", "")
+                    if search and search not in message.lower():
+                        continue
+                    logs_list.append({
+                        "module": module_name,
+                        "timestamp": entry.get("timestamp", ""),
+                        "message": message,
+                        "level": level_name,
+                        "level_num": level_num,
+                    })
+        except Exception:
+            # Fallback: use public get_logs() API (older versions, no level info)
+            all_logs = self.sdk.logger.get_logs()
+            import re
+            for module_name, logs in all_logs.items():
+                if module_filter and module_filter.lower() not in module_name.lower():
+                    continue
+                for log_entry in logs:
+                    timestamp_str = ""
+                    message = ""
+                    if isinstance(log_entry, dict):
+                        timestamp_str = log_entry.get("timestamp", "")
+                        message = log_entry.get("message", "")
+                    elif " - " in log_entry:
+                        parts = log_entry.split(" - ", 1)
+                        timestamp_str = parts[0]
+                        message = parts[1]
+                    else:
+                        match = re.match(
+                            r"^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.+)$",
+                            log_entry,
+                        )
+                        if match:
+                            timestamp_str = match.group(1)
+                            message = match.group(3)
+                        else:
+                            message = log_entry
+                    if search and search not in message.lower():
+                        continue
+                    logs_list.append({
                         "module": module_name,
                         "timestamp": timestamp_str,
                         "message": message,
-                        "level": log_level,
-                        "full": log_entry,
-                    }
-                )
+                        "level": "",
+                        "level_num": 0,
+                    })
 
-        # 按时间排序（如果有时间戳）
         logs_list.sort(key=lambda x: x["timestamp"] or "", reverse=True)
-
         return JSONResponse({"logs": logs_list[:limit], "total": len(logs_list)})
 
     async def _api_logs_clear(self, request: Request) -> JSONResponse:

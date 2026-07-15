@@ -47,6 +47,7 @@ const I18N = {
     lifecycle_desc: "查看系统启动和运行过程",
     lifecycle_timeline: "生命周期时间轴",
     all_modules: "所有模块",
+    all_levels: "所有等级",
     search_logs: "搜索日志...",
     no_lifecycle: "暂无生命周期事件",
     log_list: "日志列表",
@@ -785,6 +786,7 @@ const I18N = {
     lifecycle_desc: "View system startup and runtime process",
     lifecycle_timeline: "Lifecycle Timeline",
     all_modules: "All Modules",
+    all_levels: "All Levels",
     search_logs: "Search logs...",
     no_lifecycle: "No lifecycle events",
     log_list: "Log List",
@@ -1553,6 +1555,7 @@ const I18N = {
     lifecycle_desc: "查看系統啟動和運行過程",
     lifecycle_timeline: "生命週期時間軸",
     all_modules: "所有模組",
+    all_levels: "所有等級",
     search_logs: "搜尋日誌...",
     no_lifecycle: "暫無生命週期事件",
     log_list: "日誌列表",
@@ -2273,6 +2276,7 @@ const I18N = {
     lifecycle_desc: "システムの起動と実行プロセスを表示",
     lifecycle_timeline: "ライフサイクルタイムライン",
     all_modules: "すべてのモジュール",
+    all_levels: "すべてのレベル",
     search_logs: "ログを検索...",
     no_lifecycle: "ライフサイクルイベントなし",
     log_list: "ログリスト",
@@ -3017,6 +3021,7 @@ const I18N = {
     lifecycle_desc: "Просмотр процесса запуска и работы системы",
     lifecycle_timeline: "Шкала жизненного цикла",
     all_modules: "Все модули",
+    all_levels: "Все уровни",
     search_logs: "Поиск в журналах...",
     no_lifecycle: "Нет событий жизненного цикла",
     log_list: "Список журналов",
@@ -4487,9 +4492,17 @@ function go(name, el) {
     });
   }
 
-  if (name !== "logs" && _logAutoRefreshTimer) {
-    clearInterval(_logAutoRefreshTimer);
-    _logAutoRefreshTimer = null;
+  if (name !== "logs" && (_logAutoRefreshTimer || _logStreamActive)) {
+    if (_logAutoRefreshTimer) {
+      clearInterval(_logAutoRefreshTimer);
+      _logAutoRefreshTimer = null;
+    }
+    _logStreamActive = false;
+    _logStreamBuffer = [];
+    if (_logStreamFlushTimer) {
+      clearTimeout(_logStreamFlushTimer);
+      _logStreamFlushTimer = null;
+    }
     const btn = document.getElementById("logAutoRefreshBtn");
     if (btn) btn.style.opacity = "0.5";
   }
@@ -9144,6 +9157,8 @@ function wsConnect() {
         } else {
           loadModuleViews();
         }
+      } else if (m.type === "log_entry") {
+        _onWebSocketLog(m.data);
       }
     } catch (err) {}
   };
@@ -9907,6 +9922,9 @@ let _logAutoRefreshTimer = null;
 let _logPaused = false;
 let _logSortNewestBottom = true;
 let _availableModules = new Set();
+let _logStreamBuffer = [];
+let _logStreamActive = false;
+let _logStreamFlushTimer = null;
 
 let _logDebounceTimer;
 function debounceLogs() {
@@ -9915,17 +9933,118 @@ function debounceLogs() {
 }
 
 function toggleLogAutoRefresh() {
-  if (_logAutoRefreshTimer) {
-    clearInterval(_logAutoRefreshTimer);
-    _logAutoRefreshTimer = null;
-    document.getElementById("logAutoRefreshBtn").style.opacity = "0.5";
+  if (_logStreamActive || _logAutoRefreshTimer) {
+    // Turn off
+    _logStreamActive = false;
+    if (_logAutoRefreshTimer) {
+      clearInterval(_logAutoRefreshTimer);
+      _logAutoRefreshTimer = null;
+    }
+    var btn = document.getElementById("logAutoRefreshBtn");
+    if (btn) btn.style.opacity = "0.5";
     toast(t("auto_refresh_off"), "");
   } else {
+    // Turn on - prefer WebSocket streaming, fall back to polling
+    _logStreamActive = true;
+    // Also do an initial load to get history
     loadLogs();
-    _logAutoRefreshTimer = setInterval(loadLogs, 2000);
-    document.getElementById("logAutoRefreshBtn").style.opacity = "1";
+    var btn = document.getElementById("logAutoRefreshBtn");
+    if (btn) btn.style.opacity = "1";
     toast(t("auto_refresh_on"), "ok");
   }
+}
+
+function _onWebSocketLog(logData) {
+  if (!_logStreamActive) return;
+  _logStreamBuffer.push(logData);
+  if (!_logStreamFlushTimer) {
+    _logStreamFlushTimer = setTimeout(_flushLogStream, 300);
+  }
+}
+
+function _flushLogStream() {
+  _logStreamFlushTimer = null;
+  if (_logStreamBuffer.length === 0) return;
+  var newLogs = _logStreamBuffer;
+  _logStreamBuffer = [];
+
+  // Collect new modules
+  newLogs.forEach(function (log) {
+    if (log.module && !_availableModules.has(log.module)) {
+      _availableModules.add(log.module);
+    }
+  });
+  if (newLogs.some(function (l) { return l.module; })) {
+    updateModuleSelect();
+  }
+
+  // Apply current filters
+  var moduleFilter = document.getElementById("logModuleFilter")?.value || "";
+  var levelFilter = document.getElementById("logLevelFilter")?.value || "";
+  var search = document.getElementById("logSearch")?.value?.toLowerCase() || "";
+
+  var filtered = newLogs.filter(function (log) {
+    if (moduleFilter && log.module && log.module.toLowerCase().indexOf(moduleFilter.toLowerCase()) === -1) return false;
+    if (levelFilter) {
+      var filterNum = _logLevelToNum(levelFilter);
+      if (filterNum !== null && (log.level_num || 0) < filterNum) return false;
+    }
+    if (search && log.message && log.message.toLowerCase().indexOf(search) === -1) return false;
+    return true;
+  });
+
+  // Prepend to existing log list
+  var logList = document.getElementById("logList");
+  if (!logList) return;
+
+  var wasNearBottom = logList.scrollHeight - logList.scrollTop - logList.clientHeight < 50;
+  var insertHTML = filtered.map(_renderLogEntry).join("");
+
+  if (_logSortNewestBottom) {
+    logList.insertAdjacentHTML("beforeend", insertHTML);
+  } else {
+    logList.insertAdjacentHTML("afterbegin", insertHTML);
+  }
+
+  // Trim excess entries (keep max 500)
+  while (logList.children.length > 500) {
+    if (_logSortNewestBottom) logList.removeChild(logList.firstChild);
+    else logList.removeChild(logList.lastChild);
+  }
+
+  // Update count
+  var countEl = document.getElementById("logCount");
+  if (countEl) countEl.textContent = parseInt(countEl.textContent || "0") + filtered.length;
+
+  // Auto-scroll
+  if (!_logPaused && (_logStreamActive || wasNearBottom)) {
+    logList.scrollTop = _logSortNewestBottom ? logList.scrollHeight : 0;
+  }
+}
+
+function _logLevelToNum(level) {
+  var map = { TRACE: 5, DEBUG: 10, INFO: 20, EVENT: 21, WARNING: 30, ERROR: 40, CRITICAL: 50 };
+  return map[(level || "").toUpperCase()] ?? null;
+}
+
+function _renderLogEntry(log) {
+  var moduleEsc = esc(log.module || "");
+  var moduleTooltip = (log.module && log.module.length > 15) ? 'title="' + esc(log.module) + '"' : "";
+  var lvl = (log.level || "").toLowerCase();
+  var lvlClass = lvl ? " log-level-" + lvl : "";
+  var lvlBadge = lvl
+    ? '<span class="log-level-badge ' + lvl + '">' + esc(log.level) + "</span>"
+    : "";
+  // Short timestamp: HH:MM:SS, full on hover
+  var ts = log.timestamp || "";
+  var shortTs = ts;
+  var m = ts.match(/(\d{2}:\d{2}:\d{2})/);
+  if (m) shortTs = m[1];
+  return '<div class="log-entry' + lvlClass + '" onclick="this.classList.toggle(\'log-expanded\')">' +
+    '<span class="log-time" title="' + esc(ts) + '">' + esc(shortTs) + "</span>" +
+    '<span class="log-module" ' + moduleTooltip + ">" + lvlBadge + moduleEsc + "</span>" +
+    '<span class="log-message">' + esc(log.message) + "</span>" +
+    "</div>";
 }
 
 function toggleLogPause() {
@@ -9986,24 +10105,7 @@ async function loadLogs() {
   }
 
   const sortedLogs = _logSortNewestBottom ? logs.slice().reverse() : logs;
-  const logHtml = sortedLogs
-    .map((log) => {
-      const moduleEsc = esc(log.module);
-      const moduleTooltip =
-        log.module.length > 15 ? `title="${esc(log.module)}"` : "";
-      var lvl = (log.level || "").toLowerCase();
-      var lvlClass = lvl ? " log-level-" + lvl : "";
-      var lvlBadge = lvl
-        ? '<span class="log-level-badge ' + lvl + '">' + lvl + "</span>"
-        : "";
-
-      return `<div class="log-entry${lvlClass}" onclick="this.classList.toggle('log-expanded')">
-            <span class="log-time">${esc(log.timestamp)}</span>
-            <span class="log-module" ${moduleTooltip}>${lvlBadge}${moduleEsc}</span>
-            <span class="log-message">${esc(log.message)}</span>
-        </div>`;
-    })
-    .join("");
+  const logHtml = sortedLogs.map(_renderLogEntry).join("");
 
   const logList = document.getElementById("logList");
   const wasNearBottom =

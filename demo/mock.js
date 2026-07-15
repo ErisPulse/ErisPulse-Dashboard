@@ -834,16 +834,39 @@
         this._interval = setInterval(function () {
             if (self.readyState !== 1 || !self.onmessage) return;
             var typeRoll = Math.random();
-            var ev;
-            if (typeRoll < 0.7) {
-                ev = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'message', detail_type: _pick(['private', 'group']), platform: _pick(['qq', 'telegram', 'discord', 'kook']), sub_type: '', self_id: 'bot_001', user_id: _pick(USERS), group_id: '', alt_message: _pick(MSGS) };
+            if (typeRoll < 0.55) {
+                var ev = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'message', detail_type: _pick(['private', 'group']), platform: _pick(['qq', 'telegram', 'discord', 'kook']), sub_type: '', self_id: 'bot_001', user_id: _pick(USERS), group_id: '', alt_message: _pick(MSGS) };
+                self.onmessage({ data: JSON.stringify({ type: 'event', data: ev }) });
+            } else if (typeRoll < 0.7) {
+                var ev2 = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'notice', detail_type: _pick(NOTICE_TYPES), platform: _pick(ADAPTERS), sub_type: '', self_id: 'bot_001', user_id: '', group_id: '', alt_message: '' };
+                self.onmessage({ data: JSON.stringify({ type: 'event', data: ev2 }) });
             } else if (typeRoll < 0.85) {
-                ev = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'notice', detail_type: _pick(NOTICE_TYPES), platform: _pick(ADAPTERS), sub_type: '', self_id: 'bot_001', user_id: '', group_id: '', alt_message: '' };
+                // Simulate real-time log streaming
+                var logLevels = [
+                    { level: 'TRACE', level_num: 5 },
+                    { level: 'DEBUG', level_num: 10 },
+                    { level: 'INFO', level_num: 20 },
+                    { level: 'INFO', level_num: 20 },
+                    { level: 'EVENT', level_num: 21 },
+                    { level: 'WARNING', level_num: 30 },
+                    { level: 'ERROR', level_num: 40 }
+                ];
+                var lvl = _pick(logLevels);
+                var now = new Date();
+                var ts = now.toISOString().slice(0, 19).replace('T', ' ');
+                var logEntry = {
+                    timestamp: ts,
+                    level: lvl.level,
+                    level_num: lvl.level_num,
+                    module: _pick(LOG_MODULES),
+                    message: _pick(LOG_MSGS)
+                };
+                self.onmessage({ data: JSON.stringify({ type: 'log_entry', data: logEntry }) });
             } else {
-                ev = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'meta', detail_type: 'heartbeat', platform: '', sub_type: '', self_id: '', user_id: '', group_id: '', alt_message: '' };
+                var ev3 = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'meta', detail_type: 'heartbeat', platform: '', sub_type: '', self_id: '', user_id: '', group_id: '', alt_message: '' };
+                self.onmessage({ data: JSON.stringify({ type: 'event', data: ev3 }) });
             }
-            self.onmessage({ data: JSON.stringify({ type: 'event', data: ev }) });
-        }, _r(3000, 8000));
+        }, _r(2000, 6000));
 
         this.send = function (data) {
             try {
