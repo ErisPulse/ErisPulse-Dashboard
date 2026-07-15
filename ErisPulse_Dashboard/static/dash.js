@@ -7570,11 +7570,11 @@ function _buildFwKnownKeys() {
 }
 
 function fwFieldDesc(fullKey) {
-  const desc = _fwFieldDescs[fullKey];
-  if (desc) return desc;
   const enKey = "fw_field_" + fullKey.replace(/\./g, "_");
   const en = t(enKey);
-  return en !== enKey ? en : "";
+  if (en !== enKey) return en;
+  const desc = _fwFieldDescs[fullKey];
+  return desc || "";
 }
 
 function deepMerge(target, source) {
