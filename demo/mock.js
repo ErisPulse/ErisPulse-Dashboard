@@ -246,12 +246,12 @@
     API_MAP['/api/modules'] = function () {
         return _json({
             modules: [
-                { name: 'Dashboard', type: 'module', enabled: true, loaded: true, version: '1.5.8', author: 'ErisPulse', description: 'Web 管理面板', package: 'ErisPulse-Dashboard' },
-                { name: 'EchoTest', type: 'module', enabled: true, loaded: true, version: '1.0.0', author: 'ErisPulse', description: '消息回显测试模块', package: 'ErisPulse-EchoTest' },
-                { name: 'AutoReply', type: 'module', enabled: true, loaded: true, version: '2.1.0', author: 'wsu2059q', description: '自动回复模块', package: 'ErisPulse-AutoReply' },
-                { name: 'AdminTools', type: 'module', enabled: true, loaded: false, version: '1.3.0', author: 'ErisPulse', description: '管理工具集', package: 'ErisPulse-AdminTools' },
-                { name: 'Scheduler', type: 'module', enabled: true, loaded: true, version: '0.9.2', author: 'wsu2059q', description: '定时任务调度', package: 'ErisPulse-Scheduler' },
-                { name: 'WebhookRelay', type: 'module', enabled: false, loaded: false, version: '1.0.0', author: 'ErisPulse', description: 'Webhook 转发模块', package: 'ErisPulse-WebhookRelay' },
+                { name: 'Dashboard', type: 'module', enabled: true, loaded: true, version: '1.5.8', author: 'ErisPulse', description: 'Web 管理面板', package: 'ErisPulse-Dashboard', has_config: false },
+                { name: 'EchoTest', type: 'module', enabled: true, loaded: true, version: '1.0.0', author: 'ErisPulse', description: '消息回显测试模块', package: 'ErisPulse-EchoTest', has_config: true },
+                { name: 'AutoReply', type: 'module', enabled: true, loaded: true, version: '2.1.0', author: 'wsu2059q', description: '自动回复模块', package: 'ErisPulse-AutoReply', has_config: true },
+                { name: 'AdminTools', type: 'module', enabled: true, loaded: false, version: '1.3.0', author: 'ErisPulse', description: '管理工具集', package: 'ErisPulse-AdminTools', has_config: false },
+                { name: 'Scheduler', type: 'module', enabled: true, loaded: true, version: '0.9.2', author: 'wsu2059q', description: '定时任务调度', package: 'ErisPulse-Scheduler', has_config: true },
+                { name: 'WebhookRelay', type: 'module', enabled: false, loaded: false, version: '1.0.0', author: 'ErisPulse', description: 'Webhook 转发模块', package: 'ErisPulse-WebhookRelay', has_config: false },
                 { name: 'qq', type: 'adapter', enabled: true, loaded: true, version: '3.5.0', author: 'ErisPulse', description: 'QQ 适配器' },
                 { name: 'telegram', type: 'adapter', enabled: true, loaded: true, version: '3.6.12', author: 'ErisPulse', description: 'Telegram 适配器' },
                 { name: 'discord', type: 'adapter', enabled: true, loaded: true, version: '1.2.0', author: 'ErisPulse', description: 'Discord 适配器' },
@@ -765,6 +765,44 @@
                     });
                 }
             }
+            var moduleMatch = matchPath.match(/^\/api\/module\/([^/]+)\/config$/);
+            if (moduleMatch) {
+                var mName = moduleMatch[1];
+                var _mockModuleConfigs = {
+                    'EchoTest': {
+                        config_key: 'EchoTest', has_config: true,
+                        schema: { fields: {
+                            response_prefix: { type: 'string', description: '回显前缀', order: 1 },
+                            max_length: { type: 'integer', description: '最大字符数', order: 2 },
+                            random_reply: { type: 'boolean', widget: 'switch', description: '随机回复', order: 3 },
+                        }},
+                        values: { response_prefix: '你说：', max_length: 200, random_reply: false }
+                    },
+                    'AutoReply': {
+                        config_key: 'AutoReply', has_config: true,
+                        schema: { fields: {
+                            rules_file: { type: 'string', description: '规则文件路径', order: 1 },
+                            match_mode: { type: 'string', widget: 'select', options: ['exact', 'fuzzy', 'regex'], description: '匹配模式', order: 2 },
+                            cooldown: { type: 'integer', description: '冷却时间（秒）', order: 3 },
+                            ignore_case: { type: 'boolean', widget: 'switch', description: '忽略大小写', order: 4 },
+                        }},
+                        values: { rules_file: 'rules.yaml', match_mode: 'exact', cooldown: 5, ignore_case: true }
+                    },
+                    'Scheduler': {
+                        config_key: 'Scheduler', has_config: true,
+                        schema: { fields: {
+                            max_tasks: { type: 'integer', description: '最大任务数', order: 1 },
+                            default_interval: { type: 'integer', description: '默认执行间隔（秒）', order: 2 },
+                            persist_tasks: { type: 'boolean', widget: 'switch', description: '持久化任务', order: 3 },
+                        }},
+                        values: { max_tasks: 50, default_interval: 3600, persist_tasks: true }
+                    }
+                };
+                var mCfg = _mockModuleConfigs[mName];
+                if (!mCfg) return _json({ error: 'Module config not found' }, 50);
+                if (init && init.method === 'PUT') return _json({ success: true });
+                return _json(mCfg);
+            }
             var handler = null;
             for (var key in API_MAP) {
                 if (matchPath === key || matchPath.indexOf(key + '/') === 0) {
@@ -851,6 +889,22 @@
 
     window.__DEMO_MODE__ = true;
     window.__DEMO_TOKEN__ = DEMO_TOKEN;
+
+    // Demo 登录页提示 token
+    function _showDemoTokenHint() {
+        var hint = document.getElementById('authHint');
+        if (!hint) {
+            setTimeout(_showDemoTokenHint, 200);
+            return;
+        }
+        var app = document.querySelector('.app');
+        var isAuthed = app && app.classList.contains('authed');
+        if (isAuthed) return;
+        hint.innerHTML = '<div style="padding:8px 12px;border-radius:8px;background:color-mix(in srgb,#f59e0b 12%,transparent);border:1px solid color-mix(in srgb,#f59e0b 30%,transparent);font-size:12px;color:#f59e0b;margin-top:4px">Demo Token: <code style="font-weight:700;user-select:all;cursor:pointer" onclick="document.getElementById(\'loginInput\').value=\'demo\'">demo</code> — 点击填入</div>';
+        var input = document.getElementById('loginInput');
+        if (input && !input.value) input.placeholder = 'demo';
+    }
+    setTimeout(_showDemoTokenHint, 500);
 
     (function () {
         function _toggleDemoBanner() {
