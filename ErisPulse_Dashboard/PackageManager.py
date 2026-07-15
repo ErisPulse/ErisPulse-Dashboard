@@ -190,6 +190,17 @@ class DashboardPackageManager:
         self._ensure_pip(target_python)
         return [target_python, "-m", "pip"]
 
+    def is_using_uv(self) -> bool:
+        """
+        判断当前 pip 后端是否为 uv。
+
+        uv 的 uninstall 命令不支持 -y 参数（本身即为非交互式），
+        需要据此调整命令构造。
+
+        :return: bool 是否使用 uv 作为 pip 后端
+        """
+        return self._get_uv_command() is not None
+
     def register_git_package(
         self, package_name: str, git_url: str, installed_version: str = ""
     ):
