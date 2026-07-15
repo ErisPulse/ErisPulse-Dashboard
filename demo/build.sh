@@ -2,8 +2,17 @@
 
 set -e
 
-REPO_ROOT="$PWD"
-DEMO_DIR="$REPO_ROOT/demo"
+# 1. 根目录 = /（仓库根）: PWD = repo, demo = repo/demo, static = repo/ErisPulse_Dashboard/static
+# 2. 根目录 = /demo: PWD = repo/demo, demo = PWD, static = repo/ErisPulse_Dashboard/static
+if [ -d "$PWD/ErisPulse_Dashboard" ]; then
+  # 根目录是仓库根 /，直接使用
+  REPO_ROOT="$PWD"
+  DEMO_DIR="$REPO_ROOT/demo"
+else
+  # 根目录是 /demo，需上溯一级
+  REPO_ROOT="$(cd .. && pwd)"
+  DEMO_DIR="$PWD"
+fi
 STATIC_DIR="$REPO_ROOT/ErisPulse_Dashboard/static"
 
 echo "==> Copying static files..."
