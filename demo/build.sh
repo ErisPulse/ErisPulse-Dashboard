@@ -1,23 +1,18 @@
 #!/bin/bash
-# Cloudflare Pages 构建脚本
-# 从主代码同步静态文件到 demo 目录
 
 set -e
 
-REPO_ROOT="$PWD"
-DEMO_DIR="$REPO_ROOT/demo"
-STATIC_DIR="$REPO_ROOT/ErisPulse_Dashboard/static"
+STATIC_DIR="$PWD/../ErisPulse_Dashboard/static"
 
 echo "==> Copying static files..."
-cp "$STATIC_DIR/dash.css" "$DEMO_DIR/dash.css"
-cp "$STATIC_DIR/dash.js" "$DEMO_DIR/dash.js"
+cp "$STATIC_DIR/dash.css" "$PWD/dash.css"
+cp "$STATIC_DIR/dash.js" "$PWD/dash.js"
 
 echo "==> Generating index.html from dash.html..."
-STATIC_DIR="$STATIC_DIR" DEMO_DIR="$DEMO_DIR" python3 - <<'PYEOF'
+STATIC_DIR="$STATIC_DIR" python3 - <<'PYEOF'
 import re, os
 
 static = os.environ["STATIC_DIR"]
-demo = os.environ["DEMO_DIR"]
 
 with open(os.path.join(static, "dash.html"), "r", encoding="utf-8") as f:
     html = f.read()
@@ -47,7 +42,7 @@ banner = (
 )
 html = html.replace("<body>", "<body>" + banner, 1)
 
-with open(os.path.join(demo, "index.html"), "w", encoding="utf-8") as f:
+with open("index.html", "w", encoding="utf-8") as f:
     f.write(html)
 
 print("✓ index.html generated")
@@ -55,8 +50,8 @@ PYEOF
 
 echo "==> Copying resources..."
 if [ -d "$STATIC_DIR/res" ]; then
-    mkdir -p "$DEMO_DIR/res"
-    cp -r "$STATIC_DIR/res/"* "$DEMO_DIR/res/" 2>/dev/null || true
+    mkdir -p "$PWD/res"
+    cp -r "$STATIC_DIR/res/"* "$PWD/res/" 2>/dev/null || true
 fi
 
 echo "==> Build complete!"
