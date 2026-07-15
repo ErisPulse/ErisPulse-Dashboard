@@ -223,6 +223,12 @@ pyvenv.cfg
 # Dashboard 背景图上传目录
 ErisPulse_Dashboard/static/res/bg_upload/
 
+# Demo 构建产物（由 Cloudflare Pages 构建时自动生成）
+demo/dash.css
+demo/dash.js
+demo/index.html
+demo/res/
+
 # 翻译缓存（已提交到版本控制）
 # .translate_cache/
 
