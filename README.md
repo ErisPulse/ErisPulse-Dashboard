@@ -4,65 +4,69 @@
 
 # ErisPulse Dashboard
 
-**ErisPulse Web 管理面板模块**
+**ErisPulse Web Management Panel Module**
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse-Dashboard?style=flat-square)](https://pypi.org/project/ErisPulse-Dashboard/)
+
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 </div>
 
 ---
 
-## 简介
+## Overview
 
-ErisPulse Dashboard 是 ErisPulse 框架的官方 Web 管理面板模块。通过浏览器即可监控框架运行状态、管理模块与适配器、查看实时事件流、编辑配置和存储数据，无需依赖任何外部前端构建工具。
+ErisPulse Dashboard is the official Web management panel module for the ErisPulse framework. Monitor framework status, manage modules and adapters, view real-time event streams, edit configurations, and manage storage data — all through your browser, with no external frontend build tools required.
 
-## 核心特性
+## Key Features
 
-- **系统概览** — 框架版本、运行时间、适配器与模块状态一目了然
-- **Bot 管理** — 查看所有平台的 Bot 连接状态与信息
-- **模块管理** — 启用、禁用、加载模块与适配器
-- **插件商店** — 浏览远程包仓库，在线安装依赖包
-- **配置编辑** — 运行时查看与修改框架配置
-- **存储管理** — 查看、编辑、删除持久化存储的键值数据
-- **远程重启** — 通过 Web 界面安全重启框架
+- **System Overview** — Framework version, uptime, adapter and module status at a glance
+- **Bot Management** — View connection status and info for all platform bots
+- **Module Management** — Enable, disable, load modules and adapters
+- **Plugin Store** — Browse remote package repository and install dependencies online
+- **Master System** — Manage framework owners with global or per-platform permissions
+- **Configuration** — View and modify framework configuration at runtime
+- **Storage Management** — View, edit, and delete persistent key-value data
+- **Remote Restart** — Safely restart the framework from the web interface
+- **Cluster Management** — Multi-node cluster monitoring and management
 
-## 安装
+## Installation
 
 ```bash
 pip install ErisPulse-Dashboard
 
-# 国内镜像
+# China mirror
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse-Dashboard
 ```
 
-安装后模块将被 ErisPulse 框架自动发现并加载。
+After installation, the module will be automatically discovered and loaded by the ErisPulse framework.
 
-## 访问地址
+## Access URL
 
-安装并启动 ErisPulse 框架后，在浏览器中打开：
+After installing and starting the ErisPulse framework, open in your browser:
 
 ```
 http://<host>:<port>/Dashboard/
 ```
 
-其中 `<host>` 和 `<port>` 为 ErisPulse 框架的监听地址与端口。
+Where `<host>` and `<port>` are the ErisPulse framework's listen address and port.
 
-## 认证
+## Authentication
 
-模块首次加载时会自动生成一个访问 Token，并输出到框架日志中：
+The module automatically generates an access token on first load and outputs it to the framework logs:
 
 ```
 [Dashboard] ╔══════════════════════════════════════════════╗
 [Dashboard] ║           ErisPulse Dashboard                ║
-[Dashboard] ║  访问地址: /Dashboard                       ║
-[Dashboard] ║  访问令牌: <your-token-here>                 ║
-[Dashboard] ║  令牌已保存至配置文件 Dashboard.token         ║
+[Dashboard] ║  URL: /Dashboard                             ║
+[Dashboard] ║  Token: <your-token-here>                    ║
+[Dashboard] ║  Token saved to config: Dashboard.token       ║
 [Dashboard] ╚══════════════════════════════════════════════╝
 ```
 
-为避免令牌泄露，仅在首次生成时在日志中明文输出。
+To prevent token leakage, it is only shown in plaintext on first generation.
 
-打开 Dashboard 时需输入该 Token 完成认证。您也可以在配置文件中预设 Token：
+Enter this token when opening the Dashboard to authenticate. You can also pre-set the token in the config file:
 
 ```toml
 [Dashboard]
@@ -71,10 +75,14 @@ title = "ErisPulse Dashboard"
 max_event_log = 500
 ```
 
-## 配置项
+## Configuration
 
-| 配置键 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `Dashboard.title` | `str` | `"ErisPulse Dashboard"` | 面板标题 |
-| `Dashboard.max_event_log` | `int` | `500` | 事件日志最大保留条数 |
-| `Dashboard.token` | `str` | 自动生成 | 访问 Token |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `Dashboard.title` | `str` | `"ErisPulse Dashboard"` | Panel title |
+| `Dashboard.max_event_log` | `int` | `500` | Maximum event log entries to retain |
+| `Dashboard.token` | `str` | Auto-generated | Access token |
+
+## License
+
+MIT
