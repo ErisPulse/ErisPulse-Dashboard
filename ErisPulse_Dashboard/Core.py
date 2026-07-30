@@ -1871,16 +1871,8 @@ class Main(BaseModule):
 
             self.sdk.config.setConfig(config_key, merged)
 
-            # 配置热更新回调（适配器配置现为实时读取，无需刷新缓存）
-            try:
-                if config_class is not None and hasattr(adapter_instance, "on_config_update"):
-                    from ErisPulse.runtime.config_schema import dict_to_dataclass
-
-                    old_config = getattr(adapter_instance, "_config_instance", None)
-                    new_config = dict_to_dataclass(config_class, merged)
-                    adapter_instance.on_config_update(old_config, new_config)
-            except Exception as e:
-                self.logger.debug(f"Config hot-reload callback error: {e}")
+            # 配置热更新回调现由框架核心统一维护（监听 config.set 事件），
+            # Dashboard 不再主动调用 on_config_update，避免重复触发。
 
             self._add_audit_log("adapter_config_update", platform, request)
             return JSONResponse({"success": True})
@@ -2187,17 +2179,8 @@ class Main(BaseModule):
 
             self.sdk.config.setConfig(config_key, merged)
 
-            # 配置热更新回调
-            try:
-                instance = module_manager.get(module_name)
-                if instance and hasattr(instance, "on_config_update"):
-                    from ErisPulse.runtime.config_schema import dict_to_dataclass
-
-                    old_config = dict_to_dataclass(config_class, current) if current else None
-                    new_config = dict_to_dataclass(config_class, merged)
-                    instance.on_config_update(old_config, new_config)
-            except Exception as e:
-                self.logger.debug(f"Module config hot-reload callback error: {e}")
+            # 配置热更新回调现由框架核心统一维护（监听 config.set 事件），
+            # Dashboard 不再主动调用 on_config_update，避免重复触发。
 
             self._add_audit_log("module_config_update", module_name, request)
             return JSONResponse({"success": True})
