@@ -1872,15 +1872,7 @@ class Main(BaseModule):
             self.sdk.config.setConfig(config_key, merged)
 
              
-            try:
-                if config_class is not None and hasattr(adapter_instance, "on_config_update"):
-                    from ErisPulse.runtime.config_schema import dict_to_dataclass
-
-                    old_config = getattr(adapter_instance, "_config_instance", None)
-                    new_config = dict_to_dataclass(config_class, merged)
-                    adapter_instance.on_config_update(old_config, new_config)
-            except Exception as e:
-                self.logger.debug(f"Config hot-reload callback error: {e}")
+             
 
             self._add_audit_log("adapter_config_update", platform, request)
             return JSONResponse({"success": True})
@@ -2188,16 +2180,7 @@ class Main(BaseModule):
             self.sdk.config.setConfig(config_key, merged)
 
              
-            try:
-                instance = module_manager.get(module_name)
-                if instance and hasattr(instance, "on_config_update"):
-                    from ErisPulse.runtime.config_schema import dict_to_dataclass
-
-                    old_config = dict_to_dataclass(config_class, current) if current else None
-                    new_config = dict_to_dataclass(config_class, merged)
-                    instance.on_config_update(old_config, new_config)
-            except Exception as e:
-                self.logger.debug(f"Module config hot-reload callback error: {e}")
+             
 
             self._add_audit_log("module_config_update", module_name, request)
             return JSONResponse({"success": True})
