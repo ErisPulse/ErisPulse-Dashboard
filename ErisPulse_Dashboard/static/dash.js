@@ -462,12 +462,22 @@ const I18N = {
     settings_appearance: "外观",
     settings_appearance_behavior: "外观与行为",
     settings_behavior: "行为",
+    settings_display: "显示",
     settings_theme: "主题",
     settings_theme_light: "浅色",
     settings_theme_dark: "深色",
     settings_theme_auto: "跟随系统",
+    settings_oled: "OLED 纯黑模式",
+    settings_oled_desc: "深色主题下将背景压至纯黑，节省 OLED 屏幕电量",
+    settings_custom_theme: "自定义主题",
+    settings_theme_customizer: "主题变量编辑器",
+    settings_custom_desc: "自定义所有 CSS 变量，覆盖当前主题的默认值。开启开关即可编辑。",
+    settings_custom_save: "保存主题",
+    settings_custom_reset: "恢复默认",
+    settings_lang_title: "语言与标题",
     settings_language: "语言",
     settings_ui_style: "界面风格",
+    settings_font: "字体",
     settings_accent_color: "主题强调色",
     settings_accent_desc: "选择点缀颜色，按钮/链接等会随之变化",
     settings_background: "背景颜色",
@@ -496,7 +506,7 @@ const I18N = {
     settings_layout: "布局",
     settings_system: "系统",
     settings_dash_title: "仪表盘标题",
-    settings_dash_title_desc: "设置顶部标题栏文字",
+    settings_dash_title_desc: "自定义浏览器标签页和页面顶部标题栏的文字",
     upload_modal_title: "上传安装",
     upload_drop_hint: "拖拽文件到此处或点击选择",
     force_install: "强制安装",
@@ -1212,12 +1222,22 @@ const I18N = {
     settings_appearance: "Appearance",
     settings_appearance_behavior: "Appearance & Behavior",
     settings_behavior: "Behavior",
+    settings_display: "Display",
     settings_theme: "Theme",
     settings_theme_light: "Light",
     settings_theme_dark: "Dark",
     settings_theme_auto: "System",
+    settings_oled: "OLED Pure Black",
+    settings_oled_desc: "Forces pure black background in dark mode — saves battery on OLED screens",
+    settings_custom_theme: "Custom Theme",
+    settings_theme_customizer: "Theme Variable Editor",
+    settings_custom_desc: "Customize every CSS variable to override the active theme's defaults. Toggle on to start editing.",
+    settings_custom_save: "Save Theme",
+    settings_custom_reset: "Reset to Default",
+    settings_lang_title: "Language & Title",
     settings_language: "Language",
     settings_ui_style: "UI Style",
+    settings_font: "Font",
     settings_accent_color: "Accent Color",
     settings_accent_desc:
       "Pick an accent — buttons, links and highlights follow it",
@@ -1250,7 +1270,7 @@ const I18N = {
     settings_layout: "Layout",
     settings_system: "System",
     settings_dash_title: "Dashboard Title",
-    settings_dash_title_desc: "Customize the header title text",
+    settings_dash_title_desc: "Text shown in browser tab and header bar",
     upload_modal_title: "Upload & Install",
     upload_drop_hint: "Drop file here or click to select",
     force_install: "Force Install",
@@ -1962,12 +1982,22 @@ const I18N = {
     settings_appearance: "外觀",
     settings_appearance_behavior: "外觀與行為",
     settings_behavior: "行為",
+    settings_display: "顯示",
     settings_theme: "主題",
     settings_theme_light: "淺色",
     settings_theme_dark: "深色",
     settings_theme_auto: "跟隨系統",
+    settings_oled: "OLED 純黑模式",
+    settings_oled_desc: "深色主題下將背景壓至純黑，節省 OLED 螢幕電量",
+    settings_custom_theme: "自訂主題",
+    settings_theme_customizer: "主題變數編輯器",
+    settings_custom_desc: "自訂所有 CSS 變數，覆蓋當前主題的預設值。開啟開關即可編輯。",
+    settings_custom_save: "儲存主題",
+    settings_custom_reset: "恢復預設",
+    settings_lang_title: "語言與標題",
     settings_language: "語言",
     settings_ui_style: "介面風格",
+    settings_font: "字體",
     settings_accent_color: "主題強調色",
     settings_accent_desc: "選擇點綴顏色，按鈕/連結等會隨之變化",
     settings_background: "背景顏色",
@@ -1996,7 +2026,7 @@ const I18N = {
     settings_layout: "佈局",
     settings_system: "系統",
     settings_dash_title: "儀表盤標題",
-    settings_dash_title_desc: "設定頂部標題欄文字",
+    settings_dash_title_desc: "自訂瀏覽器分頁和頁面頂部標題列的文字",
     upload_modal_title: "上傳安裝",
     upload_drop_hint: "拖拽檔案到此處或點擊選擇",
     force_install: "強制安裝",
@@ -2695,12 +2725,22 @@ const I18N = {
     settings_appearance: "外観",
     settings_appearance_behavior: "外観と動作",
     settings_behavior: "動作",
+    settings_display: "表示",
     settings_theme: "テーマ",
     settings_theme_light: "ライト",
     settings_theme_dark: "ダーク",
     settings_theme_auto: "システム",
+    settings_oled: "OLED ピュアブラック",
+    settings_oled_desc: "ダークテーマ時に背景を完全な黒にし、OLED の電力を節約",
+    settings_custom_theme: "カスタムテーマ",
+    settings_theme_customizer: "テーマ変数エディター",
+    settings_custom_desc: "すべての CSS 変数をカスタマイズして、現在のテーマのデフォルトを上書きします。トグルをオンにして編集を開始。",
+    settings_custom_save: "テーマを保存",
+    settings_custom_reset: "デフォルトに戻す",
+    settings_lang_title: "言語とタイトル",
     settings_language: "言語",
     settings_ui_style: "UIスタイル",
+    settings_font: "フォント",
     settings_accent_color: "アクセントカラー",
     settings_accent_desc: "アクセントを選択すると、ボタンやリンクが連動します",
     settings_background: "背景色",
@@ -2732,7 +2772,7 @@ const I18N = {
     settings_layout: "レイアウト",
     settings_system: "システム",
     settings_dash_title: "ダッシュボードタイトル",
-    settings_dash_title_desc: "ヘッダータイトルのカスタマイズ",
+    settings_dash_title_desc: "ブラウザタブとヘッダーに表示するテキスト",
     upload_modal_title: "アップロードインストール",
     upload_drop_hint: "ファイルをここにドラッグまたはクリックして選択",
     force_install: "強制インストール",
@@ -3440,12 +3480,22 @@ const I18N = {
     settings_appearance: "Внешний вид",
     settings_appearance_behavior: "Внешний вид и поведение",
     settings_behavior: "Поведение",
+    settings_display: "Дисплей",
     settings_theme: "Тема",
     settings_theme_light: "Светлая",
     settings_theme_dark: "Тёмная",
     settings_theme_auto: "Системная",
+    settings_oled: "OLED чистый чёрный",
+    settings_oled_desc: "Принудительно устанавливает чисто чёрный фон в тёмной теме — экономит заряд OLED",
+    settings_custom_theme: "Пользовательская тема",
+    settings_theme_customizer: "Редактор переменных темы",
+    settings_custom_desc: "Настройте все CSS-переменные, чтобы переопределить значения по умолчанию текущей темы. Включите переключатель, чтобы начать редактирование.",
+    settings_custom_save: "Сохранить тему",
+    settings_custom_reset: "Сбросить",
+    settings_lang_title: "Язык и заголовок",
     settings_language: "Язык",
     settings_ui_style: "Стиль интерфейса",
+    settings_font: "Шрифт",
     settings_accent_color: "Акцентный цвет",
     settings_accent_desc:
       "Выберите акцент — кнопки, ссылки и выделения изменятся",
@@ -3478,7 +3528,7 @@ const I18N = {
     settings_layout: "Макет",
     settings_system: "Система",
     settings_dash_title: "Заголовок панели",
-    settings_dash_title_desc: "Настройка текста заголовка",
+    settings_dash_title_desc: "Текст во вкладке браузера и заголовке страницы",
     upload_modal_title: "Загрузка и установка",
     upload_drop_hint: "Перетащите файл или нажмите для выбора",
     force_install: "Принудительная установка",
@@ -4227,6 +4277,88 @@ function applySettingUiStyle(val) {
   if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
+var FONT_PRESETS = [
+  { id: "sora", name: "Sora", display: '"Sora", sans-serif', body: '"Sora", sans-serif',
+    preview: "Aa", weight: "600" },
+  { id: "editorial", name: "Editorial", display: '"Instrument Serif", serif', body: '"Outfit", sans-serif',
+    preview: "Aa", weight: "400" },
+  { id: "spectral", name: "Spectral", display: '"Spectral", serif', body: '"DM Sans", sans-serif',
+    preview: "Aa", weight: "500" },
+  { id: "newsreader", name: "Newsreader", display: '"Newsreader", serif', body: '"Schibsted Grotesk", sans-serif',
+    preview: "Aa", weight: "500" },
+  { id: "mono", name: "Mono", display: '"JetBrains Mono", monospace', body: '"Outfit", sans-serif',
+    preview: "Aa", weight: "500" },
+];
+
+function getFont() {
+  return localStorage.getItem("ep_font") || "sora";
+}
+function applyFont(id) {
+  var preset = FONT_PRESETS.find(function(f) { return f.id === id; });
+  if (!preset) return;
+  var root = document.documentElement;
+  var bodyStack = preset.body.replace(/"(.*?)"/, function(_, n) {
+    return '"' + n + '", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+  });
+  var displayStack = preset.display.replace(/"(.*?)"/, function(_, n) {
+    return '"' + n + '", "PingFang SC", "Microsoft YaHei", serif';
+  });
+  root.style.setProperty("--font-body", bodyStack);
+  root.style.setProperty("--font-display", displayStack);
+}
+function applySettingFont(id) {
+  localStorage.setItem("ep_font", id);
+  applyFont(id);
+  syncFontCards();
+  if (_settingsAppearanceScope) saveGlobalAppearance();
+}
+function initFontSelector() {
+  var container = document.getElementById("fontSelector");
+  if (!container) return;
+  container.innerHTML = "";
+  FONT_PRESETS.forEach(function(f) {
+    var card = document.createElement("div");
+    card.className = "font-card";
+    card.dataset.font = f.id;
+    card.onclick = function() { applySettingFont(f.id); };
+    var preview = document.createElement("div");
+    preview.className = "font-card-preview";
+    preview.style.fontFamily = f.display;
+    preview.style.fontWeight = f.weight;
+    preview.textContent = f.preview;
+    var label = document.createElement("div");
+    label.className = "font-card-label";
+    label.textContent = f.name;
+    label.style.fontFamily = f.body;
+    card.appendChild(preview);
+    card.appendChild(label);
+    container.appendChild(card);
+  });
+  syncFontCards();
+}
+function syncFontCards() {
+  var cur = getFont();
+  document.querySelectorAll(".font-card").forEach(function(c) {
+    c.classList.toggle("active", c.dataset.font === cur);
+  });
+}
+
+function getOled() {
+  return localStorage.getItem("ep_oled") === "on";
+}
+function applyOled(on) {
+  if (on) {
+    document.documentElement.setAttribute("data-oled", "on");
+  } else {
+    document.documentElement.removeAttribute("data-oled");
+  }
+}
+function applySettingOled(on) {
+  localStorage.setItem("ep_oled", on ? "on" : "off");
+  applyOled(on);
+  if (_settingsAppearanceScope) saveGlobalAppearance();
+}
+
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("open");
   document.getElementById("overlay").classList.toggle("show");
@@ -4322,7 +4454,7 @@ function getAdapterLogo(name) {
 function adapterLogoImg(name, size) {
   var s = size || 20;
   var src = getAdapterLogo(name);
-  if (!src) return "";
+  if (!src) return '<span style="width:' + s + 'px;height:' + s + 'px;display:inline-block;flex-shrink:0"></span>';
   return (
     '<img src="' +
     esc(src) +
@@ -4330,7 +4462,11 @@ function adapterLogoImg(name, size) {
     s +
     "px;height:" +
     s +
-    'px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.remove()">'
+    'px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{style:{width:\'' +
+    s +
+    "px',height:'" +
+    s +
+    "px',display:'inline-block',flexShrink:'0'}}))\">"
   );
 }
 
@@ -6553,6 +6689,8 @@ var _settingsAppearanceScope = false;
 async function loadSettings() {
   syncSettingsUI();
   initAccentSwatches();
+  initCustomThemeEditor();
+  initFontSelector();
   await loadGlobalAppearance();
 }
 
@@ -6598,6 +6736,12 @@ function applyGlobalAppearanceData(app) {
     var uiEl = document.getElementById("settingsUiStyle");
     if (uiEl) uiEl.value = app.ui_style;
   }
+  if (app.oled !== undefined) {
+    localStorage.setItem("ep_oled", app.oled ? "on" : "off");
+    applyOled(app.oled);
+    var oledEl = document.getElementById("settingsOled");
+    if (oledEl) oledEl.checked = app.oled;
+  }
   if (app.bg_color) {
     applyBgColor(app.bg_color);
   }
@@ -6622,6 +6766,8 @@ function collectAppearanceData() {
     dash_title: getSetting("dash_title", "ErisPulse Dashboard"),
     theme: getTheme(),
     ui_style: getUiStyle(),
+    font: getFont(),
+    oled: getOled(),
     bg_color: getSetting("bg_color", ""),
     bg_image: getSetting("bg_image", ""),
     accent_color: getSetting("accent_color", ""),
@@ -6659,7 +6805,7 @@ function updateGlobalBanner() {
 }
 
 function syncSettingsUI() {
-  // Style cards (ErisPulse / Classic)
+  // Style cards (ErisPulse / MD3)
   var curStyle = getUiStyle();
   document.querySelectorAll(".style-card").forEach(function(card) {
     card.classList.toggle("active", card.dataset.style === curStyle);
@@ -6670,14 +6816,18 @@ function syncSettingsUI() {
   document.querySelectorAll(".theme-card").forEach(function(card) {
     card.classList.toggle("active", card.dataset.themeCard === curTheme);
   });
+  var oledEl = document.getElementById("settingsOled");
+  if (oledEl) oledEl.checked = getOled();
   var autoCard = document.querySelector('.theme-card[data-theme-card="auto"]');
   if (autoCard) {
     var eff = getEffectiveTheme();
     var label = autoCard.querySelector(".theme-card-label-sm");
     if (label) label.textContent = eff === "dark" ? "跟随系统 · 深色" : "跟随系统 · 浅色";
   }
-  var langEl = document.getElementById("settingsLang");
-  if (langEl) langEl.value = lang;
+  // Language cards
+  document.querySelectorAll(".lang-card").forEach(function(card) {
+    card.classList.toggle("active", card.dataset.lang === lang);
+  });
   var sbEl = document.getElementById("settingsSidebar");
   if (sbEl)
     sbEl.checked = document
@@ -6720,6 +6870,10 @@ function applySettingLang(v) {
   lang = v;
   localStorage.setItem("ep_lang", lang);
   applyI18n();
+  // Sync language cards after i18n update
+  document.querySelectorAll(".lang-card").forEach(function(card) {
+    card.classList.toggle("active", card.dataset.lang === lang);
+  });
   loadAll();
 }
 function applySettingSidebar(collapsed) {
@@ -6880,8 +7034,8 @@ function applyBgImage(dataUrl) {
   // 背景图 + 半透明遮罩（保证内容可读）
   var dark = getEffectiveTheme() === "dark";
   var overlay = dark
-    ? "linear-gradient(rgba(8,12,18,0.9),rgba(8,12,18,0.9))"
-    : "linear-gradient(rgba(244,247,251,0.82),rgba(244,247,251,0.82))";
+    ? "linear-gradient(rgba(10,14,23,0.88),rgba(10,14,23,0.88))"
+    : "linear-gradient(rgba(244,247,252,0.85),rgba(244,247,252,0.85))";
   document.body.style.backgroundImage = overlay + ', url("' + dataUrl + '")';
   document.body.style.backgroundSize = "cover";
   document.body.style.backgroundPosition = "center";
@@ -7075,6 +7229,118 @@ function initAccentSwatches() {
     };
     wrap.appendChild(btn);
   });
+}
+
+// ========== Full custom theme editor ==========
+var FULL_THEME_VARS = [
+  { key:'--bg-p', label:'主背景', group:'bg' },
+  { key:'--bg-s', label:'次背景（侧栏）', group:'bg' },
+  { key:'--bg-t', label:'卡片背景', group:'bg' },
+  { key:'--tx-p', label:'主文字', group:'text' },
+  { key:'--tx-s', label:'次要文字', group:'text' },
+  { key:'--tx-t', label:'辅助文字', group:'text' },
+  { key:'--bd', label:'边框', group:'border' },
+  { key:'--bd-h', label:'边框高亮', group:'border' },
+  { key:'--accent', label:'强调色', group:'accent' },
+  { key:'--accent-h', label:'强调色悬浮', group:'accent' },
+  { key:'--accent-fill', label:'强调填充', group:'accent' },
+  { key:'--accent-fill-h', label:'强调填充悬浮', group:'accent' },
+  { key:'--ok-c', label:'成功色', group:'semantic' },
+  { key:'--er-c', label:'错误色', group:'semantic' },
+  { key:'--wr-c', label:'警告色', group:'semantic' },
+  { key:'--pr-c', label:'信息色', group:'semantic' },
+  { key:'--sc-c', label:'次要信息色', group:'semantic' },
+  { key:'--lk', label:'链接色', group:'other' },
+  { key:'--focus-ring', label:'焦点环', group:'other' },
+];
+var FULL_THEME_GROUPS = { bg:'背景', text:'文字', border:'边框', accent:'强调色', semantic:'语义色', other:'其他' };
+
+function getFullCustomTheme() {
+  try { return JSON.parse(localStorage.getItem('ep_full_custom_theme')); } catch(e) { return null; }
+}
+
+function applyFullCustomTheme() {
+  var d = getFullCustomTheme();
+  if (!d || !d.enabled) {
+    FULL_THEME_VARS.forEach(function(v) { document.documentElement.style.removeProperty(v.key); });
+    return;
+  }
+  Object.keys(d.vars).forEach(function(k) { if (d.vars[k]) document.documentElement.style.setProperty(k, d.vars[k]); });
+}
+
+function initCustomThemeEditor() {
+  var c = document.getElementById('customThemeVars');
+  if (!c) return;
+  var groups = {}; var h = '';
+  FULL_THEME_VARS.forEach(function(v) { if (!groups[v.group]) groups[v.group] = []; groups[v.group].push(v); });
+  Object.keys(groups).forEach(function(g) {
+    h += '<div class="ct-group"><div class="ct-group-title">' + (FULL_THEME_GROUPS[g]||g) + '</div>';
+    groups[g].forEach(function(v) {
+      h += '<div class="ct-row">'
+        + '<label class="ct-label">' + v.label + '</label>'
+        + '<input type="color" class="ct-color" data-var="' + v.key + '" value="#000000">'
+        + '<input type="text" class="ct-input" data-var="' + v.key + '" placeholder="' + v.key + '" spellcheck="false">'
+        + '<button type="button" class="ct-reset btn-icon btn-xs" onclick="resetThemeVar(\'' + v.key + '\')">↺</button>'
+        + '</div>';
+    });
+    h += '</div>';
+  });
+  c.innerHTML = h;
+  c.querySelectorAll('.ct-color').forEach(function(el) {
+    el.addEventListener('input', function() { var i = el.parentElement.querySelector('.ct-input'); if (i) i.value = el.value; });
+  });
+  c.querySelectorAll('.ct-input').forEach(function(el) {
+    el.addEventListener('input', function() { var co = el.parentElement.querySelector('.ct-color'); if (co && /^#[0-9a-f]{6}$/i.test(el.value)) co.value = el.value; });
+  });
+  var saved = getFullCustomTheme();
+  if (saved && saved.enabled) {
+    document.getElementById('customThemeToggle').checked = true;
+    Object.keys(saved.vars).forEach(function(k) { var r = c.querySelector('[data-var="' + k + '"]'); if (r) r.value = saved.vars[k]; });
+    c.querySelectorAll('input').forEach(function(el) { el.disabled = false; });
+    c.querySelectorAll('button').forEach(function(el) { el.disabled = false; });
+  } else {
+    c.querySelectorAll('input').forEach(function(el) { el.disabled = true; });
+    c.querySelectorAll('button').forEach(function(el) { el.disabled = true; });
+  }
+}
+
+function onCustomThemeToggle(enabled) {
+  var saved = getFullCustomTheme() || { vars:{}, enabled:false };
+  saved.enabled = enabled;
+  if (enabled) {
+    var c = document.getElementById('customThemeVars');
+    if (c) c.querySelectorAll('.ct-input').forEach(function(el) { if (el.value) saved.vars[el.dataset.var] = el.value; });
+  }
+  localStorage.setItem('ep_full_custom_theme', JSON.stringify(saved));
+  applyFullCustomTheme();
+  var c = document.getElementById('customThemeVars');
+  if (c) { c.querySelectorAll('input,button').forEach(function(el) { el.disabled = !enabled; }); }
+}
+
+function saveFullCustomTheme() {
+  var saved = getFullCustomTheme() || { vars:{}, enabled:true };
+  var c = document.getElementById('customThemeVars');
+  if (c) c.querySelectorAll('.ct-input').forEach(function(el) { if (el.value) saved.vars[el.dataset.var] = el.value; });
+  saved.enabled = true;
+  localStorage.setItem('ep_full_custom_theme', JSON.stringify(saved));
+  applyFullCustomTheme();
+  document.getElementById('customThemeToggle').checked = true;
+  if (c) c.querySelectorAll('input,button').forEach(function(el) { el.disabled = false; });
+}
+
+function resetFullCustomTheme() {
+  localStorage.removeItem('ep_full_custom_theme');
+  applyFullCustomTheme();
+  var c = document.getElementById('customThemeVars');
+  if (c) { c.querySelectorAll('.ct-input').forEach(function(el) { el.value = ''; }); }
+  document.getElementById('customThemeToggle').checked = false;
+  if (c) c.querySelectorAll('input,button').forEach(function(el) { el.disabled = true; });
+}
+
+function resetThemeVar(key) {
+  document.documentElement.style.removeProperty(key);
+  var c = document.getElementById('customThemeVars');
+  if (c) { var i = c.querySelector('.ct-input[data-var="' + key + '"]'); if (i) i.value = ''; }
 }
 
 // 启动时恢复自定义配色
@@ -12799,8 +13065,11 @@ async function saveCmdEdit() {
 (function () {
   applyTheme(getTheme());
   applyUiStyle(getUiStyle());
+  applyOled(getOled());
+  applyFont(getFont());
   applyI18n();
   applyCustomTheme();
+  applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
   // 恢复保存的仪表盘标题
   var savedTitle = getSetting("dash_title", "");

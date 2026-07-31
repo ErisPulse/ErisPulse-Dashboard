@@ -11,13 +11,17 @@
                 var t = localStorage.getItem("ep_theme");
                 if (!t) t = window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light";
                 document.documentElement.setAttribute("data-theme", t);
+                if (localStorage.getItem("ep_oled") === "on") {
+                    document.documentElement.setAttribute("data-oled", "on");
+                }
             })();
         </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&family=Newsreader:wght@400;500;600&family=Outfit:wght@300;400;500;600&family=Schibsted+Grotesk:wght@400;500;600&family=Sora:wght@300;400;500;600;700&family=Spectral:wght@400;500;600&display=swap"
             rel="stylesheet"
+            onerror="this.href='https://fonts.loli.net/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&family=Newsreader:wght@400;500;600&family=Outfit:wght@300;400;500;600&family=Schibsted+Grotesk:wght@400;500;600&family=Sora:wght@300;400;500;600;700&family=Spectral:wght@400;500;600&display=swap'"
         />
         <link
             rel="stylesheet"
@@ -4134,6 +4138,20 @@
                         <div class="view-toggle pkg-tabs">
                             <button
                                 class="view-btn pkg-tab active"
+                                data-tab="settings-behavior"
+                                onclick="
+                                    switchSettingsTab(
+                                        'settings-behavior',
+                                        this,
+                                    )
+                                "
+                            >
+                                <span
+                                    data-i18n="settings_behavior"
+                                ></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
                                 data-tab="settings-appearance"
                                 onclick="
                                     switchSettingsTab(
@@ -4143,7 +4161,7 @@
                                 "
                             >
                                 <span
-                                    data-i18n="settings_appearance_behavior"
+                                    data-i18n="settings_appearance"
                                 ></span>
                             </button>
                             <button
@@ -4162,7 +4180,6 @@
                         <div
                             id="settings-appearance-tab"
                             class="tab-section"
-                            style="display: block"
                         >
                             <!-- 全局外观横幅 -->
                             <div
@@ -4193,436 +4210,166 @@
                             </div>
 
                             <div class="settings-grid">
-                                <!-- 左列：外观 -->
                                 <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <circle
-                                                    cx="13.5"
-                                                    cy="6.5"
-                                                    r=".5"
-                                                />
-                                                <circle
-                                                    cx="17.5"
-                                                    cy="10.5"
-                                                    r=".5"
-                                                />
-                                                <circle
-                                                    cx="8.5"
-                                                    cy="7.5"
-                                                    r=".5"
-                                                />
-                                                <circle
-                                                    cx="6.5"
-                                                    cy="12.5"
-                                                    r=".5"
-                                                />
-                                                <path
-                                                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
-                                                />
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
+                                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
                                             </svg>
-                                            <span
-                                                data-i18n="settings_appearance"
-                                            ></span>
-                                            <label
-                                                class="settings-scope-toggle"
-                                                title=""
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    id="settingsGlobalScope"
-                                                    onchange="
-                                                        onSettingsScopeChange(
-                                                            this.checked,
-                                                        )
-                                                    "
-                                                />
-                                                <span
-                                                    class="settings-scope-track"
-                                                    ><span
-                                                        class="settings-scope-thumb"
-                                                    ></span
-                                                ></span>
-                                                <span
-                                                    class="settings-scope-label"
-                                                    data-i18n="settings_global_scope"
-                                                ></span>
+                                            <span data-i18n="settings_appearance"></span>
+                                            <label class="settings-scope-toggle" title="">
+                                                <input type="checkbox" id="settingsGlobalScope" onchange="onSettingsScopeChange(this.checked)"/>
+                                                <span class="settings-scope-track"><span class="settings-scope-thumb"></span></span>
+                                                <span class="settings-scope-label" data-i18n="settings_global_scope"></span>
                                             </label>
                                         </div>
-                                        <div
-                                            class="settings-card-body"
-                                            id="settingsAppearanceBody"
-                                        >
-                                            <!-- Appearance Style + Theme combined -->
-                                            <div class="settings-item settings-item-block" style="border-top: none; padding-top: 4px;">
-                                                <div>
-                                                    <div
-                                                        class="settings-item-label"
-                                                        data-i18n="settings_ui_style"
-                                                    ></div>
-                                                    <div
-                                                        class="settings-item-desc"
-                                                    >选择界面风格与配色方案</div>
-                                                </div>
-                                                <div
-                                                    class="settings-item-control"
-                                                    style="width:100%;margin-top:12px"
-                                                >
+                                        <div class="settings-card-body">
+                                            <div class="settings-item settings-item-block" style="border-top:none;padding-top:4px">
+                                                <div><div class="settings-item-label" data-i18n="settings_ui_style"></div></div>
+                                                <div class="settings-item-control" style="width:100%;margin-top:10px">
                                                     <div class="style-selector">
-                                                        <div
-                                                            class="style-card active"
-                                                            data-style="eris"
-                                                            onclick="applySettingUiStyle('eris')"
-                                                        >
-                                                            <div class="style-card-preview">
-                                                                <div class="scp-sidebar"></div>
-                                                                <div class="scp-body">
-                                                                    <span class="scp-dot"></span>
-                                                                    <div class="scp-bar"></div>
-                                                                </div>
-                                                            </div>
+                                                        <div class="style-card active" data-style="eris" onclick="applySettingUiStyle('eris')">
+                                                            <div class="style-card-preview"><div class="scp-sidebar"></div><div class="scp-body"><span class="scp-dot"></span><div class="scp-bar"></div></div></div>
                                                             <div class="style-card-label">ErisPulse</div>
                                                         </div>
-                                                        <div
-                                                            class="style-card"
-                                                            data-style="classic"
-                                                            onclick="applySettingUiStyle('classic')"
-                                                        >
-                                                            <div class="style-card-preview">
-                                                                <div class="scp-sidebar"></div>
-                                                                <div class="scp-body">
-                                                                    <span class="scp-dot"></span>
-                                                                    <div class="scp-bar"></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="style-card-label">Classic</div>
+                                                        <div class="style-card" data-style="classic" onclick="applySettingUiStyle('classic')">
+                                                            <div class="style-card-preview"><div class="scp-sidebar"></div><div class="scp-body"><span class="scp-dot"></span><div class="scp-bar"></div></div></div>
+                                                            <div class="style-card-label">MD3</div>
                                                         </div>
                                                     </div>
-                                                    <div class="theme-selector" style="margin-top: 14px;">
-                                                        <!-- Light -->
-                                                        <div
-                                                            class="theme-card active"
-                                                            data-theme-card="light"
-                                                            onclick="applySettingTheme('light')"
-                                                        >
-                                                            <div
-                                                                class="theme-card-preview"
-                                                            >
-                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
-                                                                <div style="display:flex;flex:1">
-                                                                    <div class="tcp-sidebar"></div>
-                                                                    <div class="tcp-body">
-                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
-                                                                            <div class="tcp-card"></div>
-                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
-                                                                            <div style="display:flex;gap:3px;margin-top:2px">
-                                                                                <div class="tcp-card-sm"></div>
-                                                                                <div class="tcp-card-sm"></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div
-                                                                class="theme-card-label"
-                                                                data-i18n="settings_theme_light"
-                                                            >
-                                                                Light
-                                                            </div>
-                                                        </div>
-                                                        <!-- Dark -->
-                                                        <div
-                                                            class="theme-card"
-                                                            data-theme-card="dark"
-                                                            onclick="applySettingTheme('dark')"
-                                                        >
-                                                            <div
-                                                                class="theme-card-preview"
-                                                            >
-                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
-                                                                <div style="display:flex;flex:1">
-                                                                    <div class="tcp-sidebar"></div>
-                                                                    <div class="tcp-body">
-                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
-                                                                            <div class="tcp-card"></div>
-                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
-                                                                            <div style="display:flex;gap:3px;margin-top:2px">
-                                                                                <div class="tcp-card-sm"></div>
-                                                                                <div class="tcp-card-sm"></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div
-                                                                class="theme-card-label"
-                                                                data-i18n="settings_theme_dark"
-                                                            >
-                                                                Dark
-                                                            </div>
-                                                        </div>
-                                                        <!-- Auto -->
-                                                        <div
-                                                            class="theme-card"
-                                                            data-theme-card="auto"
-                                                            onclick="applySettingTheme('auto')"
-                                                        >
-                                                            <div
-                                                                class="theme-card-preview"
-                                                            >
-                                                                <div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div>
-                                                                <div style="display:flex;flex:1">
-                                                                    <div class="tcp-sidebar"></div>
-                                                                    <div class="tcp-body">
-                                                                        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
-                                                                            <div class="tcp-card"></div>
-                                                                            <div class="tcp-card" style="height:8px;width:70%"></div>
-                                                                            <div style="display:flex;gap:3px;margin-top:2px">
-                                                                                <div class="tcp-card-sm"></div>
-                                                                                <div class="tcp-card-sm"></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div
-                                                                class="theme-card-label"
-                                                                data-i18n="settings_theme_auto"
-                                                            >
-                                                                System
-                                                            </div>
-                                                            <div
-                                                                class="theme-card-label-sm"
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="settings-item settings-item-block"
-                                            >
-                                                <div>
-                                                    <div
-                                                        class="settings-item-label"
-                                                        data-i18n="settings_background"
-                                                    ></div>
-                                                    <div
-                                                        class="settings-item-desc"
-                                                        data-i18n="settings_background_desc"
-                                                    ></div>
-                                                </div>
-                                                <div
-                                                    class="settings-item-control"
-                                                >
-                                                    <div class="bg-controls">
-                                                        <label
-                                                            class="btn btn-secondary btn-sm"
-                                                        >
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                id="settingsBgFile"
-                                                                style="
-                                                                    display: none;
-                                                                "
-                                                                onchange="
-                                                                    applyBgImageFile(
-                                                                        this
-                                                                            .files[0],
-                                                                    )
-                                                                "
-                                                            />
-                                                            <svg
-                                                                viewBox="0 0 24 24"
-                                                                width="14"
-                                                                height="14"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                stroke-width="2"
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                            >
-                                                                <rect
-                                                                    x="3"
-                                                                    y="3"
-                                                                    width="18"
-                                                                    height="18"
-                                                                    rx="2"
-                                                                />
-                                                                <circle
-                                                                    cx="8.5"
-                                                                    cy="8.5"
-                                                                    r="1.5"
-                                                                />
-                                                                <path
-                                                                    d="M21 15l-5-5L5 21"
-                                                                />
-                                                            </svg>
-                                                            <span
-                                                                data-i18n="settings_upload_image"
-                                                            ></span>
-                                                        </label>
-                                                        <label
-                                                            class="color-custom"
-                                                        >
-                                                            <input
-                                                                type="color"
-                                                                id="settingsBg"
-                                                                onchange="
-                                                                    applyBgColor(
-                                                                        this
-                                                                            .value,
-                                                                    )
-                                                                "
-                                                            />
-                                                            <span
-                                                                data-i18n="settings_custom"
-                                                            ></span>
-                                                        </label>
-                                                        <button
-                                                            class="btn btn-secondary btn-sm"
-                                                            onclick="resetBg()"
-                                                        >
-                                                            <span
-                                                                data-i18n="settings_reset"
-                                                            ></span>
-                                                        </button>
-                                                    </div>
-                                                    <label
-                                                        class="settings-check-row"
-                                                        id="bgAutoThemeRow"
-                                                        style="display: none"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            id="settingsBgAutoTheme"
-                                                            checked
-                                                            onchange="
-                                                                onBgAutoThemeToggle(
-                                                                    this
-                                                                        .checked,
-                                                                )
-                                                            "
-                                                        />
-                                                        <span
-                                                            data-i18n="settings_bg_auto_theme"
-                                                        ></span>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <details class="settings-foldout">
-                                                <summary
-                                                    data-i18n="settings_accent_color"
-                                                ></summary>
-                                                <div
-                                                    class="settings-foldout-body"
-                                                >
-                                                    <div
-                                                        class="color-swatches"
-                                                        id="accentSwatches"
-                                                    ></div>
-                                                    <label class="color-custom">
-                                                        <input
-                                                            type="color"
-                                                            id="settingsAccent"
-                                                            onchange="
-                                                                applyAccentColorManual(
-                                                                    this.value,
-                                                                )
-                                                            "
-                                                        />
-                                                        <span
-                                                            data-i18n="settings_custom"
-                                                        ></span>
-                                                    </label>
-                                                    <button
-                                                        class="btn btn-secondary btn-sm"
-                                                        style="margin-top: 8px"
-                                                        onclick="resetAccent()"
-                                                    >
-                                                        <span
-                                                            data-i18n="settings_reset"
-                                                        ></span>
-                                                    </button>
-                                                </div>
-                                            </details>
-                                            <div class="settings-item">
-                                                <div
-                                                    class="settings-item-label"
-                                                    data-i18n="settings_language"
-                                                ></div>
-                                                <div
-                                                    class="settings-item-control"
-                                                >
-                                                    <select
-                                                        class="settings-select"
-                                                        id="settingsLang"
-                                                        onchange="
-                                                            applySettingLang(
-                                                                this.value,
-                                                            )
-                                                        "
-                                                    >
-                                                        <option value="en">
-                                                            English
-                                                        </option>
-                                                        <option value="zh">
-                                                            简体中文
-                                                        </option>
-                                                        <option value="zh-TW">
-                                                            繁體中文
-                                                        </option>
-                                                        <option value="ja">
-                                                            日本語
-                                                        </option>
-                                                        <option value="ru">
-                                                            Русский
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="settings-item settings-item-block"
-                                            >
-                                                <div>
-                                                    <div
-                                                        class="settings-item-label"
-                                                        data-i18n="settings_dash_title"
-                                                    ></div>
-                                                    <div
-                                                        class="settings-item-desc"
-                                                        data-i18n="settings_dash_title_desc"
-                                                    ></div>
-                                                </div>
-                                                <div
-                                                    class="settings-item-control"
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        class="settings-input"
-                                                        id="settingsDashTitle"
-                                                        placeholder="ErisPulse Dashboard"
-                                                        onchange="
-                                                            applyDashTitle(
-                                                                this.value,
-                                                            )
-                                                        "
-                                                    />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- 右列：布局与行为 -->
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                                            </svg>
+                                            <span data-i18n="settings_theme"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="theme-selector">
+                                                <div class="theme-card active" data-theme-card="light" onclick="applySettingTheme('light')">
+                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_theme_light">Light</div>
+                                                </div>
+                                                <div class="theme-card" data-theme-card="dark" onclick="applySettingTheme('dark')">
+                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_theme_dark">Dark</div>
+                                                </div>
+                                                <div class="theme-card" data-theme-card="auto" onclick="applySettingTheme('auto')">
+                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_theme_auto">System</div>
+                                                    <div class="theme-card-label-sm"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                                            <span data-i18n="settings_font"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="font-selector" id="fontSelector"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                            <span data-i18n="settings_accent_color"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="color-swatches" id="accentSwatches"></div>
+                                            <div style="display:flex;gap:8px;margin-top:12px">
+                                                <label class="color-custom"><input type="color" id="settingsAccent" onchange="applyAccentColorManual(this.value)"/><span data-i18n="settings_custom"></span></label>
+                                                <button class="btn btn-secondary btn-sm" onclick="resetAccent()"><span data-i18n="settings_reset"></span></button>
+                                            </div>
+                                            <details class="settings-foldout" style="margin-top:16px">
+                                                <summary data-i18n="settings_theme_customizer"></summary>
+                                                <div class="settings-foldout-body">
+                                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                                                        <label class="switch"><input type="checkbox" id="customThemeToggle" onchange="onCustomThemeToggle(this.checked)"><span class="switch-slider"></span></label>
+                                                        <span style="font-size:13px;color:var(--tx-s)" data-i18n="settings_custom_desc"></span>
+                                                    </div>
+                                                    <div id="customThemeVars" class="custom-theme-grid"></div>
+                                                    <div style="display:flex;gap:8px;margin-top:12px">
+                                                        <button class="btn btn-primary btn-sm" onclick="saveFullCustomTheme()" data-i18n="settings_custom_save"></button>
+                                                        <button class="btn btn-secondary btn-sm" onclick="resetFullCustomTheme()" data-i18n="settings_custom_reset"></button>
+                                                    </div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                            <span data-i18n="settings_display"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div><div class="settings-item-label" data-i18n="settings_oled"></div><div class="settings-item-desc" data-i18n="settings_oled_desc"></div></div>
+                                                <div class="settings-item-control"><label class="switch"><input type="checkbox" id="settingsOled" onchange="applySettingOled(this.checked)"/><span class="switch-slider"></span></label></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                            <span data-i18n="settings_background"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="bg-controls">
+                                                <label class="btn btn-secondary btn-sm"><input type="file" accept="image/*" id="settingsBgFile" style="display:none" onchange="applyBgImageFile(this.files[0])"/><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="settings_upload_image"></span></label>
+                                                <label class="color-custom"><input type="color" id="settingsBg" onchange="applyBgColor(this.value)"/><span data-i18n="settings_custom"></span></label>
+                                                <button class="btn btn-secondary btn-sm" onclick="resetBg()"><span data-i18n="settings_reset"></span></button>
+                                            </div>
+                                            <label class="settings-check-row" id="bgAutoThemeRow" style="display:none;margin-top:10px"><input type="checkbox" id="settingsBgAutoTheme" checked onchange="onBgAutoThemeToggle(this.checked)"/><span data-i18n="settings_bg_auto_theme"></span></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                            <span data-i18n="settings_language"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="lang-selector" id="langSelector">
+                                                <div class="lang-card" data-lang="zh" onclick="applySettingLang('zh')"><span class="lang-name">简体中文</span></div>
+                                                <div class="lang-card" data-lang="en" onclick="applySettingLang('en')"><span class="lang-name">English</span></div>
+                                                <div class="lang-card" data-lang="zh-TW" onclick="applySettingLang('zh-TW')"><span class="lang-name">繁體中文</span></div>
+                                                <div class="lang-card" data-lang="ja" onclick="applySettingLang('ja')"><span class="lang-name">日本語</span></div>
+                                                <div class="lang-card" data-lang="ru" onclick="applySettingLang('ru')"><span class="lang-name">Русский</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                                            <span data-i18n="settings_dash_title"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item settings-item-block" style="border-top:none;padding-top:0">
+                                                <div class="settings-item-desc" data-i18n="settings_dash_title_desc" style="margin-bottom:8px"></div>
+                                                <input type="text" class="settings-input" id="settingsDashTitle" placeholder="ErisPulse Dashboard" onchange="applyDashTitle(this.value)" style="width:100%"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- settings-appearance-tab -->
+
+                        <div id="settings-behavior-tab" class="tab-section" style="display: block">
+                            <div class="settings-grid">
                                 <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
@@ -4762,7 +4509,6 @@
 
                                     <div
                                         class="card settings-card"
-                                        style="margin-top: 16px"
                                     >
                                         <div class="card-header">
                                             <svg
@@ -4773,12 +4519,15 @@
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                             >
-                                                <path
-                                                    d="M21 12a9 9 0 11-6.219-8.56"
-                                                />
-                                                <polyline
-                                                    points="21 4 21 10 15 10"
-                                                />
+                                                <path d="M4 21v-7"/>
+                                                <path d="M4 10V3"/>
+                                                <path d="M12 21v-9"/>
+                                                <path d="M12 8V3"/>
+                                                <path d="M20 21v-5"/>
+                                                <path d="M20 12V3"/>
+                                                <path d="M2 14h4"/>
+                                                <path d="M10 11h4"/>
+                                                <path d="M18 16h4"/>
                                             </svg>
                                             <span
                                                 data-i18n="settings_behavior"
@@ -4886,7 +4635,6 @@
 
                                     <div
                                         class="card settings-card"
-                                        style="margin-top: 16px"
                                     >
                                         <div class="card-header">
                                             <svg
@@ -4976,7 +4724,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- settings-appearance-tab -->
+                        <!-- settings-behavior-tab -->
 
                         <div id="settings-update-tab" class="tab-section">
                             <div class="fw-update-card">
