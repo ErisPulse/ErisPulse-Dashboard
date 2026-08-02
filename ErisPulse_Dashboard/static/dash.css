@@ -6199,6 +6199,7 @@ select.form-select::-ms-expand {
         width: 280px;
         z-index: 1000;
         
+        transform: translateX(-100%);
         transition: transform 0.3s;
         box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     }
@@ -6226,7 +6227,7 @@ select.form-select::-ms-expand {
     }
 
     .sidebar.open {
-        
+        transform: translateX(0);
     }
 
     .page {
