@@ -221,6 +221,56 @@ Dashboard 使用 CSS 变量控制主题色，你可以在模块视窗中直接�
 
 这些变量会根据 Dashboard 的主题（亮色/暗色/自动）自动切换，模块无需额外处理。
 
+### EP 组件库（自定义下拉 / 可搜索多选）
+
+Dashboard 内置了自建的 UI 组件库（`window.EP`），用于替代原生控件的样式。**原生 `<select>` / `<option>` / `<optgroup>` 依然完全兼容**（组件会做渐进增强包装，不影响 `.value`、`change` 事件、`onchange` 属性），但推荐使用自建组件以获得一致的视觉与更好的交互。
+
+#### 自定义下拉（EPSelect）
+
+所有页面的原生 `<select>` 都会被自动增强为自定义下拉，无需额外操作。在模块视窗的 `html_content` 中直接写原生 `<select>` 即可自动获得增强：
+
+```html
+<select id="platform-select" onchange="onChange(this)">
+    <option value="">-- 请选择平台 --</option>
+    <option value="qq">QQ</option>
+    <option value="telegram">Telegram</option>
+</select>
+```
+
+也支持 `<optgroup>` 分组（含 `label`）与 `disabled` 状态。
+
+#### 可搜索多选（EPMultiSelect）
+
+需要"搜索 + 多选"的场景（如标签筛选），使用 `EP.createMultiSelect`：
+
+```javascript
+var selected = new Set();
+EP.createMultiSelect({
+    host: document.getElementById("myFilter"),
+    items: ["tag1", "tag2", "tag3"],   // 可选项
+    selected: selected,                 // 已选项 Set（真值源）
+    placeholder: "筛选标签",
+    searchPlaceholder: "搜索...",
+    selectAll: "全选",
+    clear: "清除",
+    onChange: function () {            // 选择变化回调
+        console.log("selected:", Array.from(selected));
+    },
+});
+```
+
+之后通过返回对象的 `setItems(array)` 更新可选项、`getSelected()` 读取当前选择。
+
+#### 编程 API
+
+| 方法 | 说明 |
+|------|------|
+| `EP.enhanceSelect(selectEl)` | 手动增强一个 `<select>` 为自定义下拉 |
+| `EP.enhanceAll(scope)` | 批量增强 `scope`（默认 `document`）内所有 `<select>` |
+| `EP.createMultiSelect(opts)` | 创建可搜索多选组件 |
+
+> **兼容性保证**：增强后的原生 `<select>` 仍保留在 DOM 中作为真值源（隐藏），`element.value` 读写、`change` 事件、`<option>/<optgroup>` 动态增删、`onchange="fn(this)"` 内联处理器全部照常工作。动态插入的 `<select>` 也会被自动增强，无需手动处理。
+
 ### 主题系统
 
 Dashboard 支持三种主题模式：
