@@ -536,6 +536,8 @@ const I18N = {
     settings_logout: "退出登录",
     settings_prefs: "偏好",
     settings_appearance_prefs: "外观高级",
+    settings_upload_global: "上传全局外观",
+    settings_upload_global_ok: "已上传全局外观",
     kb_title: "键盘快捷键",
     kb_focus_search: "聚焦商店搜索框",
     kb_close_modal: "关闭弹窗 / 侧边栏",
@@ -568,6 +570,9 @@ const I18N = {
     settings_logout_desc: "清除令牌并返回登录页",
     settings_page_desc: "自定义仪表盘的外观和行为",
     settings_global_scope: "全局同步",
+    settings_sync: "同步",
+    settings_global_scope_desc: "开启后，其他设备自动套用已上传的全局外观；关闭后各设备恢复本地外观",
+    settings_upload_global_desc: "将当前设备的外观作为全局外观推送给所有设备",
     settings_global_active: "全局外观已启用，所有用户将看到相同的外观设置",
     settings_layout: "布局",
     settings_system: "系统",
@@ -1365,6 +1370,8 @@ const I18N = {
     settings_logout: "Sign Out",
     settings_prefs: "Preferences",
     settings_appearance_prefs: "Appearance Advanced",
+    settings_upload_global: "Upload Global Appearance",
+    settings_upload_global_ok: "Global appearance uploaded",
     kb_title: "Keyboard Shortcuts",
     kb_focus_search: "Focus store search box",
     kb_close_modal: "Close modal / sidebar",
@@ -1397,6 +1404,9 @@ const I18N = {
     settings_logout_desc: "Clear token and return to login",
     settings_page_desc: "Customize dashboard appearance and behavior",
     settings_global_scope: "Global Sync",
+    settings_sync: "Sync",
+    settings_global_scope_desc: "When enabled, other devices automatically apply the uploaded global appearance; when disabled, each device keeps its local appearance",
+    settings_upload_global_desc: "Push this device's appearance to all devices as the global appearance",
     settings_global_active:
       "Global appearance is enabled — all users see the same look",
     settings_layout: "Layout",
@@ -2188,6 +2198,8 @@ const I18N = {
     settings_logout: "登出",
     settings_prefs: "偏好",
     settings_appearance_prefs: "外觀進階",
+    settings_upload_global: "上傳全域外觀",
+    settings_upload_global_ok: "已上傳全域外觀",
     kb_title: "鍵盤快捷鍵",
     kb_focus_search: "聚焦商店搜尋框",
     kb_close_modal: "關閉彈窗 / 側邊欄",
@@ -2220,6 +2232,9 @@ const I18N = {
     settings_logout_desc: "清除令牌並返回登入頁",
     settings_page_desc: "自訂儀表盤的外觀和行為",
     settings_global_scope: "全域同步",
+    settings_sync: "同步",
+    settings_global_scope_desc: "啟用後，其他裝置自動套用已上傳的全域外觀；停用後各裝置恢復本機外觀",
+    settings_upload_global_desc: "將目前裝置的外觀作為全域外觀推送到所有裝置",
     settings_global_active: "全域外觀已啟用，所有使用者將看到相同的外觀設定",
     settings_layout: "佈局",
     settings_system: "系統",
@@ -2999,6 +3014,8 @@ const I18N = {
     settings_logout: "ログアウト",
     settings_prefs: "設定",
     settings_appearance_prefs: "外観の詳細設定",
+    settings_upload_global: "グローバル外観をアップロード",
+    settings_upload_global_ok: "グローバル外観をアップロードしました",
     kb_title: "キーボードショートカット",
     kb_focus_search: "ストア検索ボックスにフォーカス",
     kb_close_modal: "モーダル/サイドバーを閉じる",
@@ -3031,6 +3048,9 @@ const I18N = {
     settings_logout_desc: "トークンを消去してログインページに戻る",
     settings_page_desc: "ダッシュボードの外観と動作をカスタマイズ",
     settings_global_scope: "グローバル同期",
+    settings_sync: "同期",
+    settings_global_scope_desc: "有効にすると、他のデバイスがアップロードされたグローバル外観を自動的に適用します。無効にすると各デバイスはローカルの外観を使用します",
+    settings_upload_global_desc: "このデバイスの外観をグローバル外観としてすべてのデバイスにプッシュ",
     settings_global_active:
       "グローバル外観が有効です — すべてのユーザーが同じ外観を表示します",
     settings_layout: "レイアウト",
@@ -3821,6 +3841,8 @@ const I18N = {
     settings_logout: "Выйти",
     settings_prefs: "Настройки",
     settings_appearance_prefs: "Доп. оформление",
+    settings_upload_global: "Загрузить глобальное оформление",
+    settings_upload_global_ok: "Глобальное оформление загружено",
     kb_title: "Горячие клавиши",
     kb_focus_search: "Фокус на поиск магазина",
     kb_close_modal: "Закрыть окно / боковую панель",
@@ -3853,6 +3875,9 @@ const I18N = {
     settings_logout_desc: "Очистить токен и вернуться к входу",
     settings_page_desc: "Настройте внешний вид и поведение панели",
     settings_global_scope: "Глобальная синхронизация",
+    settings_sync: "Синхронизация",
+    settings_global_scope_desc: "При включении другие устройства автоматически применяют загруженное глобальное оформление; при отключении каждое устройство использует локальное",
+    settings_upload_global_desc: "Отправить оформление этого устройства всем устройствам как глобальное",
     settings_global_active:
       "Глобальный внешний вид включён — все пользователи видят одинаковое оформление",
     settings_layout: "Макет",
@@ -4607,7 +4632,6 @@ function applySettingUiStyle(val) {
   localStorage.setItem("ep_ui_style", val);
   applyUiStyle(val);
   syncSettingsUI();
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 var FONT_PRESETS = [
@@ -4643,7 +4667,6 @@ function applySettingFont(id) {
   localStorage.setItem("ep_font", id);
   applyFont(id);
   syncFontCards();
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 function initFontSelector() {
   var container = document.getElementById("fontSelector");
@@ -4689,7 +4712,6 @@ function applyOled(on) {
 function applySettingOled(on) {
   localStorage.setItem("ep_oled", on ? "on" : "off");
   applyOled(on);
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function toggleSidebar() {
@@ -7557,9 +7579,6 @@ function switchSettingsTab(tab, btn) {
   }
 }
 
-var _settingsAppearanceScope = false;
-var _applyingGlobal = false;
-
 async function loadSettings() {
   syncSettingsUI();
   initAccentSwatches();
@@ -7575,19 +7594,23 @@ async function loadGlobalAppearance() {
     var app = d.appearance;
     var scopeEl = document.getElementById("settingsGlobalScope");
     if (scopeEl) scopeEl.checked = !!app._global_enabled;
-    _settingsAppearanceScope = !!app._global_enabled;
-    updateGlobalBanner();
+    // 全局同步开启时，其它端自动套用全局外观
     if (app._global_enabled) {
-      _applyingGlobal = true;
-      try {
-        applyGlobalAppearanceData(app);
-      } finally {
-        _applyingGlobal = false;
-      }
+      applyGlobalAppearanceData(app);
     }
   } catch (e) {
     console.debug("Appearance API unavailable, using local settings");
   }
+}
+
+// 全局同步开关：显式开启/关闭（关闭后各端恢复使用本地外观）
+async function onSettingsScopeChange(checked) {
+  try {
+    await api("/api/appearance", {
+      method: "PUT",
+      body: JSON.stringify({ _global_enabled: checked }),
+    });
+  } catch (e) {}
 }
 
 function applyDashTitle(title) {
@@ -7596,7 +7619,6 @@ function applyDashTitle(title) {
   var el = document.getElementById("appTitle");
   if (el) el.textContent = title;
   document.title = title;
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function applyGlobalAppearanceData(app) {
@@ -7656,37 +7678,25 @@ function collectAppearanceData() {
     bg_image: getSetting("bg_image", ""),
     accent_color: getSetting("accent_color", ""),
     bg_auto_theme: bgAutoThemeEnabled(),
-    _global_enabled: _settingsAppearanceScope,
   };
 }
 
-async function saveGlobalAppearance() {
-  if (!_settingsAppearanceScope) return;
-  if (_applyingGlobal) return;
+// 主动上传当前外观为全局外观（由用户点击「上传全局」触发）
+async function uploadGlobalAppearance() {
   var data = collectAppearanceData();
   try {
-    await api("/api/appearance", { method: "PUT", body: JSON.stringify(data) });
-  } catch (e) {}
-}
-
-async function onSettingsScopeChange(global) {
-  _settingsAppearanceScope = global;
-  updateGlobalBanner();
-  // 无论开启还是关闭，都同步到服务器
-  try {
-    await api("/api/appearance", {
+    var d = await api("/api/appearance", {
       method: "PUT",
-      body: JSON.stringify({ _global_enabled: global }),
+      body: JSON.stringify(data),
     });
-  } catch (e) {}
-  if (global) {
-    await saveGlobalAppearance();
+    if (d && d.success) {
+      toast(t("settings_upload_global_ok"), "ok");
+    } else {
+      toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+    }
+  } catch (e) {
+    toast(t("save_failed"), "er");
   }
-}
-
-function updateGlobalBanner() {
-  var banner = document.getElementById("settingsGlobalBanner");
-  if (banner) banner.style.display = _settingsAppearanceScope ? "flex" : "none";
 }
 
 // ========== 设置页新增偏好 ==========
@@ -8102,7 +8112,6 @@ function applySettingTheme(theme) {
   localStorage.setItem("ep_theme", theme);
   applyTheme(theme);
   syncSettingsUI();
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 function applySettingLang(v) {
   lang = v;
@@ -8208,7 +8217,6 @@ function applyAccentColorManual(hex) {
     if (autoChk) autoChk.checked = false;
   }
   applyAccentColor(hex);
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 背景纯色
@@ -8228,7 +8236,6 @@ function applyBgColor(hex) {
 // 用户手动选择背景色（与纯 apply 区分，手动变更需同步到全局）
 function applyBgColorManual(hex) {
   applyBgColor(hex);
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 背景图片：上传
@@ -8249,7 +8256,6 @@ function applyBgImageFile(file) {
     uploadBgImage(file).then(function (url) {
       if (url) {
         setSetting("bg_image", url);
-        if (_settingsAppearanceScope) saveGlobalAppearance();
       } else {
         // 上传失败时回退到本地 base64（仅本地，不同步）
         setSetting("bg_image", dataUrl);
@@ -8419,7 +8425,6 @@ function onBgAutoThemeToggle(checked) {
       resetAccent();
     }
   }
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 重置背景（颜色 + 图片）
@@ -8434,7 +8439,6 @@ function resetBg() {
   var bgFile = document.getElementById("settingsBgFile");
   if (bgFile) bgFile.value = "";
   if (bgAutoThemeEnabled()) resetAccent();
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 重置强调色为默认
@@ -8447,7 +8451,6 @@ function resetAccent() {
   root.removeProperty("--accent-fill-h");
   root.removeProperty("--accent-h");
   syncAccentUI("#4fa6de");
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function syncAccentUI(hex) {

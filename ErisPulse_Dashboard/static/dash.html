@@ -4185,34 +4185,6 @@
                             id="settings-appearance-tab"
                             class="tab-section"
                         >
-                            <!-- 全局外观横幅 -->
-                            <div
-                                class="settings-banner"
-                                id="settingsGlobalBanner"
-                                style="display: none"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    style="
-                                        width: 20px;
-                                        height: 20px;
-                                        flex-shrink: 0;
-                                    "
-                                >
-                                    <circle cx="12" cy="12" r="10" />
-                                    <line x1="2" y1="12" x2="22" y2="12" />
-                                    <path
-                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                                    />
-                                </svg>
-                                <span data-i18n="settings_global_active"></span>
-                            </div>
-
                             <div class="settings-grid">
                                 <div class="settings-col">
                                     <div class="card settings-card">
@@ -4222,11 +4194,6 @@
                                                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
                                             </svg>
                                             <span data-i18n="settings_appearance"></span>
-                                            <label class="settings-scope-toggle" title="">
-                                                <input type="checkbox" id="settingsGlobalScope" onchange="onSettingsScopeChange(this.checked)"/>
-                                                <span class="settings-scope-track"><span class="settings-scope-thumb"></span></span>
-                                                <span class="settings-scope-label" data-i18n="settings_global_scope"></span>
-                                            </label>
                                         </div>
                                         <div class="settings-card-body">
                                             <div class="settings-item settings-item-block" style="border-top:none;padding-top:4px">
@@ -4382,6 +4349,32 @@
                                             <div class="settings-item settings-item-block" style="border-top:none;padding-top:0">
                                                 <div class="settings-item-desc" data-i18n="settings_dash_title_desc" style="margin-bottom:8px"></div>
                                                 <input type="text" class="settings-input" id="settingsDashTitle" placeholder="ErisPulse Dashboard" onchange="applyDashTitle(this.value)" style="width:100%"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
+                                            <span data-i18n="settings_sync"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_global_scope"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_global_scope_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <label class="switch"><input type="checkbox" id="settingsGlobalScope" onchange="onSettingsScopeChange(this.checked)"/><span class="switch-slider"></span></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_upload_global"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_upload_global_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <button class="btn btn-secondary btn-sm" onclick="uploadGlobalAppearance()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="settings_upload_global"></span></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -6030,6 +6023,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=19"></script>
+        <script src="/Dashboard/static/dash.js?v=21"></script>
     </body>
 </html>

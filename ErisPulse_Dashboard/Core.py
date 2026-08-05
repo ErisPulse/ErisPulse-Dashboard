@@ -2431,6 +2431,12 @@ class Main(BaseModule):
         return clean
 
     async def _api_appearance_update(self, request: Request) -> JSONResponse:
+        """
+        主动上传全局外观：以当前请求的外观为全局外观，并广播给所有客户端。
+
+        前端在「设置-外观」点击「上传全局」时调用；其他客户端收到
+        appearance_changed 广播后自动套用该外观。
+        """
         body = await request.json()
         # 过滤掉 base64 图片数据，避免污染配置文件
         body = self._sanitize_appearance(body)
@@ -2439,6 +2445,12 @@ class Main(BaseModule):
         if not isinstance(existing, dict):
             existing = {}
         merged = {**existing, **body}
+        if "_global_enabled" in body:
+            # 显式切换全局同步开关（True/False 均按请求值生效）
+            pass
+        else:
+            # 主动上传外观 → 视为开启全局外观，供其他端自动套用
+            merged["_global_enabled"] = True
         self.sdk.config.setConfig("Dashboard.appearance", merged)
         self._add_audit_log("appearance_update", "Dashboard.appearance", request)
         self._safe_broadcast({"type": "appearance_changed"})
