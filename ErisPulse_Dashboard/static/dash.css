@@ -8379,6 +8379,204 @@ select:focus {
     outline: none;
     border-color: var(--accent);
 }
+
+/* ========== EP 组件库：自定义下拉（ep-combobox） ========== */
+.ep-native-hidden {
+    display: none !important;
+}
+.ep-combobox {
+    position: relative;
+    display: inline-block;
+    min-width: 90px;
+    vertical-align: middle;
+}
+.ep-combobox-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+.ep-combobox-trigger:hover {
+    border-color: var(--bd-h);
+}
+.ep-combobox-trigger:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring);
+}
+.ep-combobox-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ep-combobox-arrow {
+    flex-shrink: 0;
+    display: flex;
+    color: var(--tx-t);
+}
+.ep-combobox[data-open="1"] .ep-combobox-trigger {
+    border-color: var(--accent);
+}
+.ep-combobox-list {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 160px;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 900;
+    padding: 4px;
+}
+.ep-combobox-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--tx-p);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.ep-combobox-opt:hover {
+    background: var(--bg-s);
+}
+.ep-combobox-opt[data-selected="1"] {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    font-weight: 600;
+}
+.ep-combobox-group-label {
+    padding: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tx-t);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.ep-combobox.disabled .ep-combobox-trigger {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========== EP 组件库：可搜索多选（ep-multiselect） ========== */
+.ep-multiselect {
+    position: relative;
+    display: inline-block;
+    min-width: 220px;
+    vertical-align: middle;
+}
+.ep-multiselect-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s ease;
+}
+.ep-multiselect-trigger:hover {
+    border-color: var(--bd-h);
+}
+.ep-multiselect[data-open="1"] .ep-multiselect-trigger {
+    border-color: var(--accent);
+}
+.ep-multiselect-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ep-multiselect-arrow {
+    flex-shrink: 0;
+    display: flex;
+    color: var(--tx-t);
+}
+.ep-multiselect-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 900;
+    padding: 8px;
+}
+.ep-multiselect-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 6px;
+    outline: none;
+}
+.ep-multiselect-search:focus {
+    border-color: var(--accent);
+}
+.ep-multiselect-actions {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0;
+}
+.ep-multiselect-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--tx-p);
+    cursor: pointer;
+}
+.ep-multiselect-opt:hover {
+    background: var(--bg-s);
+}
+.ep-multiselect-opt input {
+    accent-color: var(--accent);
+    margin: 0;
+}
+.ep-multiselect-empty {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--tx-t);
+    text-align: center;
+}
 .ep-input {
     padding: 8px 14px;
     border: 1px solid var(--bd);

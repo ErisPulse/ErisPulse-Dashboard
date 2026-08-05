@@ -80,6 +80,10 @@ const I18N = {
     unload: "停止加载",
     install: "安装",
     search_packages: "搜索包...",
+    ep_selected: "已选",
+    select_all: "全选",
+    clear_all: "清除",
+    no_matches: "无匹配",
     search_modules: "搜索模块...",
     all_status: "所有状态",
     live_events: "实时事件",
@@ -891,6 +895,10 @@ const I18N = {
     unload: "Unload",
     install: "Install",
     search_packages: "Search packages...",
+    ep_selected: "selected",
+    select_all: "Select all",
+    clear_all: "Clear",
+    no_matches: "No matches",
     search_modules: "Search modules...",
     all_status: "All Status",
     live_events: "Live Events",
@@ -1732,6 +1740,10 @@ const I18N = {
     unload: "停止載入",
     install: "安裝",
     search_packages: "搜尋套件...",
+    ep_selected: "已選",
+    select_all: "全選",
+    clear_all: "清除",
+    no_matches: "無符合項目",
     search_modules: "搜尋模組...",
     all_status: "所有狀態",
     live_events: "即時事件",
@@ -2525,6 +2537,10 @@ const I18N = {
     unload: "アンロード",
     install: "インストール",
     search_packages: "パッケージを検索...",
+    ep_selected: "選択中",
+    select_all: "すべて選択",
+    clear_all: "クリア",
+    no_matches: "一致なし",
     search_modules: "モジュールを検索...",
     all_status: "すべて",
     live_events: "ライブイベント",
@@ -3343,6 +3359,10 @@ const I18N = {
     unload: "Выгрузить",
     install: "Установить",
     search_packages: "Поиск пакетов...",
+    ep_selected: "выбрано",
+    select_all: "Выбрать все",
+    clear_all: "Очистить",
+    no_matches: "Нет совпадений",
     search_modules: "Поиск модулей...",
     all_status: "Все",
     live_events: "События в реальном времени",
@@ -6208,18 +6228,424 @@ function initMirrorSelects() {
     if (el && !el.children.length) el.innerHTML = mirrorOptionsHtml();
   });
 }
-var _selectedStoreTags = new Set();
+// ========== EP 组件库：自定义下拉 / 可搜索多选 ==========
+window.EP = window.EP || {};
+EP._enhanced = [];
+EP._pendingSelects = [];
+EP._multis = [];
 
-function toggleStoreTag(tag, el) {
-  if (_selectedStoreTags.has(tag)) {
-    _selectedStoreTags.delete(tag);
-    el.classList.remove("active");
+// 将浮层 fixed 定位到触发器下方（贴近屏幕边缘时内收 / 上翻 / 限制高度可滚动）
+EP.positionList = function (el, anchor, maxH) {
+  var rc = anchor.getBoundingClientRect();
+  var margin = 8;
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var below = vh - rc.bottom - margin;
+  var above = rc.top - margin;
+  var width = Math.max(rc.width, 160);
+  if (width > vw - margin) width = vw - margin;
+  var left = Math.min(rc.left, vw - margin);
+  if (left + width > vw - margin) left = Math.max(margin, vw - width - margin);
+  var flipUp = below < 120 && above > below;
+  var space = flipUp ? above : below;
+  var maxH2 = Math.max(80, Math.min(maxH, space));
+  el.style.position = "fixed";
+  el.style.left = left + "px";
+  el.style.width = width + "px";
+  el.style.maxWidth = vw - margin + "px";
+  if (flipUp) {
+    el.style.top = Math.max(margin, rc.top - maxH2 - 4) + "px";
   } else {
-    _selectedStoreTags.add(tag);
-    el.classList.add("active");
+    el.style.top = rc.bottom + 4 + "px";
   }
-  loadStore();
-}
+  el.style.maxHeight = maxH2 + "px";
+  el.style.display = "block";
+};
+
+EP.enhanceSelect = function (sel) {
+  if (!sel || sel.tagName !== "SELECT" || sel.dataset.epEnhanced) return sel;
+  if (sel.closest(".ep-combobox")) return sel;
+  sel.dataset.epEnhanced = "1";
+
+  var wrap = document.createElement("div");
+  wrap.className = "ep-combobox";
+  if (sel.disabled) wrap.classList.add("disabled");
+  ["width", "minWidth", "maxWidth"].forEach(function (k) {
+    if (sel.style[k]) wrap.style[k] = sel.style[k];
+  });
+
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "ep-combobox-trigger";
+  btn.setAttribute("aria-haspopup", "listbox");
+  var lbl = document.createElement("span");
+  lbl.className = "ep-combobox-label";
+  var arrow = document.createElement("span");
+  arrow.className = "ep-combobox-arrow";
+  arrow.innerHTML =
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+  btn.appendChild(lbl);
+  btn.appendChild(arrow);
+  var list = document.createElement("div");
+  list.className = "ep-combobox-list";
+  list.setAttribute("role", "listbox");
+  wrap.appendChild(btn);
+  wrap.appendChild(list);
+  sel.parentNode.insertBefore(wrap, sel.nextSibling);
+  sel.classList.add("ep-native-hidden");
+
+  var api = { select: sel, wrap: wrap, list: list, label: lbl, _last: sel.value };
+
+  function appendOpt(opt) {
+    var o = document.createElement("div");
+    o.className = "ep-combobox-opt";
+    o.setAttribute("role", "option");
+    o.textContent = opt.textContent || opt.value || "\u00a0";
+    o.dataset.value = opt.value;
+    o.addEventListener("click", function (e) {
+      e.stopPropagation();
+      selectValue(opt.value);
+    });
+    list.appendChild(o);
+  }
+  function build() {
+    list.innerHTML = "";
+    Array.prototype.forEach.call(sel.children, function (child) {
+      if (child.tagName === "OPTGROUP") {
+        var gl = document.createElement("div");
+        gl.className = "ep-combobox-group-label";
+        gl.textContent = child.label || "";
+        list.appendChild(gl);
+        Array.prototype.forEach.call(child.children, function (opt) {
+          if (opt.tagName === "OPTION") appendOpt(opt);
+        });
+      } else if (child.tagName === "OPTION") {
+        appendOpt(child);
+      }
+    });
+  }
+  function syncUI() {
+    var v = sel.value;
+    var label = "";
+    Array.prototype.forEach.call(sel.querySelectorAll("option"), function (opt) {
+      if (String(opt.value) === String(v)) label = opt.textContent || opt.value;
+    });
+    if (label === "" && v === "") {
+      var first = sel.querySelector("option");
+      label = first ? first.textContent || first.value : "";
+    }
+    api.label.textContent = label || "\u00a0";
+    Array.prototype.forEach.call(list.querySelectorAll(".ep-combobox-opt"), function (o) {
+      o.dataset.selected = String(o.dataset.value) === String(v) ? "1" : "0";
+    });
+  }
+  var wheelGuard = function (e) {
+    var canDown = list.scrollHeight - list.scrollTop - list.clientHeight > 1;
+    var canUp = list.scrollTop > 1;
+    if ((e.deltaY > 0 && !canDown) || (e.deltaY < 0 && !canUp)) {
+      e.preventDefault();
+    }
+  };
+  function open() {
+    build();
+    syncUI();
+    EP.positionList(list, btn, 260);
+    list.addEventListener("wheel", wheelGuard);
+    wrap.dataset.open = "1";
+    btn.setAttribute("aria-expanded", "true");
+    var active = list.querySelector('.ep-combobox-opt[data-selected="1"]');
+    if (active) list.scrollTop = active.offsetTop - list.clientHeight / 2;
+  }
+  function close() {
+    delete wrap.dataset.open;
+    list.removeEventListener("wheel", wheelGuard);
+    list.style.display = "none";
+    btn.setAttribute("aria-expanded", "false");
+  }
+  function toggle() {
+    if (wrap.dataset.open === "1") close();
+    else open();
+  }
+  function selectValue(val) {
+    sel.value = val;
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    api._last = val;
+    syncUI();
+    close();
+  }
+
+  btn.addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    toggle();
+  });
+
+  var obs = new MutationObserver(function () {
+    clearTimeout(api._buildTimer);
+    api._buildTimer = setTimeout(function () {
+      build();
+      syncUI();
+    }, 30);
+  });
+  obs.observe(sel, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["disabled"],
+  });
+
+  api.syncUI = syncUI;
+  api.close = close;
+  api.build = build;
+  build();
+  syncUI();
+  EP._enhanced.push(api);
+  return sel;
+};
+
+EP.enhanceAll = function (scope) {
+  var root = scope || document;
+  Array.prototype.forEach.call(root.querySelectorAll("select"), function (s) {
+    if (!s.dataset.epEnhanced) EP.enhanceSelect(s);
+  });
+};
+
+EP.createMultiSelect = function (opts) {
+  var host = opts.host;
+  var items = (opts.items || []).slice();
+  var selected = opts.selected || new Set();
+  var onChange = opts.onChange || function () {};
+  var placeholder = opts.placeholder || "";
+
+  var wrap = document.createElement("div");
+  wrap.className = "ep-multiselect";
+  var trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "ep-multiselect-trigger";
+  var label = document.createElement("span");
+  label.className = "ep-multiselect-label";
+  var arrow = document.createElement("span");
+  arrow.className = "ep-multiselect-arrow";
+  arrow.innerHTML =
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+  trigger.appendChild(label);
+  trigger.appendChild(arrow);
+  var panel = document.createElement("div");
+  panel.className = "ep-multiselect-panel";
+  var search = document.createElement("input");
+  search.type = "text";
+  search.className = "ep-multiselect-search";
+  search.placeholder = opts.searchPlaceholder || "Search...";
+  var actions = document.createElement("div");
+  actions.className = "ep-multiselect-actions";
+  var selAll = document.createElement("button");
+  selAll.type = "button";
+  selAll.className = "btn btn-secondary btn-xs";
+  selAll.textContent = opts.selectAll || "Select all";
+  var clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "btn btn-secondary btn-xs";
+  clear.textContent = opts.clear || "Clear";
+  actions.appendChild(selAll);
+  actions.appendChild(clear);
+  var optsList = document.createElement("div");
+  optsList.className = "ep-multiselect-list";
+  panel.appendChild(search);
+  panel.appendChild(actions);
+  panel.appendChild(optsList);
+  wrap.appendChild(trigger);
+  wrap.appendChild(panel);
+  host.appendChild(wrap);
+
+  function render() {
+    label.textContent =
+      selected.size > 0 ? selected.size + " " + (opts.countLabel || "") : placeholder || "\u00a0";
+    var q = (search.value || "").toLowerCase();
+    optsList.innerHTML = "";
+    var shown = 0;
+    items.slice().sort().forEach(function (tag) {
+      if (q && tag.toLowerCase().indexOf(q) === -1) return;
+      shown++;
+      var row = document.createElement("label");
+      row.className = "ep-multiselect-opt";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = selected.has(tag);
+      var span = document.createElement("span");
+      span.textContent = tag;
+      row.appendChild(cb);
+      row.appendChild(span);
+      row.addEventListener("click", function (e) {
+        if (e.target !== cb) cb.click();
+      });
+      cb.addEventListener("change", function () {
+        if (cb.checked) selected.add(tag);
+        else selected.delete(tag);
+        render();
+        onChange();
+      });
+      optsList.appendChild(row);
+    });
+    if (shown === 0) {
+      var empty = document.createElement("div");
+      empty.className = "ep-multiselect-empty";
+      empty.textContent = opts.emptyText || "—";
+      optsList.appendChild(empty);
+    }
+  }
+  var wheelGuard = function (e) {
+    var canDown = panel.scrollHeight - panel.scrollTop - panel.clientHeight > 1;
+    var canUp = panel.scrollTop > 1;
+    if ((e.deltaY > 0 && !canDown) || (e.deltaY < 0 && !canUp)) {
+      e.preventDefault();
+    }
+  };
+  function open() {
+    EP.positionList(panel, trigger, 320);
+    panel.addEventListener("wheel", wheelGuard);
+    wrap.dataset.open = "1";
+    search.focus();
+    render();
+  }
+  function close() {
+    delete wrap.dataset.open;
+    panel.removeEventListener("wheel", wheelGuard);
+    panel.style.display = "none";
+  }
+  trigger.addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (wrap.dataset.open === "1") close();
+    else open();
+  });
+  selAll.addEventListener("click", function () {
+    items.forEach(function (t) {
+      selected.add(t);
+    });
+    render();
+    onChange();
+  });
+  clear.addEventListener("click", function () {
+    selected.clear();
+    render();
+    onChange();
+  });
+  search.addEventListener("input", render);
+  panel.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+  render();
+  var mApi = {
+    wrap: wrap,
+    panel: panel,
+    setItems: function (arr) {
+      items = (arr || []).slice();
+      render();
+    },
+    close: close,
+    getSelected: function () {
+      return selected;
+    },
+  };
+  EP._multis.push(mApi);
+  return mApi;
+};
+
+// 外部按下关闭所有 EP 下拉 / 多选（mousedown 更即时）
+document.addEventListener(
+  "mousedown",
+  function (e) {
+    EP._enhanced.forEach(function (api) {
+      if (api.wrap.dataset.open === "1" && !api.wrap.contains(e.target)) api.close();
+    });
+    EP._multis.forEach(function (m) {
+      if (m.wrap.dataset.open === "1" && !m.wrap.contains(e.target)) m.close();
+    });
+  },
+  true,
+);
+
+// Esc 关闭 EP 下拉
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    EP._enhanced.forEach(function (api) {
+      api.close();
+    });
+    EP._multis.forEach(function (m) {
+      m.close();
+    });
+  }
+});
+
+// 页面滚动时关闭浮层；但下拉列表自身滚动不关闭
+window.addEventListener(
+  "scroll",
+  function (e) {
+    var t = e.target;
+    EP._enhanced.forEach(function (api) {
+      if (api.wrap.dataset.open !== "1") return;
+      if (t && t.nodeType === 1 && api.list.contains(t)) return;
+      api.close();
+    });
+    EP._multis.forEach(function (m) {
+      if (m.wrap.dataset.open !== "1") return;
+      if (t && t.nodeType === 1 && m.panel.contains(t)) return;
+      m.close();
+    });
+  },
+  true,
+);
+window.addEventListener("resize", function () {
+  EP._enhanced.forEach(function (api) {
+    api.close();
+  });
+  EP._multis.forEach(function (m) {
+    m.close();
+  });
+});
+
+// 自动增强动态插入的 select
+var _epAutoTimer = null;
+EP._autoObserver = new MutationObserver(function (muts) {
+  muts.forEach(function (m) {
+    Array.prototype.forEach.call(m.addedNodes, function (n) {
+      if (n.nodeType !== 1) return;
+      if (n.tagName === "SELECT" && !n.dataset.epEnhanced) EP._pendingSelects.push(n);
+      else if (n.querySelectorAll) {
+        Array.prototype.forEach.call(n.querySelectorAll("select"), function (s) {
+          if (!s.dataset.epEnhanced) EP._pendingSelects.push(s);
+        });
+      }
+    });
+  });
+  if (EP._pendingSelects.length) {
+    clearTimeout(_epAutoTimer);
+    _epAutoTimer = setTimeout(function () {
+      EP._pendingSelects.forEach(function (s) {
+        if (!s.dataset.epEnhanced) EP.enhanceSelect(s);
+      });
+      EP._pendingSelects = [];
+    }, 40);
+  }
+});
+EP._autoObserver.observe(document.body, { childList: true, subtree: true });
+
+// 值变化同步（覆盖程序赋值）
+EP._tick = setInterval(function () {
+  EP._enhanced.forEach(function (api) {
+    if (api.select.value !== api._last) {
+      api._last = api.select.value;
+      api.syncUI();
+    }
+  });
+}, 500);
+
+// 初始增强页面所有 select
+EP.enhanceAll(document);
+
+var _selectedStoreTags = new Set();
+var _storeTagMulti = null;
 
 function _renderStoreTags(data) {
   var tagSet = new Set();
@@ -6238,56 +6664,30 @@ function _renderStoreTags(data) {
       });
   }
   var container = document.getElementById("storeTags");
+  if (!container) return;
   if (tagSet.size === 0) {
     container.style.display = "none";
     return;
   }
-  container.style.display = "flex";
+  container.style.display = "block";
   var tags = Array.from(tagSet).sort();
-  var tagsHtml = tags
-    .map(function (tg) {
-      var active = _selectedStoreTags.has(tg) ? " active" : "";
-      return (
-        '<span class="store-tag-chip' +
-        active +
-        '" onclick="toggleStoreTag(\'' +
-        esc(tg) +
-        "',this)" +
-        '">' +
-        esc(tg) +
-        "</span>"
-      );
-    })
-    .join("");
-
-  var collapsed = sessionStorage.getItem("_storeTagsCollapsed") === "1";
-  var bodyClass = collapsed ? " store-tags-body collapsed" : "";
-  var toggleLabel = collapsed ? t("expand") : t("collapse");
-
-  container.innerHTML =
-    '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
-    '<span style="font-size:12px;color:var(--tx-s)">' +
-    t("store_tag_filter") +
-    ":</span>" +
-    '<button class="store-tags-toggle" onclick="toggleStoreTagsCollapse()">' +
-    toggleLabel +
-    "</button></div>" +
-    '<div class="store-tags-body' +
-    bodyClass +
-    '">' +
-    tagsHtml +
-    "</div>";
-}
-
-function toggleStoreTagsCollapse() {
-  var collapsed = sessionStorage.getItem("_storeTagsCollapsed") === "1";
-  sessionStorage.setItem("_storeTagsCollapsed", collapsed ? "0" : "1");
-  // 重新渲染
-  var d = JSON.parse(localStorage.getItem(STORE_CACHE_KEY));
-  if (d && d.data && d.data.packages) {
-    _renderStoreTags(d.data.packages);
+  if (!_storeTagMulti) {
+    _storeTagMulti = EP.createMultiSelect({
+      host: container,
+      items: tags,
+      selected: _selectedStoreTags,
+      placeholder: t("store_tag_filter"),
+      searchPlaceholder: t("search_packages"),
+      selectAll: t("select_all"),
+      clear: t("clear_all"),
+      emptyText: t("no_matches"),
+      countLabel: t("ep_selected"),
+      onChange: function () {
+        loadStore();
+      },
+    });
   } else {
-    loadStore();
+    _storeTagMulti.setItems(tags);
   }
 }
 
@@ -12248,10 +12648,52 @@ function fmFormatTime(ts) {
   });
 }
 
+var FM_EXT_COLORS = {
+  py: "#4fa6de",
+  pyw: "#4fa6de",
+  js: "#e6c04c",
+  mjs: "#e6c04c",
+  ts: "#4fa6de",
+  json: "#7bc96f",
+  toml: "#e8854c",
+  yml: "#c47bd0",
+  yaml: "#c47bd0",
+  md: "#8a8f98",
+  txt: "#8a8f98",
+  log: "#a0a4ab",
+  sh: "#7bc96f",
+  bat: "#6a6f77",
+  cmd: "#6a6f77",
+  css: "#7b8fe8",
+  html: "#e86b5a",
+  htm: "#e86b5a",
+  xml: "#e88a5a",
+  png: "#7b9fe8",
+  jpg: "#7bc96f",
+  jpeg: "#7bc96f",
+  gif: "#c47bd0",
+  webp: "#7b9fe8",
+  svg: "#e6c04c",
+  ico: "#7b9fe8",
+  zip: "#e8854c",
+  tar: "#e8854c",
+  gz: "#e8854c",
+  db: "#4a9e8a",
+  sqlite: "#4a9e8a",
+  sql: "#4a9e8a",
+  _: "#9aa0a6",
+};
+
 function fmGetIcon(type, name) {
   if (type === "directory")
-    return '<svg class="fm-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
-  return '<svg class="fm-icon file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    return '<svg class="fm-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+  var ext = (name || "").split(".").pop().toLowerCase();
+  var color = FM_EXT_COLORS[ext] || FM_EXT_COLORS._;
+  return (
+    '<svg class="fm-icon file" style="color:' +
+    color +
+    '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+  );
 }
 
 function fmUpdateBreadcrumb(path, count) {

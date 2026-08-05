@@ -29,6 +29,7 @@ ErisPulse Dashboard is the official Web management panel module for the ErisPuls
 - **Storage Management** — View, edit, and delete persistent key-value data
 - **Remote Restart** — Safely restart the framework from the web interface
 - **Cluster Management** — Multi-node cluster monitoring and management
+- **Unified UI Components** — Custom dropdowns and searchable multi-selects replace native controls while staying backward compatible
 
 ## Installation
 

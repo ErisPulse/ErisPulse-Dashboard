@@ -31,7 +31,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=9" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=11" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -2631,12 +2631,7 @@
                             <div
                                 class="store-tags"
                                 id="storeTags"
-                                style="
-                                    display: none;
-                                    flex-wrap: wrap;
-                                    gap: 6px;
-                                    margin-top: 8px;
-                                "
+                                style="display: none; margin-top: 8px"
                             ></div>
                             <div
                                 class="grid-3"
@@ -4409,6 +4404,37 @@
                                 <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                            <span data-i18n="settings_prefs"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_default_page"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_default_page_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <select class="settings-select" id="settingsDefaultPage" onchange="applySettingDefaultPage(this.value)" style="min-width:170px"></select>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_editor"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_editor_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <select class="settings-select" id="settingsTabSize" onchange="applySettingTabSize(this.value)" style="min-width:70px">
+                                                        <option value="2">2</option>
+                                                        <option value="4" selected>4</option>
+                                                        <option value="8">8</option>
+                                                    </select>
+                                                    <label class="switch" style="margin-left:8px"><input type="checkbox" id="settingsLineWrap" checked onchange="applySettingLineWrap(this.checked)"/><span class="switch-slider"></span></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card settings-card">
+                                        <div class="card-header">
                                             <svg
                                                 viewBox="0 0 24 24"
                                                 fill="none"
@@ -4753,37 +4779,6 @@
                                                         onclick="doLogout()"
                                                         data-i18n="settings_logout"
                                                     ></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card settings-card">
-                                        <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                            <span data-i18n="settings_prefs"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="settings-item">
-                                                <div>
-                                                    <div class="settings-item-label" data-i18n="settings_default_page"></div>
-                                                    <div class="settings-item-desc" data-i18n="settings_default_page_desc"></div>
-                                                </div>
-                                                <div class="settings-item-control">
-                                                    <select class="settings-select" id="settingsDefaultPage" onchange="applySettingDefaultPage(this.value)" style="min-width:170px"></select>
-                                                </div>
-                                            </div>
-                                            <div class="settings-item">
-                                                <div>
-                                                    <div class="settings-item-label" data-i18n="settings_editor"></div>
-                                                    <div class="settings-item-desc" data-i18n="settings_editor_desc"></div>
-                                                </div>
-                                                <div class="settings-item-control">
-                                                    <select class="settings-select" id="settingsTabSize" onchange="applySettingTabSize(this.value)" style="min-width:70px">
-                                                        <option value="2">2</option>
-                                                        <option value="4" selected>4</option>
-                                                        <option value="8">8</option>
-                                                    </select>
-                                                    <label class="switch" style="margin-left:8px"><input type="checkbox" id="settingsLineWrap" checked onchange="applySettingLineWrap(this.checked)"/><span class="switch-slider"></span></label>
                                                 </div>
                                             </div>
                                         </div>
@@ -6044,6 +6039,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=13"></script>
+        <script src="/Dashboard/static/dash.js?v=16"></script>
     </body>
 </html>

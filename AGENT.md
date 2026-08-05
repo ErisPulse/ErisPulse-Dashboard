@@ -102,6 +102,13 @@ else:
 
 ## 前端核心 (`dash.js`)
 
+### EP 组件库
+`window.EP` 组件库提供自定义下拉与可搜索多选，替代原生控件样式：
+- `EP.enhanceSelect(sel)` / `EP.enhanceAll(scope)`：把原生 `<select>` 渐进增强为自定义下拉（原生 select 保留为真值源，`.value`/`change`/`onchange`/`<option>/<optgroup>` 兼容，动态增删 option 自动重建）。
+- `EP.createMultiSelect(opts)`：可搜索多选（搜索框 + 全选/清除），商店标签筛选用它。
+- 页面加载时 `EP.enhanceAll(document)` 全量增强；`MutationObserver` 自动增强动态插入的 `<select>`（如事件构建器、schema 字段渲染）。
+- **新增 `<select>` 时无需额外处理**，保持 `.value`/`change` 契约即可。
+
 ### i18n 多语言
 位于文件顶部 `const I18N` 对象，按语言分组：
 ```javascript
