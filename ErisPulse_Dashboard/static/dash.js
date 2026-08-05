@@ -6356,9 +6356,11 @@ EP.enhanceSelect = function (sel) {
   var list = document.createElement("div");
   list.className = "ep-combobox-list";
   list.setAttribute("role", "listbox");
+  list.dataset.epOwner = "1";
   wrap.appendChild(btn);
-  wrap.appendChild(list);
   sel.parentNode.insertBefore(wrap, sel.nextSibling);
+  // 列表挂到 body：脱离模态/transform/overflow 祖先，保证 fixed 定位基于视口
+  document.body.appendChild(list);
   sel.classList.add("ep-native-hidden");
 
   var api = { select: sel, wrap: wrap, list: list, label: lbl, _last: sel.value };
@@ -6500,6 +6502,7 @@ EP.createMultiSelect = function (opts) {
   trigger.appendChild(arrow);
   var panel = document.createElement("div");
   panel.className = "ep-multiselect-panel";
+  panel.dataset.epOwner = "1";
   var search = document.createElement("input");
   search.type = "text";
   search.className = "ep-multiselect-search";
@@ -6522,8 +6525,9 @@ EP.createMultiSelect = function (opts) {
   panel.appendChild(actions);
   panel.appendChild(optsList);
   wrap.appendChild(trigger);
-  wrap.appendChild(panel);
   host.appendChild(wrap);
+  // 面板挂到 body：脱离模态/transform/overflow 祖先，保证 fixed 定位基于视口
+  document.body.appendChild(panel);
 
   function render() {
     label.textContent =
@@ -6624,10 +6628,12 @@ document.addEventListener(
   "mousedown",
   function (e) {
     EP._enhanced.forEach(function (api) {
-      if (api.wrap.dataset.open === "1" && !api.wrap.contains(e.target)) api.close();
+      if (api.wrap.dataset.open === "1" && !api.wrap.contains(e.target) && !(api.list && api.list.contains(e.target)))
+        api.close();
     });
     EP._multis.forEach(function (m) {
-      if (m.wrap.dataset.open === "1" && !m.wrap.contains(e.target)) m.close();
+      if (m.wrap.dataset.open === "1" && !m.wrap.contains(e.target) && !(m.panel && m.panel.contains(e.target)))
+        m.close();
     });
   },
   true,
@@ -6693,10 +6699,27 @@ EP._autoObserver = new MutationObserver(function (muts) {
         if (!s.dataset.epEnhanced) EP.enhanceSelect(s);
       });
       EP._pendingSelects = [];
+      EP._cleanupOrphans();
     }, 40);
   }
 });
 EP._autoObserver.observe(document.body, { childList: true, subtree: true });
+
+// 清理挂到 body 后因宿主被移除而成为孤儿的列表/面板
+EP._cleanupOrphans = function () {
+  var live = new Set();
+  EP._enhanced.forEach(function (api) {
+    live.add(api.list);
+  });
+  EP._multis.forEach(function (m) {
+    live.add(m.panel);
+  });
+  document
+    .querySelectorAll(".ep-combobox-list[data-ep-owner], .ep-multiselect-panel[data-ep-owner]")
+    .forEach(function (el) {
+      if (!live.has(el)) el.remove();
+    });
+};
 
 // 值变化同步（覆盖程序赋值）
 EP._tick = setInterval(function () {
