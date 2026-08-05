@@ -1716,9 +1716,11 @@ class Main(BaseModule):
         token = body.get("token", "")
         if self._verify_token(token):
             self._login_fails = 0
+            self._add_audit_log("login_success", "", request)
             return JSONResponse({"success": True})
         self._login_fails += 1
         self._last_login_fail = time.time()
+        self._add_audit_log("login_failed", "", request)
         return JSONResponse(
             {"success": False, "error": "Invalid token"}, status_code=401
         )
@@ -2550,6 +2552,7 @@ class Main(BaseModule):
         merged = {**existing, **body}
         self.sdk.config.setConfig("Dashboard.appearance", merged)
         self._add_audit_log("appearance_update", "Dashboard.appearance", request)
+        self._safe_broadcast({"type": "appearance_changed"})
         return JSONResponse({"success": True})
 
     async def _api_appearance_upload(self, request: Request) -> JSONResponse:
@@ -3781,6 +3784,7 @@ except Exception:
 
         # 清空 Dashboard 缓存的日志
         # 注意：实际的日志仍在 sdk.logger 中，这里只清空我们存储的引用
+        self._add_audit_log("logs_clear", "", request)
         return JSONResponse({"success": True, "message": "日志缓存已清空"})
 
     # ========== 生命周期相关 API ==========
@@ -3801,6 +3805,7 @@ except Exception:
 
         self._lifecycle_log.clear()
         self._lifecycle_counts.clear()
+        self._add_audit_log("lifecycle_clear", "", request)
         return JSONResponse({"success": True})
 
     # ========== 性能监控相关 API ==========
@@ -3976,6 +3981,7 @@ except Exception:
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
         self._audit_log.clear()
         self._persist_audit()
+        self._add_audit_log("audit_clear", "", request)
         return JSONResponse({"success": True})
 
     # ========== 数据备份与恢复 API ==========
@@ -3995,6 +4001,7 @@ except Exception:
             "storage": storage_data,
             "audit_log": self._audit_log[-100:],
         }
+        self._add_audit_log("backup_export", "", request)
         return JSONResponse(backup)
 
     async def _api_backup_import(self, request: Request) -> JSONResponse:

@@ -196,6 +196,8 @@ const I18N = {
     save_config: "保存配置",
     config_saved: "配置已保存",
     config_load_failed: "加载配置源码失败",
+    config_syntax_ok: "语法正确",
+    config_syntax_err: "配置语法错误，请修正后再保存",
     read_only: "只读 (根配置)",
     cpu_usage: "CPU 使用率",
     process_cpu: "进程 CPU",
@@ -297,6 +299,34 @@ const I18N = {
     action_clear_events: "清除事件",
     action_restart_framework: "重启框架",
     action_backup_import: "导入备份",
+    action_adapter_config_update: "修改适配器配置",
+    action_adapter_accounts_update: "更新适配器账户",
+    action_module_config_update: "修改模块配置",
+    action_appearance_update: "更新外观",
+    action_appearance_upload: "上传外观资源",
+    action_enable_adapter: "启用适配器",
+    action_disable_adapter: "禁用适配器",
+    action_reload_adapter: "重载适配器",
+    action_framework_update: "更新框架",
+    action_command_update: "更新命令",
+    action_master_update: "更新主人列表",
+    action_file_write: "写入文件",
+    action_file_mkdir: "新建目录",
+    action_file_delete: "删除文件",
+    action_file_rename: "重命名文件",
+    action_file_copy: "复制文件",
+    action_file_decompress: "解压文件",
+    action_package_git_upgrade: "Git 升级包",
+    action_cluster_node_add: "添加集群节点",
+    action_cluster_node_update: "更新集群节点",
+    action_cluster_node_delete: "删除集群节点",
+    action_cluster_node_probe: "探测集群节点",
+    action_login_success: "登录成功",
+    action_login_failed: "登录失败",
+    action_logs_clear: "清空日志",
+    action_lifecycle_clear: "清空生命周期",
+    action_audit_clear: "清空审计日志",
+    action_backup_export: "导出备份",
     files: "文件管理",
     files_desc: "浏览和管理项目文件",
     search_files: "搜索文件...",
@@ -499,6 +529,38 @@ const I18N = {
     settings_disabled: "关闭",
     settings_restart_desc: "重新加载所有模块和适配器",
     settings_logout: "退出登录",
+    settings_prefs: "偏好",
+    settings_appearance_prefs: "外观高级",
+    kb_title: "键盘快捷键",
+    kb_focus_search: "聚焦商店搜索框",
+    kb_close_modal: "关闭弹窗 / 侧边栏",
+    kb_show_help: "显示本帮助",
+    undo: "撤销",
+    storage_deleted: "已删除存储键",
+    storage_restored: "已恢复存储键",
+    search_kv: "搜索配置键...",
+    unsaved_title: "有未保存的修改",
+    unsaved_confirm: "源码尚未保存，确定要离开吗？",
+    settings_default_page: "默认起始页",
+    settings_default_page_desc: "登录后自动打开该页面",
+    settings_default_custom: "自定义...",
+    settings_default_custom_desc: "输入页面 ID（含模块注册的视图）",
+    settings_density: "显示密度",
+    settings_density_desc: "紧凑模式减小间距，展示更多内容",
+    settings_density_comfortable: "舒适",
+    settings_density_compact: "紧凑",
+    settings_notify: "桌面通知",
+    settings_notify_desc: "模块加载/卸载/升级时弹出浏览器通知",
+    settings_editor: "编辑器设置",
+    settings_editor_desc: "配置源码与文件编辑器的缩进与换行",
+    settings_custom_css: "自定义 CSS",
+    settings_custom_css_desc: "注入额外样式覆盖主题（高级）",
+    settings_appearance_io: "外观导入/导出",
+    settings_appearance_io_desc: "把个人外观偏好带到其他浏览器",
+    settings_export: "导出",
+    settings_import: "导入",
+    settings_export_ok: "外观偏好已导出",
+    settings_import_ok: "外观偏好已导入",
     settings_logout_desc: "清除令牌并返回登录页",
     settings_page_desc: "自定义仪表盘的外观和行为",
     settings_global_scope: "全局同步",
@@ -949,6 +1011,8 @@ const I18N = {
     save_config: "Save",
     config_saved: "Configuration saved",
     config_load_failed: "Failed to load config source",
+    config_syntax_ok: "Syntax OK",
+    config_syntax_err: "Config syntax error, please fix before saving",
     read_only: "Read-only (root config)",
     cpu_usage: "CPU Usage",
     process_cpu: "Process CPU",
@@ -1050,6 +1114,34 @@ const I18N = {
     action_clear_events: "Clear Events",
     action_restart_framework: "Restart Framework",
     action_backup_import: "Import Backup",
+    action_adapter_config_update: "Update Adapter Config",
+    action_adapter_accounts_update: "Update Adapter Accounts",
+    action_module_config_update: "Update Module Config",
+    action_appearance_update: "Update Appearance",
+    action_appearance_upload: "Upload Appearance Asset",
+    action_enable_adapter: "Enable Adapter",
+    action_disable_adapter: "Disable Adapter",
+    action_reload_adapter: "Reload Adapter",
+    action_framework_update: "Update Framework",
+    action_command_update: "Update Command",
+    action_master_update: "Update Master List",
+    action_file_write: "Write File",
+    action_file_mkdir: "Create Directory",
+    action_file_delete: "Delete File",
+    action_file_rename: "Rename File",
+    action_file_copy: "Copy File",
+    action_file_decompress: "Decompress File",
+    action_package_git_upgrade: "Git Upgrade Package",
+    action_cluster_node_add: "Add Cluster Node",
+    action_cluster_node_update: "Update Cluster Node",
+    action_cluster_node_delete: "Delete Cluster Node",
+    action_cluster_node_probe: "Probe Cluster Node",
+    action_login_success: "Login Success",
+    action_login_failed: "Login Failed",
+    action_logs_clear: "Clear Logs",
+    action_lifecycle_clear: "Clear Lifecycle",
+    action_audit_clear: "Clear Audit Log",
+    action_backup_export: "Export Backup",
     files: "Files",
     files_desc: "Browse and manage project files",
     search_files: "Search files...",
@@ -1262,6 +1354,38 @@ const I18N = {
     settings_disabled: "Disabled",
     settings_restart_desc: "Reload all modules and adapters",
     settings_logout: "Sign Out",
+    settings_prefs: "Preferences",
+    settings_appearance_prefs: "Appearance Advanced",
+    kb_title: "Keyboard Shortcuts",
+    kb_focus_search: "Focus store search box",
+    kb_close_modal: "Close modal / sidebar",
+    kb_show_help: "Show this help",
+    undo: "Undo",
+    storage_deleted: "Storage key deleted",
+    storage_restored: "Storage key restored",
+    search_kv: "Search config keys...",
+    unsaved_title: "Unsaved changes",
+    unsaved_confirm: "Source is not saved yet. Leave anyway?",
+    settings_default_page: "Default Start Page",
+    settings_default_page_desc: "Auto-open this page after login",
+    settings_default_custom: "Custom...",
+    settings_default_custom_desc: "Enter a page ID (including module-registered views)",
+    settings_density: "Display Density",
+    settings_density_desc: "Compact mode reduces spacing to show more content",
+    settings_density_comfortable: "Comfortable",
+    settings_density_compact: "Compact",
+    settings_notify: "Desktop Notifications",
+    settings_notify_desc: "Notify on module load/unload/upgrade",
+    settings_editor: "Editor Settings",
+    settings_editor_desc: "Indent & wrap for config source and file editors",
+    settings_custom_css: "Custom CSS",
+    settings_custom_css_desc: "Inject extra styles to override the theme (advanced)",
+    settings_appearance_io: "Appearance Export/Import",
+    settings_appearance_io_desc: "Bring your appearance preferences to another browser",
+    settings_export: "Export",
+    settings_import: "Import",
+    settings_export_ok: "Appearance preferences exported",
+    settings_import_ok: "Appearance preferences imported",
     settings_logout_desc: "Clear token and return to login",
     settings_page_desc: "Customize dashboard appearance and behavior",
     settings_global_scope: "Global Sync",
@@ -1722,6 +1846,8 @@ const I18N = {
     save_config: "儲存配置",
     config_saved: "配置已儲存",
     config_load_failed: "載入配置原始碼失敗",
+    config_syntax_ok: "語法正確",
+    config_syntax_err: "配置語法錯誤，請修正後再儲存",
     read_only: "唯讀 (根配置)",
     cpu_usage: "CPU 使用率",
     process_cpu: "處理程序 CPU",
@@ -1816,6 +1942,34 @@ const I18N = {
     action_clear_events: "清除事件",
     action_restart_framework: "重啟框架",
     action_backup_import: "匯入備份",
+    action_adapter_config_update: "修改介面卡設定",
+    action_adapter_accounts_update: "更新介面卡帳戶",
+    action_module_config_update: "修改模組設定",
+    action_appearance_update: "更新外觀",
+    action_appearance_upload: "上傳外觀資源",
+    action_enable_adapter: "啟用介面卡",
+    action_disable_adapter: "停用介面卡",
+    action_reload_adapter: "重載介面卡",
+    action_framework_update: "更新框架",
+    action_command_update: "更新指令",
+    action_master_update: "更新主人清單",
+    action_file_write: "寫入檔案",
+    action_file_mkdir: "新建目錄",
+    action_file_delete: "刪除檔案",
+    action_file_rename: "重新命名檔案",
+    action_file_copy: "複製檔案",
+    action_file_decompress: "解壓縮檔案",
+    action_package_git_upgrade: "Git 升級套件",
+    action_cluster_node_add: "新增叢集節點",
+    action_cluster_node_update: "更新叢集節點",
+    action_cluster_node_delete: "刪除叢集節點",
+    action_cluster_node_probe: "探測叢集節點",
+    action_login_success: "登入成功",
+    action_login_failed: "登入失敗",
+    action_logs_clear: "清空日誌",
+    action_lifecycle_clear: "清空生命週期",
+    action_audit_clear: "清空稽核日誌",
+    action_backup_export: "匯出備份",
     files: "檔案管理",
     files_desc: "瀏覽和管理專案檔案",
     search_files: "搜尋檔案...",
@@ -2019,6 +2173,38 @@ const I18N = {
     settings_disabled: "關閉",
     settings_restart_desc: "重新載入所有模組和適配器",
     settings_logout: "登出",
+    settings_prefs: "偏好",
+    settings_appearance_prefs: "外觀進階",
+    kb_title: "鍵盤快捷鍵",
+    kb_focus_search: "聚焦商店搜尋框",
+    kb_close_modal: "關閉彈窗 / 側邊欄",
+    kb_show_help: "顯示本說明",
+    undo: "復原",
+    storage_deleted: "已刪除儲存鍵",
+    storage_restored: "已復原儲存鍵",
+    search_kv: "搜尋設定鍵...",
+    unsaved_title: "有未儲存的修改",
+    unsaved_confirm: "原始碼尚未儲存，確定要離開嗎？",
+    settings_default_page: "預設起始頁",
+    settings_default_page_desc: "登入後自動開啟該頁面",
+    settings_default_custom: "自訂...",
+    settings_default_custom_desc: "輸入頁面 ID（含模組註冊的檢視）",
+    settings_density: "顯示密度",
+    settings_density_desc: "緊湊模式縮小間距，顯示更多內容",
+    settings_density_comfortable: "舒適",
+    settings_density_compact: "緊湊",
+    settings_notify: "桌面通知",
+    settings_notify_desc: "模組載入/卸載/升級時彈出瀏覽器通知",
+    settings_editor: "編輯器設定",
+    settings_editor_desc: "設定原始碼與檔案編輯器的縮排與換行",
+    settings_custom_css: "自訂 CSS",
+    settings_custom_css_desc: "注入額外樣式覆蓋主題（進階）",
+    settings_appearance_io: "外觀匯入/匯出",
+    settings_appearance_io_desc: "把個人外觀偏好帶到其他瀏覽器",
+    settings_export: "匯出",
+    settings_import: "匯入",
+    settings_export_ok: "外觀偏好已匯出",
+    settings_import_ok: "外觀偏好已匯入",
     settings_logout_desc: "清除令牌並返回登入頁",
     settings_page_desc: "自訂儀表盤的外觀和行為",
     settings_global_scope: "全域同步",
@@ -2459,6 +2645,8 @@ const I18N = {
     save_config: "保存",
     config_saved: "設定を保存しました",
     config_load_failed: "設定ソースの読み込みに失敗",
+    config_syntax_ok: "文法は正しい",
+    config_syntax_err: "設定の文法エラー、保存前に修正してください",
     read_only: "読み取り専用（ルート設定）",
     cpu_usage: "CPU使用率",
     process_cpu: "プロセスCPU",
@@ -2553,6 +2741,34 @@ const I18N = {
     action_clear_events: "イベントをクリア",
     action_restart_framework: "フレームワークを再起動",
     action_backup_import: "バックアップをインポート",
+    action_adapter_config_update: "アダプター設定を変更",
+    action_adapter_accounts_update: "アダプターアカウントを更新",
+    action_module_config_update: "モジュール設定を変更",
+    action_appearance_update: "外観を更新",
+    action_appearance_upload: "外観リソースをアップロード",
+    action_enable_adapter: "アダプターを有効化",
+    action_disable_adapter: "アダプターを無効化",
+    action_reload_adapter: "アダプターを再読み込み",
+    action_framework_update: "フレームワークを更新",
+    action_command_update: "コマンドを更新",
+    action_master_update: "マスターリストを更新",
+    action_file_write: "ファイルを書き込み",
+    action_file_mkdir: "ディレクトリを作成",
+    action_file_delete: "ファイルを削除",
+    action_file_rename: "ファイルの名前を変更",
+    action_file_copy: "ファイルをコピー",
+    action_file_decompress: "ファイルを展開",
+    action_package_git_upgrade: "Git パッケージをアップグレード",
+    action_cluster_node_add: "クラスタノードを追加",
+    action_cluster_node_update: "クラスタノードを更新",
+    action_cluster_node_delete: "クラスタノードを削除",
+    action_cluster_node_probe: "クラスタノードをプローブ",
+    action_login_success: "ログイン成功",
+    action_login_failed: "ログイン失敗",
+    action_logs_clear: "ログを消去",
+    action_lifecycle_clear: "ライフサイクルを消去",
+    action_audit_clear: "監査ログを消去",
+    action_backup_export: "バックアップをエクスポート",
     files: "ファイル",
     files_desc: "プロジェクトファイルの閲覧と管理",
     search_files: "ファイルを検索...",
@@ -2764,6 +2980,38 @@ const I18N = {
     settings_disabled: "無効",
     settings_restart_desc: "すべてのモジュールとアダプタを再読込",
     settings_logout: "ログアウト",
+    settings_prefs: "設定",
+    settings_appearance_prefs: "外観の詳細設定",
+    kb_title: "キーボードショートカット",
+    kb_focus_search: "ストア検索ボックスにフォーカス",
+    kb_close_modal: "モーダル/サイドバーを閉じる",
+    kb_show_help: "このヘルプを表示",
+    undo: "元に戻す",
+    storage_deleted: "ストレージキーを削除しました",
+    storage_restored: "ストレージキーを復元しました",
+    search_kv: "設定キーを検索...",
+    unsaved_title: "未保存の変更があります",
+    unsaved_confirm: "ソースは未保存です。離れますか？",
+    settings_default_page: "既定の開始ページ",
+    settings_default_page_desc: "ログイン後にこのページを自動表示",
+    settings_default_custom: "カスタム...",
+    settings_default_custom_desc: "ページIDを入力（モジュール登録のビュー含む）",
+    settings_density: "表示密度",
+    settings_density_desc: "コンパクトモードで間隔を縮め、より多くの内容を表示",
+    settings_density_comfortable: "コンフォータブル",
+    settings_density_compact: "コンパクト",
+    settings_notify: "デスクトップ通知",
+    settings_notify_desc: "モジュールのロード/アンロード/アップグレードを通知",
+    settings_editor: "エディタ設定",
+    settings_editor_desc: "設定ソースとファイルエディタのインデントと折り返し",
+    settings_custom_css: "カスタム CSS",
+    settings_custom_css_desc: "テーマを上書きする追加スタイル（上級）",
+    settings_appearance_io: "外観のエクスポート/インポート",
+    settings_appearance_io_desc: "個人の外観設定を他のブラウザへ",
+    settings_export: "エクスポート",
+    settings_import: "インポート",
+    settings_export_ok: "外観設定をエクスポートしました",
+    settings_import_ok: "外観設定をインポートしました",
     settings_logout_desc: "トークンを消去してログインページに戻る",
     settings_page_desc: "ダッシュボードの外観と動作をカスタマイズ",
     settings_global_scope: "グローバル同期",
@@ -3214,6 +3462,8 @@ const I18N = {
     save_config: "Сохранить",
     config_saved: "Конфигурация сохранена",
     config_load_failed: "Не удалось загрузить исходный код конфигурации",
+    config_syntax_ok: "Синтаксис корректен",
+    config_syntax_err: "Ошибка синтаксиса конфигурации, исправьте перед сохранением",
     read_only: "Только чтение (корневая конфигурация)",
     cpu_usage: "Использование CPU",
     process_cpu: "CPU процесса",
@@ -3308,6 +3558,34 @@ const I18N = {
     action_clear_events: "Очистить события",
     action_restart_framework: "Перезапустить фреймворк",
     action_backup_import: "Импортировать backup",
+    action_adapter_config_update: "Изменить конфигурацию адаптера",
+    action_adapter_accounts_update: "Обновить аккаунты адаптера",
+    action_module_config_update: "Изменить конфигурацию модуля",
+    action_appearance_update: "Обновить внешний вид",
+    action_appearance_upload: "Загрузить ресурс оформления",
+    action_enable_adapter: "Включить адаптер",
+    action_disable_adapter: "Отключить адаптер",
+    action_reload_adapter: "Перезагрузить адаптер",
+    action_framework_update: "Обновить фреймворк",
+    action_command_update: "Обновить команду",
+    action_master_update: "Обновить список владельцев",
+    action_file_write: "Запись файла",
+    action_file_mkdir: "Создать каталог",
+    action_file_delete: "Удалить файл",
+    action_file_rename: "Переименовать файл",
+    action_file_copy: "Копировать файл",
+    action_file_decompress: "Распаковать файл",
+    action_package_git_upgrade: "Git обновление пакета",
+    action_cluster_node_add: "Добавить узел кластера",
+    action_cluster_node_update: "Обновить узел кластера",
+    action_cluster_node_delete: "Удалить узел кластера",
+    action_cluster_node_probe: "Проверить узел кластера",
+    action_login_success: "Вход выполнен",
+    action_login_failed: "Ошибка входа",
+    action_logs_clear: "Очистить логи",
+    action_lifecycle_clear: "Очистить жизненный цикл",
+    action_audit_clear: "Очистить журнал аудита",
+    action_backup_export: "Экспортировать резервную копию",
     files: "Файлы",
     files_desc: "Просмотр и управление файлами проекта",
     search_files: "Поиск файлов...",
@@ -3520,6 +3798,38 @@ const I18N = {
     settings_disabled: "Отключено",
     settings_restart_desc: "Перезагрузить все модули и адаптеры",
     settings_logout: "Выйти",
+    settings_prefs: "Настройки",
+    settings_appearance_prefs: "Доп. оформление",
+    kb_title: "Горячие клавиши",
+    kb_focus_search: "Фокус на поиск магазина",
+    kb_close_modal: "Закрыть окно / боковую панель",
+    kb_show_help: "Показать эту справку",
+    undo: "Отменить",
+    storage_deleted: "Ключ хранилища удалён",
+    storage_restored: "Ключ хранилища восстановлен",
+    search_kv: "Поиск ключей конфигурации...",
+    unsaved_title: "Есть несохранённые изменения",
+    unsaved_confirm: "Исходный код не сохранён. Выйти?",
+    settings_default_page: "Стартовая страница",
+    settings_default_page_desc: "Автоматически открывать эту страницу после входа",
+    settings_default_custom: "Свой...",
+    settings_default_custom_desc: "Введите ID страницы (включая виды модулей)",
+    settings_density: "Плотность отображения",
+    settings_density_desc: "Компактный режим уменьшает отступы и показывает больше",
+    settings_density_comfortable: "Комфортно",
+    settings_density_compact: "Компактно",
+    settings_notify: "Уведомления рабочего стола",
+    settings_notify_desc: "Уведомлять о загрузке/выгрузке/обновлении модулей",
+    settings_editor: "Настройки редактора",
+    settings_editor_desc: "Отступы и перенос для редактора исходников и файлов",
+    settings_custom_css: "Пользовательский CSS",
+    settings_custom_css_desc: "Внедрить дополнительные стили для переопределения темы (продвинуто)",
+    settings_appearance_io: "Экспорт/импорт оформления",
+    settings_appearance_io_desc: "Перенести личные настройки оформления в другой браузер",
+    settings_export: "Экспорт",
+    settings_import: "Импорт",
+    settings_export_ok: "Настройки оформления экспортированы",
+    settings_import_ok: "Настройки оформления импортированы",
     settings_logout_desc: "Очистить токен и вернуться к входу",
     settings_page_desc: "Настройте внешний вид и поведение панели",
     settings_global_scope: "Глобальная синхронизация",
@@ -4113,31 +4423,34 @@ function t(k) {
   return I18N[lang]?.[k] || k;
 }
 function cmpVer(a, b) {
-  const pa = a.replace(/^v/, "").split(/[-.]/),
-    pb = b.replace(/^v/, "").split(/[-.]/);
-  const num = (s) => (/^\d+$/.test(s) ? parseInt(s, 10) : -1);
-  const pre = (s) => {
-    if (s === "dev" || s === "alpha" || s === "a") return -4;
-    if (s === "beta" || s === "b") return -3;
-    if (s === "rc" || s === "c") return -2;
-    return 0;
+  var parseVer = function (v) {
+    var m = v
+      .replace(/^v/, "")
+      .toLowerCase()
+      .match(/^(\d+(?:\.\d+)*)(?:[-.]?(dev|a|alpha|b|beta|c|rc|pre|post)(?:[-.]?(\d+))?)?/);
+    var nums = m && m[1] ? m[1].split(".").map(Number) : [];
+    var tag = m && m[2] ? m[2] : "";
+    var pnum = m && m[3] ? parseInt(m[3], 10) : 0;
+    var rank;
+    if (!tag) rank = Infinity;
+    else if (tag === "dev") rank = -3;
+    else if (tag === "a" || tag === "alpha") rank = -2;
+    else if (tag === "b" || tag === "beta") rank = -1;
+    else if (tag === "c" || tag === "rc" || tag === "pre") rank = 0;
+    else if (tag === "post") rank = 1;
+    else rank = Infinity;
+    return { nums: nums, rank: rank, pnum: pnum };
   };
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    let va = i < pa.length ? pa[i] : "",
-      vb = i < pb.length ? pb[i] : "";
-    const na = num(va),
-      nb = num(vb);
-    if (na >= 0 && nb >= 0) {
-      if (na !== nb) return na > nb ? 1 : -1;
-      continue;
-    }
-    if (na >= 0) return 1;
-    if (nb >= 0) return -1;
-    const la = va.toLowerCase(),
-      lb = vb.toLowerCase();
-    if (la === lb) continue;
-    return la > lb ? 1 : -1;
+  var va = parseVer(a),
+    vb = parseVer(b);
+  var len = Math.max(va.nums.length, vb.nums.length);
+  for (var i = 0; i < len; i++) {
+    var na = va.nums[i] || 0,
+      nb = vb.nums[i] || 0;
+    if (na !== nb) return na > nb ? 1 : -1;
   }
+  if (va.rank !== vb.rank) return va.rank > vb.rank ? 1 : -1;
+  if (va.pnum !== vb.pnum) return va.pnum > vb.pnum ? 1 : -1;
   return 0;
 }
 function toggleLang() {
@@ -4652,6 +4965,8 @@ async function loadModuleViews() {
     const d = await api("/api/views");
     if (!d || !d.views) return;
     _renderModuleViews(d.views);
+    // 模块视图可能影响默认起始页选项，刷新下拉
+    _fillDefaultPageSelect();
   } catch (e) {
     console.error("loadModuleViews error", e);
   }
@@ -5174,6 +5489,7 @@ async function doLogin() {
     restartRefreshTimer();
     loadClusterNodes();
     loadGlobalAppearance();
+    applyDefaultPageOnLogin();
     toast(t("logged_in"), "ok");
   } else {
     if (!authed) localStorage.removeItem(TK);
@@ -6108,11 +6424,11 @@ async function loadStore(forceRefresh) {
             statusBadge +
             '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' +
             esc(i.package) +
-            '</div><div style="font-size:13px;color:var(--tx-s);line-height:1.4;margin-top:4px">' +
+            '</div><div class="store-card-desc">' +
             esc(i.description || "-") +
             "</div>" +
             tagBadges +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' +
             esc(i.version || "?") +
             (hasUpdate
               ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' +
@@ -6602,12 +6918,105 @@ async function loadConfig() {
   }
 }
 
+var _cfgSourceCM = null;
+var _cfgTomlMod = null;
+var _cfgSourceOk = true;
+var _cfgValidateTimer = null;
+
+function _cfgEditorTheme() {
+  return document.documentElement.getAttribute("data-theme") === "dark"
+    ? "dracula"
+    : "default";
+}
+
+async function _getCfgTomlMod() {
+  if (_cfgTomlMod !== null) return _cfgTomlMod;
+  try {
+    _cfgTomlMod = await import(
+      "https://cdn.jsdelivr.net/npm/smol-toml@1.7.1/+esm"
+    );
+  } catch (e) {
+    _cfgTomlMod = false;
+  }
+  return _cfgTomlMod;
+}
+
+function _ensureCfgSourceCM() {
+  if (_cfgSourceCM) return _cfgSourceCM;
+  var ta = document.getElementById("configSourceEditor");
+  if (!ta || typeof CodeMirror === "undefined") return null;
+  _cfgSourceCM = CodeMirror.fromTextArea(ta, {
+    mode: "toml",
+    theme: _cfgEditorTheme(),
+    lineNumbers: true,
+    matchBrackets: true,
+    autoCloseBrackets: true,
+    lineWrapping: true,
+    tabSize: 4,
+    indentUnit: 4,
+  });
+  _cfgSourceCM.setSize("100%", "500px");
+  _cfgSourceCM.on("change", function () {
+    _cfgSourceDirty = true;
+    clearTimeout(_cfgValidateTimer);
+    _cfgValidateTimer = setTimeout(_validateCfgToml, 300);
+  });
+  return _cfgSourceCM;
+}
+
+async function _validateCfgToml() {
+  var cm = _cfgSourceCM;
+  if (!cm) return;
+  var statusEl = document.getElementById("configSourceStatus");
+  var content = cm.getValue();
+  if (!content.trim()) {
+    _cfgSourceOk = true;
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.className = "cfg-source-status";
+    }
+    return;
+  }
+  var mod = await _getCfgTomlMod();
+  if (!mod) {
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.className = "cfg-source-status";
+    }
+    return;
+  }
+  try {
+    mod.parse(content);
+    _cfgSourceOk = true;
+    if (statusEl) {
+      statusEl.textContent = "✓ " + t("config_syntax_ok");
+      statusEl.className = "cfg-source-status ok";
+    }
+  } catch (e) {
+    _cfgSourceOk = false;
+    var msg = e && e.message ? String(e.message).split("\n")[0] : String(e);
+    if (statusEl) {
+      statusEl.textContent = "✗ " + msg;
+      statusEl.className = "cfg-source-status err";
+    }
+  }
+}
+
 async function loadConfigSource() {
   const d = await api("/api/config/source");
-  if (d && d.content) {
-    const editor = document.getElementById("configSourceEditor");
-    if (editor) {
-      editor.value = d.content;
+  if (d && d.content != null) {
+    var cm = _ensureCfgSourceCM();
+    if (cm) {
+      cm.setValue(d.content);
+      _cfgSourceDirty = false;
+      cm.setOption("theme", _cfgEditorTheme());
+      setTimeout(function () {
+        cm.refresh();
+        _validateCfgToml();
+      }, 100);
+    } else {
+      const editor = document.getElementById("configSourceEditor");
+      if (editor) editor.value = d.content;
     }
   } else {
     toast(t("config_load_failed"), "er");
@@ -6615,10 +7024,17 @@ async function loadConfigSource() {
 }
 
 async function saveConfigSource() {
-  const editor = document.getElementById("configSourceEditor");
-  if (!editor) return;
+  var cm = _cfgSourceCM;
+  var content = cm
+    ? cm.getValue()
+    : (document.getElementById("configSourceEditor") || {}).value;
+  if (content == null) return;
 
-  const content = editor.value;
+  await _validateCfgToml();
+  if (!_cfgSourceOk) {
+    toast(t("config_syntax_err"), "er");
+    return;
+  }
 
   const d = await api("/api/config/source", {
     method: "POST",
@@ -6626,6 +7042,7 @@ async function saveConfigSource() {
   });
 
   if (d && d.success) {
+    _cfgSourceDirty = false;
     toast(t("config_saved"), "ok");
     loadConfig();
   } else {
@@ -6633,7 +7050,11 @@ async function saveConfigSource() {
   }
 }
 
-function switchConfigView(view, btn) {
+async function switchConfigView(view, btn) {
+  if (view === "tree" && _cfgSourceDirty) {
+    var ok = await confirm2(t("unsaved_title"), t("unsaved_confirm"));
+    if (!ok) return;
+  }
   // 只作用于内部的 tree/source toggle，不影响外层 tab
   var headerActions = btn.closest(".header-actions");
   if (headerActions) {
@@ -6685,6 +7106,7 @@ function switchSettingsTab(tab, btn) {
 }
 
 var _settingsAppearanceScope = false;
+var _applyingGlobal = false;
 
 async function loadSettings() {
   syncSettingsUI();
@@ -6704,7 +7126,12 @@ async function loadGlobalAppearance() {
     _settingsAppearanceScope = !!app._global_enabled;
     updateGlobalBanner();
     if (app._global_enabled) {
-      applyGlobalAppearanceData(app);
+      _applyingGlobal = true;
+      try {
+        applyGlobalAppearanceData(app);
+      } finally {
+        _applyingGlobal = false;
+      }
     }
   } catch (e) {
     console.debug("Appearance API unavailable, using local settings");
@@ -6735,6 +7162,11 @@ function applyGlobalAppearanceData(app) {
     applyUiStyle(app.ui_style);
     var uiEl = document.getElementById("settingsUiStyle");
     if (uiEl) uiEl.value = app.ui_style;
+  }
+  if (app.font) {
+    localStorage.setItem("ep_font", app.font);
+    applyFont(app.font);
+    syncFontCards();
   }
   if (app.oled !== undefined) {
     localStorage.setItem("ep_oled", app.oled ? "on" : "off");
@@ -6778,6 +7210,7 @@ function collectAppearanceData() {
 
 async function saveGlobalAppearance() {
   if (!_settingsAppearanceScope) return;
+  if (_applyingGlobal) return;
   var data = collectAppearanceData();
   try {
     await api("/api/appearance", { method: "PUT", body: JSON.stringify(data) });
@@ -6804,6 +7237,359 @@ function updateGlobalBanner() {
   if (banner) banner.style.display = _settingsAppearanceScope ? "flex" : "none";
 }
 
+// ========== 设置页新增偏好 ==========
+
+function _availableNavPages() {
+  var out = [];
+  var seen = {};
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".nav-item[data-page]"),
+    function (a) {
+      var page = a.getAttribute("data-page");
+      if (!page || seen[page]) return;
+      seen[page] = 1;
+      var c = navItemContent(page);
+      out.push({ value: page, label: (c && c.title) || page });
+      // 子 tab 变体（同主页 pin 逻辑）
+      var tabs = MERGED_PAGE_TABS[page];
+      if (tabs) {
+        tabs.forEach(function (tabInfo) {
+          out.push({
+            value: page + ":" + tabInfo.id,
+            label: "↳ " + (t(tabInfo.i18n) || tabInfo.label),
+          });
+        });
+      }
+    },
+  );
+  return out;
+}
+
+function _fillDefaultPageSelect() {
+  var el = document.getElementById("settingsDefaultPage");
+  if (!el) return;
+  var cur = getDefaultPage();
+  var pages = _availableNavPages();
+  var opts = "";
+  pages.forEach(function (p) {
+    opts +=
+      '<option value="' +
+      esc(p.value) +
+      '"' +
+      (p.value === cur ? " selected" : "") +
+      ">" +
+      esc(p.label) +
+      "</option>";
+  });
+  var known = pages.some(function (p) {
+    return p.value === cur;
+  });
+  opts +=
+    '<option value="__custom__"' +
+    (cur && !known ? " selected" : "") +
+    ">" +
+    esc(t("settings_default_custom")) +
+    "</option>";
+  el.innerHTML = opts;
+  el.value = known ? cur : "__custom__";
+}
+
+function applySettingDefaultPage(val) {
+  if (val === "__custom__") {
+    var cur = getDefaultPage();
+    prompt2(t("settings_default_custom"), t("settings_default_custom_desc"), cur && cur !== "dashboard" ? cur : "dashboard").then(function (id) {
+      if (!id) {
+        _fillDefaultPageSelect();
+        return;
+      }
+      setSetting("default_page", id);
+      _fillDefaultPageSelect();
+    });
+    return;
+  }
+  setSetting("default_page", val);
+}
+function getDefaultPage() {
+  return getSetting("default_page", "dashboard");
+}
+function applyDefaultPageOnLogin() {
+  var p = getDefaultPage();
+  if (!p || p === "dashboard") return;
+  // 模块视图异步渲染，轮询等待 nav-item 出现后跳转
+  var attempts = 0;
+  var timer = setInterval(function () {
+    attempts++;
+    if (document.querySelector('.nav-item[data-page="' + p + '"]')) {
+      clearInterval(timer);
+      go(p);
+    } else if (attempts > 30) {
+      clearInterval(timer);
+      go(p);
+    }
+  }, 100);
+}
+
+function applySettingDensity(val) {
+  setSetting("density", val);
+  document.documentElement.setAttribute("data-density", val);
+}
+function getDensity() {
+  return getSetting("density", "comfortable");
+}
+
+function applySettingTabSize(val) {
+  setSetting("editor_tab_size", val);
+  _applyEditorOptions();
+}
+function applySettingLineWrap(on) {
+  setSetting("editor_line_wrap", on ? "1" : "0");
+  _applyEditorOptions();
+}
+function getEditorTabSize() {
+  return parseInt(getSetting("editor_tab_size", "4"), 10) || 4;
+}
+function getEditorLineWrap() {
+  return getSetting("editor_line_wrap", "1") !== "0";
+}
+function _applyEditorOptions() {
+  var tab = getEditorTabSize(),
+    wrap = getEditorLineWrap();
+  if (_cfgSourceCM) {
+    _cfgSourceCM.setOption("tabSize", tab);
+    _cfgSourceCM.setOption("indentUnit", tab);
+    _cfgSourceCM.setOption("lineWrapping", wrap);
+  }
+  if (_fmEditor) {
+    _fmEditor.setOption("tabSize", tab);
+    _fmEditor.setOption("indentUnit", tab);
+    _fmEditor.setOption("lineWrapping", wrap);
+  }
+}
+
+function applySettingCustomCss() {
+  var css = document.getElementById("settingsCustomCss")?.value || "";
+  setSetting("custom_css", css);
+  var style = document.getElementById("epCustomCss");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "epCustomCss";
+    document.head.appendChild(style);
+  }
+  style.textContent = css;
+  toast(t("config_saved"), "ok");
+}
+function initCustomCss() {
+  var css = getSetting("custom_css", "");
+  var el = document.getElementById("settingsCustomCss");
+  if (el) el.value = css;
+  if (css) {
+    var style = document.getElementById("epCustomCss");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "epCustomCss";
+      document.head.appendChild(style);
+    }
+    style.textContent = css;
+  }
+}
+
+function exportAppearancePrefs() {
+  var data = {
+    version: 1,
+    exported: Date.now(),
+    theme: getTheme(),
+    ui_style: getUiStyle(),
+    font: getFont(),
+    oled: getOled(),
+    bg_color: getSetting("bg_color", ""),
+    bg_image: getSetting("bg_image", ""),
+    accent_color: getSetting("accent_color", ""),
+    bg_auto_theme: bgAutoThemeEnabled(),
+    dash_title: getSetting("dash_title", "ErisPulse Dashboard"),
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "erispulse-appearance.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(t("settings_export_ok"), "ok");
+}
+
+function importAppearancePrefs() {
+  var input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = function () {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var d = JSON.parse(e.target.result);
+        if (d.theme) {
+          localStorage.setItem("ep_theme", d.theme);
+          applyTheme(d.theme);
+        }
+        if (d.ui_style) {
+          localStorage.setItem("ep_ui_style", d.ui_style);
+          applyUiStyle(d.ui_style);
+        }
+        if (d.font) {
+          localStorage.setItem("ep_font", d.font);
+          applyFont(d.font);
+        }
+        if (d.oled !== undefined) {
+          localStorage.setItem("ep_oled", d.oled ? "on" : "off");
+          applyOled(d.oled);
+        }
+        if (d.bg_color) applyBgColor(d.bg_color);
+        if (d.bg_image) {
+          setSetting("bg_image", d.bg_image);
+          applyBgImage(d.bg_image);
+        } else {
+          clearBgImage();
+        }
+        if (d.accent_color) applyAccentColor(d.accent_color);
+        if (d.bg_auto_theme !== undefined) {
+          localStorage.setItem("ep_setting_bg_auto_theme", d.bg_auto_theme);
+        }
+        if (d.dash_title) applyDashTitle(d.dash_title);
+        syncSettingsUI();
+        toast(t("settings_import_ok"), "ok");
+      } catch (err) {
+        toast(t("validation_failed"), "er");
+      }
+    };
+    reader.readAsText(f);
+  };
+  input.click();
+}
+
+// ========== UX 增强 ==========
+
+var _cfgSourceDirty = false;
+
+function showShortcutsHelp() {
+  var rows =
+    '<div class="list-row" style="font-size:13px"><span style="flex:1">' +
+    esc(t("kb_focus_search")) +
+    '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">/</code></div>' +
+    '<div class="list-row" style="font-size:13px"><span style="flex:1">' +
+    esc(t("kb_close_modal")) +
+    '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">Esc</code></div>' +
+    '<div class="list-row" style="font-size:13px"><span style="flex:1">' +
+    esc(t("kb_show_help")) +
+    '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">?</code></div>';
+  showModal(t("kb_title"), rows, [
+    { label: t("ok"), value: true, primary: true },
+  ]);
+}
+
+function filterKvContainer(containerId, q) {
+  q = (q || "").toLowerCase();
+  var root = document.getElementById(containerId);
+  if (!root) return;
+  var rows = root.querySelectorAll(".kv-row");
+  rows.forEach(function (r) {
+    r.style.display =
+      !q || (r.textContent || "").toLowerCase().indexOf(q) >= 0 ? "" : "none";
+  });
+}
+
+function toastUndo(msg, undoFn) {
+  var el = document.createElement("div");
+  el.style.cssText =
+    "position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);display:flex;align-items:center;gap:12px;padding:10px 14px 10px 24px;border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg-t);color:var(--tx-p);border:1px solid var(--bd);box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;opacity:0;transition:opacity .25s ease,transform .25s cubic-bezier(.4,0,.2,1)";
+  var span = document.createElement("span");
+  span.textContent = msg;
+  el.appendChild(span);
+  var btn = document.createElement("button");
+  btn.className = "btn btn-secondary btn-xs";
+  btn.textContent = t("undo");
+  btn.onclick = function () {
+    try {
+      undoFn();
+    } catch (e) {}
+    el.remove();
+  };
+  el.appendChild(btn);
+  document.body.appendChild(el);
+  requestAnimationFrame(function () {
+    el.style.opacity = "1";
+    el.style.transform = "translateX(-50%) translateY(0)";
+  });
+  setTimeout(function () {
+    el.style.opacity = "0";
+    el.style.transform = "translateX(-50%) translateY(12px)";
+    setTimeout(function () {
+      el.remove();
+    }, 250);
+  }, 4000);
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  var tag = (e.target.tagName || "").toLowerCase();
+  if (
+    e.key === "/" &&
+    tag !== "input" &&
+    tag !== "textarea" &&
+    !e.target.isContentEditable
+  ) {
+    var s = document.getElementById("storeSearch");
+    if (s) {
+      e.preventDefault();
+      s.focus();
+    }
+  } else if (e.key === "Escape") {
+    closeSidebar();
+    var ov = document.getElementById("modalOv");
+    if (ov && ov.classList.contains("show")) ov.classList.remove("show");
+    if (typeof closeNodeDropdown === "function") closeNodeDropdown();
+  } else if (e.key === "?") {
+    e.preventDefault();
+    showShortcutsHelp();
+  }
+});
+
+window.addEventListener("beforeunload", function (e) {
+  if (_cfgSourceDirty) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+var _swipeX = 0,
+  _swipeT = 0;
+document.addEventListener(
+  "touchstart",
+  function (e) {
+    _swipeX = e.changedTouches[0].clientX;
+    _swipeT = Date.now();
+  },
+  { passive: true },
+);
+document.addEventListener(
+  "touchend",
+  function (e) {
+    if (window.innerWidth > 768) return;
+    var sb = document.getElementById("sidebar");
+    if (!sb) return;
+    var dx = e.changedTouches[0].clientX - _swipeX;
+    var dt = Date.now() - _swipeT;
+    if (Math.abs(dx) < 60 || dt > 400) return;
+    if (dx > 0 && !sb.classList.contains("open") && _swipeX < 40) {
+      toggleSidebar();
+    } else if (dx < 0 && sb.classList.contains("open")) {
+      closeSidebar();
+    }
+  },
+  { passive: true },
+);
+
 function syncSettingsUI() {
   // Style cards (ErisPulse / MD3)
   var curStyle = getUiStyle();
@@ -6829,10 +7615,11 @@ function syncSettingsUI() {
     card.classList.toggle("active", card.dataset.lang === lang);
   });
   var sbEl = document.getElementById("settingsSidebar");
-  if (sbEl)
-    sbEl.checked = document
-      .getElementById("sidebar")
-      .classList.contains("collapsed");
+  if (sbEl) {
+    var _sidebarColl = localStorage.getItem("ep_sidebar_collapsed");
+    sbEl.checked =
+      _sidebarColl === null ? true : _sidebarColl === "true";
+  }
   var nsEl = document.getElementById("settingsNodeSelector");
   if (nsEl)
     nsEl.checked = localStorage.getItem("ep_show_node_selector") !== "false";
@@ -6857,6 +7644,16 @@ function syncSettingsUI() {
   showBgAutoThemeRow(hasBgImg);
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
+  // 偏好设置回显
+  _fillDefaultPageSelect();
+  var dnEl = document.getElementById("settingsDensity");
+  if (dnEl) dnEl.value = getDensity();
+  var tsEl = document.getElementById("settingsTabSize");
+  if (tsEl) tsEl.value = String(getEditorTabSize());
+  var lwEl = document.getElementById("settingsLineWrap");
+  if (lwEl) lwEl.checked = getEditorLineWrap();
+  var ccEl = document.getElementById("settingsCustomCss");
+  if (ccEl) ccEl.value = getSetting("custom_css", "");
 }
 
 function applySettingTheme(theme) {
@@ -6877,8 +7674,9 @@ function applySettingLang(v) {
   loadAll();
 }
 function applySettingSidebar(collapsed) {
-  document.getElementById("sidebar").classList.toggle("collapsed", collapsed);
   localStorage.setItem("ep_sidebar_collapsed", collapsed);
+  if (window.innerWidth <= 768) return;
+  document.getElementById("sidebar").classList.toggle("collapsed", collapsed);
 }
 function applySettingRefresh(val) {
   setSetting("refresh_interval", val);
@@ -6959,7 +7757,6 @@ function applyAccentColor(hex) {
   root.setProperty("--accent-fill-h", shadeHex(hex, -28));
   root.setProperty("--accent-h", shadeHex(hex, -10));
   syncAccentUI(hex);
-  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 function applyAccentColorManual(hex) {
@@ -6970,6 +7767,7 @@ function applyAccentColorManual(hex) {
     if (autoChk) autoChk.checked = false;
   }
   applyAccentColor(hex);
+  if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
 // 背景纯色
@@ -6984,6 +7782,11 @@ function applyBgColor(hex) {
   }
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = hex;
+}
+
+// 用户手动选择背景色（与纯 apply 区分，手动变更需同步到全局）
+function applyBgColorManual(hex) {
+  applyBgColor(hex);
   if (_settingsAppearanceScope) saveGlobalAppearance();
 }
 
@@ -8032,7 +8835,7 @@ async function loadAdapterConfigDetail(platform) {
   }
 }
 
-function renderAdapterSchemaFields(fields, values, keyPrefix) {
+function renderAdapterSchemaFields(fields, values, keyPrefix, opts) {
   if (!fields || Object.keys(fields).length === 0)
     return (
       '<div style="padding:12px;color:var(--tx-s)">' +
@@ -8075,6 +8878,7 @@ function renderAdapterSchemaFields(fields, values, keyPrefix) {
         item.schema,
         item.value,
         keyPrefix,
+        opts,
       );
     }
   }
@@ -8103,14 +8907,16 @@ function toggleSecretVisibility(btn) {
 function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
   opts = opts || {};
   var fieldSave = opts.fieldSave !== false;
+  var saveFn = opts.saveFn || "saveAdapterConfigField";
+  var saveTitle = opts.saveTitle || t("save_adapter_config");
   var desc = schema.description || "";
   var tp = schema.type || "string";
   var widget = schema.widget || "";
   var fullKey = (keyPrefix ? keyPrefix + "." : "") + name;
-  var onChg = fieldSave ? ' onchange="saveAdapterConfigField(this)"' : "";
+  var onChg = fieldSave ? ' onchange="' + saveFn + '(this)"' : "";
   var saveBtn = fieldSave
-    ? '<button class="kv-btn" onclick="saveAdapterConfigField(this.parentElement.querySelector(\'input,textarea\'))" title="' +
-      t("save_adapter_config") +
+    ? '<button class="kv-btn" onclick="' + saveFn + '(this.parentElement.querySelector(\'input,textarea\'))" title="' +
+      saveTitle +
       '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>'
     : "";
 
@@ -8244,6 +9050,34 @@ async function saveAdapterConfigField(el) {
       el.style.border = "";
     }, 1200);
     toast(t("adapter_config_saved"), "ok");
+  } else {
+    toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+  }
+}
+
+async function saveModuleConfigField(el) {
+  var ackey = el.dataset.ackey;
+  var tp = el.dataset.adapterTp || "string";
+  var val = el.type === "checkbox" ? el.checked : el.value;
+  if (tp === "number" || tp === "integer" || tp === "float") val = Number(val);
+  else if (tp === "object") {
+    try {
+      val = JSON.parse(val);
+    } catch (e) {
+      return toast(t("validation_failed"), "er");
+    }
+  }
+
+  var d = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({ key: ackey, value: val }),
+  });
+  if (d && d.success) {
+    el.style.border = "2px solid var(--ok-c)";
+    setTimeout(function () {
+      el.style.border = "";
+    }, 1200);
+    toast(t("module_config_saved"), "ok");
   } else {
     toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
   }
@@ -9256,6 +10090,13 @@ async function saveStorage(btn) {
 }
 async function delStorage(k, btn) {
   const row = btn.closest(".kv-row");
+  const inp = row ? row.querySelector("input,textarea") : null;
+  let oldVal = inp ? inp.value : "";
+  if (/^[[{]/.test(oldVal)) {
+    try {
+      oldVal = JSON.parse(oldVal);
+    } catch (e) {}
+  }
   row.style.opacity = ".3";
   const d = await api("/api/storage/delete", {
     method: "POST",
@@ -9269,6 +10110,15 @@ async function delStorage(k, btn) {
       row.style.overflow = "hidden";
       row.style.borderWidth = "0";
       setTimeout(() => row.remove(), 200);
+    });
+    toastUndo(t("storage_deleted") + ": " + k, function () {
+      api("/api/storage", {
+        method: "POST",
+        body: JSON.stringify({ key: k, value: oldVal }),
+      }).then(function () {
+        toast(t("storage_restored"), "ok");
+        loadConfig();
+      });
     });
   } else row.style.opacity = "1";
 }
@@ -9423,6 +10273,8 @@ function wsConnect() {
         } else {
           loadModuleViews();
         }
+      } else if (m.type === "appearance_changed") {
+        loadGlobalAppearance();
       } else if (m.type === "log_entry") {
         _onWebSocketLog(m.data);
       }
@@ -9432,7 +10284,11 @@ function wsConnect() {
 
 function loadAll() {
   initMirrorSelects();
+  loadGlobalAppearance();
   initHeaderStatusIcon();
+  applySettingDensity(getDensity());
+  initCustomCss();
+  _applyEditorOptions();
   fetchAdapterLogos();
   refreshDashboard();
   checkFwUpdateBadge();
@@ -9581,7 +10437,7 @@ async function loadModuleConfigDetail(moduleName) {
       '</div><div class="fw-section-body">';
     html +=
       '<div id="moduleConfigFields">' +
-      renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key) +
+      renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key, { saveFn: "saveModuleConfigField", saveTitle: t("save_module_config") }) +
       "</div>";
     html +=
       '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveModuleConfigAll(\'' +
@@ -11155,14 +12011,36 @@ async function sendRouteTest() {
 // ========== 审计日志功能 ==========
 
 async function loadAuditLog() {
-  const actionFilter =
-    document.getElementById("auditActionFilter")?.value || "";
+  const actionFilterEl = document.getElementById("auditActionFilter");
+  const actionFilter = actionFilterEl?.value || "";
   const params = new URLSearchParams();
   if (actionFilter) params.set("action", actionFilter);
   params.set("limit", "200");
   const d = await api("/api/audit?" + params);
   if (!d) return;
   const logs = d.logs || [];
+  if (actionFilterEl) {
+    var _acts = {};
+    logs.forEach(function (l) {
+      _acts[l.action] = 1;
+    });
+    if (actionFilter) _acts[actionFilter] = 1;
+    var _actList = Object.keys(_acts).sort();
+    var _opts = '<option value="">' + esc(t("all_actions")) + "</option>";
+    _actList.forEach(function (a) {
+      var _k = "action_" + a;
+      var _lbl = t(_k) !== _k ? t(_k) : a;
+      _opts +=
+        '<option value="' +
+        esc(a) +
+        '"' +
+        (a === actionFilter ? " selected" : "") +
+        ">" +
+        esc(_lbl) +
+        "</option>";
+    });
+    actionFilterEl.innerHTML = _opts;
+  }
   document.getElementById("auditCount").textContent = d.total || 0;
   if (logs.length === 0) {
     document.getElementById("auditList").innerHTML =
@@ -11180,9 +12058,45 @@ async function loadAuditLog() {
       const actionClass =
         {
           restart_framework: "chip-er",
+          framework_update: "chip-er",
+          file_delete: "chip-er",
+          uninstall_module: "chip-er",
+          package_uninstall: "chip-er",
+          disable_module: "chip-er",
+          disable_adapter: "chip-er",
+          unload_module: "chip-er",
+          unload_adapter: "chip-er",
+          cluster_node_delete: "chip-er",
+          audit_clear: "chip-er",
+          login_failed: "chip-er",
+          logs_clear: "chip-er",
+          lifecycle_clear: "chip-er",
           clear_events: "chip-wr",
+          file_rename: "chip-wr",
+          file_write: "chip-wr",
+          config_source_save: "chip-wr",
+          appearance_update: "chip-wr",
+          master_update: "chip-wr",
+          command_update: "chip-wr",
+          cluster_node_add: "chip-wr",
+          cluster_node_update: "chip-wr",
+          cluster_node_probe: "chip-wr",
           package_install: "chip-ok",
+          package_upgrade: "chip-ok",
+          package_git_upgrade: "chip-ok",
+          login_success: "chip-ok",
+          file_mkdir: "chip-ok",
+          enable_module: "chip-ok",
+          enable_adapter: "chip-ok",
+          load_module: "chip-ok",
+          load_adapter: "chip-ok",
+          reload_module: "chip-ok",
+          reload_adapter: "chip-ok",
           backup_import: "chip-pr",
+          backup_export: "chip-pr",
+          appearance_upload: "chip-pr",
+          file_copy: "chip-pr",
+          file_decompress: "chip-pr",
         }[log.action] || "chip-sc";
       return (
         '<div class="list-row" style="font-size:13px;gap:12px">' +
@@ -12714,7 +13628,7 @@ function renderMasterConfig() {
   if (!_masterEntries.length) {
     body.innerHTML =
       '<div style="padding:40px 18px;text-align:center;color:var(--tx-t);font-size:13px">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;margin-bottom:12px"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;margin-bottom:12px"><path d="M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM20 21a8 8 0 0 0-16 0M19.5 2.5l.8 1.6 1.8.26-1.3 1.27.3 1.8-1.6-.85-1.6.85.3-1.8-1.3-1.27 1.8-.26z"/></svg>' +
       "<div>" + t("master_empty") + "</div>" +
       '<div style="margin-top:8px;font-size:12px">' + t("master_merge_hint") + "</div>" +
       "</div>";
@@ -12783,7 +13697,7 @@ function renderMasterTag(idx) {
     '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 8px;border-radius:20px;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);font-size:12px;font-weight:500;transition:all 0.2s" ' +
     'onmouseenter="this.style.background=\'color-mix(in srgb,var(--accent) 18%,transparent)\'" ' +
     'onmouseleave="this.style.background=\'color-mix(in srgb,var(--accent) 10%,transparent)\'">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent);flex-shrink:0"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent);flex-shrink:0"><path d="M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM20 21a8 8 0 0 0-16 0M19.5 2.5l.8 1.6 1.8.26-1.3 1.27.3 1.8-1.6-.85-1.6.85.3-1.8-1.3-1.27 1.8-.26z"/></svg>' +
     '<span style="font-family:Consolas,Monaco,monospace;font-size:12px">' + esc(entry.userId) + "</span>" +
     '<button onclick="removeMasterEntry(' + idx + ')" style="background:none;border:none;color:var(--tx-t);cursor:pointer;padding:0 2px;line-height:1;font-size:14px" title="' + t("master_remove") + '" onmouseenter="this.style.color=\'var(--danger,#e53e3e)\'" onmouseleave="this.style.color=\'var(--tx-t)\'">×</button>' +
     "</span>"
@@ -13115,6 +14029,7 @@ async function saveCmdEdit() {
           restartRefreshTimer();
           loadClusterNodes();
           loadGlobalAppearance();
+          applyDefaultPageOnLogin();
         } else {
           localStorage.removeItem(TK);
           dismissSplash();
