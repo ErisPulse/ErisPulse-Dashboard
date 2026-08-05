@@ -27,8 +27,8 @@
     function _pick(arr) { return arr[_r(0, arr.length - 1)]; }
     function _delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-    var ADAPTERS = ['qq', 'telegram', 'discord', 'onebot', 'kook'];
-    var BOT_NAMES = { qq: '小Q酱', telegram: 'EP_Bot', discord: 'ErisPulse#0001', kook: 'ErisBot' };
+    var ADAPTERS = ['Yunhu', 'OneBot11', 'Telegram', 'Discord', 'Kook'];
+    var BOT_NAMES = { Yunhu: 'YunhuBot', OneBot11: 'OneBot11', Telegram: 'ErisPulseBot', Discord: 'ErisPulse#0001', Kook: 'ErisBot' };
     var USERS = ['user_001', 'user_002', 'user_101', 'user_202', 'user_303', 'user_404', 'user_555'];
     var GROUPS = ['group_1001', 'group_1002', 'group_2001', 'group_3001'];
     var MSGS = [
@@ -40,7 +40,7 @@
     var NOTICE_TYPES = ['group_increase', 'group_decrease', 'friend_add', 'group_ban', 'group_admin'];
     var REQUEST_TYPES = ['friend', 'group_invite'];
     var META_TYPES = ['heartbeat', 'lifecycle'];
-    var LOG_MODULES = ['Dashboard', 'Core', 'EchoTest', 'AutoReply', 'Scheduler', 'Server', 'Adapter.qq', 'Adapter.telegram'];
+    var LOG_MODULES = ['Dashboard', 'Core', 'HelpModule', 'Cron', 'Weather', 'OpenAI', 'Server', 'Adapter.onebot11', 'Adapter.telegram'];
     var LOG_LEVELS = ['DEBUG', 'INFO', 'INFO', 'INFO', 'WARNING', 'ERROR'];
     var LOG_MSGS = [
         'Module loaded successfully', 'Event dispatched: message/private',
@@ -154,14 +154,16 @@
 
     _mockEvents = _genEvents(50);
 
-    var STORE_DATA = {"last_updated":"2026-06-03T06:43:40Z","modules":{"Dashboard":{"package":"ErisPulse-Dashboard","version":"1.5.8","author":"ErisPulse","description":"ErisPulse 框架官方 Web 管理面板，提供系统监控、模块管理、配置编辑、事件流查看等功能","min_sdk_version":"2.4.0","repository":"https://github.com/ErisPulse/ErisPulse-Dashboard","official":true,"tags":["dashboard","webui","admin"]},"HelpModule":{"package":"ErisPulse-HelpModule","version":"2.1.0","author":"wsu2059q","description":"为统一的命令系统提供一个help命令，用来在平台查看现有命令","min_sdk_version":"2.2.0","repository":"https://github.com/wsu2059q/ErisPulse-HelpModule","official":false,"tags":["help","command"]},"Cron":{"package":"ErisPulse-Cron","version":"1.0.1","author":"wsu2059q","description":"ErisPulse 定时任务调度模块 - 支持一次性/间隔/Cron定时，回调传参，SQLite持久化","min_sdk_version":"2.4.3","repository":"https://github.com/wsu2059q/ErisPulse-Cron","official":false,"tags":["cron","scheduler"]},"OpenAI":{"package":"ErisPulse-OpenAI","version":"2.1.3","author":"wsu2059q","description":"ErisPulse OpenAI 通用接口封装模块","min_sdk_version":"2.0.0","repository":"https://github.com/ErisPulse/ErisPulse-OpenAI","official":true,"tags":["OpenAI","AI"]},"Weather":{"package":"ErisPulse-Weather","version":"1.2.0","author":"ShanFish","description":"天气查询，支持绑定城市、今日天气、五日天气","min_sdk_version":"2.0.0","repository":"https://github.com/shanfishapp/ErisPulse-Weather","official":false,"tags":["天气","Weather"]},"QvQChat":{"package":"ErisPulse-QvQChat","version":"2.3.1","author":"wsu2059q","description":"一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-QvQChat","official":false,"tags":["AI"]},"GitHubParser":{"package":"ErisPulse-GitHubParser","version":"2.0.1","author":"wsu2059q","description":"GitHub链接解析模块，自动解析消息中的仓库/Issue/PR信息并以最佳格式展示","min_sdk_version":"2.1.10","repository":"https://github.com/wsu2059q/ErisPulse-GitHubParser","official":false,"tags":["github","解析"]},"Feedback":{"package":"ErisPulse-Feedback","version":"1.1.2","author":"wsu2059","description":"ErisPulse 反馈系统模块，支持反馈提交、状态管理、多群聊反馈组和数据导入导出","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-Feedback","official":false,"tags":["反馈","feedback"]},"NekoCare":{"package":"ErisPulse-NekoCare","version":"2.2.1","author":"wsu2059q, lin","description":"NekoCare - 虚拟猫猫养成模块","min_sdk_version":"2.2.0","repository":"https://github.com/wsu2059q/ErisPulse-NekoCare","official":false,"tags":["neko","virtual-pet"]},"DFAFilter":{"package":"ErisPulse-DFAFilter","version":"2.0.0","author":"wsu2059q","description":"基于DFA算法的敏感词过滤模块，支持实时检测、自动替换和动态更新词库","min_sdk_version":"2.1.14-alpha.1","repository":"https://github.com/wsu2059q/ErisPulse-DFAFilter","official":false,"tags":["敏感词过滤","DFA"]},"RssReader":{"package":"ErisPulse-RssReader","version":"1.1.1","author":"wsu2059q","description":"RSS订阅器模块——在聊天中订阅任意RSS/Atom源，自动推送更新","min_sdk_version":"2.0.0","repository":"https://github.com/ErisPulse/ErisPulse-RssReader","official":false,"tags":["rss","atom","订阅"]},"BiliParser":{"package":"ErisPulse-BiliParser","version":"1.0.4","author":"wsu2059q","description":"B站视频解析模块，自动解析消息中的B站视频链接并展示详细信息","min_sdk_version":"2.4.0","repository":"https://github.com/wsu2059q/ErisPulse-BiliParser","official":false,"tags":["bilibili","解析"]},"Raffle":{"package":"ErisPulse-Raffle","version":"1.0.1","author":"ErisPulse","description":"通用抽奖模块 - Dashboard可视化管理、群聊关键词报名、开奖动画、广播通知","min_sdk_version":"2.4.0","repository":"https://github.com/ErisPulse/ErisPulse-Raffle","official":true,"tags":["抽奖","raffle"]}},"adapters":{"Yunhu":{"package":"ErisPulse-YunhuAdapter","author":"wsu2059q","version":"3.10.5","description":"云湖协议适配模块","repository":"https://github.com/ErisPulse/ErisPulse-YunhuAdapter","official":true,"tags":["adapter","yunhu"]},"OneBot11":{"package":"ErisPulse-OneBot11Adapter","author":"wsu2059q","version":"3.7.0","description":"OneBot11协议适配模块","repository":"https://github.com/ErisPulse/ErisPulse-OneBot11Adapter","official":true,"tags":["adapter","onebot11"]},"Telegram":{"package":"ErisPulse-TelegramAdapter","author":"wsu2059q","version":"3.6.12","description":"Telegram协议适配模块","repository":"https://github.com/ErisPulse/ErisPulse-TelegramAdapter","official":true,"tags":["adapter","telegram"]},"Kook":{"package":"ErisPulse-KookAdapter","author":"ShanFish","version":"0.2.1","description":"基于开源机器人框架 ErisPulse 的 Kook(开黑啦) 机器人适配器","repository":"https://github.com/shanfishapp/ErisPulse-KookAdapter","official":true,"tags":["adapter","kook"]},"Matrix":{"package":"ErisPulse-MatrixAdapter","author":"wsu2059","version":"1.0.0","description":"ErisPulse的Matrix协议适配模块","repository":"https://github.com/ErisPulse/ErisPulse-MatrixAdapter","official":true,"tags":["adapter","matrix"]}}};
+var STORE_DATA = {"last_updated":"2026-08-05T05:18:07Z","modules":{"Dashboard":{"package":"ErisPulse-Dashboard","version":"1.9.1","author":"ErisPulse","description":"Web admin panel — system monitor, module management, config editor & event stream | Web 管理面板 — 系统监控、模块管理、配置编辑、事件流查看","min_sdk_version":"2.4.0","repository":"https://github.com/ErisPulse/ErisPulse-Dashboard","official":true,"tags":["dashboard","webui","admin","management","monitor"],"submitted_at":"2026-04-06T07:05:21Z"},"HelpModule":{"package":"ErisPulse-HelpModule","version":"2.1.2","author":"wsu2059q","description":"为统一的命令系统提供一个help命令，用来在平台查看现有命令","min_sdk_version":"2.2.0","repository":"https://github.com/wsu2059q/ErisPulse-HelpModule","official":false,"tags":["help","command","命令列表"],"submitted_at":"2026-01-25T12:57:42Z"},"Cron":{"package":"ErisPulse-Cron","version":"1.0.1","author":"wsu2059q","description":"ErisPulse 定时任务调度模块 - 支持一次性/间隔/Cron定时，回调传参，SQLite持久化","min_sdk_version":"2.4.3","repository":"https://github.com/wsu2059q/ErisPulse-Cron","official":false,"tags":["cron","定时任务","调度","scheduler"],"submitted_at":"2026-05-13T08:52:32Z"},"UmaMusume":{"package":"ErisPulse-UmaMusume","version":"1.0.0","author":"CyanTea","description":"ErisPulse的赛马娘主题机器人模块","min_sdk_version":"2.3.8","repository":"https://codeberg.org/ybr/ErisPulse-UmaMusume","official":false,"tags":["赛马娘","娱乐","塔罗牌"],"submitted_at":"2026-05-04T14:14:42Z"},"Feedback":{"package":"ErisPulse-Feedback","version":"1.1.2","author":"wsu2059","description":"ErisPulse 反馈系统模块，支持反馈提交、状态管理、多群聊反馈组和数据导入导出","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-Feedback","official":false,"tags":["反馈","feedback","群组管理","权限控制"],"submitted_at":"2026-03-16T13:11:57Z"},"EditVideoPlayer":{"package":"ErisPulse-EditVideoPlayer","version":"1.0.1","author":"wsu2059q","description":"一个通用的视频播放器模块，可将视频转换为点阵字符并在支持消息编辑的平台上播放","min_sdk_version":"2.1.14-alpha.1","repository":"https://github.com/wsu2059q/ErisPulse-EditVideoPlayer","official":false,"tags":["player","视频播放","编辑消息","editor"],"submitted_at":"2026-01-25T12:57:42Z"},"InfoQuery":{"package":"ErisPulse-InfoQuery","version":"1.0.0","author":"wsu2059q","description":"信息统计查询模块，用于查询InfoStats收集的统计数据","min_sdk_version":"2.1.14-alpha.1","repository":"https://github.com/wsu2059q/ErisPulse-InfoQuery","official":false,"tags":["信息查询","InfoStats"],"submitted_at":"2026-01-25T12:57:42Z"},"XiaomiMarathon":{"package":"ErisPulse-XiaomiMarathon","version":"1.0.1","author":"wsu2059q","description":"小米马拉松模拟器","min_sdk_version":"2.1.10","repository":"https://github.com/wsu2059q/ErisPulse-XiaomiMarathon","official":false,"tags":["小米马拉松","小米"],"submitted_at":"2025-07-29T04:01:30Z"},"InfoStats":{"package":"ErisPulse-InfoStats","version":"1.0.0","author":"wsu2059q","description":"Event listener & statistics module for analytics | 信息统计模块 — 监听事件并统计分析","min_sdk_version":"2.1.14-alpha.1","repository":"https://github.com/wsu2059q/ErisPulse-InfoStats","official":true,"tags":["统计","monitoring","analytics","事件跟踪","data-analysis"],"submitted_at":"2026-01-25T12:57:42Z"},"GitHubParser":{"package":"ErisPulse-GitHubParser","version":"3.0.0","author":"wsu2059q","description":"GitHub链接解析模块，自动解析消息中的仓库/Issue/PR信息并以最佳格式展示","min_sdk_version":"2.1.10","repository":"https://github.com/wsu2059q/ErisPulse-GitHubParser","official":false,"tags":["github","解析"],"submitted_at":"2025-07-23T01:40:06Z"},"Weather":{"package":"ErisPulse-Weather","version":"1.2.0","author":"ShanFish","description":"天气查询，支持绑定城市、今日天气、五日天气","min_sdk_version":"2.0.0","repository":"https://github.com/shanfishapp/ErisPulse-Weather","official":false,"tags":["天气","Weather"],"submitted_at":"2025-07-20T18:05:38Z"},"QvQChat":{"package":"ErisPulse-QvQChat","version":"2.7.0","author":"wsu2059q","description":"一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-QvQChat","official":false,"tags":["QvQChat","AI"],"submitted_at":"2026-01-25T12:57:42Z"},"OpenAI":{"package":"ErisPulse-OpenAI","version":"2.1.3","author":"wsu2059q","description":"A unified OpenAI API wrapper module for ErisPulse | OpenAI 通用接口封装模块","min_sdk_version":"2.0.0","repository":"https://github.com/ErisPulse/ErisPulse-OpenAI","official":true,"tags":["OpenAI","AI"],"submitted_at":"2025-07-15T08:58:41Z"},"AIChat":{"package":"ErisPulse-AIChat","version":"3.0.4","author":"wsu2059q","description":"AIChat 聊天机器人模块（停更）","min_sdk_version":"2.0.0","repository":"https://github.com/wsu2059q/ErisPulse-AIChat","official":false,"tags":["AIChat","AI"],"submitted_at":"2025-07-15T14:11:20Z"},"SeTu":{"package":"ErisPulse-SeTu","version":"1.2.0","author":"ShanFish","description":"简单的色图模块","min_sdk_version":"2.0.0","repository":"https://github.com/shanfishapp/ErisPulse-GetSeTu","official":false,"tags":["色图","SeTu"],"submitted_at":"2025-07-15T08:31:44Z"},"SystemStatus":{"package":"ErisPulse-SystemStatus","version":"1.0.3","author":"ShanFish","description":"提供获取系统内存、CPU、硬盘占用的接口","min_sdk_version":"2.0.0","repository":"https://github.com/shanfishapp/ErisPulse-SystemStatus","official":false,"tags":["system-info","api"],"submitted_at":"2025-07-14T10:40:27Z"},"ServerStatusMonitor":{"package":"ErisPulse-ServerStatusMonitor","version":"1.1.1","author":"wsu2059q","description":"系统信息查询模块-平台模块","repository":"https://github.com/wsu2059q/ErisPulse-ServerStatusMonitor","official":false,"tags":[],"submitted_at":"2025-07-14T10:40:27Z"},"AdminControl":{"package":"ErisPulse-AdminControl","version":"2.0.0","author":"wsu2059q","description":"ErisPulse 管理控制模块 - 提供框架管理和命令执行功能","min_sdk_version":"2.3.4-dev.3","repository":"https://github.com/wsu2059q/ErisPulse-AdminControl","official":false,"tags":["admin","management","控制","framework"],"submitted_at":"2026-02-08T17:48:01Z"},"EmailForwarder":{"package":"ErisPulse-EmailForwarder","version":"1.0.1","author":"wsu2059q","description":"监听邮件适配器并将邮件转发到其他平台的 ErisPulse 模块","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-EmailForwarder","official":false,"tags":["email","forwarder","邮件转发"],"submitted_at":"2026-02-12T21:37:45Z"},"DFAFilter":{"package":"ErisPulse-DFAFilter","version":"2.0.0","author":"wsu2059q","description":"基于DFA算法的敏感词过滤模块，支持实时检测、自动替换和动态更新词库","min_sdk_version":"2.1.14-alpha.1","repository":"https://github.com/wsu2059q/ErisPulse-DFAFilter","official":false,"tags":["敏感词过滤","DFA","过滤","filter"],"submitted_at":"2026-02-25T16:03:32Z"},"GitHubWebhook":{"package":"ErisPulse-GitHubWebhook","version":"1.2.1","author":"wsu2059","description":"GitHub Webhook 聚合器模块，支持将 GitHub 事件转发到聊天平台","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059/ErisPulse-GitHubWebhook","official":false,"tags":["github","webhook","事件转发"],"submitted_at":"2026-02-26T09:19:25Z"},"NekoCare":{"package":"ErisPulse-NekoCare","version":"2.2.1","author":"wsu2059q, lin","description":"NekoCare - 虚拟猫猫养成模块","min_sdk_version":"2.2.0","repository":"https://github.com/wsu2059q/ErisPulse-NekoCare","official":false,"tags":["neko","virtual-pet","猫猫养成"],"submitted_at":"2026-04-11T17:42:22Z"},"InteractiveTest":{"package":"ErisPulse-InteractiveTest","version":"1.0.0","author":"wsu2059q","description":"ErisPulse 交互式对话与 OneBot12 消息构建器功能测试模块，类似echo模块但功能更强大","min_sdk_version":"2.3.0","repository":"https://github.com/wsu2059q/ErisPulse-InteractiveTest","official":false,"tags":["测试","交互","echo","诊断"],"submitted_at":"2026-04-14T06:32:31Z"},"ChatSonar":{"package":"ErisPulse-ChatSonar","version":"1.2.5","author":"wsu2059q","description":"消息声呐 - 可视化群聊社交距离与岛屿群落","min_sdk_version":"2.4.0","repository":"https://github.com/wsu2059q/ErisPulse-ChatSonar","official":false,"tags":["social-graph","chat-analysis","visualization","group-chat"],"submitted_at":"2026-04-27T01:19:51Z"},"UniBind":{"package":"ErisPulse-UniBind","version":"1.0.0","author":"wsu2059q","description":"跨平台用户身份绑定模块，通过验证码关联不同平台的同一用户","min_sdk_version":"2.4.3","repository":"https://github.com/ErisPulse/ErisPulse-UniBind","official":false,"tags":["身份绑定","跨平台","unibind","identity"],"submitted_at":"2026-05-04T14:14:42Z"},"BiliParser":{"package":"ErisPulse-BiliParser","version":"1.1.1","author":"wsu2059q","description":"B站视频解析模块，自动解析消息中的B站视频链接并展示详细信息","min_sdk_version":"2.4.0","repository":"https://github.com/wsu2059q/ErisPulse-BiliParser","official":false,"tags":["bilibili","解析","视频","parser"],"submitted_at":"2026-05-02T13:31:13Z"},"RssReader":{"package":"ErisPulse-RssReader","version":"1.1.2","author":"wsu2059q","description":"RSS订阅器模块——在聊天中订阅任意RSS/Atom源，自动推送更新","min_sdk_version":"2.0.0","repository":"https://github.com/ErisPulse/ErisPulse-RssReader","official":false,"tags":["rss","atom","订阅","news"],"submitted_at":"2026-05-07T14:57:57Z"},"Raffle":{"package":"ErisPulse-Raffle","version":"1.0.1","author":"ErisPulse","description":"General raffle module with Dashboard visualization, keyword signup & draw animation | 通用抽奖模块 — Dashboard 可视化管理、群聊关键词报名、开奖动画、广播通知","min_sdk_version":"2.4.0","repository":"https://github.com/ErisPulse/ErisPulse-Raffle","official":true,"tags":["抽奖","raffle","lottery","dashboard","通知"],"submitted_at":"2026-05-17T16:01:16Z"},"AdapterConfig":{"package":"ErisPulse-AdapterConfig","version":"1.0.0","author":"ErisPulse","description":"Dashboard extension for visually configuring adapter parameters | Dashboard 适配器配置扩展 — 可视化界面快速配置适配器参数","min_sdk_version":"2.0.0","repository":"https://github.com/ErisPulse/ErisPulse-Dash-AdapterConfig","official":true,"tags":["dashboard","适配器配置","adapter","config"],"submitted_at":"2026-05-20T12:35:28Z"},"DashChat":{"package":"ErisPulse-DashChat","version":"1.0.0","author":"樱城の心","description":"跨平台实时消息收发模块，提供一个类即时通讯的聊天界面，支持用户在仪表盘内与各个平台进行对话","repository":"https://github.com/wsu2059q/ErisPulse-DashChat","official":false,"verified":true,"submitted_by":"YingXinche","submitted_by_uid":"yunhu:5197892","oauth_provider":"yunhu","tags":["dashboard","chat"],"hidden":true,"submitted_at":"2026-05-25T15:17:20Z","min_sdk_version":"2.5.0"},"Echo":{"package":"ErisPulse-Echo","version":"1.0.0","author":"樱城の心","description":"Echo - 回显消息内容，支持文本、图片等多种类型，支持引用回显","repository":"https://github.com/wsu2059q/ErisPulse-Echo","official":false,"verified":true,"submitted_by":"YingXinche","submitted_by_uid":"yunhu:5197892","oauth_provider":"yunhu","tags":["Echo","回显"],"min_sdk_version":"2.4.0","submitted_at":"2026-05-26T07:15:56Z"},"MyServer":{"package":"ErisPulse-MyServer","version":"1.0.0","author":"樱城の心","description":"服务器管理模块 - 支持远程监控、WebSocket终端、Dashboard管理","repository":"https://github.com/wsu2059q/ErisPulse-MyServer","official":false,"verified":true,"submitted_by":"樱城の心","submitted_by_uid":"yunhu:5197892","oauth_provider":"yunhu","tags":["工具"],"min_sdk_version":"2.4.5","submitted_at":"2026-05-30T07:07:41Z"},"CopyCat":{"package":"ErisPulse-CopyCat","version":"1.0.1","author":"樱城の心","description":"复读机模块 - 检测群聊/私聊中连续重复消息并自动复读","repository":"https://github.com/wsu2059q/ErisPulse-CopyCat","official":false,"verified":true,"submitted_by":"樱城の心","submitted_by_uid":"yunhu:5197892","oauth_provider":"yunhu","submitted_at":"2026-07-09T06:40:54Z","tags":["复读机"],"min_sdk_version":"2.4.6"},"RateLimiter":{"package":"ErisPulse-RateLimiter","version":"1.0.0","author":"樱城の心","description":"ErisPulse message rate limiting module to prevent spam, supports fixed/sliding window, multi-dimensional limiting, and whitelist immunity | ErisPulse 消息速率限制模块，防止刷屏，支持固定/滑动窗口、多维度限流、白名单免疫","repository":"https://github.com/wsu2059q/ErisPulse-RateLimiter","official":false,"verified":true,"submitted_by":"樱城の心","submitted_by_uid":"yunhu:5197892","oauth_provider":"yunhu","submitted_at":"2026-07-09T06:42:29Z","tags":["限流","反刷屏","熔断","保护","窗口","滑动窗口","固定窗口","白名单","多维","消息","拦截","流控","rate","limiter","spam","guard","window","whitelist","throttle","protect","filter"],"min_sdk_version":"2.5.3"},"MsgCounter":{"package":"ErisPulse-MsgCounter","version":"1.1.0","author":"Future Tasks","description":"一个用于统计消息的模块，末日水系列机器人同款","repository":"https://github.com/Teddyxiongtdx/YBot-Ep-MsgCounter","official":false,"verified":true,"submitted_by":"Future Tasks","submitted_by_uid":"yunhu:7384288","oauth_provider":"yunhu","submitted_at":"2026-07-13T03:22:31Z","tags":[],"min_sdk_version":">=2.4.6"},"Takumi":{"package":"ErisPulse-Takumi","version":"1.2.0","author":"ccd2s","description":"Use takumi-py to quickly render images.","min_sdk_version":"2.7.0-dev.0","repository":"https://github.com/ccd2s/ErisPulse-Takumi","official":false,"verified":true,"tags":["图片渲染","render","html","svg","font","字体"],"submitted_at":"2026-08-04T00:00:00Z"}},"adapters":{"Yunhu":{"package":"ErisPulse-YunhuAdapter","author":"wsu2059q","version":"4.2.0","description":"ErisPulse Yunhu adapter — enterprise IM over WebSocket/Webhook | ErisPulse 云湖适配器 — 企业 IM，WebSocket / Webhook 双模式","repository":"https://github.com/ErisPulse/ErisPulse-YunhuAdapter","official":true,"tags":["adapter","yunhu"],"min_sdk_version":"2.4.6","submitted_at":"2025-07-14T10:40:27Z"},"OneBot11":{"package":"ErisPulse-OneBot11Adapter","author":"wsu2059q","version":"4.1.2","description":"ErisPulse OneBot11 adapter — compatible with any OneBot v11 implementation | ErisPulse OneBot11 适配器 — 兼容任意 OneBot V11 协议实现","repository":"https://github.com/ErisPulse/ErisPulse-OneBot11Adapter","official":true,"tags":["adapter","onebot11"],"submitted_at":"2025-07-14T10:40:27Z"},"OneBot12":{"package":"ErisPulse-OneBot12Adapter","author":"wsu2059q","version":"4.0.1","description":"ErisPulse OneBot12 adapter — baseline protocol, multi-account & dual-mode | ErisPulse OneBot12 适配器 — 基线协议，多账户 / Server·Client 双模式","repository":"https://github.com/ErisPulse/ErisPulse-OneBot12Adapter","official":true,"tags":["adapter","onebot12"],"min_sdk_version":"2.4.6","submitted_at":"2026-01-25T12:57:42Z"},"Telegram":{"package":"ErisPulse-TelegramAdapter","author":"wsu2059q","version":"4.1.0","description":"ErisPulse Telegram adapter — Bot API with multi-account & rich media | ErisPulse Telegram 适配器 — Bot API，多账户 + 富媒体","repository":"https://github.com/ErisPulse/ErisPulse-TelegramAdapter","official":true,"tags":["adapter","telegram"],"min_sdk_version":"2.4.6","submitted_at":"2025-07-17T01:54:15Z"},"Email":{"package":"ErisPulse-EmailAdapter","author":"wsu2059q","version":"4.1.0","description":"ErisPulse Email adapter — turn any mailbox into a Bot | ErisPulse 邮箱适配器 — 把任意邮箱变成机器人","repository":"https://github.com/ErisPulse/ErisPulse-EmailAdapter","official":true,"tags":["adapter","mail","email"],"submitted_at":"2025-07-21T08:56:52Z"},"YunhuUser":{"package":"ErisPulse-YunhuUserAdapter","author":"wsu2059q","version":"4.0.0","description":"ErisPulse Yunhu-User adapter — driven by user-account protocol | ErisPulse 云湖用户适配器 — 用户账户协议驱动","repository":"https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter","official":true,"tags":["adapter","yunhu","user"],"min_sdk_version":"2.4.6","submitted_at":"2026-02-14T18:05:15Z"},"sandbox":{"package":"ErisPulse-SandboxAdapter","author":"ErisPulse","version":"4.0.2","description":"ErisPulse Sandbox adapter — test your Bot in a web UI, zero setup | ErisPulse 沙箱适配器 — 网页 UI 调试，零平台接入即测即用","repository":"https://github.com/ErisPulse/ErisPulse-SandboxAdapter","official":true,"tags":["adapter","sandbox","调试"],"min_sdk_version":"2.4.6","submitted_at":"2026-01-25T18:24:18Z"},"Kook":{"package":"ErisPulse-KookAdapter","author":"ShanFish","version":"4.0.0","description":"ErisPulse Kook adapter — messages, KMarkdown & cards | ErisPulse Kook 适配器 — 消息收发，KMarkdown / 卡片","repository":"https://github.com/shanfishapp/ErisPulse-KookAdapter","official":true,"tags":["adapter","kook"],"submitted_at":"2026-04-12T04:42:32Z"},"Discord":{"package":"ErisPulse-DiscordAdapter","author":"ErisPulse","version":"4.1.0","description":"ErisPulse Discord adapter — Gateway WS + REST API v10 | ErisPulse Discord 适配器 — Gateway WebSocket + REST API v10","repository":"https://github.com/ErisPulse/ErisPulse-DiscordAdapter","official":true,"tags":["adapter","Discord"],"submitted_at":"2026-06-16T05:38:05Z"},"WechatMp":{"package":"ErisPulse-WechatMpAdapter","author":"ErisPulse","version":"4.0.0","description":"ErisPulse WeChat MP adapter — webhook callback + customer/template messages | ErisPulse 微信公众号适配器 — Webhook 回调 + 客服 / 模板消息","repository":"https://github.com/ErisPulse/ErisPulse-WechatMpAdapter","official":true,"tags":["adapter","wechat","微信","公众号"],"submitted_at":"2026-06-16T07:32:08Z"},"Matrix":{"package":"ErisPulse-MatrixAdapter","author":"wsu2059","version":"4.1.0","description":"ErisPulse Matrix adapter — decentralized chat via long-polling sync | ErisPulse Matrix 适配器 — 去中心化协议，Long Polling 同步","repository":"https://github.com/ErisPulse/ErisPulse-MatrixAdapter","official":true,"tags":["adapter","matrix"],"submitted_at":"2026-04-25T14:54:50Z"},"QQBot":{"package":"ErisPulse-QQBotAdapter","author":"wsu2059","version":"4.0.2","description":"ErisPulse QQ Official Bot adapter — groups, DMs & channels | ErisPulse QQ 官方机器人适配器 — 群聊 / 私聊 / 频道","repository":"https://github.com/ErisPulse/ErisPulse-QQBotAdapter","official":true,"tags":["bot","adapter","qq","qbot"],"min_sdk_version":"2.4.6","submitted_at":"2026-04-25T14:54:50Z"},"Ideaura":{"package":"ErisPulse-Ideaura","author":"ErisPulse","version":"4.0.1","description":"ErisPulse Ideaura (Allons) adapter — multi-scenario chat platform | ErisPulse 花枫咖啡馆(Allons)适配器 — 多场景聊天平台","repository":"https://github.com/ErisPulse/ErisPulse-Ideaura","official":true,"tags":["adapter","ideaura","allons"],"submitted_at":"2026-05-09T16:23:30Z"},"Webhook":{"package":"ErisPulse-WebhookAdapter","author":"ErisPulse","version":"4.0.1","description":"ErisPulse Webhook adapter — a low-code HTTP bridge to any system | ErisPulse Webhook 适配器 — 通用 HTTP 桥接，低代码接任意系统","repository":"https://github.com/ErisPulse/ErisPulse-WebhookAdapter","official":true,"tags":["adapter","webhook"],"submitted_at":"2026-06-16T03:37:55Z"},"Terminal":{"package":"ErisPulse-TerminalAdapter","author":"ErisPulse","version":"1.0.0","description":"ErisPulse Terminal adapter — the terminal is the chat, zero-config | ErisPulse 终端适配器 — 命令行即聊天，零配置开发调试","repository":"https://github.com/ErisPulse/ErisPulse-TerminalAdapter","official":true,"tags":["adapter","terminal","cli","debug"],"min_sdk_version":"2.7.0","submitted_at":"2026-08-03T00:00:00Z"}},"cli_extensions":{}};
 
     var _installedVersions = {
-        'erispulse-dashboard': '1.5.8',
-        'erispulse-echotest': '1.0.0',
-        'erispulse-autoreply': '2.1.0',
-        'erispulse-scheduler': '0.9.2'
+        'erispulse': '2.7.0',
+        'erispulse-dashboard': '1.9.1'
     };
+
+var _MODULES_LIST = [{"name":"Dashboard","type":"module","enabled":true,"loaded":true,"version":"1.9.1","author":"ErisPulse","description":"Web admin panel — system monitor, module management, config editor & event stream","package":"ErisPulse-Dashboard","has_config":false},{"name":"HelpModule","type":"module","enabled":true,"loaded":true,"version":"2.1.2","author":"wsu2059q","description":"为统一的命令系统提供一个help命令，用来在平台查看现有命令","package":"ErisPulse-HelpModule","has_config":false},{"name":"Cron","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"ErisPulse 定时任务调度模块 - 支持一次性/间隔/Cron定时，回调传参，SQLite持久化","package":"ErisPulse-Cron","has_config":false},{"name":"UmaMusume","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"CyanTea","description":"ErisPulse的赛马娘主题机器人模块","package":"ErisPulse-UmaMusume","has_config":false},{"name":"Feedback","type":"module","enabled":true,"loaded":true,"version":"1.1.2","author":"wsu2059","description":"ErisPulse 反馈系统模块，支持反馈提交、状态管理、多群聊反馈组和数据导入导出","package":"ErisPulse-Feedback","has_config":false},{"name":"EditVideoPlayer","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"一个通用的视频播放器模块，可将视频转换为点阵字符并在支持消息编辑的平台上播放","package":"ErisPulse-EditVideoPlayer","has_config":false},{"name":"InfoQuery","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"信息统计查询模块，用于查询InfoStats收集的统计数据","package":"ErisPulse-InfoQuery","has_config":false},{"name":"XiaomiMarathon","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"小米马拉松模拟器","package":"ErisPulse-XiaomiMarathon","has_config":false},{"name":"InfoStats","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"Event listener & statistics module for analytics","package":"ErisPulse-InfoStats","has_config":false},{"name":"GitHubParser","type":"module","enabled":true,"loaded":true,"version":"3.0.0","author":"wsu2059q","description":"GitHub链接解析模块，自动解析消息中的仓库/Issue/PR信息并以最佳格式展示","package":"ErisPulse-GitHubParser","has_config":false},{"name":"Weather","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ShanFish","description":"天气查询，支持绑定城市、今日天气、五日天气","package":"ErisPulse-Weather","has_config":false},{"name":"QvQChat","type":"module","enabled":true,"loaded":true,"version":"2.7.0","author":"wsu2059q","description":"一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天","package":"ErisPulse-QvQChat","has_config":false},{"name":"OpenAI","type":"module","enabled":true,"loaded":true,"version":"2.1.3","author":"wsu2059q","description":"A unified OpenAI API wrapper module for ErisPulse","package":"ErisPulse-OpenAI","has_config":false},{"name":"AIChat","type":"module","enabled":true,"loaded":true,"version":"3.0.4","author":"wsu2059q","description":"AIChat 聊天机器人模块（停更）","package":"ErisPulse-AIChat","has_config":false},{"name":"SeTu","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ShanFish","description":"简单的色图模块","package":"ErisPulse-SeTu","has_config":false},{"name":"SystemStatus","type":"module","enabled":true,"loaded":true,"version":"1.0.3","author":"ShanFish","description":"提供获取系统内存、CPU、硬盘占用的接口","package":"ErisPulse-SystemStatus","has_config":false},{"name":"ServerStatusMonitor","type":"module","enabled":true,"loaded":true,"version":"1.1.1","author":"wsu2059q","description":"系统信息查询模块-平台模块","package":"ErisPulse-ServerStatusMonitor","has_config":false},{"name":"AdminControl","type":"module","enabled":true,"loaded":true,"version":"2.0.0","author":"wsu2059q","description":"ErisPulse 管理控制模块 - 提供框架管理和命令执行功能","package":"ErisPulse-AdminControl","has_config":false},{"name":"EmailForwarder","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"监听邮件适配器并将邮件转发到其他平台的 ErisPulse 模块","package":"ErisPulse-EmailForwarder","has_config":false},{"name":"DFAFilter","type":"module","enabled":true,"loaded":true,"version":"2.0.0","author":"wsu2059q","description":"基于DFA算法的敏感词过滤模块，支持实时检测、自动替换和动态更新词库","package":"ErisPulse-DFAFilter","has_config":false},{"name":"GitHubWebhook","type":"module","enabled":true,"loaded":true,"version":"1.2.1","author":"wsu2059","description":"GitHub Webhook 聚合器模块，支持将 GitHub 事件转发到聊天平台","package":"ErisPulse-GitHubWebhook","has_config":false},{"name":"NekoCare","type":"module","enabled":true,"loaded":true,"version":"2.2.1","author":"wsu2059q, lin","description":"NekoCare - 虚拟猫猫养成模块","package":"ErisPulse-NekoCare","has_config":false},{"name":"InteractiveTest","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"ErisPulse 交互式对话与 OneBot12 消息构建器功能测试模块，类似echo模块但功能更强大","package":"ErisPulse-InteractiveTest","has_config":false},{"name":"ChatSonar","type":"module","enabled":true,"loaded":true,"version":"1.2.5","author":"wsu2059q","description":"消息声呐 - 可视化群聊社交距离与岛屿群落","package":"ErisPulse-ChatSonar","has_config":false},{"name":"UniBind","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"跨平台用户身份绑定模块，通过验证码关联不同平台的同一用户","package":"ErisPulse-UniBind","has_config":false},{"name":"BiliParser","type":"module","enabled":true,"loaded":true,"version":"1.1.1","author":"wsu2059q","description":"B站视频解析模块，自动解析消息中的B站视频链接并展示详细信息","package":"ErisPulse-BiliParser","has_config":false},{"name":"RssReader","type":"module","enabled":true,"loaded":true,"version":"1.1.2","author":"wsu2059q","description":"RSS订阅器模块——在聊天中订阅任意RSS/Atom源，自动推送更新","package":"ErisPulse-RssReader","has_config":false},{"name":"Raffle","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"ErisPulse","description":"General raffle module with Dashboard visualization, keyword signup & draw animation","package":"ErisPulse-Raffle","has_config":false},{"name":"AdapterConfig","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"ErisPulse","description":"Dashboard extension for visually configuring adapter parameters","package":"ErisPulse-AdapterConfig","has_config":false},{"name":"DashChat","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"跨平台实时消息收发模块，提供一个类即时通讯的聊天界面，支持用户在仪表盘内与各个平台进行对话","package":"ErisPulse-DashChat","has_config":false},{"name":"Echo","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"Echo - 回显消息内容，支持文本、图片等多种类型，支持引用回显","package":"ErisPulse-Echo","has_config":false},{"name":"MyServer","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"服务器管理模块 - 支持远程监控、WebSocket终端、Dashboard管理","package":"ErisPulse-MyServer","has_config":false},{"name":"CopyCat","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"樱城の心","description":"复读机模块 - 检测群聊/私聊中连续重复消息并自动复读","package":"ErisPulse-CopyCat","has_config":false},{"name":"RateLimiter","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"ErisPulse message rate limiting module to prevent spam, supports fixed/sliding window, multi-dimensional limiting, and whitelist immunity","package":"ErisPulse-RateLimiter","has_config":false},{"name":"MsgCounter","type":"module","enabled":true,"loaded":true,"version":"1.1.0","author":"Future Tasks","description":"一个用于统计消息的模块，末日水系列机器人同款","package":"ErisPulse-MsgCounter","has_config":false},{"name":"Takumi","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ccd2s","description":"Use takumi-py to quickly render images.","package":"ErisPulse-Takumi","has_config":false}];
+var _ADAPTERS_LIST = [{"name":"Yunhu","type":"adapter","enabled":true,"loaded":true,"version":"4.2.0","author":"wsu2059q","description":"ErisPulse Yunhu adapter — enterprise IM over WebSocket/Webhook","package":"ErisPulse-YunhuAdapter"},{"name":"OneBot11","type":"adapter","enabled":true,"loaded":true,"version":"4.1.2","author":"wsu2059q","description":"ErisPulse OneBot11 adapter — compatible with any OneBot v11 implementation","package":"ErisPulse-OneBot11Adapter"},{"name":"OneBot12","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"wsu2059q","description":"ErisPulse OneBot12 adapter — baseline protocol, multi-account & dual-mode","package":"ErisPulse-OneBot12Adapter"},{"name":"Telegram","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Telegram adapter — Bot API with multi-account & rich media","package":"ErisPulse-TelegramAdapter"},{"name":"Email","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Email adapter — turn any mailbox into a Bot","package":"ErisPulse-EmailAdapter"},{"name":"YunhuUser","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"wsu2059q","description":"ErisPulse Yunhu-User adapter — driven by user-account protocol","package":"ErisPulse-YunhuUserAdapter"},{"name":"sandbox","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"ErisPulse","description":"ErisPulse Sandbox adapter — test your Bot in a web UI, zero setup","package":"ErisPulse-SandboxAdapter"},{"name":"Kook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ShanFish","description":"ErisPulse Kook adapter — messages, KMarkdown & cards","package":"ErisPulse-KookAdapter"},{"name":"Discord","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"ErisPulse","description":"ErisPulse Discord adapter — Gateway WS + REST API v10","package":"ErisPulse-DiscordAdapter"},{"name":"WechatMp","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ErisPulse","description":"ErisPulse WeChat MP adapter — webhook callback + customer/template messages","package":"ErisPulse-WechatMpAdapter"},{"name":"Matrix","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059","description":"ErisPulse Matrix adapter — decentralized chat via long-polling sync","package":"ErisPulse-MatrixAdapter"},{"name":"QQBot","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"wsu2059","description":"ErisPulse QQ Official Bot adapter — groups, DMs & channels","package":"ErisPulse-QQBotAdapter"},{"name":"Ideaura","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Ideaura (Allons) adapter — multi-scenario chat platform","package":"ErisPulse-Ideaura"},{"name":"Webhook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Webhook adapter — a low-code HTTP bridge to any system","package":"ErisPulse-WebhookAdapter"},{"name":"Terminal","type":"adapter","enabled":true,"loaded":true,"version":"1.0.0","author":"ErisPulse","description":"ErisPulse Terminal adapter — the terminal is the chat, zero-config","package":"ErisPulse-TerminalAdapter"}];
+var _FRAMEWORK_VERSIONS = ["2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2.6.3.dev0", "2.6.3", "2.6.2.dev1", "2.6.2", "2.6.1.dev0", "2.6.1", "2.6.0.dev1", "2.6.0.dev0", "2.6.0", "2.5.5", "2.5.4", "2.5.3", "2.5.2.dev4", "2.5.2.dev3", "2.5.2.dev2", "2.5.2.dev1", "2.5.2.dev0", "2.5.2", "2.5.1", "2.5.0.dev2", "2.5.0.dev1", "2.5.0.dev0", "2.5.0", "2.4.8", "2.4.7", "2.4.6.dev6", "2.4.6.dev5", "2.4.6.dev4", "2.4.6.dev3", "2.4.6.dev2", "2.4.6.dev1", "2.4.6.dev0", "2.4.6", "2.4.5.dev3", "2.4.5.dev2", "2.4.5.dev1", "2.4.5.dev0", "2.4.5", "2.4.4", "2.4.3.dev1", "2.4.3.dev0", "2.4.3", "2.4.2.dev1", "2.4.2.dev0", "2.4.2", "2.4.1"];
 
     var API_MAP = {};
 
@@ -197,15 +199,15 @@
 
     API_MAP['/api/status'] = function () {
         return _json({
-            framework: { version: '2.4.6', python_version: '3.13.0' },
+            framework: { version: '2.7.0', python_version: '3.13.0' },
             adapters: {
-                qq: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 10, info: { user_name: '小Q酱', nickname: '小Q酱' } }, bot_002: { status: 'online', last_active: NOW - 120, info: { user_name: 'Q助手', nickname: 'Q助手' } } } },
-                telegram: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 30, info: { user_name: 'EP_Bot', nickname: 'EP_Bot' } } } },
-                discord: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } } } },
-                onebot: { status: 'stopped', bots: {} },
-                kook: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot', nickname: 'ErisBot' } } } }
+                Yunhu: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot', nickname: 'YunhuBot' } } } },
+                OneBot11: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11', nickname: 'OneBot11' } } } },
+                Telegram: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot', nickname: 'ErisPulseBot' } } } },
+                Discord: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } } } },
+                Kook: { status: 'stopped', bots: {} }
             },
-            modules: { Dashboard: true, EchoTest: true, AutoReply: true, AdminTools: false, Scheduler: true, WebhookRelay: false }
+            modules: { Dashboard: true, HelpModule: true, Cron: true, Weather: false, Takumi: true, OpenAI: false }
         });
     };
 
@@ -227,48 +229,46 @@
     API_MAP['/api/adapters'] = function () {
         return _json({
             adapters: [
-                { platform: 'qq', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 10, info: { user_name: '小Q酱' } }, { bot_id: 'bot_002', status: 'online', last_active: NOW - 120, info: { user_name: 'Q助手' } }] },
-                { platform: 'telegram', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 30, info: { user_name: 'EP_Bot' } }] },
-                { platform: 'discord', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001' } }] },
-                { platform: 'onebot', enabled: false, running: false, bots: [] },
-                { platform: 'kook', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot' } }] }
+                { platform: 'Yunhu', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot' } }] },
+                { platform: 'OneBot11', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11' } }] },
+                { platform: 'Telegram', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot' } }] },
+                { platform: 'Discord', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001' } }] },
+                { platform: 'Kook', enabled: false, running: false, bots: [] }
             ]
         });
     };
 
     API_MAP['/api/adapter-logos'] = function () {
-        var logos = {};
-        var names = ['qq', 'telegram', 'discord', 'onebot', 'kook', 'yunhu', 'websocket', 'matrix', 'mail', 'http', 'github', 'slack'];
-        names.forEach(function (n) { logos[n] = 'res/adapter_logo/' + n + '.png'; });
+        var logos = {
+            Yunhu: 'res/adapter_logo/yunhu.png',
+            OneBot11: 'res/adapter_logo/onebot.png',
+            Telegram: 'res/adapter_logo/telegram.png',
+            Discord: 'res/adapter_logo/discord.png',
+            Kook: 'res/adapter_logo/kook.png',
+            qq: 'res/adapter_logo/qq.png',
+            websocket: 'res/adapter_logo/websocket.png',
+            matrix: 'res/adapter_logo/matrix.png',
+            mail: 'res/adapter_logo/mail.png',
+            http: 'res/adapter_logo/http.png',
+            github: 'res/adapter_logo/github.png',
+            slack: 'res/adapter_logo/slack.png'
+        };
         return _json({ logos: logos });
     };
 
     API_MAP['/api/modules'] = function () {
-        return _json({
-            modules: [
-                { name: 'Dashboard', type: 'module', enabled: true, loaded: true, version: '1.5.8', author: 'ErisPulse', description: 'Web 管理面板', package: 'ErisPulse-Dashboard', has_config: false },
-                { name: 'EchoTest', type: 'module', enabled: true, loaded: true, version: '1.0.0', author: 'ErisPulse', description: '消息回显测试模块', package: 'ErisPulse-EchoTest', has_config: true },
-                { name: 'AutoReply', type: 'module', enabled: true, loaded: true, version: '2.1.0', author: 'wsu2059q', description: '自动回复模块', package: 'ErisPulse-AutoReply', has_config: true },
-                { name: 'AdminTools', type: 'module', enabled: true, loaded: false, version: '1.3.0', author: 'ErisPulse', description: '管理工具集', package: 'ErisPulse-AdminTools', has_config: false },
-                { name: 'Scheduler', type: 'module', enabled: true, loaded: true, version: '0.9.2', author: 'wsu2059q', description: '定时任务调度', package: 'ErisPulse-Scheduler', has_config: true },
-                { name: 'WebhookRelay', type: 'module', enabled: false, loaded: false, version: '1.0.0', author: 'ErisPulse', description: 'Webhook 转发模块', package: 'ErisPulse-WebhookRelay', has_config: false },
-                { name: 'qq', type: 'adapter', enabled: true, loaded: true, version: '3.5.0', author: 'ErisPulse', description: 'QQ 适配器' },
-                { name: 'telegram', type: 'adapter', enabled: true, loaded: true, version: '3.6.12', author: 'ErisPulse', description: 'Telegram 适配器' },
-                { name: 'discord', type: 'adapter', enabled: true, loaded: true, version: '1.2.0', author: 'ErisPulse', description: 'Discord 适配器' },
-                { name: 'onebot', type: 'adapter', enabled: false, loaded: false, version: '1.0.0', author: 'ErisPulse', description: 'OneBot 适配器' },
-                { name: 'kook', type: 'adapter', enabled: true, loaded: true, version: '0.2.1', author: 'ShanFish', description: 'Kook 适配器' }
-            ]
-        });
+        return _json({ modules: _MODULES_LIST.concat(_ADAPTERS_LIST) });
     };
 
     API_MAP['/api/bots'] = function () {
         return _json({
             bots: [
-                { bot_id: 'bot_001', platform: 'qq', status: 'online', last_active: NOW - 10, info: { user_name: '小Q酱', nickname: '小Q酱' } },
-                { bot_id: 'bot_002', platform: 'qq', status: 'online', last_active: NOW - 120, info: { user_name: 'Q助手', nickname: 'Q助手' } },
-                { bot_id: 'bot_001', platform: 'telegram', status: 'online', last_active: NOW - 30, info: { user_name: 'EP_Bot', nickname: 'EP_Bot' } },
-                { bot_id: 'bot_001', platform: 'discord', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } },
-                { bot_id: 'bot_001', platform: 'kook', status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot', nickname: 'ErisBot' } }
+                { bot_id: 'bot_001', platform: 'Yunhu', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot', nickname: 'YunhuBot' } },
+                { bot_id: 'bot_002', platform: 'Yunhu', status: 'online', last_active: NOW - 120, info: { user_name: 'YunhuBot2', nickname: 'YunhuBot2' } },
+                { bot_id: 'bot_001', platform: 'OneBot11', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11', nickname: 'OneBot11' } },
+                { bot_id: 'bot_001', platform: 'Telegram', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot', nickname: 'ErisPulseBot' } },
+                { bot_id: 'bot_001', platform: 'Discord', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } },
+                { bot_id: 'bot_001', platform: 'Kook', status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot', nickname: 'ErisBot' } }
             ]
         });
     };
@@ -326,35 +326,29 @@
     API_MAP['/api/audit'] = function () { return _json({ logs: _genAudit(20) }); };
     API_MAP['/api/audit/clear'] = function () { return _json({ success: true }); };
 
-    API_MAP['/api/config'] = function () {
-        return _json({
+    function _mockConfig() {
+        return {
             config: {
                 Dashboard: { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***' },
-                EchoTest: { enabled: true },
-                AutoReply: { enabled: true, rules_file: 'rules.yaml' },
-                Scheduler: { enabled: true, max_tasks: 50 },
-                AdminTools: { enabled: true, admin_users: ['user_001'] },
-                WebhookRelay: { enabled: false }
+                ErisPulse: {
+                    server: { host: '0.0.0.0', port: 8000, auto_start: true, ssl_certfile: null, ssl_keyfile: null },
+                    logger: { level: 'INFO', format: 'rich', log_files: [], memory_limit: 1000 },
+                    storage: { use_global_db: false },
+                    event: { message: { ignore_self: true }, command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false } },
+                    master: { users: {} },
+                    framework: { enable_lazy_loading: true, uninit_timeout: 30, strict_mode: 0 },
+                    i18n: { language: 'auto' }
+                }
             }
-        });
-    };
-
+        };
+    }
     API_MAP['/api/config'] = function (opts) {
         if (opts && opts.method === 'PUT') return _json({ success: true });
-        return _json({
-            config: {
-                Dashboard: { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***' },
-                EchoTest: { enabled: true },
-                AutoReply: { enabled: true, rules_file: 'rules.yaml' },
-                Scheduler: { enabled: true, max_tasks: 50 },
-                AdminTools: { enabled: true, admin_users: ['user_001'] },
-                WebhookRelay: { enabled: false }
-            }
-        });
+        return _json(_mockConfig());
     };
 
     API_MAP['/api/config/source'] = function () {
-        return _json({ source: '# ErisPulse Configuration\nserver:\n  host: "0.0.0.0"\n  port: 8000\n\nlogger:\n  level: "INFO"\n  log_files: []\n\nstorage:\n  use_global_db: false\n\nDashboard:\n  title: "ErisPulse Dashboard"\n  max_event_log: 500\n' });
+        return _json({ content: '# ErisPulse Configuration\n[ErisPulse.server]\nhost = "0.0.0.0"\nport = 8000\nauto_start = true\n\n[ErisPulse.logger]\nlevel = "INFO"\nformat = "rich"\nmemory_limit = 1000\n\n[ErisPulse.event.command]\nprefix = "/"\ncase_sensitive = true\nallow_space_prefix = false\nmust_at_bot = false\n\n[Dashboard]\ntitle = "ErisPulse Dashboard"\nmax_event_log = 500\n' });
     };
 
     API_MAP['/api/storage'] = function () {
@@ -400,26 +394,15 @@
     API_MAP['/api/packages'] = function () {
         return _json({
             packages: [
-                { name: 'ErisPulse-Dashboard', version: '1.5.8', summary: 'Web dashboard', type: 'module', package: 'ErisPulse-Dashboard' },
-                { name: 'ErisPulse-EchoTest', version: '1.0.0', summary: 'Echo test module', type: 'module', package: 'ErisPulse-EchoTest' },
-                { name: 'ErisPulse-AutoReply', version: '2.1.0', summary: 'Auto reply module', type: 'module', package: 'ErisPulse-AutoReply' },
-                { name: 'ErisPulse-Scheduler', version: '0.9.2', summary: 'Task scheduler', type: 'module', package: 'ErisPulse-Scheduler' },
-                { name: 'ErisPulse-QQAdapter', version: '3.5.0', summary: 'QQ adapter', type: 'adapter', package: 'ErisPulse-QQAdapter' },
-                { name: 'ErisPulse-TelegramAdapter', version: '3.6.12', summary: 'Telegram adapter', type: 'adapter', package: 'ErisPulse-TelegramAdapter' },
-                { name: 'requests', version: '2.31.0', summary: 'HTTP library', type: 'library', package: 'requests' },
-                { name: 'psutil', version: '5.9.5', summary: 'System utilities', type: 'library', package: 'psutil' },
-                { name: 'fastapi', version: '0.104.1', summary: 'Web framework', type: 'library', package: 'fastapi' },
-                { name: 'uvicorn', version: '0.24.0', summary: 'ASGI server', type: 'library', package: 'uvicorn' }
+                { name: 'erispulse', version: '2.7.0', summary: 'ErisPulse framework core', type: 'library', package: 'erispulse' },
+                { name: 'ErisPulse-Dashboard', version: '1.9.1', summary: 'Web admin dashboard', type: 'module', package: 'ErisPulse-Dashboard' }
             ]
         });
     };
 
     API_MAP['/api/packages/updates'] = function () {
         return _json({
-            updates: [
-                { package: 'ErisPulse-AutoReply', current: '2.1.0', latest: '2.2.0', type: 'module' },
-                { package: 'fastapi', current: '0.104.1', latest: '0.105.0', type: 'library' }
-            ]
+            updates: []
         });
     };
 
@@ -428,7 +411,7 @@
     API_MAP['/api/packages/uninstall'] = function () { return _json({ success: true }); };
 
     API_MAP['/api/framework/versions'] = function () {
-        return _json({ current: '2.4.6', latest: '2.4.6', versions: ['2.4.6', '2.4.5', '2.4.4', '2.4.3'] });
+        return _json({ current: '2.7.0', latest: '2.7.0', versions: _FRAMEWORK_VERSIONS });
     };
 
     API_MAP['/api/framework/update'] = function () { return _json({ success: true, task_id: 'mock_fw_update' }); };
@@ -479,7 +462,7 @@
         for (var i = 0; i < 24; i++) hourly.push(_r(5, 80));
         return _json({
             type_stats: { text: 287, image: 42, at: 18, reply: 12, face: 8 },
-            platform_stats: { qq: 156, telegram: 89, discord: 67, kook: 55 },
+            platform_stats: { Yunhu: 156, OneBot11: 120, Telegram: 89, Discord: 67, Kook: 55 },
             hourly_trend: hourly
         });
     };
@@ -500,10 +483,10 @@
     };
 
     API_MAP['/api/master'] = function (opts) {
-        if (opts && opts.method === 'PUT') return _json({ success: true, master: { users: { qq: ['user_001'], telegram: ['user_002'] } } });
+        if (opts && opts.method === 'PUT') return _json({ success: true, master: { users: { Yunhu: ['user_001'], Telegram: ['user_002'] } } });
         return _json({
-            master: { users: { qq: ['user_001', 'user_101'], telegram: ['user_002'], discord: ['user_555'] } },
-            platforms: ['qq', 'telegram', 'discord', 'onebot', 'kook']
+            master: { users: { Yunhu: ['user_001'], Telegram: ['user_002'], Discord: ['user_555'] } },
+            platforms: ['Yunhu', 'OneBot11', 'Telegram', 'Discord', 'Kook']
         });
     };
 
@@ -543,15 +526,15 @@
     };
 
     API_MAP['/api/cluster/overview'] = function () {
-        var fw = { version: '2.4.3', python_version: '3.13.0' };
+        var fw = { version: '2.7.0', python_version: '3.13.0' };
         var adaptersSummary = {
-            qq: { running: true, bot_count: 2 },
-            telegram: { running: true, bot_count: 1 },
-            discord: { running: true, bot_count: 1 },
-            onebot: { running: false, bot_count: 0 },
-            kook: { running: true, bot_count: 1 }
+            Yunhu: { running: true, bot_count: 1 },
+            OneBot11: { running: true, bot_count: 1 },
+            Telegram: { running: true, bot_count: 1 },
+            Discord: { running: true, bot_count: 1 },
+            Kook: { running: false, bot_count: 0 }
         };
-        var modules = { Dashboard: true, EchoTest: true, AutoReply: true, AdminTools: false, Scheduler: true, WebhookRelay: false };
+        var modules = { Dashboard: true, HelpModule: true, Cron: true, Weather: false, Takumi: true, OpenAI: false };
         return _json({
             nodes: {
                 local: {
@@ -582,8 +565,8 @@
                     dashboard_version: '1.5.8',
                     status: {
                         framework: { version: '2.4.2', python_version: '3.12.0' },
-                        adapters: { qq: { running: true, bot_count: 1 }, telegram: { running: true, bot_count: 1 } },
-                        modules: { Dashboard: true, EchoTest: true },
+                        adapters: { Yunhu: { running: true, bot_count: 1 }, Telegram: { running: true, bot_count: 1 } },
+                        modules: { Dashboard: true, HelpModule: true },
                         adapters_count: 2,
                         modules_count: 2,
                         events_count: 340
@@ -646,7 +629,7 @@
     API_MAP['/api/files/decompress'] = function () { return _json({ success: true }); };
 
     var _mockAdapterConfigs = {
-        qq: {
+        Yunhu: {
             config_key: 'qq', has_config: true, has_accounts: true,
             schema: { fields: {
                 appid: { type: 'string', description: 'QQ 开放平台 AppID', group: 'connection', order: 1 },
@@ -664,16 +647,16 @@
             }},
             accounts: { default: { enabled: true, name: 'default', appid: '102045273', secret: 'bot_secret_abc123', token: 'callback_token_xyz' } }
         },
-        telegram: {
-            config_key: 'telegram', has_config: true, has_accounts: false,
+        Telegram: {
+            config_key: 'Telegram', has_config: true, has_accounts: false,
             schema: { fields: {
                 token: { type: 'string', secret: true, description: 'Telegram Bot Token', order: 1 },
                 proxy: { type: 'string', description: 'HTTP 代理地址（可选）', order: 2 },
             }},
             values: { token: '7842139046:AAEhBO9xK_demo_token_FkMzqW', proxy: '' }
         },
-        discord: {
-            config_key: 'discord', has_config: true, has_accounts: true,
+        Discord: {
+            config_key: 'Discord', has_config: true, has_accounts: true,
             schema: { fields: {
                 application_id: { type: 'string', description: 'Discord Application ID', order: 1 },
                 public_key: { type: 'string', description: 'Discord Public Key', order: 2 },
@@ -686,8 +669,8 @@
             }},
             accounts: { 'main-bot': { enabled: true, name: 'main-bot', token: 'MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GabcDE.demo_token_hash_FkMzqW' } }
         },
-        onebot: {
-            config_key: 'onebot', has_config: true, has_accounts: true,
+        OneBot11: {
+            config_key: 'OneBot11', has_config: true, has_accounts: true,
             schema: { fields: {
                 host: { type: 'string', description: 'WebSocket 监听地址', order: 1 },
                 port: { type: 'integer', description: 'WebSocket 监听端口', order: 2 },
@@ -704,8 +687,8 @@
             }},
             accounts: { default: { enabled: false, name: 'default', host: '127.0.0.1', port: 6700, token: '', client_token: 'ob12_client_token_demo' } }
         },
-        kook: {
-            config_key: 'kook', has_config: true, has_accounts: false,
+        Kook: {
+            config_key: 'Kook', has_config: true, has_accounts: false,
             schema: { fields: {
                 token: { type: 'string', secret: true, description: 'KOOK Bot Token', order: 1 },
                 verify_token: { type: 'string', secret: true, description: 'Webhook 验证 Token', order: 2 },
@@ -769,8 +752,8 @@
             if (moduleMatch) {
                 var mName = moduleMatch[1];
                 var _mockModuleConfigs = {
-                    'EchoTest': {
-                        config_key: 'EchoTest', has_config: true,
+                    'HelpModule': {
+                        config_key: 'HelpModule', has_config: true,
                         schema: { fields: {
                             response_prefix: { type: 'string', description: '回显前缀', order: 1 },
                             max_length: { type: 'integer', description: '最大字符数', order: 2 },
@@ -778,8 +761,8 @@
                         }},
                         values: { response_prefix: '你说：', max_length: 200, random_reply: false }
                     },
-                    'AutoReply': {
-                        config_key: 'AutoReply', has_config: true,
+                    'Cron': {
+                        config_key: 'Cron', has_config: true,
                         schema: { fields: {
                             rules_file: { type: 'string', description: '规则文件路径', order: 1 },
                             match_mode: { type: 'string', widget: 'select', options: ['exact', 'fuzzy', 'regex'], description: '匹配模式', order: 2 },
@@ -788,8 +771,8 @@
                         }},
                         values: { rules_file: 'rules.yaml', match_mode: 'exact', cooldown: 5, ignore_case: true }
                     },
-                    'Scheduler': {
-                        config_key: 'Scheduler', has_config: true,
+                    'Weather': {
+                        config_key: 'Weather', has_config: true,
                         schema: { fields: {
                             max_tasks: { type: 'integer', description: '最大任务数', order: 1 },
                             default_interval: { type: 'integer', description: '默认执行间隔（秒）', order: 2 },
