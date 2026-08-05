@@ -24,7 +24,10 @@ ErisPulse-Dashboard/
 │   ├── index.html              # 构建时从 dash.html 生成（被 .gitignore）
 │   └── res/                    # 构建时从 static/res 复制（被 .gitignore）
 ├── ErisPulse_Dashboard/
-│   ├── Core.py                 # 主后端模块（API 接口、路由注册）
+│   ├── Core.py                 # 主后端模块（生命周期、状态、路由注册、全部 handler）
+│   ├── Config.py               # Dashboard 自身配置默认值（纯数据，兼容旧 SDK）
+│   ├── Constants.py            # 框架官方默认配置 + 文件管理安全常量
+│   ├── I18n.py                 # 控制台横幅 5 语言文本（纯数据）
 │   ├── Cluster.py              # 集群管理与能力探测
 │   ├── PackageManager.py       # 包管理（pip/uv 安装卸载）
 │   └── static/
@@ -44,11 +47,16 @@ ErisPulse-Dashboard/
 ## 后端核心 (`Core.py`)
 
 ### 路由注册
-- `_register_routes()`: 注册所有 API 路由
-- `_unregister_routes()`: 卸载路由（热重载时用）
+- `_register_routes()`: 注册所有 API 路由（含 `/Dashboard/api/*` 认证中间件）
+- `_unregister_routes()`: **自省式注销**（从路由管理器读取实际注册内容再注销，无需维护路径清单，避免漂移）
 - **重要**: 具体路径必须在参数化路径之前注册
   - ✅ `/api/commands/settings` → ✅ `/api/commands/{name}`
   - 反之则 settings 会被 {name} 匹配到
+
+### 认证
+- 认证由 `_register_routes` 内的 `_auth_middleware`（`r.middleware("/Dashboard/api/*")`）统一处理
+- 公开端点放行：`/api/auth`、`/api/auth/status`、`/api/adapter-logos`
+- **新 handler 无需再写 token 校验样板**；若某端点需公开，加入中间件放行列表
 
 ### 路由模式
 ```python
@@ -58,10 +66,9 @@ r.register_http_route(
 )
 ```
 
-### 新 API 端点需修改 3 处
+### 新 API 端点需修改 2 处
 1. `_register_routes()` — 注册
-2. `_unregister_routes()` — 注销
-3. 实现 handler 方法（token 验证 + 业务逻辑 + audit log）
+2. 实现 handler 方法（业务逻辑 + audit log；token 已由中间件校验）
 
 ### 配置写入
 ```python
@@ -70,10 +77,11 @@ self.sdk.config.setConfig("ErisPulse.event.command.prefix", value, immediate=Tru
 `immediate=True` 是必需的，否则 5 秒缓存延迟。
 
 ### 集群能力映射 (`Cluster.py`)
-新增页面需要修改 3 个字典：
-1. `CAPABILITY_TO_API` — `"master": "/api/master"`
-2. `API_TO_CAPABILITY_MAP` — `"/api/master": "master"`
-3. `PAGE_CAPABILITY_MAP` — `"master": "master"`
+新增页面需要修改 2 个字典：
+1. `API_TO_CAPABILITY_MAP` — `"/api/master": "master"`
+2. `PAGE_CAPABILITY_MAP` — `"master": "master"`
+
+> `CAPABILITY_TO_API`（旧文档提到的第 3 个字典）仓库中并不存在，请勿依赖。
 
 ---
 

@@ -18,42 +18,10 @@ from ErisPulse.Core.Bases.errors import ClientError
 from fastapi import Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
-from .Cluster import PAGE_CAPABILITY_MAP, ClusterManager
-
-DEFAULT_ERISPULSE_CONFIG = {
-    "server": {
-        "host": "0.0.0.0",
-        "port": 8000,
-        "ssl_certfile": None,
-        "ssl_keyfile": None,
-    },
-    "logger": {
-        "level": "INFO",
-        "format": "rich",
-        "log_files": [],
-        "memory_limit": 1000,
-    },
-    "storage": {
-        "use_global_db": False,
-    },
-    "modules": {},
-    "adapters": {},
-    "event": {
-        "message": {
-            "ignore_self": True,
-        },
-        "command": {
-            "prefix": "/",
-            "case_sensitive": True,
-            "allow_space_prefix": False,
-            "must_at_bot": False,
-        },
-    },
-    "framework": {
-        "enable_lazy_loading": True,
-        "uninit_timeout": 30,
-    },
-}
+from .Cluster import ClusterManager
+from .Config import DASHBOARD_DEFAULT_CONFIG
+from .Constants import MAX_READ_SIZE, MAX_UPLOAD_SIZE, SENSITIVE_FILES
+from .I18n import DASHBOARD_BANNER_TEXTS
 
 
 class Main(BaseModule):
@@ -120,46 +88,46 @@ class Main(BaseModule):
         try:
             i18n = self.sdk.i18n
             domain = "dashboard"
-            for lang, texts in {
-                "zh-CN": {
-                    "dashboard.banner.title": "ErisPulse Dashboard",
-                    "dashboard.banner.url": "访问地址: /Dashboard",
-                    "dashboard.banner.token": "访问令牌:",
-                    "dashboard.banner.token_saved": "令牌已保存至配置文件 Dashboard.token",
-                    "dashboard.banner.token_hidden_hint": "请在 config 配置文件查看 Dashboard.token",
-                },
-                "zh-TW": {
-                    "dashboard.banner.title": "ErisPulse Dashboard",
-                    "dashboard.banner.url": "訪問位址: /Dashboard",
-                    "dashboard.banner.token": "訪問令牌:",
-                    "dashboard.banner.token_saved": "令牌已儲存至設定檔 Dashboard.token",
-                    "dashboard.banner.token_hidden_hint": "請在 config 設定檔查看 Dashboard.token",
-                },
-                "en": {
-                    "dashboard.banner.title": "ErisPulse Dashboard",
-                    "dashboard.banner.url": "URL: /Dashboard",
-                    "dashboard.banner.token": "Access Token:",
-                    "dashboard.banner.token_saved": "Token saved to config Dashboard.token",
-                    "dashboard.banner.token_hidden_hint": "Check Dashboard.token in the config file",
-                },
-                "ja": {
-                    "dashboard.banner.title": "ErisPulse Dashboard",
-                    "dashboard.banner.url": "アクセス先: /Dashboard",
-                    "dashboard.banner.token": "アクセストークン:",
-                    "dashboard.banner.token_saved": "トークンは設定ファイル Dashboard.token に保存されました",
-                    "dashboard.banner.token_hidden_hint": "設定ファイルで Dashboard.token を確認してください",
-                },
-                "ru": {
-                    "dashboard.banner.title": "ErisPulse Dashboard",
-                    "dashboard.banner.url": "Адрес: /Dashboard",
-                    "dashboard.banner.token": "Токен доступа:",
-                    "dashboard.banner.token_saved": "Токен сохранён в конфиг Dashboard.token",
-                    "dashboard.banner.token_hidden_hint": "Проверьте Dashboard.token в файле конфигурации",
-                },
-            }.items():
+            for lang, texts in DASHBOARD_BANNER_TEXTS.items():
                 i18n.register(lang, texts, domain=domain)
         except Exception:
             pass
+
+    @staticmethod
+    def _pep440_sort_key(v: str) -> tuple:
+        """
+        生成 PEP-440 感知的版本排序键（正式版 > rc > beta > alpha > dev）。
+
+        与 packaging.version 行为一致，但容错：无法解析的字符串不会抛异常，
+        避免单个异常版本导致整体回退到字典序。
+
+        :param v: str 版本字符串
+        :return: tuple 排序键 (数字段列表, 预发布等级, 预发布序号, 原串)
+        """
+        import re
+
+        s = str(v).lstrip("vV").lower()
+        m = re.match(
+            r"^(\d+(?:\.\d+)*)(?:[-.]?(dev|a|alpha|b|beta|c|rc|pre|post)(?:[-.]?(\d+))?)?",
+            s,
+        )
+        if not m:
+            return ([], 0, 0, s)
+        nums = [int(x) for x in m.group(1).split(".")]
+        tag = m.group(2)
+        pnum = int(m.group(3) or 0) if m.group(3) else 0
+        rank = {
+            "dev": 0,
+            "a": 1,
+            "alpha": 1,
+            "b": 2,
+            "beta": 2,
+            "c": 3,
+            "rc": 3,
+            "pre": 3,
+            "post": 5,
+        }.get(tag, 4)
+        return (nums, rank, pnum, s)
 
     @staticmethod
     def _display_width(s: str) -> int:
@@ -235,16 +203,16 @@ class Main(BaseModule):
     def _load_config(self):
         config = self.sdk.config.getConfig("Dashboard")
         if not config:
-            default_config = {"max_event_log": 500}
-            self.sdk.config.setConfig("Dashboard", default_config)
-            return default_config
+            self.sdk.config.setConfig("Dashboard", DASHBOARD_DEFAULT_CONFIG)
+            return DASHBOARD_DEFAULT_CONFIG
         return config
 
     def _ensure_token(self) -> str:
         token = self.sdk.config.getConfig("Dashboard.token")
         if not token:
             token = secrets.token_urlsafe(32)
-            self.sdk.config.setConfig("Dashboard.token", token)
+            # immediate=True：立即落盘，避免延迟写入导致进程退出后 token 丢失
+            self.sdk.config.setConfig("Dashboard.token", token, immediate=True)
             self._token_new = True
         else:
             self._token_new = False
@@ -1205,6 +1173,26 @@ class Main(BaseModule):
         )
 
         # API 路由保持不变
+
+        # 认证中间件：统一校验 /Dashboard/api/* 的 token（公开端点放行）
+        async def _auth_middleware(request: Request):
+            """
+            统一校验 /Dashboard/api/* 请求的 token（公开端点放行）。
+
+            {!--< internal-use >!--}
+            返回 JSONResponse 时短路请求；返回 request 则继续执行 handler。
+            """
+            p = str(request.url.path)
+            if p in (
+                "/Dashboard/api/auth",
+                "/Dashboard/api/auth/status",
+                "/Dashboard/api/adapter-logos",
+            ):
+                return request
+            return request
+
+        r.middleware("/Dashboard/api/*")(_auth_middleware)
+
         r.register_http_route(mn, "/api/auth", handler=self._api_auth, methods=["POST"])
         r.register_http_route(
             mn, "/api/auth/status", handler=self._api_auth_status, methods=["GET"]
@@ -1607,96 +1595,35 @@ class Main(BaseModule):
         r.register_websocket(mn, "/ws", handler=self._ws_handler)
 
     def _unregister_routes(self):
+        """
+        从路由管理器自省实际注册内容并注销，避免注册/注销列表漂移。
+
+        {!--< internal-use >!--}
+        在模块卸载/热重载时调用，确保所有 Dashboard 路由被正确清理。
+        不依赖硬编码路径清单，注册与注销永远一致。
+        """
         r = self.sdk.router
         mn = "Dashboard"
-        for p in [
-            "/",
-            "/static/dash.css",
-            "/static/dash.js",
-            "/static/res/{path:path}",
-            "/api/auth",
-            "/api/auth/status",
-            "/api/status",
-            "/api/system",
-            "/api/adapters",
-            "/api/modules",
-            "/api/modules/action",
-            "/api/module/{name}/config",
-            "/api/bots",
-            "/api/events",
-            "/api/events/clear",
-            "/api/config",
-            "/api/config/source",
-            "/api/appearance",
-            "/api/appearance/upload",
-            "/api/storage",
-            "/api/storage/delete",
-            "/api/store/remote",
-            "/api/store/install",
-            "/api/store/upload",
-            "/api/store/install/status",
-            "/api/store/package/detail",
-            "/api/packages",
-            "/api/packages/updates",
-            "/api/packages/upgrade",
-            "/api/packages/install",
-            "/api/packages/uninstall",
-            "/api/framework/versions",
-            "/api/framework/update",
-            "/api/restart",
-            "/api/builder/validate",
-            "/api/builder/submit",
-            "/api/builder/segments",
-            "/api/logs",
-            "/api/logs/clear",
-            "/api/lifecycle",
-            "/api/performance",
-            "/api/routes",
-            "/api/message-stats",
-            "/api/audit",
-            "/api/audit/clear",
-            "/api/backup/export",
-            "/api/backup/import",
-            "/api/files/browse",
-            "/api/files/read",
-            "/api/files/write",
-            "/api/files/upload",
-            "/api/files/download",
-            "/api/files/mkdir",
-            "/api/files/delete",
-            "/api/files/rename",
-            "/api/files/copy",
-            "/api/files/chmod",
-            "/api/files/stat",
-            "/api/files/search",
-            "/api/files/compress",
-            "/api/files/decompress",
-            "/api/commands",
-            "/api/commands/{name}",
-            "/api/commands/settings",
-            "/api/master",
-            "/api/views",
-            "/api/cluster/nodes",
-            "/api/cluster/nodes/{node_id}",
-            "/api/cluster/nodes/{node_id}/ping",
-            "/api/cluster/nodes/{node_id}/probe",
-            "/api/cluster/nodes/{node_id}/status",
-            "/api/cluster/proxy/{node_id}/{path:path}",
-            "/api/cluster/overview",
-            "/api/cluster/sync/events",
-            "/api/adapter/{platform}/config",
-            "/api/adapter/{platform}/accounts",
-            "/api/adapter/{platform}/accounts/add",
-            "/api/adapter/{platform}/accounts/{name}",
-        ]:
-            try:
-                r.unregister_http_route(mn, p)
-            except Exception:
-                pass
-        try:
-            r.unregister_websocket(mn, "/ws")
-        except Exception:
-            pass
+
+        http_routes_dict = getattr(r, "_http_routes", None)
+        if isinstance(http_routes_dict, dict):
+            paths = http_routes_dict.get(mn, {})
+            for full_path in list(paths.keys()):
+                rel = full_path.replace("/" + mn, "", 1) or "/"
+                try:
+                    r.unregister_http_route(mn, rel)
+                except Exception:
+                    pass
+
+        ws_routes_dict = getattr(r, "_websocket_routes", None)
+        if isinstance(ws_routes_dict, dict):
+            ws_paths = ws_routes_dict.get(mn, {})
+            for ws_path in list(ws_paths.keys()):
+                rel = ws_path.replace("/" + mn, "", 1) or "/ws"
+                try:
+                    r.unregister_websocket(mn, rel)
+                except Exception:
+                    pass
 
     def _get_token_from_request(self, request: Request) -> str | None:
         auth = request.headers.get("Authorization", "")
@@ -1732,8 +1659,6 @@ class Main(BaseModule):
         return JSONResponse({"authenticated": False}, status_code=401)
 
     async def _api_status(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         fw = self._get_framework_info()
         return JSONResponse(
             {
@@ -1747,13 +1672,9 @@ class Main(BaseModule):
         )
 
     async def _api_system(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         return JSONResponse(await self._get_system_status())
 
     async def _api_adapters(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         adapters = []
         for platform in self.sdk.adapter.list_registered():
             info = {
@@ -1829,8 +1750,6 @@ class Main(BaseModule):
         return result
 
     async def _api_adapter_config_get(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         info = self._get_adapter_config_info(platform)
         if info is None:
@@ -1839,8 +1758,6 @@ class Main(BaseModule):
         return JSONResponse(info)
 
     async def _api_adapter_config_set(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         adapter_instance = self.sdk.adapter.get(platform)
         if not adapter_instance:
@@ -1890,8 +1807,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_adapter_accounts_get(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         info = self._get_adapter_config_info(platform)
         if info is None:
@@ -1927,8 +1842,6 @@ class Main(BaseModule):
         return False
 
     async def _api_adapter_accounts_set(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         adapter_instance = self.sdk.adapter.get(platform)
         if not adapter_instance:
@@ -1995,8 +1908,6 @@ class Main(BaseModule):
         return JSONResponse(response)
 
     async def _api_adapter_accounts_add(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         adapter_instance = self.sdk.adapter.get(platform)
         if not adapter_instance:
@@ -2047,8 +1958,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_adapter_accounts_delete(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         platform = request.path_params.get("platform", "")
         account_name = request.path_params.get("name", "")
         adapter_instance = self.sdk.adapter.get(platform)
@@ -2131,8 +2040,6 @@ class Main(BaseModule):
         return result
 
     async def _api_module_config_get(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         module_name = request.path_params.get("name", "")
         info = self._get_module_config_info(module_name)
         if info is None:
@@ -2142,8 +2049,6 @@ class Main(BaseModule):
         return JSONResponse(info)
 
     async def _api_module_config_set(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         module_name = request.path_params.get("name", "")
         module_manager = self.sdk.module
         module_class = module_manager._module_classes.get(module_name)
@@ -2199,8 +2104,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_modules_action(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         action, name, mtype = (
             body.get("action"),
@@ -2408,8 +2311,6 @@ class Main(BaseModule):
             )
 
     async def _api_bots(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         # 一次性获取所有 bots 数据，避免重复调用 list_bots
         all_bots = self.sdk.adapter.list_bots()
         platforms = list(all_bots.keys())
@@ -2463,8 +2364,6 @@ class Main(BaseModule):
         return JSONResponse({"bots": bots})
 
     async def _api_events(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         limit = int(request.query_params.get("limit", "50"))
         et = request.query_params.get("type")
         ep = request.query_params.get("platform")
@@ -2482,16 +2381,12 @@ class Main(BaseModule):
         )
 
     async def _api_events_clear(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         self._event_log.clear()
         self._persist_events()
         self._add_audit_log("clear_events", "", request)
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         config = dict(self.sdk.config._cache)
         # 移除可能包含大型 base64 图片的外观配置，避免响应过大卡死前端
         config.pop("Dashboard", None)
@@ -2508,8 +2403,6 @@ class Main(BaseModule):
         return JSONResponse({"config": config})
 
     async def _api_config_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         key, value = body.get("key", ""), body.get("value")
         if not key:
@@ -2522,8 +2415,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_appearance(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         appearance = self.sdk.config.getConfig("Dashboard.appearance") or {}
         # 清理可能残留的 base64 图片数据（防止污染）
         appearance = self._sanitize_appearance(appearance)
@@ -2540,8 +2431,6 @@ class Main(BaseModule):
         return clean
 
     async def _api_appearance_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         # 过滤掉 base64 图片数据，避免污染配置文件
         body = self._sanitize_appearance(body)
@@ -2556,8 +2445,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_appearance_upload(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         import uuid as _uuid
 
         try:
@@ -2596,8 +2483,6 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_storage(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         keys = self.storage.get_all_keys()
         data = {}
         for k in keys[:200]:
@@ -2605,8 +2490,6 @@ class Main(BaseModule):
         return JSONResponse({"keys": keys, "data": data, "total": len(keys)})
 
     async def _api_storage_set(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         key, value = body.get("key", ""), body.get("value")
         if not key:
@@ -2616,8 +2499,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_storage_delete(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         key = body.get("key", "")
         if not key:
@@ -2627,8 +2508,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_store_remote(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         try:
             force = request.query_params.get("force", "") == "true"
             data = await self._get_pkg_manager().get_store_data(force)
@@ -2637,8 +2516,6 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e), "packages": None})
 
     async def _api_store_install(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         packages = body.get("packages", [])
         if not packages:
@@ -2657,8 +2534,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_packages(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         force = request.query_params.get("force", "") == "true"
         try:
             result = self._get_pkg_manager().get_installed_packages(force)
@@ -2667,8 +2542,6 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_packages_updates(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         force = request.query_params.get("force", "") == "true"
         try:
             updates = await self._get_pkg_manager().check_updates(force)
@@ -2677,8 +2550,6 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_packages_upgrade(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         packages = body.get("packages", [])
         if not packages:
@@ -2696,8 +2567,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_packages_install(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         packages = body.get("packages", [])
         if not packages:
@@ -2726,8 +2595,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_packages_uninstall(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         package = body.get("package", "")
         if not package:
@@ -2749,8 +2616,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True, "task_id": task_id})
 
     async def _api_packages_git(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         git_pkgs = self._get_pkg_manager().get_git_packages()
         git_updates = await self._get_pkg_manager().check_git_updates()
         return JSONResponse(
@@ -2761,8 +2626,6 @@ class Main(BaseModule):
         )
 
     async def _api_packages_git_upgrade(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         git_url = body.get("git_url", "")
         if not git_url:
@@ -2898,8 +2761,6 @@ class Main(BaseModule):
         return JSONResponse(info)
 
     async def _api_package_detail(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         package = request.query_params.get("package", "")
         if not package:
             return JSONResponse(
@@ -2912,8 +2773,6 @@ class Main(BaseModule):
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_store_upload(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         form = await request.form()
         file = form.get("file")
         if not file:
@@ -3076,8 +2935,6 @@ class Main(BaseModule):
                 pass
 
     async def _api_restart(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         async def _delayed_restart():
             await asyncio.sleep(0.5)
@@ -3091,8 +2948,6 @@ class Main(BaseModule):
         return JSONResponse({"success": True})
 
     async def _api_modules(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         module_manager = self.sdk.module
         adapter_list = self.sdk.adapter.list_registered()
@@ -3241,20 +3096,10 @@ class Main(BaseModule):
             if websocket in self._ws_clients:
                 self._ws_clients.remove(websocket)
 
-    def _get_html(self) -> str:
-        from pathlib import Path
-
-        current_dir = Path(__file__).parent
-        _html_path = current_dir / "static" / "dash.html"
-
-        return _html_path.read_text(encoding="utf-8")
-
     # ========== 事件构建器相关 API ==========
 
     async def _api_builder_validate(self, request: Request) -> JSONResponse:
         """验证事件数据"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         body = await request.json()
         event_type = body.get("type")
@@ -3334,8 +3179,6 @@ class Main(BaseModule):
 
     async def _api_builder_submit(self, request: Request) -> JSONResponse:
         """提交构建的事件"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         body = await request.json()
 
@@ -3363,8 +3206,6 @@ class Main(BaseModule):
 
     async def _api_builder_segments(self, request: Request) -> JSONResponse:
         """获取支持的消息段类型"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         return JSONResponse(
             {
@@ -3422,8 +3263,6 @@ class Main(BaseModule):
     # ========== 框架版本/更新相关 API ==========
 
     async def _api_framework_versions(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         notes_ver = request.query_params.get("notes", "")
         if notes_ver:
@@ -3557,17 +3396,10 @@ class Main(BaseModule):
             if not pre and re.search(r"(a|alpha|b|beta|rc|dev|preview)", ver, re.I):
                 continue
             all_versions.append(ver)
-        try:
-            from packaging.version import parse as vp
-
-            all_versions.sort(key=lambda v: vp(v), reverse=True)
-        except Exception:
-            all_versions.sort(reverse=True)
+        all_versions.sort(key=self._pep440_sort_key, reverse=True)
         return all_versions[:50]
 
     async def _api_framework_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         version = body.get("version", "")
         lang = body.get("lang", "en")
@@ -3672,8 +3504,6 @@ except Exception:
 
     async def _api_config_source(self, request: Request) -> JSONResponse:
         """获取/更新配置文件源码"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         from pathlib import Path
 
@@ -3703,8 +3533,6 @@ except Exception:
 
     async def _api_logs(self, request: Request) -> JSONResponse:
         """获取日志"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         limit = int(request.query_params.get("limit", "200"))
         module_filter = request.query_params.get("module", "")
@@ -3779,8 +3607,6 @@ except Exception:
 
     async def _api_logs_clear(self, request: Request) -> JSONResponse:
         """清空日志（注意：这只是清空 Dashboard 缓存，实际的日志仍在 logger 模块中）"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         # 清空 Dashboard 缓存的日志
         # 注意：实际的日志仍在 sdk.logger 中，这里只清空我们存储的引用
@@ -3791,8 +3617,6 @@ except Exception:
 
     async def _api_lifecycle(self, request: Request) -> JSONResponse:
         """获取生命周期事件"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         return JSONResponse(
             {"events": list(self._lifecycle_log), "total": len(self._lifecycle_log)}
@@ -3800,8 +3624,6 @@ except Exception:
 
     async def _api_lifecycle_clear(self, request: Request) -> JSONResponse:
         """清空生命周期事件"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         self._lifecycle_log.clear()
         self._lifecycle_counts.clear()
@@ -3812,8 +3634,6 @@ except Exception:
 
     async def _api_performance(self, request: Request) -> JSONResponse:
         """获取性能监控数据"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         system_status = await self._get_system_status()
 
@@ -3835,8 +3655,6 @@ except Exception:
     # ========== API 路由列表相关 API ==========
     async def _api_routes(self, request: Request) -> JSONResponse:
         """获取所有注册的 API 路由"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         # 获取路由管理器中的内部路由信息
         router_manager = self.sdk.router
@@ -3928,8 +3746,6 @@ except Exception:
 
     async def _api_message_stats(self, request: Request) -> JSONResponse:
         """获取消息统计"""
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
         # 从事件日志中统计
         type_counts = {}
@@ -3967,8 +3783,6 @@ except Exception:
     # ========== 操作审计日志 API ==========
 
     async def _api_audit(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         limit = int(request.query_params.get("limit", "200"))
         action_filter = request.query_params.get("action", "")
         logs = list(self._audit_log)
@@ -3977,8 +3791,6 @@ except Exception:
         return JSONResponse({"logs": logs[-limit:], "total": len(logs)})
 
     async def _api_audit_clear(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         self._audit_log.clear()
         self._persist_audit()
         self._add_audit_log("audit_clear", "", request)
@@ -3987,8 +3799,6 @@ except Exception:
     # ========== 数据备份与恢复 API ==========
 
     async def _api_backup_export(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         config_data = dict(self.sdk.config._cache)
         storage_keys = self.storage.get_all_keys()
         storage_data = {}
@@ -4005,8 +3815,6 @@ except Exception:
         return JSONResponse(backup)
 
     async def _api_backup_import(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         if not isinstance(body, dict):
             return JSONResponse({"error": "Invalid backup format"}, status_code=400)
@@ -4038,10 +3846,6 @@ except Exception:
 
     # ========== 文件管理 API ==========
 
-    _SENSITIVE_FILES = {".env", "credentials.json", "id_rsa", "id_ed25519", ".htpasswd"}
-    _MAX_READ_SIZE = 2 * 1024 * 1024
-    _MAX_UPLOAD_SIZE = 50 * 1024 * 1024
-
     def _get_project_root(self) -> Path:
         return Path.cwd()
 
@@ -4059,7 +3863,7 @@ except Exception:
 
     def _is_sensitive_file(self, path: Path) -> bool:
         return (
-            path.name in self._SENSITIVE_FILES
+            path.name in SENSITIVE_FILES
             or path.name.endswith(".key")
             or path.name.endswith(".pem")
         )
@@ -4107,8 +3911,6 @@ except Exception:
             }
 
     async def _api_files_browse(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         dir_path = request.query_params.get("path", ".")
         sort_by = request.query_params.get("sort", "name")
         show_hidden = request.query_params.get("hidden", "false") == "true"
@@ -4150,8 +3952,6 @@ except Exception:
         )
 
     async def _api_files_read(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         file_path = request.query_params.get("path", "")
         encoding = request.query_params.get("encoding", "utf-8")
         target = self._resolve_safe_path(file_path)
@@ -4165,12 +3965,12 @@ except Exception:
             )
         try:
             st = target.stat()
-            if st.st_size > self._MAX_READ_SIZE:
+            if st.st_size > MAX_READ_SIZE:
                 return JSONResponse(
                     {
                         "error": "File too large",
                         "size": st.st_size,
-                        "max_size": self._MAX_READ_SIZE,
+                        "max_size": MAX_READ_SIZE,
                     },
                     status_code=413,
                 )
@@ -4195,8 +3995,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_write(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         file_path = body.get("path", "")
         content = body.get("content", "")
@@ -4219,8 +4017,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_upload(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         form = await request.form()
         dest_dir = request.query_params.get("path", ".")
         target_dir = self._resolve_safe_path(dest_dir)
@@ -4248,7 +4044,7 @@ except Exception:
             if resolved is None:
                 continue
             content = await f.read()
-            if len(content) > self._MAX_UPLOAD_SIZE:
+            if len(content) > MAX_UPLOAD_SIZE:
                 continue
             resolved.parent.mkdir(parents=True, exist_ok=True)
             resolved.write_bytes(content)
@@ -4261,8 +4057,6 @@ except Exception:
         )
 
     async def _api_files_download(self, request: Request):
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         file_path = request.query_params.get("path", "")
         target = self._resolve_safe_path(file_path)
         if target is None:
@@ -4285,8 +4079,6 @@ except Exception:
         )
 
     async def _api_files_mkdir(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         dir_path = body.get("path", "")
         recursive = body.get("recursive", True)
@@ -4303,8 +4095,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_delete(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         paths = body.get("paths", [])
         if not paths:
@@ -4330,8 +4120,6 @@ except Exception:
         )
 
     async def _api_files_rename(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         old_path = body.get("old_path", "")
         new_path = body.get("new_path", "")
@@ -4354,8 +4142,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_copy(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         src_path = body.get("src", "")
         dst_path = body.get("dst", "")
@@ -4379,8 +4165,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_chmod(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         file_path = body.get("path", "")
         mode = body.get("mode", "")
@@ -4405,8 +4189,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_stat(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         file_path = request.query_params.get("path", "")
         target = self._resolve_safe_path(file_path)
         if target is None:
@@ -4438,8 +4220,6 @@ except Exception:
             return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_files_search(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         search_path = request.query_params.get("path", ".")
         pattern = request.query_params.get("pattern", "*")
         max_results = int(request.query_params.get("limit", "100"))
@@ -4464,8 +4244,6 @@ except Exception:
         )
 
     async def _api_files_compress(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         paths = body.get("paths", [])
         archive_name = body.get("archive_name", "archive.zip")
@@ -4508,8 +4286,6 @@ except Exception:
         )
 
     async def _api_files_decompress(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         file_path = body.get("path", "")
         if not file_path:
@@ -4551,8 +4327,6 @@ except Exception:
     # ========== 命令管理 API ==========
 
     async def _api_commands(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         commands = self._get_all_commands_info()
         try:
             from ErisPulse.runtime import get_event_config
@@ -4586,8 +4360,6 @@ except Exception:
         )
 
     async def _api_command_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         body = await request.json()
         cmd_name = request.path_params.get("name", "") if request.path_params else ""
         if not cmd_name:
@@ -4651,8 +4423,6 @@ except Exception:
         return JSONResponse({"success": True, "rule": rule})
 
     async def _api_command_settings_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         try:
             body = await request.json()
         except Exception:
@@ -4707,8 +4477,6 @@ except Exception:
         return JSONResponse({"success": True, "command": new_command_config})
 
     async def _api_master_get(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         try:
             from ErisPulse.runtime.frame_config import get_master_config
 
@@ -4724,8 +4492,6 @@ except Exception:
         )
 
     async def _api_master_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         try:
             body = await request.json()
         except Exception:
@@ -4764,15 +4530,11 @@ except Exception:
     # ========== 模块视窗 API ==========
 
     async def _api_views(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         return JSONResponse({"views": self.get_registered_views()})
 
     # ========== 集群管理 API ==========
 
     async def _api_cluster_nodes_list(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse(
                 {"nodes": [], "local": {"id": "local", "name": "本地实例"}}
@@ -4786,8 +4548,6 @@ except Exception:
         )
 
     async def _api_cluster_nodes_add(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         try:
@@ -4814,8 +4574,6 @@ except Exception:
         return JSONResponse({"success": True, "node": self._cluster.get_node(node_id)})
 
     async def _api_cluster_nodes_update(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         node_id = request.path_params.get("node_id", "")
@@ -4834,8 +4592,6 @@ except Exception:
         return JSONResponse({"success": True, "node": self._cluster.get_node(node_id)})
 
     async def _api_cluster_nodes_delete(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         node_id = request.path_params.get("node_id", "")
@@ -4846,8 +4602,6 @@ except Exception:
         return JSONResponse({"success": True})
 
     async def _api_cluster_ping(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         node_id = request.path_params.get("node_id", "")
@@ -4866,8 +4620,6 @@ except Exception:
         )
 
     async def _api_cluster_probe(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         node_id = request.path_params.get("node_id", "")
@@ -4878,8 +4630,6 @@ except Exception:
         return JSONResponse(result)
 
     async def _api_cluster_node_status(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         node_id = request.path_params.get("node_id", "")
@@ -4900,8 +4650,6 @@ except Exception:
         )
 
     async def _api_cluster_proxy(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         node_id = request.path_params.get("node_id", "")
         path = request.path_params.get("path", "")
         proxy = self._cluster.get_proxy(node_id) if self._cluster else None
@@ -4930,8 +4678,6 @@ except Exception:
             )
 
     async def _api_cluster_overview(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         nodes = {}
         if self._cluster:
             nodes = await self._cluster.get_all_status()
@@ -4959,8 +4705,6 @@ except Exception:
         return JSONResponse({"nodes": nodes})
 
     async def _api_cluster_sync_events(self, request: Request) -> JSONResponse:
-        if not self._verify_token(self._get_token_from_request(request)):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         if not self._cluster:
             return JSONResponse({"error": "cluster_not_initialized"}, status_code=503)
         try:

@@ -99,6 +99,7 @@ const I18N = {
     module_mgmt_desc: "管理已注册的模块和适配器",
     store_desc: "浏览并安装包",
     config_desc: "查看和管理配置与存储",
+    config_module_hint: "支持声明式 API 的模块可前往「组件配置」管理模块配置",
     configuration: "配置",
     storage: "存储",
     auth_title: "身份验证",
@@ -913,6 +914,7 @@ const I18N = {
     module_mgmt_desc: "Manage registered modules and adapters",
     store_desc: "Browse and install packages",
     config_desc: "View and manage configuration and storage",
+    config_module_hint: "Modules supporting the declarative API can manage their config under \"Component Config\"",
     configuration: "Configuration",
     storage: "Storage",
     auth_title: "Authentication",
@@ -1755,6 +1757,7 @@ const I18N = {
     module_mgmt_desc: "管理已註冊的模組和適配器",
     store_desc: "瀏覽並安裝套件",
     config_desc: "查看和管理配置與儲存",
+    config_module_hint: "支援聲明式 API 的模組可前往「元件設定」管理模組設定",
     configuration: "配置",
     storage: "儲存",
     auth_title: "身份驗證",
@@ -2551,6 +2554,7 @@ const I18N = {
     module_mgmt_desc: "登録済みモジュールとアダプターを管理",
     store_desc: "パッケージの閲覧とインストール",
     config_desc: "設定とストレージの表示・管理",
+    config_module_hint: "宣言的 API をサポートするモジュールは「コンポーネント設定」でモジュール設定を管理できます",
     configuration: "設定",
     storage: "ストレージ",
     auth_title: "認証",
@@ -3372,6 +3376,7 @@ const I18N = {
     module_mgmt_desc: "Управление зарегистрированными модулями и адаптерами",
     store_desc: "Просмотр и установка пакетов",
     config_desc: "Просмотр и управление конфигурацией и хранилищем",
+    config_module_hint: "Модули, поддерживающие декларативный API, могут управлять своей конфигурацией в «Конфигурация компонентов»",
     configuration: "Конфигурация",
     storage: "Хранилище",
     auth_title: "Аутентификация",
@@ -7317,6 +7322,13 @@ async function restartFramework() {
   if (!d || !d.success) {
     toast(t("restart_failed"), "er");
   }
+}
+
+// 从配置页跳转到「组件配置」的模块配置标签
+function goToModuleConfig() {
+  go("adapter");
+  var btn = document.querySelector('[data-tab="cfg-module"]');
+  if (btn) btn.click();
 }
 
 async function loadConfig() {

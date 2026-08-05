@@ -1155,6 +1155,39 @@ body {
     animation: bubbleIn 0.4s 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* 配置页：跳转组件配置提示横幅 */
+.config-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: -6px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--bd));
+    font-size: 13px;
+    color: var(--tx-p);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+.config-hint:hover {
+    border-color: var(--accent);
+}
+.config-hint svg {
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+}
+.config-hint-arrow {
+    margin-left: auto;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1;
+}
+
 .page-loader-strip {
     position: absolute;
     top: 0;
