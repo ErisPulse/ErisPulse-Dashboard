@@ -542,7 +542,6 @@ const I18N = {
     undo: "撤销",
     storage_deleted: "已删除存储键",
     storage_restored: "已恢复存储键",
-    search_kv: "搜索配置键...",
     unsaved_title: "有未保存的修改",
     unsaved_confirm: "源码尚未保存，确定要离开吗？",
     settings_default_page: "默认起始页",
@@ -1371,7 +1370,6 @@ const I18N = {
     undo: "Undo",
     storage_deleted: "Storage key deleted",
     storage_restored: "Storage key restored",
-    search_kv: "Search config keys...",
     unsaved_title: "Unsaved changes",
     unsaved_confirm: "Source is not saved yet. Leave anyway?",
     settings_default_page: "Default Start Page",
@@ -2194,7 +2192,6 @@ const I18N = {
     undo: "復原",
     storage_deleted: "已刪除儲存鍵",
     storage_restored: "已復原儲存鍵",
-    search_kv: "搜尋設定鍵...",
     unsaved_title: "有未儲存的修改",
     unsaved_confirm: "原始碼尚未儲存，確定要離開嗎？",
     settings_default_page: "預設起始頁",
@@ -3005,7 +3002,6 @@ const I18N = {
     undo: "元に戻す",
     storage_deleted: "ストレージキーを削除しました",
     storage_restored: "ストレージキーを復元しました",
-    search_kv: "設定キーを検索...",
     unsaved_title: "未保存の変更があります",
     unsaved_confirm: "ソースは未保存です。離れますか？",
     settings_default_page: "既定の開始ページ",
@@ -3827,7 +3823,6 @@ const I18N = {
     undo: "Отменить",
     storage_deleted: "Ключ хранилища удалён",
     storage_restored: "Ключ хранилища восстановлен",
-    search_kv: "Поиск ключей конфигурации...",
     unsaved_title: "Есть несохранённые изменения",
     unsaved_confirm: "Исходный код не сохранён. Выйти?",
     settings_default_page: "Стартовая страница",
@@ -4507,7 +4502,7 @@ function toggleLang() {
     };
     if (loaders[pageId]) loaders[pageId]();
     else if (_moduleViewLoaders && _moduleViewLoaders[pageId])
-      _moduleViewLoaders[pageId]();
+      _runModuleViewLoader(pageId);
   }
   updateNodeSelectorUI();
 }
@@ -4949,12 +4944,14 @@ function go(name, el) {
       if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
     });
   } else if (_moduleViewLoaders && _moduleViewLoaders[name]) {
-    var result2 = _moduleViewLoaders[name]();
-    Promise.resolve(result2).then(function () {
-      return minDelay;
-    }).then(function () {
-      if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
-    });
+    var result2 = _runModuleViewLoader(name);
+    Promise.resolve(result2 || minDelay)
+      .then(function () {
+        return minDelay;
+      })
+      .then(function () {
+        if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
+      });
   } else {
     minDelay.then(function () {
       if (strip) { strip.classList.add("hide"); setTimeout(function () { strip.remove(); }, 350); }
@@ -4978,6 +4975,41 @@ function go(name, el) {
 }
 
 let _moduleViewLoaders = {};
+
+// 运行模块视图 loader：捕获同步/异步异常，并提示错误归属（模块 vs Dashboard）
+function _runModuleViewLoader(name) {
+  var loader = _moduleViewLoaders && _moduleViewLoaders[name];
+  if (typeof loader !== "function") {
+    console.warn(
+      "[ErisPulse Dashboard] 模块视图 '" +
+        name +
+        "' 的 loader 未注册——通常是该模块的 js_content 未正确定义 loader 函数，属于模块自身问题。",
+    );
+    return null;
+  }
+  try {
+    var result = loader();
+    if (result && typeof result.catch === "function") {
+      result.catch(function (err) {
+        console.error(
+          "[ErisPulse Dashboard] 模块视图 '" +
+            name +
+            "' 异步运行出错。这通常是该模块自身的问题（js_content / API / 业务逻辑），不是 Dashboard 的问题。错误如下：",
+          err,
+        );
+      });
+    }
+    return result;
+  } catch (err) {
+    console.error(
+      "[ErisPulse Dashboard] 模块视图 '" +
+        name +
+        "' 的 loader 抛出异常。这通常是该模块自身的问题（js_content 语法/引用错误），不是 Dashboard 的问题。错误如下：",
+      err,
+    );
+    return null;
+  }
+}
 let _moduleViewsLoaded = false;
 
 async function loadModuleViews() {
@@ -5072,6 +5104,14 @@ function _renderModuleViews(views) {
 
     if (v.loader && typeof window[v.loader] === "function") {
       _moduleViewLoaders[pageId] = window[v.loader];
+    } else if (v.loader) {
+      console.warn(
+        "[ErisPulse Dashboard] 模块视图 '" +
+          v.id +
+          "' 声明了 loader '" +
+          v.loader +
+          "' 但该函数未定义——通常是该模块的 js_content 执行失败（语法/引用错误），属于该模块自身的问题，不是 Dashboard 的问题。",
+      );
     }
   });
 
@@ -7886,17 +7926,6 @@ function showShortcutsHelp() {
   showModal(t("kb_title"), rows, [
     { label: t("ok"), value: true, primary: true },
   ]);
-}
-
-function filterKvContainer(containerId, q) {
-  q = (q || "").toLowerCase();
-  var root = document.getElementById(containerId);
-  if (!root) return;
-  var rows = root.querySelectorAll(".kv-row");
-  rows.forEach(function (r) {
-    r.style.display =
-      !q || (r.textContent || "").toLowerCase().indexOf(q) >= 0 ? "" : "none";
-  });
 }
 
 function toastUndo(msg, undoFn) {
