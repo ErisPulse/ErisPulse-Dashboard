@@ -9005,6 +9005,7 @@ const _fwDefaults = {
   server: {
     host: "0.0.0.0",
     port: 8000,
+    auto_start: true,
     ssl_certfile: null,
     ssl_keyfile: null,
   },
@@ -9036,6 +9037,7 @@ const _fwDefaults = {
 const _fwFieldDescs = {
   "server.host": "监听地址",
   "server.port": "监听端口",
+  "server.auto_start": "初始化时自动启动 HTTP 路由服务器",
   "server.ssl_certfile": "SSL 证书路径，设为 null 则不使用 SSL",
   "server.ssl_keyfile": "SSL 密钥路径",
   "logger.level": "日志级别: DEBUG / INFO / WARNING / ERROR / CRITICAL",
