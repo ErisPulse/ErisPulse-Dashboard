@@ -31,7 +31,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=11" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=12" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -3665,6 +3665,11 @@
                     <div class="page" id="p-config">
                         <h1 class="page-title" data-i18n="config"></h1>
                         <p class="page-desc" data-i18n="config_desc"></p>
+                        <div class="config-hint" onclick="goToModuleConfig()" role="button" tabindex="0">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <span data-i18n="config_module_hint"></span>
+                            <span class="config-hint-arrow">›</span>
+                        </div>
                         <div class="view-toggle pkg-tabs">
                             <button
                                 class="view-btn pkg-tab active"
@@ -6025,6 +6030,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=18"></script>
+        <script src="/Dashboard/static/dash.js?v=19"></script>
     </body>
 </html>
