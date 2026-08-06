@@ -1768,19 +1768,86 @@
                                             data-i18n-option="all_modules"
                                         ></option>
                                     </select>
-                                    <select
+                                    <div
+                                        class="log-level-chips"
                                         id="logLevelFilter"
-                                        onchange="loadLogs()"
                                     >
-                                        <option value="" data-i18n-option="all_levels"></option>
-                                        <option value="TRACE">TRACE</option>
-                                        <option value="DEBUG">DEBUG</option>
-                                        <option value="INFO" selected>INFO</option>
-                                        <option value="EVENT">EVENT</option>
-                                        <option value="WARNING">WARNING</option>
-                                        <option value="ERROR">ERROR</option>
-                                        <option value="CRITICAL">CRITICAL</option>
-                                    </select>
+                                        <label
+                                            class="log-level-chip"
+                                            data-level="TRACE"
+                                            ><input
+                                                type="checkbox"
+                                                value="TRACE"
+                                                onchange="loadLogs()" /><span
+                                                >TRACE</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip"
+                                            data-level="DEBUG"
+                                            ><input
+                                                type="checkbox"
+                                                value="DEBUG"
+                                                onchange="loadLogs()" /><span
+                                                >DEBUG</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip lv-info"
+                                            data-level="INFO"
+                                            ><input
+                                                type="checkbox"
+                                                value="INFO"
+                                                checked
+                                                onchange="loadLogs()" /><span
+                                                >INFO</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip lv-event"
+                                            data-level="EVENT"
+                                            ><input
+                                                type="checkbox"
+                                                value="EVENT"
+                                                checked
+                                                onchange="loadLogs()" /><span
+                                                >EVENT</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip lv-warning"
+                                            data-level="WARNING"
+                                            ><input
+                                                type="checkbox"
+                                                value="WARNING"
+                                                checked
+                                                onchange="loadLogs()" /><span
+                                                >WARNING</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip lv-error"
+                                            data-level="ERROR"
+                                            ><input
+                                                type="checkbox"
+                                                value="ERROR"
+                                                checked
+                                                onchange="loadLogs()" /><span
+                                                >ERROR</span
+                                            ></label
+                                        >
+                                        <label
+                                            class="log-level-chip lv-critical"
+                                            data-level="CRITICAL"
+                                            ><input
+                                                type="checkbox"
+                                                value="CRITICAL"
+                                                checked
+                                                onchange="loadLogs()" /><span
+                                                >CRITICAL</span
+                                            ></label
+                                        >
+                                    </div>
                                     <input
                                         type="text"
                                         id="logSearch"
@@ -1943,6 +2010,38 @@
                                                 />
                                                 <path
                                                     d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                                                />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            class="btn-icon"
+                                            onclick="downloadLogs()"
+                                            title=""
+                                            data-i18n-title="download_logs"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                style="
+                                                    width: 16px;
+                                                    height: 16px;
+                                                "
+                                            >
+                                                <path
+                                                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                                />
+                                                <polyline
+                                                    points="7 10 12 15 17 10"
+                                                />
+                                                <line
+                                                    x1="12"
+                                                    y1="15"
+                                                    x2="12"
+                                                    y2="3"
                                                 />
                                             </svg>
                                         </button>

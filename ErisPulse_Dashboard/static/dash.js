@@ -247,6 +247,7 @@ const I18N = {
     copy: "复制",
     auto_refresh: "自动刷新",
     copy_all_logs: "复制所有日志",
+    download_logs: "下载日志",
     event_preview: "事件预览",
     copied_to_clipboard: "已复制到剪贴板",
     copy_failed: "复制失败",
@@ -1071,6 +1072,7 @@ const I18N = {
     copy: "Copy",
     auto_refresh: "Auto Refresh",
     copy_all_logs: "Copy All Logs",
+    download_logs: "Download Logs",
     event_preview: "Event Preview",
     copied_to_clipboard: "Copied to clipboard",
     copy_failed: "Copy failed",
@@ -1908,6 +1910,7 @@ const I18N = {
     copy: "複製",
     auto_refresh: "自動重新整理",
     copy_all_logs: "複製所有日誌",
+    download_logs: "下載日誌",
     event_preview: "事件預覽",
     copied_to_clipboard: "已複製到剪貼簿",
     copy_failed: "複製失敗",
@@ -2716,6 +2719,7 @@ const I18N = {
     copy: "コピー",
     auto_refresh: "自動更新",
     copy_all_logs: "すべてのログをコピー",
+    download_logs: "ログをダウンロード",
     event_preview: "イベントプレビュー",
     copied_to_clipboard: "クリップボードにコピーしました",
     copy_failed: "コピー失敗",
@@ -3542,6 +3546,7 @@ const I18N = {
     copy: "Копировать",
     auto_refresh: "Автообновление",
     copy_all_logs: "Копировать все журналы",
+    download_logs: "Скачать журналы",
     event_preview: "Предпросмотр события",
     copied_to_clipboard: "Скопировано в буфер обмена",
     copy_failed: "Ошибка копирования",
@@ -6309,7 +6314,14 @@ EP.positionList = function (el, anchor, maxH) {
   var vh = window.innerHeight;
   var below = vh - rc.bottom - margin;
   var above = rc.top - margin;
-  var width = Math.max(rc.width, 160);
+  // 先以 auto 宽度渲染测量内容自然宽度（不可见，避免闪烁）
+  var prevVis = el.style.visibility;
+  el.style.visibility = "hidden";
+  el.style.display = "block";
+  el.style.width = "auto";
+  var contentW = el.offsetWidth;
+  el.style.visibility = prevVis;
+  var width = Math.max(rc.width, contentW, 160);
   if (width > vw - margin) width = vw - margin;
   var left = Math.min(rc.left, vw - margin);
   if (left + width > vw - margin) left = Math.max(margin, vw - width - margin);
@@ -6784,21 +6796,37 @@ function _renderStoreTags(data) {
 async function loadStore(forceRefresh) {
   const q = document.getElementById("storeSearch")?.value?.toLowerCase() || "";
   const typeFilter = document.getElementById("storeTypeFilter")?.value || "all";
-  let d = null;
+  let remotePackages = null;
+
+  // 远程注册表数据变化少，可缓存；但已安装版本必须实时获取
   if (!forceRefresh) {
     try {
       const c = JSON.parse(localStorage.getItem(STORE_CACHE_KEY));
-      if (c && Date.now() - c.ts < STORE_CACHE_TTL) d = c.data;
+      if (c && c.packages && Date.now() - c.ts < STORE_CACHE_TTL)
+        remotePackages = c.packages;
     } catch (e) {}
   }
-  if (!d) {
-    d = await api("/api/store/remote");
-    if (d && d.packages)
+  if (!remotePackages) {
+    const resp = await api("/api/store/remote");
+    if (resp && resp.packages) {
+      remotePackages = resp.packages;
       localStorage.setItem(
         STORE_CACHE_KEY,
-        JSON.stringify({ ts: Date.now(), data: d }),
+        JSON.stringify({ ts: Date.now(), packages: remotePackages }),
       );
+    }
   }
+
+  // 已安装版本始终实时获取（不缓存），避免升级后"有更新"徽章不消失
+  const instResp = await api("/api/packages");
+  const installedVersions = {};
+  if (instResp && Array.isArray(instResp.packages)) {
+    instResp.packages.forEach(function (p) {
+      if (p.name) installedVersions[p.name.toLowerCase()] = p.version || "";
+    });
+  }
+
+  const d = { packages: remotePackages, installed_versions: installedVersions };
   if (!d || !d.packages) {
     document.getElementById("storeGrid").innerHTML =
       '<div class="empty-state" style="grid-column:span 3"><p>' +
@@ -6811,7 +6839,6 @@ async function loadStore(forceRefresh) {
   // 渲染标签筛选项
   _renderStoreTags(pk);
 
-  const installedVersions = d.installed_versions || {};
   const all = [
     ...Object.entries(pk.modules || {}).map(([n, i]) => ({
       ...i,
@@ -10715,6 +10742,7 @@ function wsConnect() {
           addOrUpdateTask(m.task_id, pkg, "success", m.output || []);
           loadModules();
           loadPackages(true);
+          loadStore(true);
         } else if (m.status === "error") {
           _installTaskIds.delete(m.task_id);
           addOrUpdateTask(
@@ -11407,8 +11435,7 @@ function copyEventJson() {
   const event = buildEventData();
   const json = JSON.stringify(event, null, 2);
 
-  navigator.clipboard
-    .writeText(json)
+  _copyToClipboard(json)
     .then(() => {
       toast(t("copied_to_clipboard"), "ok");
     })
@@ -11571,15 +11598,12 @@ function _flushLogStream() {
 
   // Apply current filters
   var moduleFilter = document.getElementById("logModuleFilter")?.value || "";
-  var levelFilter = document.getElementById("logLevelFilter")?.value || "";
+  var levelSet = _getSelectedLevelsSet();
   var search = document.getElementById("logSearch")?.value?.toLowerCase() || "";
 
   var filtered = newLogs.filter(function (log) {
     if (moduleFilter && log.module && log.module.toLowerCase().indexOf(moduleFilter.toLowerCase()) === -1) return false;
-    if (levelFilter) {
-      var filterNum = _logLevelToNum(levelFilter);
-      if (filterNum !== null && (log.level_num || 0) < filterNum) return false;
-    }
+    if (levelSet.size > 0 && !levelSet.has((log.level || "").toUpperCase())) return false;
     if (search && log.message && log.message.toLowerCase().indexOf(search) === -1) return false;
     return true;
   });
@@ -11611,6 +11635,17 @@ function _flushLogStream() {
   if (!_logPaused && (_logStreamActive || wasNearBottom)) {
     logList.scrollTop = _logSortNewestBottom ? logList.scrollHeight : 0;
   }
+}
+
+function _getSelectedLevels() {
+  var container = document.getElementById("logLevelFilter");
+  if (!container) return [];
+  var checked = container.querySelectorAll('input[type="checkbox"]:checked');
+  return Array.prototype.map.call(checked, function (cb) { return cb.value; });
+}
+
+function _getSelectedLevelsSet() {
+  return new Set(_getSelectedLevels());
 }
 
 function _logLevelToNum(level) {
@@ -11659,27 +11694,35 @@ function toggleLogSortOrder() {
   loadLogs();
 }
 
+let _logLastModuleScan = 0;
+
+async function _discoverLogModules() {
+  var now = Date.now();
+  if (now - _logLastModuleScan < 30000) return;
+  _logLastModuleScan = now;
+  const d = await api("/api/logs?limit=500");
+  if (!d || !d.logs) return;
+  var newModules = false;
+  d.logs.forEach((log) => {
+    if (log.module && !_availableModules.has(log.module)) {
+      _availableModules.add(log.module);
+      newModules = true;
+    }
+  });
+  if (newModules) updateModuleSelect();
+}
+
 async function loadLogs() {
   const moduleFilter = document.getElementById("logModuleFilter")?.value || "";
-  const levelFilter = document.getElementById("logLevelFilter")?.value || "";
+  const selectedLevels = _getSelectedLevels();
   const search = document.getElementById("logSearch")?.value || "";
 
-  // 首次加载时收集所有模块
-  if (_availableModules.size === 0) {
-    const d = await api("/api/logs");
-    if (d && d.logs) {
-      d.logs.forEach((log) => {
-        if (log.module) {
-          _availableModules.add(log.module);
-        }
-      });
-      updateModuleSelect();
-    }
-  }
+  // 定期做一次全量扫描以发现新模块（不阻塞当前渲染）
+  _discoverLogModules();
 
   const params = new URLSearchParams();
   if (moduleFilter) params.set("module", moduleFilter);
-  if (levelFilter) params.set("level", levelFilter);
+  if (selectedLevels.length) params.set("levels", selectedLevels.join(","));
   if (search) params.set("search", search);
   params.set("limit", "200");
 
@@ -11687,6 +11730,17 @@ async function loadLogs() {
   if (!d) return;
 
   const logs = d.logs || [];
+
+  // 同时从当前筛选结果中收集新模块
+  var newModules = false;
+  logs.forEach((log) => {
+    if (log.module && !_availableModules.has(log.module)) {
+      _availableModules.add(log.module);
+      newModules = true;
+    }
+  });
+  if (newModules) updateModuleSelect();
+
   document.getElementById("logCount").textContent = d.total || 0;
 
   if (logs.length === 0) {
@@ -11732,22 +11786,110 @@ function updateModuleSelect() {
   }
 }
 
-function copyLogs() {
-  const logList = document.getElementById("logList");
-  if (!logList) return;
+function _copyToClipboard(text) {
+  return new Promise((resolve, reject) => {
+    if (
+      navigator.clipboard &&
+      navigator.clipboard.writeText &&
+      window.isSecureContext
+    ) {
+      navigator.clipboard.writeText(text).then(resolve, reject);
+      return;
+    }
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error("execCommand failed"));
+    } catch (e) {
+      document.body.removeChild(ta);
+      reject(e);
+    }
+  });
+}
 
-  const logs = Array.from(logList.querySelectorAll(".log-entry"))
-    .map((el) => el.textContent)
-    .join("\n");
+async function _fetchFilteredLogs() {
+  const moduleFilter = document.getElementById("logModuleFilter")?.value || "";
+  const selectedLevels = _getSelectedLevels();
+  const search = document.getElementById("logSearch")?.value || "";
 
-  navigator.clipboard
-    .writeText(logs)
-    .then(() => {
-      toast(t("copied_to_clipboard"), "ok");
+  const params = new URLSearchParams();
+  if (moduleFilter) params.set("module", moduleFilter);
+  if (selectedLevels.length) params.set("levels", selectedLevels.join(","));
+  if (search) params.set("search", search);
+  params.set("limit", "10000");
+
+  const d = await api("/api/logs?" + params);
+  if (!d || !d.logs) return [];
+  return d.logs.slice().reverse();
+}
+
+function _formatLogText(logs) {
+  return logs
+    .map(function (log) {
+      var ts = log.timestamp || "";
+      var lvl = (log.level || "").toUpperCase();
+      var mod = log.module || "";
+      var msg = log.message || "";
+      return "[" + ts + "] [" + lvl + "] [" + mod + "] " + msg;
     })
-    .catch(() => {
-      toast(t("copy_failed"), "er");
-    });
+    .join("\n");
+}
+
+function copyLogs() {
+  _fetchFilteredLogs().then(function (logs) {
+    if (!logs.length) {
+      toast(t("no_logs"), "er");
+      return;
+    }
+    _copyToClipboard(_formatLogText(logs))
+      .then(() => {
+        toast(t("copied_to_clipboard"), "ok");
+      })
+      .catch(() => {
+        toast(t("copy_failed"), "er");
+      });
+  });
+}
+
+function downloadLogs() {
+  _fetchFilteredLogs().then(function (logs) {
+    if (!logs.length) {
+      toast(t("no_logs"), "er");
+      return;
+    }
+
+    const text = _formatLogText(logs);
+    const now = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    const stamp =
+      now.getFullYear() +
+      "-" +
+      p(now.getMonth() + 1) +
+      "-" +
+      p(now.getDate()) +
+      "_" +
+      p(now.getHours()) +
+      p(now.getMinutes()) +
+      p(now.getSeconds());
+
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "erispulse_logs_" + stamp + ".log";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 }
 
 // ========== 生命周期功能 ==========
