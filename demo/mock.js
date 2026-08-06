@@ -292,13 +292,20 @@ var _FRAMEWORK_VERSIONS = ["2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2
     API_MAP['/api/logs'] = function (opts, url) {
         var params = new URLSearchParams(url.split('?')[1] || '');
         var module = params.get('module') || '';
+        var levels = params.get('levels') || '';
         var level = params.get('level') || '';
         var search = params.get('search') || '';
+        var limit = parseInt(params.get('limit') || '200');
         var logs = _genLogs(80);
         if (module) logs = logs.filter(function (l) { return l.module === module; });
+        if (levels) {
+            var levelSet = {};
+            levels.split(',').forEach(function (lv) { levelSet[lv.trim().toUpperCase()] = true; });
+            logs = logs.filter(function (l) { return levelSet[(l.level || '').toUpperCase()]; });
+        }
         if (level) logs = logs.filter(function (l) { return l.level === level; });
         if (search) logs = logs.filter(function (l) { return l.message.toLowerCase().indexOf(search.toLowerCase()) !== -1; });
-        return _json({ logs: logs, total: logs.length });
+        return _json({ logs: logs.slice(0, limit), total: logs.length });
     };
 
     API_MAP['/api/logs/clear'] = function () { return _json({ success: true }); };

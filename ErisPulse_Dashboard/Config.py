@@ -14,4 +14,5 @@ Dashboard 配置定义
  
 DASHBOARD_DEFAULT_CONFIG = {
     "max_event_log": 500,
+    "log_retention_days": 14,
 }
