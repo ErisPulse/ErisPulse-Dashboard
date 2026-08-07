@@ -1331,6 +1331,9 @@ class Main(BaseModule):
             mn, "/api/appearance", handler=self._api_appearance_update, methods=["PUT"]
         )
         r.register_http_route(
+            mn, "/api/i18n/language", handler=self._api_i18n_sync, methods=["POST"]
+        )
+        r.register_http_route(
             mn,
             "/api/appearance/upload",
             handler=self._api_appearance_upload,
@@ -2494,6 +2497,56 @@ class Main(BaseModule):
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})
+
+    async def _api_i18n_sync(self, request: Request) -> JSONResponse:
+        """将 Dashboard 前端语言同步到框架 i18n"""
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        frontend_lang = str(body.get("lang", "") or "")
+        # 前端语言码 → 框架语言码映射
+        lang_map = {
+            "zh": "zh-CN",
+            "zh-CN": "zh-CN",
+            "zh-TW": "zh-TW",
+            "en": "en",
+            "ja": "ja",
+            "ru": "ru",
+        }
+        mapped = lang_map.get(frontend_lang, frontend_lang)
+        if not mapped:
+            return JSONResponse({"error": "lang is required"}, status_code=400)
+        try:
+            i18n = self.sdk.i18n
+            supported = set(getattr(i18n, "get_supported_languages", lambda: [])() or [])
+            if supported and mapped not in supported:
+                return JSONResponse(
+                    {"error": f"unsupported language: {mapped}"}, status_code=400
+                )
+        except Exception:
+            pass
+        # 1) 运行时切换：内存 + 全局持久化（立即生效）
+        try:
+            if hasattr(self.sdk.i18n, "set_language"):
+                self.sdk.i18n.set_language(mapped)
+        except Exception:
+            pass
+        # 2) 配置持久化：写入 ErisPulse.i18n.language 作为兜底，保证配置与运行态一致
+        try:
+            self.sdk.config.setConfig(
+                "ErisPulse.i18n.language", mapped, immediate=True
+            )
+        except Exception:
+            pass
+        self._add_audit_log("i18n_sync", mapped, request)
+        current = None
+        try:
+            if hasattr(self.sdk.i18n, "get_language"):
+                current = self.sdk.i18n.get_language()
+        except Exception:
+            pass
+        return JSONResponse({"success": True, "language": current or mapped})
 
     async def _api_appearance(self, request: Request) -> JSONResponse:
         appearance = self.sdk.config.getConfig("Dashboard.appearance") or {}

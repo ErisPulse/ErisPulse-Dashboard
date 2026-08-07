@@ -512,6 +512,9 @@ const I18N = {
     settings_custom_reset: "恢复默认",
     settings_lang_title: "语言与标题",
     settings_language: "语言",
+    settings_sync_framework_lang: "同步框架语言",
+    settings_sync_framework_done: "框架语言已同步",
+    settings_sync_framework_fail: "框架语言同步失败",
     settings_ui_style: "界面风格",
     settings_font: "字体",
     settings_accent_color: "主题强调色",
@@ -1344,6 +1347,9 @@ const I18N = {
     settings_custom_reset: "Reset to Default",
     settings_lang_title: "Language & Title",
     settings_language: "Language",
+    settings_sync_framework_lang: "Sync Framework Language",
+    settings_sync_framework_done: "Framework language synced",
+    settings_sync_framework_fail: "Failed to sync framework language",
     settings_ui_style: "UI Style",
     settings_font: "Font",
     settings_accent_color: "Accent Color",
@@ -2176,6 +2182,9 @@ const I18N = {
     settings_custom_reset: "恢復預設",
     settings_lang_title: "語言與標題",
     settings_language: "語言",
+    settings_sync_framework_lang: "同步框架語言",
+    settings_sync_framework_done: "框架語言已同步",
+    settings_sync_framework_fail: "框架語言同步失敗",
     settings_ui_style: "介面風格",
     settings_font: "字體",
     settings_accent_color: "主題強調色",
@@ -2991,6 +3000,9 @@ const I18N = {
     settings_custom_reset: "デフォルトに戻す",
     settings_lang_title: "言語とタイトル",
     settings_language: "言語",
+    settings_sync_framework_lang: "フレームワーク言語を同期",
+    settings_sync_framework_done: "フレームワーク言語を同期しました",
+    settings_sync_framework_fail: "フレームワーク言語の同期に失敗しました",
     settings_ui_style: "UIスタイル",
     settings_font: "フォント",
     settings_accent_color: "アクセントカラー",
@@ -3818,6 +3830,9 @@ const I18N = {
     settings_custom_reset: "Сбросить",
     settings_lang_title: "Язык и заголовок",
     settings_language: "Язык",
+    settings_sync_framework_lang: "Синхронизировать язык фреймворка",
+    settings_sync_framework_done: "Язык фреймворка синхронизирован",
+    settings_sync_framework_fail: "Не удалось синхронизировать язык фреймворка",
     settings_ui_style: "Стиль интерфейса",
     settings_font: "Шрифт",
     settings_accent_color: "Акцентный цвет",
@@ -8172,6 +8187,17 @@ function applySettingLang(v) {
     card.classList.toggle("active", card.dataset.lang === lang);
   });
   loadAll();
+}
+async function syncFrameworkLang() {
+  const d = await api("/api/i18n/language", {
+    method: "POST",
+    body: JSON.stringify({ lang: lang }),
+  });
+  if (d && d.success) {
+    toast(t("settings_sync_framework_done"), "ok");
+  } else {
+    toast(d?.error || t("settings_sync_framework_fail"), "er");
+  }
 }
 function applySettingSidebar(collapsed) {
   localStorage.setItem("ep_sidebar_collapsed", collapsed);
