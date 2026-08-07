@@ -4758,74 +4758,116 @@ select.form-select::-ms-expand {
 
 /* 表头 */
 .fm-table-header {
-    display: flex;
-    align-items: center;
+    display: none;
+}
+
+/* 文件卡片网格容器 */
+.fm-file-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
-    padding: 7px 18px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: var(--tx-t);
-    border-bottom: 1px solid var(--bd);
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding: 4px;
+}
+
+/* 文件卡片 */
+.fm-file-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px 12px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--bd);
+    background: var(--bg-t);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+}
+
+.fm-file-card:hover {
+    border-color: var(--bd-h);
     background: var(--bg-s);
 }
 
-.fm-table-header span {
+.fm-file-card.selected {
+    background: var(--pr-bg);
+    border-color: var(--accent);
+}
+
+.fm-card-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
 }
 
-/* 文件列表容器 */
-.fm-file-list {
-    max-height: calc(100vh - 380px);
-    overflow-y: auto;
+.fm-card-icon .fm-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
 }
 
-/* 列头 */
-.fm-col-name {
-    flex: 1;
+.fm-card-body {
+    text-align: center;
+    width: 100%;
     min-width: 0;
 }
 
-.fm-col-size {
-    min-width: 70px;
-    text-align: right;
+.fm-card-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
-.fm-col-perm {
-    min-width: 80px;
+.fm-card-name.folder-name {
+    font-weight: 600;
 }
 
-.fm-col-time {
-    min-width: 120px;
+.fm-card-meta {
+    display: block;
+    font-size: 11px;
+    color: var(--tx-t);
+    margin-top: 2px;
 }
 
-.fm-col-actions {
-    width: 60px;
+.fm-card-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
-.fm-file-row {
+.fm-file-card:hover .fm-card-actions {
+    opacity: 1;
+}
+
+.fm-card-action {
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 18px;
-    border-bottom: 1px solid var(--bd);
-    transition: background 0.2s;
-    font-size: 13px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.fm-file-row:last-child {
-    border-bottom: none;
-}
-
-.fm-file-row:hover {
+    justify-content: center;
+    border: none;
     background: var(--bg-s);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--tx-s);
+    transition: background 0.15s, color 0.15s;
 }
 
-.fm-file-row.selected {
-    background: var(--pr-bg);
+.fm-card-action:hover {
+    background: var(--accent-fill);
+    color: #fff;
 }
 
 .fm-icon {
@@ -4948,6 +4990,63 @@ select.form-select::-ms-expand {
     margin: 4px 0;
 }
 
+/* 文件编辑器模态窗 */
+.fm-editor-modal .modal-box {
+    width: 94%;
+    max-width: min(1000px, 94vw);
+    height: 85vh;
+    max-height: 85vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.fm-editor-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0;
+}
+
+.fm-editor-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tx-p);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+}
+
+.fm-editor-status {
+    font-size: 12px;
+    color: var(--tx-s);
+    flex-shrink: 0;
+}
+
+.fm-editor-btns {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.fm-editor-container {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.fm-editor-container .CodeMirror {
+    height: 100% !important;
+    font-family: "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace;
+    font-size: 13px;
+}
+
 .fm-drop-zone {
     border: 2px dashed var(--bd);
     border-radius: 12px;
@@ -4996,6 +5095,22 @@ select.form-select::-ms-expand {
     }
     .fm-breadcrumb {
         max-width: 200px;
+    }
+    .fm-file-list {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 8px;
+        max-height: calc(100vh - 280px);
+    }
+    .fm-file-card {
+        padding: 12px 8px 10px;
+    }
+    .fm-card-icon {
+        width: 32px;
+        height: 32px;
+    }
+    .fm-card-icon .fm-icon {
+        width: 26px;
+        height: 26px;
     }
     .module-meta {
         display: none;
@@ -7167,9 +7282,10 @@ select.form-select::-ms-expand {
 
 .fw-section {
     background: var(--bg-t);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
     box-shadow: none;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     overflow: hidden;
 }
 
@@ -7179,24 +7295,42 @@ select.form-select::-ms-expand {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--tx-t);
-    padding: 12px 16px 8px;
-    border-bottom: 1px solid var(--bd);
+    padding: 14px 18px;
+    background: color-mix(in srgb, var(--bg-p) 20%, var(--bg-t));
+    position: relative;
+}
+
+.fw-section-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--accent) 50%, transparent);
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 .fw-section-body {
-    padding: 4px 16px;
+    padding: 6px 12px 12px;
 }
 
 .fw-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
+    gap: 16px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
 }
 
 .fw-row + .fw-row {
-    border-top: 1px solid var(--bd);
+    margin-top: 1px;
+}
+
+.fw-row:hover {
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 
 .fw-label {
@@ -7215,25 +7349,26 @@ select.form-select::-ms-expand {
 }
 
 .fw-input {
-    padding: 5px 10px;
+    padding: 8px 12px;
     border: 1px solid var(--bd);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: var(--bg-s);
     color: var(--tx-p);
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    width: 180px;
-    transition: border-color 0.2s;
+    width: 200px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .fw-input:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .fw-textarea {
     resize: vertical;
-    min-height: 32px;
+    min-height: 36px;
     font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
     font-size: 12px;
 }
@@ -7241,7 +7376,7 @@ select.form-select::-ms-expand {
 .fw-desc {
     font-size: 11px;
     color: var(--tx-s);
-    margin-top: 2px;
+    margin-top: 4px;
     line-height: 1.4;
 }
 
@@ -8164,8 +8299,8 @@ select:focus {
 /* 适配器选择器 */
 .adapter-selector-bar {
     background: var(--bg-t);
-    border: 1px solid var(--bd);
-    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    border-radius: var(--radius-lg);
     padding: 10px;
     margin-bottom: 16px;
     box-shadow: none;
@@ -8195,32 +8330,28 @@ select:focus {
     align-items: center;
     gap: 8px;
     padding: 8px 14px 8px 10px;
-    border-radius: 10px;
-    border: 1.5px solid transparent;
-    background: var(--bg-s);
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--bg-t);
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     user-select: none;
     position: relative;
 }
 
 .adapter-chip:hover {
-    background: var(--bg-t);
-    
-    transform: none;
-    box-shadow: none;
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-t));
 }
 
 .adapter-chip.active {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    border-color: var(--accent);
-    box-shadow: none;
+    background: color-mix(in srgb, var(--accent) 14%, var(--bg-t));
+    color: var(--tx-p);
 }
 
 .adapter-chip.active:hover {
-    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, var(--bg-t));
 }
 
 .adapter-chip-name {
@@ -8315,44 +8446,72 @@ select:focus {
     padding: 0;
 }
 
-.account-card {
-    border: 1px solid var(--bd);
-    border-radius: 8px;
+/* 账户配置区（不再嵌套 fw-section，直接放卡片） */
+.adapter-accounts-section {
+    margin-top: 20px;
+}
+
+.adapter-section-heading {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--tx-t);
     margin-bottom: 12px;
+}
+
+.adapter-add-account-btn {
+    margin-top: 12px;
+}
+
+.adapter-account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.account-card {
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    border-radius: var(--radius-md);
     overflow: hidden;
+    background: var(--bg-t);
+    transition: border-color 0.2s;
+}
+
+.account-card:hover {
+    border-color: var(--bd-h);
 }
 
 .account-card-header {
     display: flex;
     align-items: center;
-    padding: 10px 14px;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--bd);
+    gap: 10px;
+    padding: 12px 16px;
 }
 
 .account-card-name {
     font-weight: 600;
     font-size: 14px;
+    color: var(--tx-p);
 }
 
 .account-card-body {
-    padding: 12px 14px;
+    padding: 0 16px 12px;
 }
 
 .account-card-body .fw-row {
-    margin-bottom: 8px;
+    margin-bottom: 1px;
+}
+
+.account-card-body .fw-row:last-child {
+    margin-bottom: 0;
 }
 
 .account-card-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 8px 14px;
-    border-top: 1px solid var(--bd);
-    background: var(--bg2);
-}
-
-.adapter-account-list {
-    margin-bottom: 8px;
+    gap: 8px;
+    padding: 0 16px 12px;
 }
 
 .fw-row-unknown {
@@ -9475,12 +9634,12 @@ select:hover:not(:disabled) {
 }
 
 :root {
-    --radius-xs: 6px;
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 22px;
-    --radius-2xl: 28px;
+    --radius-xs: 8px;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
 
     --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -9839,8 +9998,8 @@ select:focus,
 }
 
 .adapter-chip {
-    border-radius: var(--radius-md);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .adapter-chip:hover {
@@ -10147,3 +10306,24 @@ input, textarea, select, button,
         gap: 16px;
     }
 }
+
+/* ========== 全局圆角归一化（1Panel 风格大圆角） ========== */
+.login-card { border-radius: var(--radius-xl); }
+.module-search, .ep-select, .form-input, .form-select, .settings-input {
+    border-radius: var(--radius-sm);
+}
+.ep-combobox-trigger { border-radius: var(--radius-sm); }
+.ep-multiselect-search { border-radius: var(--radius-sm); }
+.log-level-chip { border-radius: var(--radius-sm); }
+.store-card { border-radius: var(--radius-lg); }
+.cluster-card { border-radius: var(--radius-lg); }
+.event-card, .ev-item { border-radius: var(--radius-md); }
+.list-row { border-radius: var(--radius-md); }
+.toast { border-radius: var(--radius-md); }
+.conn-panel { border-radius: var(--radius-lg); }
+.conn-badge { border-radius: var(--radius-sm); }
+.popover { border-radius: var(--radius-lg); }
+.pkg-row { border-radius: var(--radius-md); }
+.route-group-card { border-radius: var(--radius-lg); }
+.master-card { border-radius: var(--radius-lg); }
+.bot-card { border-radius: var(--radius-lg); }

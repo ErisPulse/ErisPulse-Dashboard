@@ -9645,10 +9645,11 @@ async function loadAdapterAccounts(platform) {
   if (oldSection) oldSection.remove();
 
   var html =
-    '<div id="adapterAccountsSection" class="fw-section" style="margin-top:16px"><div class="fw-section-title">' +
+    '<div id="adapterAccountsSection" class="adapter-accounts-section">' +
+    '<div class="adapter-section-heading">' +
     t("adapter_accounts") +
-    '</div><div class="fw-section-body">';
-  html += '<div class="adapter-account-list">';
+    "</div>" +
+    '<div class="adapter-account-list">';
 
   var accounts = d.accounts || {};
   var schema = d.schema;
@@ -9659,12 +9660,12 @@ async function loadAdapterAccounts(platform) {
 
   html += "</div>";
   html +=
-    '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="addAdapterAccount(\'' +
+    '<button class="btn btn-primary btn-sm adapter-add-account-btn" onclick="addAdapterAccount(\'' +
     esc(platform) +
     "')\">+ " +
     t("add_account") +
-    "</button></div>";
-  html += "</div></div>";
+    "</button>";
+  html += "</div>";
 
   // 追加到内容区
   var container = document.getElementById("adapterConfigContent");
@@ -9713,7 +9714,7 @@ function renderAdapterAccountCard(platform, accountName, accountData, schema) {
     esc(accountName) +
     "</span>" +
     '<div style="flex:1"></div>' +
-    '<button class="btn btn-danger btn-xs" onclick="removeAdapterAccount(\'' +
+    '<button class="btn btn-danger btn-sm" onclick="removeAdapterAccount(\'' +
     esc(platform) +
     "','" +
     esc(accountName) +
@@ -9724,7 +9725,7 @@ function renderAdapterAccountCard(platform, accountName, accountData, schema) {
     '<div class="account-card-body">' +
     fieldsHtml +
     "</div>" +
-    '<div class="account-card-footer"><button class="btn btn-primary btn-xs" onclick="saveAdapterAccount(\'' +
+    '<div class="account-card-footer"><button class="btn btn-primary btn-sm" onclick="saveAdapterAccount(\'' +
     esc(platform) +
     "','" +
     esc(accountName) +
@@ -12988,21 +12989,19 @@ async function fmBrowse(path) {
   fileList.innerHTML = entries
     .map((e) => {
       const isDir = e.type === "directory";
-      const nameClass = isDir ? "fm-name folder-name" : "fm-name";
       const icon = fmGetIcon(e.type, e.name);
       const size = isDir ? "--" : fmFormatSize(e.size || 0);
-      const perm = e.permissions || "";
       const mtime = fmFormatTime(e.modified);
       const rowActions = !isDir
-        ? '<button class="btn-icon" onclick="event.stopPropagation();fmDownload(\'' +
+        ? '<button class="fm-card-action" onclick="event.stopPropagation();fmDownload(\'' +
           esc(e.path) +
-          '\')" title="Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>' +
-          '<button class="btn-icon" onclick="event.stopPropagation();fmEditFile(\'' +
+          '\')" title="' + esc(t("download")) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>' +
+          '<button class="fm-card-action" onclick="event.stopPropagation();fmEditFile(\'' +
           esc(e.path) +
-          '\')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+          '\')" title="' + esc(t("edit")) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
         : "";
       return (
-        '<div class="fm-file-row" ondblclick="' +
+        '<div class="fm-file-card' + (isDir ? " is-dir" : "") + '" ondblclick="' +
         (isDir
           ? "fmNavigateTo('" + esc(e.path) + "')"
           : "fmEditFile('" + esc(e.path) + "')") +
@@ -13011,24 +13010,12 @@ async function fmBrowse(path) {
         "','" +
         esc(e.type) +
         "')\">" +
-        icon +
-        '<span class="' +
-        nameClass +
-        '">' +
-        esc(e.name) +
-        "</span>" +
-        '<span class="fm-size">' +
-        size +
-        "</span>" +
-        '<span class="fm-perm">' +
-        esc(perm) +
-        "</span>" +
-        '<span class="fm-time">' +
-        mtime +
-        "</span>" +
-        '<div class="fm-actions-cell">' +
-        rowActions +
+        '<div class="fm-card-icon">' + icon + "</div>" +
+        '<div class="fm-card-body">' +
+        '<span class="fm-card-name' + (isDir ? " folder-name" : "") + '">' + esc(e.name) + "</span>" +
+        '<span class="fm-card-meta">' + size + " · " + esc(mtime) + "</span>" +
         "</div>" +
+        '<div class="fm-card-actions">' + rowActions + "</div>" +
         "</div>"
       );
     })
@@ -13135,8 +13122,7 @@ async function fmEditFile(path) {
   }
   _fmEditPath = path;
   _fmDirty = false;
-  const panel = document.getElementById("fmEditorPanel");
-  panel.style.display = "block";
+  const overlay = document.getElementById("fmEditorOv");
   document.getElementById("fmEditorTitle").textContent = path;
   document.getElementById("fmEditorStatus").textContent = "";
 
@@ -13166,14 +13152,14 @@ async function fmEditFile(path) {
       document.getElementById("fmEditorStatus").style.color = "var(--wr-c)";
     });
     _fmEditor.setSize("100%", "100%");
-    setTimeout(() => _fmEditor.refresh(), 100);
   } else {
     container.innerHTML =
-      '<textarea id="fmFallbackEditor" class="code-editor" style="width:100%;height:500px" spellcheck="false">' +
+      '<textarea id="fmFallbackEditor" class="code-editor" style="width:100%;height:100%;box-sizing:border-box" spellcheck="false">' +
       esc(d.content) +
       "</textarea>";
   }
-  panel.scrollIntoView({ behavior: "smooth" });
+  overlay.classList.add("show");
+  setTimeout(() => { if (_fmEditor) _fmEditor.refresh(); }, 100);
 }
 
 async function fmSaveFile() {
@@ -13200,7 +13186,7 @@ async function fmSaveFile() {
 }
 
 function fmCloseEditor() {
-  document.getElementById("fmEditorPanel").style.display = "none";
+  document.getElementById("fmEditorOv").classList.remove("show");
   if (_fmEditor) {
     _fmEditor.toTextArea();
     _fmEditor = null;
@@ -13388,7 +13374,7 @@ document.addEventListener("keydown", function (e) {
 
 async function fmCompress() {
   if (!authed) return showLogin();
-  const allRows = document.querySelectorAll("#fmFileList .fm-file-row");
+  const allRows = document.querySelectorAll("#fmFileList .fm-file-card");
   if (allRows.length === 0) {
     toast(t("no_data"), "");
     return;
@@ -13406,7 +13392,7 @@ async function fmCompress() {
     document.getElementById("fmCompressName")?.value?.trim() || "archive.zip";
   const paths = [];
   allRows.forEach((row) => {
-    const nameEl = row.querySelector(".fm-name, .folder-name");
+    const nameEl = row.querySelector(".fm-card-name");
     if (nameEl) {
       const n = nameEl.textContent;
       paths.push(_fmCurrentPath === "." ? n : _fmCurrentPath + "/" + n);
