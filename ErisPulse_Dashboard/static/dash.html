@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
@@ -14,6 +14,7 @@
                 if (localStorage.getItem("ep_oled") === "on") {
                     document.documentElement.setAttribute("data-oled", "on");
                 }
+                document.documentElement.setAttribute("data-ui-style", "eris");
             })();
         </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,7 +32,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=13" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=15" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -4231,6 +4232,34 @@
                                 ></span>
                             </button>
                             <button
+                                class="view-btn pkg-tab"
+                                data-tab="settings-color"
+                                onclick="
+                                    switchSettingsTab(
+                                        'settings-color',
+                                        this,
+                                    )
+                                "
+                            >
+                                <span
+                                    data-i18n="settings_tab_colorfont"
+                                ></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="settings-general"
+                                onclick="
+                                    switchSettingsTab(
+                                        'settings-general',
+                                        this,
+                                    )
+                                "
+                            >
+                                <span
+                                    data-i18n="settings_tab_general"
+                                ></span>
+                            </button>
+                            <button
                                 class="view-btn pkg-tab has-update-dot"
                                 id="settingsUpdateTab"
                                 data-tab="settings-update"
@@ -4243,43 +4272,14 @@
                             </button>
                         </div>
 
-                        <div
-                            id="settings-appearance-tab"
-                            class="tab-section"
-                        >
+                        <div id="settings-appearance-tab" class="tab-section" style="display: none">
+                            <div class="settings-grid">
                             <div class="settings-grid">
                                 <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
-                                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-                                            </svg>
-                                            <span data-i18n="settings_appearance"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="settings-item settings-item-block" style="border-top:none;padding-top:4px">
-                                                <div><div class="settings-item-label" data-i18n="settings_ui_style"></div></div>
-                                                <div class="settings-item-control" style="width:100%;margin-top:10px">
-                                                    <div class="style-selector">
-                                                        <div class="style-card active" data-style="eris" onclick="applySettingUiStyle('eris')">
-                                                            <div class="style-card-preview"><div class="scp-sidebar"></div><div class="scp-body"><span class="scp-dot"></span><div class="scp-bar"></div></div></div>
-                                                            <div class="style-card-label">ErisPulse</div>
-                                                        </div>
-                                                        <div class="style-card" data-style="classic" onclick="applySettingUiStyle('classic')">
-                                                            <div class="style-card-preview"><div class="scp-sidebar"></div><div class="scp-body"><span class="scp-dot"></span><div class="scp-bar"></div></div></div>
-                                                            <div class="style-card-label">MD3</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card settings-card">
-                                        <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                                             </svg>
                                             <span data-i18n="settings_theme"></span>
                                         </div>
@@ -4299,50 +4299,6 @@
                                                     <div class="theme-card-label-sm"></div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card settings-card">
-                                        <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-                                            <span data-i18n="settings_font"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="font-selector" id="fontSelector"></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card settings-card">
-                                        <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                                            <span data-i18n="settings_accent_color"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="color-swatches" id="accentSwatches"></div>
-                                            <div style="display:flex;gap:8px;margin-top:12px">
-                                                <label class="color-custom"><input type="color" id="settingsAccent" onchange="applyAccentColorManual(this.value)"/><span data-i18n="settings_custom"></span></label>
-                                                <button class="btn btn-secondary btn-sm" onclick="resetAccent()"><span data-i18n="settings_reset"></span></button>
-                                            </div>
-                                            <details class="settings-foldout" style="margin-top:16px">
-                                                <summary data-i18n="settings_theme_customizer"></summary>
-                                                <div class="settings-foldout-body">
-                                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-                                                        <label class="switch"><input type="checkbox" id="customThemeToggle" onchange="onCustomThemeToggle(this.checked)"><span class="switch-slider"></span></label>
-                                                        <span style="font-size:13px;color:var(--tx-s)" data-i18n="settings_custom_desc"></span>
-                                                    </div>
-                                                    <div id="customThemeVars" class="custom-theme-grid"></div>
-                                                    <div style="display:flex;gap:8px;margin-top:12px">
-                                                        <button class="btn btn-primary btn-sm" onclick="saveFullCustomTheme()" data-i18n="settings_custom_save"></button>
-                                                        <button class="btn btn-secondary btn-sm" onclick="resetFullCustomTheme()" data-i18n="settings_custom_reset"></button>
-                                                    </div>
-                                                    <div style="margin-top:16px">
-                                                        <div class="settings-item-label" data-i18n="settings_custom_css"></div>
-                                                        <div class="settings-item-desc" data-i18n="settings_custom_css_desc" style="margin:2px 0 8px"></div>
-                                                        <textarea id="settingsCustomCss" class="fw-input fw-textarea" rows="4" spellcheck="false" style="width:100%;font-family:Consolas,Monaco,monospace;font-size:12px"></textarea>
-                                                        <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="applySettingCustomCss()" data-i18n="save"></button>
-                                                    </div>
-                                                </div>
-                                            </details>
                                         </div>
                                     </div>
 
@@ -4386,6 +4342,64 @@
                                         </div>
                                     </div>
 
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="settings-color-tab" class="tab-section" style="display: none">
+                            <div class="settings-grid">
+                                <div class="settings-col">
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                            <span data-i18n="settings_accent_color"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="color-swatches" id="accentSwatches"></div>
+                                            <div style="display:flex;gap:8px;margin-top:12px">
+                                                <label class="color-custom"><input type="color" id="settingsAccent" onchange="applyAccentColorManual(this.value)"/><span data-i18n="settings_custom"></span></label>
+                                                <button class="btn btn-secondary btn-sm" onclick="resetAccent()"><span data-i18n="settings_reset"></span></button>
+                                            </div>
+                                            <details class="settings-foldout" style="margin-top:16px">
+                                                <summary data-i18n="settings_theme_customizer"></summary>
+                                                <div class="settings-foldout-body">
+                                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                                                        <label class="switch"><input type="checkbox" id="customThemeToggle" onchange="onCustomThemeToggle(this.checked)"><span class="switch-slider"></span></label>
+                                                        <span style="font-size:13px;color:var(--tx-s)" data-i18n="settings_custom_desc"></span>
+                                                    </div>
+                                                    <div id="customThemeVars" class="custom-theme-grid"></div>
+                                                    <div style="display:flex;gap:8px;margin-top:12px">
+                                                        <button class="btn btn-primary btn-sm" onclick="saveFullCustomTheme()" data-i18n="settings_custom_save"></button>
+                                                        <button class="btn btn-secondary btn-sm" onclick="resetFullCustomTheme()" data-i18n="settings_custom_reset"></button>
+                                                    </div>
+                                                    <div style="margin-top:16px">
+                                                        <div class="settings-item-label" data-i18n="settings_custom_css"></div>
+                                                        <div class="settings-item-desc" data-i18n="settings_custom_css_desc" style="margin:2px 0 8px"></div>
+                                                        <textarea id="settingsCustomCss" class="fw-input fw-textarea" rows="4" spellcheck="false" style="width:100%;font-family:Consolas,Monaco,monospace;font-size:12px"></textarea>
+                                                        <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="applySettingCustomCss()" data-i18n="save"></button>
+                                                    </div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                                            <span data-i18n="settings_font"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="font-selector" id="fontSelector"></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+<div id="settings-general-tab" class="tab-section" style="display: none">
+                            <div class="settings-grid">
+                                <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -4422,6 +4436,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="card settings-card">
                                         <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
@@ -4451,8 +4466,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- settings-appearance-tab -->
-
                         <div id="settings-behavior-tab" class="tab-section" style="display: block">
                             <div class="settings-grid">
                                 <div class="settings-col">
@@ -5573,123 +5586,10 @@
         </div>
 
         <div class="login-overlay" id="loginOv">
-            <div class="login-bg-loader" id="loginBgLoader"></div>
             <div class="login-card">
-                <div class="login-decor">
-                    <svg
-                        class="login-decor-star"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path
-                            d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"
-                            fill="currentColor"
-                        />
-                    </svg>
-                    <svg
-                        class="login-decor-star"
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path
-                            d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"
-                            fill="currentColor"
-                        />
-                    </svg>
-                    <svg
-                        class="login-decor-star"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path
-                            d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"
-                            fill="currentColor"
-                        />
-                    </svg>
-                    <svg
-                        class="login-decor-star"
-                        width="8"
-                        height="8"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path
-                            d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"
-                            fill="currentColor"
-                        />
-                    </svg>
-                    <svg
-                        class="login-decor-cloud"
-                        width="60"
-                        height="30"
-                        viewBox="0 0 60 30"
-                    >
-                        <ellipse
-                            cx="30"
-                            cy="22"
-                            rx="28"
-                            ry="8"
-                            fill="currentColor"
-                            opacity=".3"
-                        />
-                        <ellipse
-                            cx="20"
-                            cy="16"
-                            rx="16"
-                            ry="12"
-                            fill="currentColor"
-                            opacity=".2"
-                        />
-                        <ellipse
-                            cx="42"
-                            cy="18"
-                            rx="14"
-                            ry="10"
-                            fill="currentColor"
-                            opacity=".15"
-                        />
-                    </svg>
-                    <svg
-                        class="login-decor-cloud"
-                        width="50"
-                        height="25"
-                        viewBox="0 0 50 25"
-                    >
-                        <ellipse
-                            cx="25"
-                            cy="18"
-                            rx="23"
-                            ry="7"
-                            fill="currentColor"
-                            opacity=".3"
-                        />
-                        <ellipse
-                            cx="15"
-                            cy="12"
-                            rx="14"
-                            ry="10"
-                            fill="currentColor"
-                            opacity=".2"
-                        />
-                        <ellipse
-                            cx="36"
-                            cy="14"
-                            rx="12"
-                            ry="8"
-                            fill="currentColor"
-                            opacity=".15"
-                        />
-                    </svg>
-                </div>
-                <div class="login-avatar">
+                                <div class="login-avatar">
                     <img
-                        src="/Dashboard/static/res/login/Login Avatar.png"
+                        src="/Dashboard/static/res/erispulse_logo_hp.png"
                         alt="ErisPulse"
                     />
                 </div>
@@ -6093,6 +5993,6 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/dash.js?v=22"></script>
+        <script src="/Dashboard/static/dash.js?v=24"></script>
     </body>
 </html>

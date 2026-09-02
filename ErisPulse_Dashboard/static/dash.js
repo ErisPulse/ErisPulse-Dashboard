@@ -517,7 +517,9 @@ const I18N = {
     settings_sync_framework_fail: "框架语言同步失败",
     settings_ui_style: "界面风格",
     settings_font: "字体",
-    settings_accent_color: "主题强调色",
+settings_tab_colorfont: "颜色与字体",
+        settings_tab_general: "通用",
+            settings_accent_color: "主题强调色",
     settings_accent_desc: "选择点缀颜色，按钮/链接等会随之变化",
     settings_background: "背景颜色",
     settings_background_desc: "自定义页面背景色",
@@ -1352,7 +1354,9 @@ const I18N = {
     settings_sync_framework_fail: "Failed to sync framework language",
     settings_ui_style: "UI Style",
     settings_font: "Font",
-    settings_accent_color: "Accent Color",
+settings_tab_colorfont: "Colors & Font",
+        settings_tab_general: "General",
+            settings_accent_color: "Accent Color",
     settings_accent_desc:
       "Pick an accent — buttons, links and highlights follow it",
     settings_background: "Background Color",
@@ -2187,7 +2191,9 @@ const I18N = {
     settings_sync_framework_fail: "框架語言同步失敗",
     settings_ui_style: "介面風格",
     settings_font: "字體",
-    settings_accent_color: "主題強調色",
+settings_tab_colorfont: "顏色與字體",
+        settings_tab_general: "一般",
+            settings_accent_color: "主題強調色",
     settings_accent_desc: "選擇點綴顏色，按鈕/連結等會隨之變化",
     settings_background: "背景顏色",
     settings_background_desc: "自訂頁面背景色",
@@ -3005,7 +3011,9 @@ const I18N = {
     settings_sync_framework_fail: "フレームワーク言語の同期に失敗しました",
     settings_ui_style: "UIスタイル",
     settings_font: "フォント",
-    settings_accent_color: "アクセントカラー",
+settings_tab_colorfont: "色とフォント",
+        settings_tab_general: "全般",
+            settings_accent_color: "アクセントカラー",
     settings_accent_desc: "アクセントを選択すると、ボタンやリンクが連動します",
     settings_background: "背景色",
     settings_background_desc: "ページの背景色をカスタマイズ",
@@ -3835,7 +3843,9 @@ const I18N = {
     settings_sync_framework_fail: "Не удалось синхронизировать язык фреймворка",
     settings_ui_style: "Стиль интерфейса",
     settings_font: "Шрифт",
-    settings_accent_color: "Акцентный цвет",
+settings_tab_colorfont: "Цвет и шрифт",
+        settings_tab_general: "Общие",
+            settings_accent_color: "Акцентный цвет",
     settings_accent_desc:
       "Выберите акцент — кнопки, ссылки и выделения изменятся",
     settings_background: "Цвет фона",
@@ -4642,16 +4652,19 @@ function toggleTheme() {
   applyTheme(next);
 }
 
+/* 界面风格切换功能已移除：classic(MD3) 与 eris 视觉已合并。
+   data-ui-style 对外契约保留，固定为 "eris"（见 module-view-registration.md）。 */
+var FIXED_UI_STYLE = "eris";
+
 function getUiStyle() {
-  return localStorage.getItem("ep_ui_style") || "eris";
+  return FIXED_UI_STYLE;
 }
 function applyUiStyle(style) {
-  document.documentElement.setAttribute("data-ui-style", style);
+  document.documentElement.setAttribute("data-ui-style", FIXED_UI_STYLE);
 }
 function applySettingUiStyle(val) {
-  localStorage.setItem("ep_ui_style", val);
-  applyUiStyle(val);
-  syncSettingsUI();
+  applyUiStyle(FIXED_UI_STYLE);
+  if (typeof syncSettingsUI === "function") syncSettingsUI();
 }
 
 var FONT_PRESETS = [
@@ -5071,6 +5084,18 @@ async function loadModuleViews() {
   }
 }
 
+// 解析模块视窗标题/分组标题文本（防御式：支持 {"i18n":key,"default":text} 引用）
+function _viewText(val, fallback) {
+  if (val == null) return fallback || "";
+  if (typeof val === "string") return val;
+  if (typeof val === "object") {
+    if (val.default) return val.default;
+    if (val.i18n) return val.i18n;
+    return JSON.stringify(val);
+  }
+  return String(val);
+}
+
 function _renderModuleViews(views) {
   const sidebarNav = document.querySelector(".sidebar-nav");
   if (!sidebarNav) return;
@@ -5188,7 +5213,7 @@ function _renderModuleViews(views) {
         var gtText =
           (firstView.group_titles && firstView.group_titles[lang]) ||
           firstView.group_title;
-        groupTitle.textContent = gtText;
+        groupTitle.textContent = _viewText(gtText, groupKey);
         groupTitle.setAttribute("data-i18n", groupKey);
       } else if (groupKey.startsWith("group_")) {
         var i18nText = t(groupKey);
@@ -5197,15 +5222,19 @@ function _renderModuleViews(views) {
       } else {
         // Use multi-language group_titles if available
         if (firstView.group_titles && firstView.group_titles[lang]) {
-          groupTitle.textContent = firstView.group_titles[lang];
+          groupTitle.textContent = _viewText(firstView.group_titles[lang], groupKey);
         } else {
           const locale = lang;
           if (locale === "zh" || locale === "zh-TW") {
-            groupTitle.textContent =
-              firstView.group_title || firstView.group_title_en || groupKey;
+            groupTitle.textContent = _viewText(
+              firstView.group_title || firstView.group_title_en || groupKey,
+              groupKey,
+            );
           } else {
-            groupTitle.textContent =
-              firstView.group_title_en || firstView.group_title || groupKey;
+            groupTitle.textContent = _viewText(
+              firstView.group_title_en || firstView.group_title || groupKey,
+              groupKey,
+            );
           }
         }
       }
@@ -5241,13 +5270,13 @@ function _renderModuleViews(views) {
       const span = document.createElement("span");
       // Use multi-language titles dict if available
       if (v.titles && v.titles[lang]) {
-        span.textContent = v.titles[lang];
+        span.textContent = _viewText(v.titles[lang], v.id);
       } else {
         const locale = lang;
         if (locale === "zh" || locale === "zh-TW") {
-          span.textContent = v.title || v.title_en || v.id;
+          span.textContent = _viewText(v.title || v.title_en || v.id, v.id);
         } else {
-          span.textContent = v.title_en || v.title || v.id;
+          span.textContent = _viewText(v.title_en || v.title || v.id, v.id);
         }
       }
       navItem.appendChild(span);
@@ -5542,29 +5571,10 @@ function showLogin() {
   document.getElementById("loginOv").classList.add("show");
   const ls = document.getElementById("loginLangSelect");
   if (ls) ls.value = lang;
-  preloadLoginBg();
   document.getElementById("loginInput").focus();
 }
 function closeLogin() {
   document.getElementById("loginOv").classList.remove("show");
-}
-
-let _loginBgLoaded = false;
-function preloadLoginBg() {
-  if (getUiStyle() !== "eris" || _loginBgLoaded) return;
-  const overlay = document.getElementById("loginOv");
-  const loader = document.getElementById("loginBgLoader");
-  if (!overlay || !loader) return;
-  const img = new Image();
-  img.onload = function () {
-    _loginBgLoaded = true;
-    overlay.classList.add("bg-ready");
-    loader.classList.add("loaded");
-  };
-  img.onerror = function () {
-    loader.classList.add("loaded");
-  };
-  img.src = "/Dashboard/static/res/login/Login Background.png";
 }
 let _loginLock = false;
 async function doLogin() {
@@ -7697,10 +7707,8 @@ function applyGlobalAppearanceData(app) {
     syncSettingsUI();
   }
   if (app.ui_style) {
-    localStorage.setItem("ep_ui_style", app.ui_style);
-    applyUiStyle(app.ui_style);
-    var uiEl = document.getElementById("settingsUiStyle");
-    if (uiEl) uiEl.value = app.ui_style;
+    /* 风格已固定为 eris，仅保持属性同步，不再接受外部值 */
+    applyUiStyle(FIXED_UI_STYLE);
   }
   if (app.font) {
     localStorage.setItem("ep_font", app.font);
@@ -7961,8 +7969,8 @@ function importAppearancePrefs() {
           applyTheme(d.theme);
         }
         if (d.ui_style) {
-          localStorage.setItem("ep_ui_style", d.ui_style);
-          applyUiStyle(d.ui_style);
+          /* 风格已固定，导入的旧备份值仅触发属性同步 */
+          applyUiStyle(FIXED_UI_STYLE);
         }
         if (d.font) {
           localStorage.setItem("ep_font", d.font);
