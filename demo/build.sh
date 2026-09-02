@@ -20,7 +20,12 @@ cp "$STATIC_DIR/dash.css" "$DEMO_DIR/dash.css"
 cp "$STATIC_DIR/dash.js" "$DEMO_DIR/dash.js"
 
 echo "==> Generating index.html from dash.html..."
-STATIC_DIR="$STATIC_DIR" DEMO_DIR="$DEMO_DIR" python3 - <<'PYEOF'
+if command -v python3 >/dev/null 2>&1; then PY=python3
+elif command -v python >/dev/null 2>&1; then PY=python
+elif command -v python.exe >/dev/null 2>&1; then PY=python.exe
+elif command -v py >/dev/null 2>&1; then PY=py
+else echo "!! python not found in PATH"; exit 1; fi
+STATIC_DIR="$STATIC_DIR" DEMO_DIR="$DEMO_DIR" $PY - <<'PYEOF'
 import re, os
 
 static = os.environ["STATIC_DIR"]
