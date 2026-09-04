@@ -4205,20 +4205,6 @@
                         <div class="view-toggle pkg-tabs">
                             <button
                                 class="view-btn pkg-tab active"
-                                data-tab="settings-behavior"
-                                onclick="
-                                    switchSettingsTab(
-                                        'settings-behavior',
-                                        this,
-                                    )
-                                "
-                            >
-                                <span
-                                    data-i18n="settings_behavior"
-                                ></span>
-                            </button>
-                            <button
-                                class="view-btn pkg-tab"
                                 data-tab="settings-appearance"
                                 onclick="
                                     switchSettingsTab(
@@ -4233,16 +4219,16 @@
                             </button>
                             <button
                                 class="view-btn pkg-tab"
-                                data-tab="settings-color"
+                                data-tab="settings-behavior"
                                 onclick="
                                     switchSettingsTab(
-                                        'settings-color',
+                                        'settings-behavior',
                                         this,
                                     )
                                 "
                             >
                                 <span
-                                    data-i18n="settings_tab_colorfont"
+                                    data-i18n="settings_behavior"
                                 ></span>
                             </button>
                             <button
@@ -4272,7 +4258,7 @@
                             </button>
                         </div>
 
-                        <div id="settings-appearance-tab" class="tab-section" style="display: none">
+                        <div id="settings-appearance-tab" class="tab-section" style="display: block">
                             <div class="settings-grid">
                                 <div class="settings-col">
                                     <div class="card settings-card">
@@ -4341,13 +4327,6 @@
                                         </div>
                                     </div>
 
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="settings-color-tab" class="tab-section" style="display: none">
-                            <div class="settings-grid">
-                                <div class="settings-col">
                                     <div class="card settings-card">
                                         <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -4392,6 +4371,32 @@
                                         </div>
                                     </div>
 
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
+                                            <span data-i18n="settings_sync"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_global_scope"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_global_scope_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <label class="switch"><input type="checkbox" id="settingsGlobalScope" onchange="onSettingsScopeChange(this.checked)"/><span class="switch-slider"></span></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_upload_global"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_upload_global_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <button class="btn btn-secondary btn-sm" onclick="uploadGlobalAppearance()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="settings_upload_global"></span></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4438,34 +4443,25 @@
 
                                     <div class="card settings-card">
                                         <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
-                                            <span data-i18n="settings_sync"></span>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                            <span data-i18n="about"></span>
                                         </div>
                                         <div class="settings-card-body">
-                                            <div class="settings-item">
-                                                <div>
-                                                    <div class="settings-item-label" data-i18n="settings_global_scope"></div>
-                                                    <div class="settings-item-desc" data-i18n="settings_global_scope_desc"></div>
-                                                </div>
-                                                <div class="settings-item-control">
-                                                    <label class="switch"><input type="checkbox" id="settingsGlobalScope" onchange="onSettingsScopeChange(this.checked)"/><span class="switch-slider"></span></label>
-                                                </div>
-                                            </div>
-                                            <div class="settings-item">
-                                                <div>
-                                                    <div class="settings-item-label" data-i18n="settings_upload_global"></div>
-                                                    <div class="settings-item-desc" data-i18n="settings_upload_global_desc"></div>
-                                                </div>
-                                                <div class="settings-item-control">
-                                                    <button class="btn btn-secondary btn-sm" onclick="uploadGlobalAppearance()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="settings_upload_global"></span></button>
-                                                </div>
+                                            <div class="about-ver" id="aboutFwVer">-</div>
+                                            <div class="about-ver-meta" id="aboutFwMeta"></div>
+                                            <div class="about-links">
+                                                <a class="about-link-item" href="https://github.com/ErisPulse/ErisPulse" target="_blank" rel="noopener">GitHub</a>
+                                                <a class="about-link-item" href="https://www.erisdev.com" target="_blank" rel="noopener" data-i18n="about_docs"></a>
+                                                <a class="about-link-item" href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank" rel="noopener" data-i18n="about_discussions"></a>
                                             </div>
                                         </div>
                                     </div>
+
+                                    
                                 </div>
                             </div>
                         </div>
-                        <div id="settings-behavior-tab" class="tab-section" style="display: block">
+                        <div id="settings-behavior-tab" class="tab-section" style="display: none">
                             <div class="settings-grid">
                                 <div class="settings-col">
                                     <div class="card settings-card">
@@ -4856,35 +4852,57 @@
 
                         <div id="settings-update-tab" class="tab-section">
                             <div class="fw-update-card card">
-                                <!-- Header -->
-                                <div class="fw-update-header card-header">
-                                    <img
-                                        src="/Dashboard/static/res/erispulse_logo_hp.png"
-                                        alt="LOGO"
-                                        height="44"
-                                    />
-                                    <div>
-                                        <div
-                                            class="fw-update-title"
-                                            data-i18n="fw_update_title"
-                                        ></div>
-                                        <div
-                                            class="fw-update-subtitle"
-                                            data-i18n="fw_update_title_desc"
-                                        ></div>
-                                    </div>
-                                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                                <!-- Hero: 状态徽章 + 版本流 -->
+                                <div class="fw-hero">
+                                    <div class="fw-hero-top">
+                                        <span class="fw-status-badge" id="fwStatusBadge">
+                                            <span class="fw-status-dot"></span>
+                                            <span
+                                                id="fwStatusText"
+                                                data-i18n="fw_status_checking"
+                                            ></span>
+                                        </span>
                                         <button
-                                            class="btn btn-secondary btn-sm"
+                                            class="fw-refresh-btn"
+                                            id="fwRefreshBtn"
                                             onclick="loadFrameworkVersions()"
-                                            style="white-space: nowrap;"
+                                            data-i18n-title="refresh"
                                         >
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <polyline points="23 4 23 10 17 10"></polyline>
                                                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                                             </svg>
-                                            <span data-i18n="refresh" style="margin-left: 4px;"></span>
                                         </button>
+                                    </div>
+                                    <div class="fw-ver-flow">
+                                        <div class="fw-ver-block">
+                                            <span
+                                                class="fw-ver-label"
+                                                data-i18n="fw_current_version"
+                                            ></span>
+                                            <span
+                                                class="fw-ver-value"
+                                                id="fwCurrentVer"
+                                                >-</span
+                                            >
+                                        </div>
+                                        <div class="fw-ver-arrow">
+                                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                <polyline points="12 5 19 12 12 19"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="fw-ver-block">
+                                            <span
+                                                class="fw-ver-label"
+                                                data-i18n="fw_latest_version"
+                                            ></span>
+                                            <span
+                                                class="fw-ver-value fw-ver-latest"
+                                                id="fwLatestVer"
+                                                >-</span
+                                            >
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="fw-update-body">
@@ -4897,94 +4915,61 @@
                                     data-i18n="fw_win_warn"
                                 ></div>
 
-                                <!-- Version Comparison -->
-                                <div class="fw-version-grid">
-                                    <div class="fw-ver-item" style="flex:1">
-                                        <span
-                                            class="fw-ver-label"
-                                            data-i18n="fw_current_version"
-                                        ></span>
-                                        <span
-                                            class="fw-ver-value"
-                                            id="fwCurrentVer"
-                                            >-</span
-                                        >
-                                    </div>
-                                    <div class="fw-ver-divider">
-                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            <polyline points="12 5 19 12 12 19"></polyline>
-                                        </svg>
-                                    </div>
-                                    <div class="fw-ver-item" style="flex:1; text-align: right;">
-                                        <span
-                                            class="fw-ver-label"
-                                            data-i18n="fw_latest_version"
-                                        ></span>
-                                        <span
-                                            class="fw-ver-value fw-ver-latest"
-                                            id="fwLatestVer"
-                                            >-</span
-                                        >
-                                    </div>
-                                </div>
-
-                                <!-- Version Selector -->
+                                <!-- Toolbar: 版本选择 + 安装 -->
                                 <div
                                     id="fwVersionRow"
-                                    class="fw-selector-row"
+                                    class="fw-toolbar"
                                     style="display: none"
                                 >
-                                    <span
-                                        class="fw-ver-label"
-                                        data-i18n="fw_select_version"
-                                    ></span>
-                                    <select
-                                        id="fwVersionSelect"
-                                        class="settings-select"
-                                        style="min-width: 180px"
-                                        onchange="loadFwReleaseNotes()"
-                                    ></select>
-                                    <label class="switch" title="Pre-release">
-                                        <input
-                                            type="checkbox"
-                                            id="fwPreRelease"
-                                            onchange="loadFrameworkVersions()"
-                                        />
-                                        <span class="switch-slider"></span>
-                                    </label>
-                                    <span
-                                        style="
-                                            font-size: 11px;
-                                            color: var(--tx-t);
-                                        "
-                                        >--pre</span
-                                    >
+                                    <div class="fw-toolbar-controls">
+                                        <select
+                                            id="fwVersionSelect"
+                                            class="settings-select"
+                                            style="min-width: 170px"
+                                            onchange="loadFwReleaseNotes()"
+                                        ></select>
+                                        <label class="switch" title="Pre-release">
+                                            <input
+                                                type="checkbox"
+                                                id="fwPreRelease"
+                                                onchange="loadFrameworkVersions()"
+                                            />
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                        <span class="fw-pre-label">--pre</span>
+                                    </div>
+                                    <div class="fw-toolbar-actions">
+                                        <a
+                                            class="fw-gh-link"
+                                            href="https://github.com/ErisPulse/ErisPulse/releases"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            GitHub Releases
+                                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                        <button
+                                            class="btn btn-primary"
+                                            id="fwUpdateBtn"
+                                            onclick="doFrameworkUpdate()"
+                                            disabled
+                                        >
+                                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="23 4 23 10 17 10"></polyline>
+                                                <polyline points="1 20 1 14 7 14"></polyline>
+                                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                            </svg>
+                                            <span data-i18n="fw_install_update"></span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Release Notes -->
                                 <div
                                     id="fwReleaseNotes"
-                                    class="fw-notes-box"
+                                    class="fw-notes"
                                     style="display: none"
                                 ></div>
-
-                                <!-- Action -->
-                                <div class="fw-actions">
-                                    <button
-                                        class="btn btn-primary"
-                                        id="fwUpdateBtn"
-                                        onclick="doFrameworkUpdate()"
-                                        disabled
-                                    >
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="23 4 23 10 17 10"></polyline>
-                                            <polyline points="1 20 1 14 7 14"></polyline>
-                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                                        </svg>
-                                        <span data-i18n="fw_install_update"></span>
-                                    </button>
-                                </div>
                                 </div>
                             </div>
                         </div>

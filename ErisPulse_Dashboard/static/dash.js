@@ -718,6 +718,25 @@ settings_tab_colorfont: "颜色与字体",
     fw_check_updates: "检查更新",
     fw_install_update: "安装更新",
     fw_latest_already: "已是最新",
+    fw_status_checking: "检查更新中...",
+    fw_update_available: "有可用更新",
+    fw_release_stable: "正式发布",
+    fw_release_dev: "开发版本",
+    fw_notes_upgrade: "升级建议",
+    fw_notes_notice: "注意事项",
+    fw_notes_breaking: "破坏性变更",
+    fw_notes_from_devs: "以下变更汇总自 {n} 个开发版本",
+    fw_cat_breaking: "破坏性变更",
+    fw_cat_added: "新增",
+    fw_cat_improved: "优化",
+    fw_cat_changed: "变更",
+    fw_cat_fixed: "修复",
+    fw_cat_removed: "移除",
+    fw_cat_deprecated: "废弃",
+    fw_cat_refactored: "重构",
+    fw_cat_security: "安全",
+    fw_cat_tests: "测试",
+    fw_cat_docs: "文档",
     fw_current: "当前",
     fw_downgrade_title: "⚠ 降级确认",
     fw_downgrade_text:
@@ -1511,6 +1530,25 @@ settings_tab_colorfont: "Colors & Font",
     fw_check_updates: "Check Updates",
     fw_install_update: "Install Update",
     fw_latest_already: "Already latest",
+    fw_status_checking: "Checking for updates...",
+    fw_update_available: "Update Available",
+    fw_release_stable: "Stable Release",
+    fw_release_dev: "Development Build",
+    fw_notes_upgrade: "Upgrade Advice",
+    fw_notes_notice: "Important Notes",
+    fw_notes_breaking: "Breaking Changes",
+    fw_notes_from_devs: "Changes aggregated from {n} development builds",
+    fw_cat_breaking: "Breaking",
+    fw_cat_added: "Added",
+    fw_cat_improved: "Improved",
+    fw_cat_changed: "Changed",
+    fw_cat_fixed: "Fixed",
+    fw_cat_removed: "Removed",
+    fw_cat_deprecated: "Deprecated",
+    fw_cat_refactored: "Refactored",
+    fw_cat_security: "Security",
+    fw_cat_tests: "Tests",
+    fw_cat_docs: "Docs",
     fw_current: "current",
     fw_downgrade_title: "⚠ Downgrade Confirmation",
     fw_downgrade_text:
@@ -2390,6 +2428,25 @@ settings_tab_colorfont: "顏色與字體",
     fw_check_updates: "檢查更新",
     fw_install_update: "安裝更新",
     fw_latest_already: "已是最新",
+    fw_status_checking: "檢查更新中...",
+    fw_update_available: "有可用更新",
+    fw_release_stable: "正式發布",
+    fw_release_dev: "開發版本",
+    fw_notes_upgrade: "升級建議",
+    fw_notes_notice: "注意事項",
+    fw_notes_breaking: "破壞性變更",
+    fw_notes_from_devs: "以下變更匯總自 {n} 個開發版本",
+    fw_cat_breaking: "破壞性變更",
+    fw_cat_added: "新增",
+    fw_cat_improved: "優化",
+    fw_cat_changed: "變更",
+    fw_cat_fixed: "修復",
+    fw_cat_removed: "移除",
+    fw_cat_deprecated: "廢棄",
+    fw_cat_refactored: "重構",
+    fw_cat_security: "安全",
+    fw_cat_tests: "測試",
+    fw_cat_docs: "文檔",
     fw_current: "當前",
     fw_downgrade_title: "⚠ 降級確認",
     fw_downgrade_text:
@@ -3219,6 +3276,25 @@ settings_tab_colorfont: "色とフォント",
     fw_check_updates: "更新を確認",
     fw_install_update: "更新をインストール",
     fw_latest_already: "最新です",
+    fw_status_checking: "更新を確認中...",
+    fw_update_available: "利用可能な更新",
+    fw_release_stable: "正式リリース",
+    fw_release_dev: "開発版",
+    fw_notes_upgrade: "アップグレードの推奨",
+    fw_notes_notice: "注意事項",
+    fw_notes_breaking: "破壊的変更",
+    fw_notes_from_devs: "以下の変更は {n} 個の開発版から集約されています",
+    fw_cat_breaking: "破壊的変更",
+    fw_cat_added: "追加",
+    fw_cat_improved: "改善",
+    fw_cat_changed: "変更",
+    fw_cat_fixed: "修正",
+    fw_cat_removed: "削除",
+    fw_cat_deprecated: "非推奨",
+    fw_cat_refactored: "リファクタリング",
+    fw_cat_security: "セキュリティ",
+    fw_cat_tests: "テスト",
+    fw_cat_docs: "ドキュメント",
     fw_current: "現在",
     fw_downgrade_title: "⚠ ダウングレード確認",
     fw_downgrade_text:
@@ -4059,6 +4135,25 @@ settings_tab_colorfont: "Цвет и шрифт",
     fw_check_updates: "Проверить обновления",
     fw_install_update: "Установить обновление",
     fw_latest_already: "Уже актуально",
+    fw_status_checking: "Проверка обновлений...",
+    fw_update_available: "Доступно обновление",
+    fw_release_stable: "Стабильный релиз",
+    fw_release_dev: "Dev-версия",
+    fw_notes_upgrade: "Рекомендации по обновлению",
+    fw_notes_notice: "Важные замечания",
+    fw_notes_breaking: "Критические изменения",
+    fw_notes_from_devs: "Изменения агрегированы из {n} dev-версий",
+    fw_cat_breaking: "Критические",
+    fw_cat_added: "Добавлено",
+    fw_cat_improved: "Улучшено",
+    fw_cat_changed: "Изменено",
+    fw_cat_fixed: "Исправлено",
+    fw_cat_removed: "Удалено",
+    fw_cat_deprecated: "Устарело",
+    fw_cat_refactored: "Рефакторинг",
+    fw_cat_security: "Безопасность",
+    fw_cat_tests: "Тесты",
+    fw_cat_docs: "Документация",
     fw_current: "текущая",
     fw_downgrade_title: "⚠ Подтверждение даунгрейда",
     fw_downgrade_text:
@@ -5658,6 +5753,7 @@ async function refreshDashboard() {
   if (!d) return;
   const fw = d.framework || {};
   window._fwStatus = fw;
+  updateAboutCard();
   // 存储服务器平台（用于判断更新行为，而非客户端浏览器平台）
   window._serverPlatform = fw.platform || "";
   window._serverIsWindows = !!fw.is_windows;
@@ -7654,7 +7750,21 @@ function switchSettingsTab(tab, btn) {
   }
 }
 
+function updateAboutCard() {
+  var fw = window._fwStatus || {};
+  var ver = document.getElementById("aboutFwVer");
+  if (ver) ver.textContent = fw.version ? "ErisPulse v" + fw.version : "-";
+  var meta = document.getElementById("aboutFwMeta");
+  if (meta) {
+    var parts = [];
+    if (fw.python_version) parts.push("Python " + fw.python_version);
+    if (fw.platform) parts.push(fw.platform);
+    meta.textContent = parts.join(" · ");
+  }
+}
+
 async function loadSettings() {
+  updateAboutCard();
   syncSettingsUI();
   initAccentSwatches();
   initCustomThemeEditor();
@@ -10344,26 +10454,37 @@ async function checkFwUpdateBadge() {
 }
 
 async function loadFrameworkVersions() {
+  var spinBtn = document.getElementById("fwRefreshBtn");
+  if (spinBtn) spinBtn.classList.add("spinning");
   const d = await api(
     "/api/framework/versions?pre=" +
       (document.getElementById("fwPreRelease")?.checked || false),
   );
+  if (spinBtn) spinBtn.classList.remove("spinning");
   if (!d) return;
 
   _fwCurrentVer = d.current;
   _fwVersions = d.versions || [];
   document.getElementById("fwCurrentVer").textContent = d.current;
 
-  // 最新版本
+  // 最新版本 + 状态徽章
   var latest = _fwVersions.length > 0 ? _fwVersions[0] : "-";
-  var latestEl = document.getElementById("fwLatestVer");
-  if (latestEl) latestEl.textContent = latest;
   var hasUpdate = latest !== "-" && cmpVer(latest, d.current) > 0;
-  if (hasUpdate) {
-    latestEl.style.color = "var(--wr-c)";
-    latestEl.textContent = latest + " ↑";
-  } else {
-    latestEl.style.color = "var(--ok-c)";
+  var latestEl = document.getElementById("fwLatestVer");
+  if (latestEl) {
+    latestEl.textContent = latest;
+    latestEl.classList.toggle("has-update", hasUpdate);
+  }
+  var badge = document.getElementById("fwStatusBadge");
+  if (badge) {
+    badge.classList.toggle("ok", !hasUpdate);
+    badge.classList.toggle("update", hasUpdate);
+  }
+  var badgeText = document.getElementById("fwStatusText");
+  if (badgeText) {
+    badgeText.textContent = t(
+      hasUpdate ? "fw_update_available" : "fw_latest_already",
+    );
   }
 
   // 服务器平台提示（点击安装时弹窗确认，此处不显横幅）
@@ -10445,7 +10566,7 @@ async function fetchChangelog() {
   return null;
 }
 
-function parseChangelogSection(text, version) {
+function findChangelogHead(text, version) {
   if (!text) return null;
   // CHANGELOG 用横杠，PyPI 用点号，都要试
   var variants = [version];
@@ -10453,18 +10574,279 @@ function parseChangelogSection(text, version) {
   if (version.indexOf("-dev.") !== -1) variants.push(version.replace(/-dev\./, ".dev"));
   if (version.indexOf("-de.") !== -1) variants.push(version.replace(/-de\./, "-dev."));
   for (var i = 0; i < variants.length; i++) {
-    var re = new RegExp("## \\[" + escRegex(variants[i]) + "\\] - .*?(?=## \\[|$)", "s");
-    var m = text.match(re);
-    if (m) {
-      var lines = m[0].split("\n");
-      lines.shift();
-      return lines.join("\n").trim();
-    }
+    var headRe = new RegExp("## \\[" + escRegex(variants[i]) + "\\][^\\n]*");
+    var m = text.match(headRe);
+    if (m) return m;
   }
   return null;
 }
 
+function parseChangelogSection(text, version) {
+  var m = findChangelogHead(text, version);
+  if (!m) return null;
+  // 正文：标题行之后到下一个版本标题之间
+  var start = m.index + m[0].length;
+  var rest = text.slice(start);
+  var next = rest.search(/## \[/);
+  var body = (next === -1 ? rest : rest.slice(0, next)).trim();
+  // 日期取自标题行 "## [x] - 2026/08/28"
+  var dm = m[0].match(/-\s*(\d{4}[-/.]\d{1,2}[-/.]\d{1,2})\s*$/);
+  return { date: dm ? dm[1] : "", body: body };
+}
+
+// 正式版自身通常不含"### 分类"小节，其变更明细散落在对应的 dev 段落中；
+// 聚合该版本与上一个正式版之间的同版本 dev 分组（如 2.7.1 ← 2.7.1-dev.x）。
+function aggregateDevGroups(text, version) {
+  if (!text || /dev/i.test(version)) return null;
+  var m = findChangelogHead(text, version);
+  if (!m) return null;
+  var rest = text.slice(m.index + m[0].length);
+  var devs = 0;
+  var merged = [];
+  function mergeGroups(groups) {
+    groups.forEach(function (g) {
+      if (!g.lines.join("\n").trim()) return;
+      var found = null;
+      for (var i = 0; i < merged.length; i++) {
+        if (merged[i].name === g.name) { found = merged[i]; break; }
+      }
+      if (found) found.lines = found.lines.concat(g.lines);
+      else merged.push({ name: g.name, lines: g.lines.slice() });
+    });
+  }
+  while (true) {
+    var hm = rest.match(/^## \[([^\]]+)\][^\n]*/m);
+    if (!hm) break;
+    var vname = hm[1].trim();
+    // 仅聚合属于该版本的开发段落，遇到其它版本（含上一个正式版）即停止
+    if (
+      vname.indexOf(version + "-dev") !== 0 &&
+      vname.indexOf(version + ".dev") !== 0
+    ) {
+      break;
+    }
+    devs++;
+    var start = hm.index + hm[0].length;
+    var subRest = rest.slice(start);
+    var next = subRest.search(/^## \[/m);
+    var body = next === -1 ? subRest : subRest.slice(0, next);
+    var sub = parseReleaseStructure(body);
+    if (sub) mergeGroups(sub.groups);
+    rest = subRest;
+  }
+  if (!devs || !merged.length) return null;
+  merged.sort(function (a, b) {
+    return fwCatOrder(a.name) - fwCatOrder(b.name);
+  });
+  return { count: devs, groups: merged };
+}
+
 function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+// ── 发行说明结构化解析 ──
+// 将 CHANGELOG 的版本段落解析为 { releaseType, summary, upgrade, notice, groups }：
+// - "> 正式发布 / > 开发版本" 引导行 → releaseType
+// - "**版本摘要**" / "**升级建议**" / "**注意事项**" 引导块 → 对应字段
+// - "### 分类" 小节（新增/优化/修复/…）→ groups
+var FW_CAT_MAP = [
+  [/^(新增|added)/i, "added", "fw_cat_added"],
+  [/^(优化|improved)/i, "improved", "fw_cat_improved"],
+  [/^(变更|changed)/i, "changed", "fw_cat_changed"],
+  [/^(修复|fixed|bug)/i, "fixed", "fw_cat_fixed"],
+  [/^(移除|removed)/i, "removed", "fw_cat_removed"],
+  [/^(废弃|弃用|deprecated)/i, "deprecated", "fw_cat_deprecated"],
+  [/^(重构|refactored)/i, "refactored", "fw_cat_refactored"],
+  [/^(安全|security)/i, "security", "fw_cat_security"],
+  [/^(破坏|breaking|不兼容)/i, "breaking", "fw_cat_breaking"],
+  [/^(测试|tests?)/i, "neutral", "fw_cat_tests"],
+  [/^(文档|docs?|documentation)/i, "neutral", "fw_cat_docs"],
+];
+
+function fwCatMeta(name) {
+  for (var i = 0; i < FW_CAT_MAP.length; i++) {
+    if (FW_CAT_MAP[i][0].test(name)) {
+      return { cls: FW_CAT_MAP[i][1], i18n: FW_CAT_MAP[i][2] };
+    }
+  }
+  return { cls: "neutral", i18n: null };
+}
+
+function fwCatOrder(name) {
+  for (var i = 0; i < FW_CAT_MAP.length; i++) {
+    if (FW_CAT_MAP[i][0].test(name)) return i;
+  }
+  return FW_CAT_MAP.length;
+}
+
+function fwMdHtml(lines) {
+  var md = (lines || []).join("\n").trim();
+  if (!md) return "";
+  return typeof marked !== "undefined" ? marked.parse(md) : md.replace(/</g, "&lt;");
+}
+
+function fwCountItems(lines) {
+  // 官方 CHANGELOG 顶层是贡献者、二级缩进才是变更条目；
+  // 旧格式则顶层即变更。优先计二级，无二级时计顶层。
+  var top = 0, nested = 0;
+  for (var i = 0; i < (lines || []).length; i++) {
+    if (/^([-*+]|\d+\.)\s+/.test(lines[i])) top++;
+    else if (/^ {1,2}([-*+]|\d+\.)\s+/.test(lines[i])) nested++;
+  }
+  return nested > 0 ? nested : top;
+}
+
+function parseReleaseStructure(md) {
+  if (!md) return null;
+  var res = {
+    releaseType: "",
+    summary: [],
+    upgrade: [],
+    notice: [],
+    breaking: [],
+    groups: [],
+    summaryExplicit: false,
+  };
+  var bucket = null; // "summary" | "upgrade" | "notice" | 分组对象
+  var sawContent = false;
+  function push(s) {
+    if (typeof bucket === "string") res[bucket].push(s);
+    else bucket.lines.push(s);
+  }
+  var lines = md.split("\n");
+  for (var i = 0; i < lines.length; i++) {
+    var ln = lines[i].replace(/\s+$/, "");
+    if (/^#{1,6}\s+\S/.test(ln)) {
+      bucket = { type: "group", name: ln.replace(/^#{1,6}\s+/, "").trim(), lines: [] };
+      res.groups.push(bucket);
+      continue;
+    }
+    var mb = ln.match(/^\*\*([^*]+)\*\*\s*$/);
+    if (mb) {
+      var k = mb[1].trim();
+      if (/摘要|summary/i.test(k)) {
+        bucket = "summary";
+        res.summaryExplicit = true;
+        continue;
+      }
+      if (/升级|upgrade/i.test(k)) { bucket = "upgrade"; continue; }
+      if (/注意|notice|caution/i.test(k)) { bucket = "notice"; continue; }
+      if (/破坏|breaking|不兼容/i.test(k)) { bucket = "breaking"; continue; }
+    }
+    if (/^-{3,}\s*$/.test(ln)) continue;
+    if (!sawContent && /^>\s?/.test(ln)) {
+      var q = ln.replace(/^>\s?/, "").trim();
+      if (q && !res.releaseType) { res.releaseType = q; continue; }
+    }
+    if (!ln.trim()) {
+      if (bucket) push("");
+      continue;
+    }
+    sawContent = true;
+    if (!bucket) bucket = "summary";
+    push(ln);
+  }
+  return res;
+}
+
+function renderFwNotes(v, body, date, agg) {
+  var notesEl = document.getElementById("fwReleaseNotes");
+  if (!notesEl) return true;
+  var s = parseReleaseStructure(body) || {
+    releaseType: "",
+    summary: [],
+    upgrade: [],
+    notice: [],
+    breaking: [],
+    groups: [],
+    summaryExplicit: false,
+  };
+  var hasOwn =
+    s.groups.length ||
+    s.summaryExplicit ||
+    s.upgrade.length ||
+    s.notice.length ||
+    s.breaking.length;
+  // 正式版自身无分组时，合并其对应开发版本的分组
+  var useAgg = !!(agg && agg.groups && agg.groups.length) && !s.groups.length;
+  if (!hasOwn && !useAgg) {
+    return false; // 无结构，交由调用方回退整段渲染
+  }
+  var h = '<div class="fw-notes-head"><span class="fw-notes-ver">v' + esc(v) + "</span>";
+  if (date) h += '<span class="fw-notes-date">' + esc(date) + "</span>";
+  if (s.releaseType) {
+    var rt = s.releaseType;
+    var kind = /正式|stable/i.test(rt)
+      ? "stable"
+      : /开发|dev/i.test(rt)
+        ? "dev"
+        : "";
+    var label = kind === "stable"
+      ? t("fw_release_stable")
+      : kind === "dev"
+        ? t("fw_release_dev")
+        : esc(rt);
+    h += '<span class="fw-notes-type' + (kind ? " " + kind : "") + '">' + label + "</span>";
+  }
+  h += "</div>";
+  var summaryHtml = fwMdHtml(s.summary);
+  if (summaryHtml) h += '<div class="fw-notes-summary">' + summaryHtml + "</div>";
+  if (s.breaking.join("\n").trim()) {
+    h +=
+      '<div class="fw-notes-callout danger"><div class="fw-callout-label">' +
+      esc(t("fw_notes_breaking")) +
+      "</div>" +
+      fwMdHtml(s.breaking) +
+      "</div>";
+  }
+  if (s.upgrade.join("\n").trim()) {
+    h +=
+      '<div class="fw-notes-callout"><div class="fw-callout-label">' +
+      esc(t("fw_notes_upgrade")) +
+      "</div>" +
+      fwMdHtml(s.upgrade) +
+      "</div>";
+  }
+  if (s.notice.join("\n").trim()) {
+    h +=
+      '<div class="fw-notes-callout"><div class="fw-callout-label">' +
+      esc(t("fw_notes_notice")) +
+      "</div>" +
+      fwMdHtml(s.notice) +
+      "</div>";
+  }
+  var groups = s.groups;
+  if (useAgg) {
+    h +=
+      '<div class="fw-notes-agg">' +
+      esc(t("fw_notes_from_devs")).replace("{n}", agg.count) +
+      "</div>";
+    groups = agg.groups;
+  }
+  if (groups.length) {
+    var total = 0;
+    groups.forEach(function (g) { total += fwCountItems(g.lines); });
+    var expandAll = total > 0 && total <= 6;
+    h += '<div class="fw-notes-groups">';
+    groups.forEach(function (g) {
+      var meta = fwCatMeta(g.name);
+      var name = meta.i18n ? t(meta.i18n) : esc(g.name);
+      h +=
+        '<details class="fw-notes-group fw-cat-' + meta.cls + '"' +
+        (expandAll ? " open" : "") +
+        '><summary><span class="fw-cat-dot"></span><span>' +
+        name +
+        '</span><span class="fw-cat-count">' +
+        fwCountItems(g.lines) +
+        "</span></summary>" +
+        '<div class="fw-notes-group-body">' +
+        fwMdHtml(g.lines) +
+        "</div></details>";
+    });
+    h += "</div>";
+  }
+  notesEl.innerHTML = h;
+  return true;
+}
 
 async function loadFwReleaseNotes() {
   var sel = document.getElementById("fwVersionSelect");
@@ -10473,36 +10855,38 @@ async function loadFwReleaseNotes() {
   var v = sel.value;
   if (!v) { notesEl.style.display = "none"; return; }
   notesEl.style.display = "";
-  notesEl.textContent = t("loading") + "...";
+  notesEl.innerHTML =
+    '<div class="fw-notes-loading">' + esc(t("loading")) + "...</div>";
 
-  // 1. 尝试从 CHANGELOG.md 提取
+  // 1. 尝试从 CHANGELOG.md 提取并结构化渲染（正式版聚合其 dev 分组）
   var changelog = await fetchChangelog();
   if (changelog) {
     var section = parseChangelogSection(changelog, v);
     if (section) {
-      notesEl.innerHTML = typeof marked !== "undefined"
-        ? marked.parse(section)
-        : section.replace(/</g, "&lt;");
-      return;
+      var agg = aggregateDevGroups(changelog, v);
+      if (renderFwNotes(v, section.body, section.date, agg)) return;
     }
   }
 
   // 2. 回退后端
   var d = await api("/api/framework/versions?notes=" + encodeURIComponent(v));
   if (d && d.notes) {
-    notesEl.innerHTML = typeof marked !== "undefined"
-      ? marked.parse(d.notes)
-      : d.notes.replace(/</g, "&lt;");
+    if (renderFwNotes(v, d.notes, "")) return;
+    notesEl.innerHTML =
+      '<div class="fw-notes-head"><span class="fw-notes-ver">v' + esc(v) + "</span></div>" +
+      '<div class="fw-notes-summary">' +
+      (typeof marked !== "undefined" ? marked.parse(d.notes) : d.notes.replace(/</g, "&lt;")) +
+      "</div>";
     return;
   }
 
   // 3. 最后显示链接
   var releaseUrl = "https://github.com/ErisPulse/ErisPulse/releases/tag/v" + v;
   notesEl.innerHTML =
-    '<div style="text-align:center;padding:12px 0;color:var(--tx-s)">' +
+    '<div class="fw-notes-loading">' +
     '<p style="margin:0 0 8px">' + esc(t("release_notes_unavailable")) + "</p>" +
     '<a href="' + esc(releaseUrl) +
-    '" target="_blank" rel="noopener" style="color:var(--accent,#4fa6de);font-size:13px">' +
+    '" target="_blank" rel="noopener">' +
     esc(releaseUrl) + "</a></div>";
 }
 
