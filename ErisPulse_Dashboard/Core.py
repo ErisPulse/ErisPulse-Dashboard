@@ -2885,6 +2885,21 @@ class Main(BaseModule):
         cmd = backend + ["install", "--upgrade"]
         if index_url:
             cmd.extend(["--index-url", index_url])
+        # 通道感知：对 ErisPulse 无版本 pin 的升级若当前已装版本是 pre/rc，
+        # 自动带 --pre，避免升级被解析为"回退到最新正式版"（dev > stable 之外
+        # 的更常见场景：已装 pre 后无 pin 升级会把 pre 覆盖为正式版）
+        if any(p.split("==", 1)[0].strip().lower() == "erispulse" and "==" not in p for p in packages):
+            try:
+                import re as _re
+
+                from importlib.metadata import version as _pkg_version
+
+                _cur = _pkg_version("ErisPulse") or ""
+                # PEP 440 预发布段：dev/a/b/rc/pre 后跟数字或直接后缀
+                if _re.search(r"(\.dev\d+|\.a\d+|\.b\d+|\.rc\d+|[ab]\d+|rc\d+)\s*$", _cur, _re.I):
+                    cmd.append("--pre")
+            except Exception:
+                pass
         cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",

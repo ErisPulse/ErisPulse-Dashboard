@@ -5421,6 +5421,25 @@ function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
     : "";
 
   var ctrl = "";
+  // 嵌套 dataclass 子树（schema 带 fields）：渲染为可折叠嵌套分组，递归渲染子字段
+  if (schema.fields && typeof schema.fields === "object" && !Array.isArray(schema.fields)) {
+    var subValues = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    var subHtml = renderAdapterSchemaFields(schema.fields, subValues, fullKey, opts);
+    ctrl =
+      '<details class="fw-nested" style="border:1px solid rgba(128,128,128,.25);border-radius:8px;padding:8px 10px;margin:4px 0">' +
+      '<summary style="cursor:pointer;font-weight:600;user-select:none">' +
+      esc(name) +
+      "</summary>" +
+      (desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "") +
+      '<div style="margin-top:6px">' +
+      subHtml +
+      "</div></details>";
+    return (
+      '<div class="fw-row" style="display:block"><div class="fw-control" style="width:100%">' +
+      ctrl +
+      "</div></div>"
+    );
+  }
   if (widget === "switch" || tp === "boolean") {
     var checked = value === true || value === "true" || value === 1;
     ctrl =
@@ -5453,6 +5472,13 @@ function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
       .map(function (o) {
         var optVal = typeof o === "object" ? o.value : o;
         var optLabel = typeof o === "object" ? o.label : o;
+        // label 兼容 i18n 字典形态（服务端已解析为文本；此处兜底未解析的场景）
+        if (optLabel && typeof optLabel === "object") {
+          optLabel =
+            optLabel.default != null
+              ? optLabel.default
+              : String(optLabel.i18n != null ? optLabel.i18n : "");
+        }
         var sel =
           String(value).toLowerCase() === String(optVal).toLowerCase()
             ? " selected"
@@ -5489,12 +5515,17 @@ function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
       "</div>";
   } else if (
     tp === "array" ||
+    tp === "object" ||
+    tp === "table" ||
+    (value && typeof value === "object" && !Array.isArray(value)) ||
     Array.isArray(value) ||
     schema.widget === "textarea"
   ) {
-    var strVal = Array.isArray(value)
-      ? JSON.stringify(value)
-      : String(value != null ? value : "");
+    // dict/list 值以 JSON 文本进 textarea（保存路径按 tp=object JSON.parse 回写）
+    var strVal =
+      value && typeof value === "object"
+        ? JSON.stringify(value, null, 2)
+        : String(value != null ? value : "");
     ctrl =
       '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="2" data-ackey="' +
       esc(fullKey) +
