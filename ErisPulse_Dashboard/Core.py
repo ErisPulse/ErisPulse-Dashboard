@@ -2885,6 +2885,21 @@ class Main(BaseModule):
         cmd = backend + ["install", "--upgrade"]
         if index_url:
             cmd.extend(["--index-url", index_url])
+         
+         
+         
+        if any(p.split("==", 1)[0].strip().lower() == "erispulse" and "==" not in p for p in packages):
+            try:
+                import re as _re
+
+                from importlib.metadata import version as _pkg_version
+
+                _cur = _pkg_version("ErisPulse") or ""
+                 
+                if _re.search(r"(\.dev\d+|\.a\d+|\.b\d+|\.rc\d+|[ab]\d+|rc\d+)\s*$", _cur, _re.I):
+                    cmd.append("--pre")
+            except Exception:
+                pass
         cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",
