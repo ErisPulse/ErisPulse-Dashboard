@@ -474,26 +474,126 @@ var _FRAMEWORK_VERSIONS = ["2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2
         });
     };
 
-    API_MAP['/api/commands/settings'] = function () { return _json({ success: true, command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false } }); };
-
     API_MAP['/api/commands'] = function () {
         return _json({
+            acl_default_allow: true,
+            platforms: ['Yunhu', 'OneBot11', 'Telegram', 'Discord', 'Kook'],
             global_settings: { prefix: '/', prefixes: ['/'], case_sensitive: true, allow_space_prefix: false, must_at_bot: false },
             commands: [
-                { name: 'help', help: '显示帮助信息', usage: '/help [命令名]', group: '通用', hidden: false, original_aliases: ['帮助'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
-                { name: 'echo', help: '回显消息', usage: '/echo <内容>', group: '测试', hidden: false, original_aliases: [], custom_aliases: ['say'], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
-                { name: 'weather', help: '查询天气', usage: '/weather <城市>', group: '工具', hidden: false, original_aliases: ['天气'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
-                { name: 'status', help: '查看系统状态', usage: '/status', group: '管理', hidden: false, original_aliases: ['状态'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null },
-                { name: 'admin', help: '管理命令', usage: '/admin <操作>', group: '管理', hidden: true, original_aliases: [], custom_aliases: [], enabled: false, allowed_platforms: ['qq', 'telegram'], blocked_platforms: [], transform_to: null }
+                { name: 'help', help: '显示帮助信息', usage: '/help [命令名]', group: '通用', hidden: false, owner: 'Dashboard', original_aliases: ['帮助'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null, acl: { allow: [], deny: [] }, params: {} },
+                { name: 'echo', help: '回显消息', usage: '/echo <内容>', group: '测试', hidden: false, owner: 'DemoTools', original_aliases: [], custom_aliases: ['say'], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null, acl: { allow: ['onebot11:10001'], deny: [] }, params: { hidden: false } },
+                { name: 'weather', help: '查询天气', usage: '/weather <城市>', group: '工具', hidden: false, owner: 'Weather', original_aliases: ['天气'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null, acl: { allow: [], deny: ['telegram:u_spam'] }, params: {} },
+                { name: 'status', help: '查看系统状态', usage: '/status', group: '管理', hidden: false, owner: 'Dashboard', original_aliases: ['状态'], custom_aliases: [], enabled: true, allowed_platforms: [], blocked_platforms: [], transform_to: null, acl: { allow: [], deny: [] }, params: {} },
+                { name: 'admin', help: '管理命令', usage: '/admin <操作>', group: '管理', hidden: true, owner: 'DemoAdmin', original_aliases: [], custom_aliases: [], enabled: false, allowed_platforms: ['qq', 'telegram'], blocked_platforms: [], transform_to: 'status', acl: { allow: [], deny: [] }, params: { master: true, hidden: true } }
             ]
         });
     };
+
+    API_MAP['/api/commands/settings'] = function () { return _json({ success: true, command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false } }); };
 
     API_MAP['/api/master'] = function (opts) {
         if (opts && opts.method === 'PUT') return _json({ success: true, master: { users: { Yunhu: ['user_001'], Telegram: ['user_002'] } } });
         return _json({
             master: { users: { Yunhu: ['user_001'], Telegram: ['user_002'], Discord: ['user_555'] } },
-            platforms: ['Yunhu', 'OneBot11', 'Telegram', 'Discord', 'Kook']
+            platforms: ['Yunhu', 'OneBot11', 'Telegram', 'Discord', 'Kook'],
+            providers: [
+                { name: 'vip_provider', owner: 'DemoVIP' },
+                { name: 'builtin_admins', owner: '' }
+            ]
+        });
+    };
+
+    API_MAP['/api/scope'] = function (opts) {
+        if (opts && opts.method === 'PUT') return _json({ success: true });
+        return _json({
+            supported: true,
+            default_allow: true,
+            topology: {
+                platforms: {
+                    OneBot11: { modules: ['Chat', 'Tool*'], blocked: ['re:^Danger'] }
+                },
+                bots: {
+                    OneBot11: { '10001': { modules: ['Chat'], blocked: [], merge: true } }
+                },
+                sessions: {
+                    Telegram: { 'g_blocked': { modules: [], blocked: ['Music'] } }
+                },
+                identity: {
+                    adapters: { Kook: { deny: true } },
+                    bots: { OneBot11: { '10002': { deny: true } } },
+                    sessions: { OneBot11: { 'g_spam': { deny: true } } },
+                    users: { OneBot11: { 'u_bad': { deny: true }, 'spam_*': { deny: true }, 'u_admin': { allow: true } } }
+                },
+                actions: {
+                    Weather: { send: { deny: true }, api: { allow: ['get_*'] } },
+                    Chat: { call: { deny: ['re:^internal_'] } }
+                }
+            },
+            stats: { module_calls: 1258, module_filtered: 23, identity_checks: 1180, identity_denied: 7, action_checks: 640, action_denied: 4, cache_hits: 2861, cache_misses: 217 },
+            runtime_bindings: [
+                { path: 'bots.OneBot11.10001.modules', owner: 'DemoScheduler', value: { modules: ['Cron'], blocked: [] } }
+            ]
+        });
+    };
+    API_MAP['/api/scope/module'] = function (opts) { return _json({ success: true, removed: opts && opts.method === 'DELETE' }); };
+    API_MAP['/api/scope/identity'] = function (opts) { return _json({ success: true, removed: opts && opts.method === 'DELETE' }); };
+    API_MAP['/api/scope/action'] = function (opts) { return _json({ success: true, removed: opts && opts.method === 'DELETE' }); };
+    API_MAP['/api/scope/test'] = function (opts) {
+        var body = {};
+        try { body = JSON.parse((opts && opts.body) || '{}'); } catch (e) {}
+        var allowed = body.kind !== 'identity' || (body.user_id || '').indexOf('bad') === -1;
+        return _json({ kind: body.kind || 'module', allowed: allowed });
+    };
+    API_MAP['/api/scope/stats/reset'] = function () { return _json({ success: true }); };
+    API_MAP['/api/scope/runtime/cleanup'] = function () { return _json({ success: true, removed: 1 }); };
+    API_MAP['/api/scope/export'] = function () {
+        return _json({
+            type: 'erispulse_scope_config',
+            version: 1,
+            exported_at: new Date().toISOString().slice(0, 19),
+            default_allow: true,
+            config: {
+                platforms: { OneBot11: { modules: ['Chat', 'Tool*'], blocked: ['re:^Danger'] } },
+                bots: { OneBot11: { '10001': { modules: ['Chat'], blocked: [], merge: true } } },
+                sessions: { Telegram: { 'g_blocked': { modules: [], blocked: ['Music'] } } },
+                identity: {
+                    adapters: { Kook: { deny: true } },
+                    bots: {},
+                    sessions: {},
+                    users: { OneBot11: { 'u_bad': { deny: true }, 'u_admin': { allow: true } } }
+                },
+                actions: { Weather: { send: { deny: true }, api: { allow: ['get_*'] } } }
+            }
+        });
+    };
+    API_MAP['/api/scope/import'] = function (opts) {
+        var counts = { platforms: 1, bots: 1, sessions: 0, identity: 2, actions: 2 };
+        return _json({ success: true, mode: 'merge', imported: counts });
+    };
+
+    API_MAP['/api/topology'] = function () {
+        return _json({
+            supported: true,
+            topology: {
+                modules: {
+                    Dashboard: { loaded: true, enabled: true, depends: [], info: { version: '1.11.0', description: 'Web 管理面板' }, commands: ['help', 'status'], handlers: { message: 2 }, routes: { http: ['/Dashboard/'], ws: ['/Dashboard/ws'], sse: [] }, lifecycle_hooks: 3 },
+                    Chat: { loaded: true, enabled: true, depends: ['Weather'], info: { version: '2.0.1', description: '聊天模块' }, commands: ['chat'], handlers: { message: 4 }, routes: { http: [], ws: [], sse: [] }, lifecycle_hooks: 1 },
+                    Weather: { loaded: true, enabled: true, depends: [], info: { version: '1.2.0', description: '天气查询' }, commands: ['weather'], handlers: {}, routes: { http: ['/Weather/api/current'], ws: [], sse: [] }, lifecycle_hooks: 0 },
+                    DemoScheduler: { loaded: false, enabled: true, depends: ['Chat'], info: { version: '0.9.0', description: '定时任务' }, commands: [], handlers: {}, routes: { http: [], ws: [], sse: [] }, lifecycle_hooks: 2 }
+                },
+                adapters: {
+                    OneBot11: { status: 'started', enabled: true, bots: { '10001': { status: 'online', last_active: NOW - 60, info: { nickname: '主号' } }, '10002': { status: 'offline', last_active: NOW - 86400, info: {} } } },
+                    Telegram: { status: 'started', enabled: true, bots: { 'tg_bot': { status: 'online', last_active: NOW - 30, info: { username: 'demo_bot' } } } },
+                    Kook: { status: 'stopped', enabled: false, bots: {} }
+                },
+                scope: {
+                    platforms: { OneBot11: { modules: ['Chat', 'Tool*'], blocked: ['re:^Danger'] } },
+                    bots: { OneBot11: { '10001': { modules: ['Chat'], blocked: [] } } },
+                    sessions: {},
+                    identity: { adapters: { Kook: { deny: true } }, bots: {}, sessions: {}, users: {} },
+                    actions: { Weather: { send: { deny: true } } }
+                }
+            }
         });
     };
 

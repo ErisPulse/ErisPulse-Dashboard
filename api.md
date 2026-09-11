@@ -29,6 +29,8 @@
 - [备份恢复 API](#备份恢复-api)
 - [文件管理 API](#文件管理-api)
 - [命令管理 API](#命令管理-api)
+- [作用域 API](#作用域-api)
+- [拓扑 API](#拓扑-api)
 - [视图 API](#视图-api)
 - [集群管理 API](#集群管理-api)
 - [WebSocket](#websocket)
@@ -1603,10 +1605,13 @@
     "allow_space_prefix": false,
     "must_at_bot": false
   },
+  "acl_default_allow": true,
   "platforms": ["qq", "telegram"],
   "total": 10
 }
 ```
+
+> 每条命令额外携带：`owner`（归属模块）、`acl`（`{"allow": [], "deny": []}` 用户黑白名单，标识格式 `platform:uid`）、`params`（参数覆写，如 `master` / `hidden`）。
 
 ---
 
@@ -1627,6 +1632,8 @@
 | `allowed_platforms` | string[] | 否 | 允许的平台列表 |
 | `blocked_platforms` | string[] | 否 | 屏蔽的平台列表 |
 | `transform_to` | string | 否 | 命令转换目标 |
+| `acl` | object | 否 | `{"allow": ["platform:uid"], "deny": [...]}` 用户黑白名单（写入 `overrides.acl`，均空时清除） |
+| `params` | object | 否 | `{"master": bool, "hidden": bool}` 命令参数覆写（写入 `overrides.command`，用户优先） |
 
 **响应：**
 
@@ -1638,6 +1645,254 @@
     "aliases": ["h"],
     "allowed_platforms": [],
     "blocked_platforms": []
+  },
+  "acl": { "allow": [], "deny": [] },
+  "params": {}
+}
+```
+
+---
+
+## 作用域 API
+
+> 需要 ErisPulse **2.8.0+**（不支持时 `GET /api/scope` 返回 `{"supported": false}`）。
+> 所有写入均为持久化语义（用户配置），模块卸载不会回收。
+
+### GET `/api/scope`
+
+获取作用域拓扑、运行统计与运行时绑定（含归属 owner）。
+
+**响应：**
+
+```json
+{
+  "supported": true,
+  "default_allow": true,
+  "topology": {
+    "platforms": {"onebot11": {"modules": ["Chat"], "blocked": []}},
+    "bots": {},
+    "sessions": {},
+    "identity": {"adapters": {}, "bots": {}, "sessions": {}, "users": {}},
+    "actions": {"MyModule": {"send": {"deny": true}}}
+  },
+  "stats": {
+    "module_calls": 0, "module_filtered": 0,
+    "identity_checks": 0, "identity_denied": 0,
+    "action_checks": 0, "action_denied": 0,
+    "cache_hits": 0, "cache_misses": 0
+  },
+  "runtime_bindings": [{"path": "bots.onebot11.123.modules", "owner": "SomeModule", "value": {}}]
+}
+```
+
+---
+
+### PUT `/api/scope/settings`
+
+更新全局设置。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `default_allow` | boolean | 是 | 全局兜底（false = 隐式拒绝严格模式） |
+
+**响应：** `{"success": true, "default_allow": true}`
+
+---
+
+### POST `/api/scope/module`
+
+设置模块维度绑定（平台 / Bot / 会话三级）。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `platform` | string | 是 | 平台名 |
+| `bot_id` | string | 否 | Bot ID |
+| `session_id` | string | 否 | 会话 ID |
+| `modules` | string[] | 否 | 白名单条目（精确 / glob / `re:` 正则） |
+| `blocked` | string[] | 否 | 黑名单条目 |
+| `merge` | boolean | 否 | 与现有绑定逐条目并集（默认整体替换） |
+
+**响应：** `{"success": true}`
+
+---
+
+### DELETE `/api/scope/module`
+
+移除模块维度绑定。请求体同上（仅需 `platform` / `bot_id` / `session_id`）。
+
+**响应：** `{"success": true, "removed": true}`
+
+---
+
+### POST `/api/scope/identity`
+
+设置身份维度准入策略。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `platform` | string | 是 | 平台名 |
+| `bot_id` | string | 否 | Bot ID |
+| `session_id` | string | 否 | 会话 ID |
+| `user_id` | string | 否 | 用户 ID（支持 glob） |
+| `allow` | boolean | 否 | 放行 |
+| `deny` | boolean | 否 | 拒绝（`allow`/`deny` 至少一项） |
+
+**响应：** `{"success": true}`
+
+---
+
+### DELETE `/api/scope/identity`
+
+移除身份绑定。请求体同上（无需 `allow`/`deny`）。
+
+---
+
+### POST `/api/scope/action`
+
+设置模块出站动作限制规则。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `module` | string | 是 | 模块名 |
+| `action` | string | 是 | `send` / `api` / `request` / `call` |
+| `allow` | string[] | 否 | 白名单条目 |
+| `deny` | boolean \| string[] | 否 | 全禁（true）或黑名单条目 |
+
+**响应：** `{"success": true}`
+
+---
+
+### DELETE `/api/scope/action`
+
+移除出站限制。`action` 省略时移除该模块全部动作限制。
+
+**响应：** `{"success": true, "removed": true}`
+
+---
+
+### POST `/api/scope/test`
+
+作用域判定测试器。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `kind` | string | 是 | `module` / `identity` / `action` |
+| `platform` | string | kind=module/identity 时 | 平台名 |
+| `bot_id` | string | 否 | Bot ID |
+| `session_id` | string | 否 | 会话 ID |
+| `user_id` | string | kind=identity 时 | 用户 ID |
+| `module` | string | kind=module/action 时 | 模块名 |
+| `action` | string | kind=action 时 | 动作类型 |
+| `name` | string | 否 | 调用名（send 方法 / api 动作） |
+
+**响应：** `{"kind": "module", "allowed": true}`
+
+---
+
+### POST `/api/scope/stats/reset`
+
+重置作用域运行统计。
+
+**响应：** `{"success": true}`
+
+---
+
+### POST `/api/scope/runtime/cleanup`
+
+清理指定归属者的运行时绑定（归属权手动回收）。
+
+**请求体：** `{"owner": "ModuleName"}`
+
+**响应：** `{"success": true, "removed": 2}`
+
+---
+
+### GET `/api/scope/export`
+
+导出全部作用域规则为可分享的 JSON 配置（含导出时间与 `default_allow`）。
+
+**响应：**
+
+```json
+{
+  "type": "erispulse_scope_config",
+  "version": 1,
+  "exported_at": "2026-09-11T12:00:00",
+  "default_allow": true,
+  "config": {
+    "platforms": {},
+    "bots": {},
+    "sessions": {},
+    "identity": {"adapters": {}, "bots": {}, "sessions": {}, "users": {}},
+    "actions": {}
+  }
+}
+```
+
+---
+
+### POST `/api/scope/import`
+
+导入他人分享的作用域配置。
+
+**请求体：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `config` | object | 是 | 导出的 `config` 结构（也可直接传整个导出文件内容） |
+| `mode` | string | 否 | `merge`（默认，逐条合并）/ `replace`（先持久化清空现有规则再写入） |
+| `default_allow` | boolean | 否 | 同时应用导出文件中的全局兜底开关 |
+
+**响应：**
+
+```json
+{
+  "success": true,
+  "mode": "merge",
+  "imported": {"platforms": 1, "bots": 1, "sessions": 0, "identity": 2, "actions": 2}
+}
+```
+
+---
+
+## 拓扑 API
+
+### GET `/api/topology`
+
+获取完整拓扑树（模块归属资源、适配器与 Bot 状态、作用域绑定）。需要 ErisPulse 2.8.0+。
+
+**响应：**
+
+```json
+{
+  "supported": true,
+  "topology": {
+    "modules": {
+      "Chat": {
+        "loaded": true, "enabled": true, "depends": [],
+        "commands": ["chat"], "handlers": {"message": 2},
+        "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
+        "lifecycle_hooks": 3
+      }
+    },
+    "adapters": {
+      "onebot11": {
+        "status": "started", "enabled": true,
+        "bots": {"123": {"status": "online", "scope": {}}},
+        "scope": {"modules": [], "blocked": []}
+      }
+    },
+    "scope": {}
   }
 }
 ```

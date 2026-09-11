@@ -8,6 +8,9 @@ snapshots/
 config.db*
 .website
 
+# 框架自动维护的完整配置参考（运行时生成，不入库）
+config/config.full.example
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

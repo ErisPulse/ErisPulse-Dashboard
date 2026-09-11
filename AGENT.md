@@ -164,11 +164,16 @@ let _masterEntries = [];      # 主人条目 [{platform, userId}]
 **分组说明:**
 | 分组 | 页面 |
 |------|------|
-| 概览 (overview) | dashboard, bots |
+| 概览 (overview) | dashboard, bots, topology |
 | 事件 (events) | event-stream, commands |
 | 扩展 (extensions) | module-mgmt, store |
 | 管理 (management) | master, adapter, config |
 | 运维 (operations) | logs, files, api-routes, cluster |
+
+### 权限系统页（master）子 Tab
+`permTabBar` 含两个子 Tab：`perm-master`（主人配置 + 身份源 Provider）与 `perm-scope`（作用域管理，需 ErisPulse 2.8.0+，`GET /api/scope` 返回 `supported:false` 时显示提示条）。
+
+作用域子 Tab 数据流：`loadScope()` → `/api/scope`（topology/stats/runtime_bindings）+ `/api/adapters`（平台与 Bot 下拉）+ `/api/modules`（模块多选候选）；写入统一走 `/api/scope/module|identity|action`（全部持久化 `persist=True`）；运行时绑定（归属权）仅展示 + 按 owner 调 `/api/scope/runtime/cleanup` 清理。
 
 ### 模块视图动态分组
 `_renderModuleViews()` 中处理模块注册的视图：
