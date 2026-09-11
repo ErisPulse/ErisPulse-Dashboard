@@ -10724,19 +10724,25 @@ input, textarea, select, button,
     }
 
     .topo-float-tl {
-        max-width: calc(100% - 24px);
+        left: 12px;
+        right: 12px;
+        top: 12px;
+        max-width: none;
+        flex-wrap: wrap;
     }
 
     .topo-float-tr {
+        left: 12px;
+        right: 12px;
         top: auto;
-        bottom: 14px;
-        right: 14px;
+        bottom: 12px;
+        max-width: none;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     .topo-float-bl {
-        bottom: 14px;
-        left: 14px;
-        max-width: calc(100% - 150px);
+        display: none;
     }
 
     .topo-detail {
