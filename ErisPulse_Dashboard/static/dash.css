@@ -1718,6 +1718,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    line-height: 1.2;
     border: none;
     cursor: pointer;
     font-family: inherit;
@@ -1731,6 +1732,17 @@ body {
         color 0.15s ease,
         filter 0.15s ease;
     white-space: nowrap;
+}
+
+.btn svg {
+    flex-shrink: 0;
+    align-self: center;
+    vertical-align: middle;
+    color: inherit;
+}
+
+.btn > svg[style*="margin-right"] {
+    margin-right: 0 !important;
 }
 
 .btn:hover {
@@ -5701,7 +5713,7 @@ select.form-select::-ms-expand {
     color: var(--tx-t);
 }
 
-.perm-empty svg {
+.perm-empty > svg {
     opacity: 0.3;
     margin-bottom: 12px;
 }
@@ -9239,13 +9251,13 @@ select:hover:not(:disabled) {
 .theme-card.active::before {
     content: "";
     position: absolute;
-    top: 10.5px;
-    right: 12px;
+    top: 16px;
+    right: 18px;
     width: 6px;
     height: 10px;
     border: solid #fff;
     border-width: 0 2.5px 2.5px 0;
-    transform: rotate(45deg);
+    transform: translate(50%, -50%) rotate(45deg);
     z-index: 3;
 }
 
@@ -10298,4 +10310,1437 @@ input, textarea, select, button,
     width: 64px;
     height: 64px;
     object-fit: contain;
+}
+
+/* ========== 作用域（scope）子 Tab ========== */
+
+.perm-stats.four-col {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.scope-unsupported {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border: 1px solid color-mix(in srgb, var(--er-c) 35%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--er-c) 8%, transparent);
+    color: var(--tx-p);
+    font-size: 13px;
+}
+
+.scope-addbar {
+    padding: 12px 20px;
+}
+
+.scope-add-platform {
+    width: 150px;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.scope-add-input {
+    flex: 1;
+    min-width: 140px;
+    font-size: 13px;
+}
+
+.scope-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.scope-row-main {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.scope-row-path {
+    font-weight: 600;
+    color: var(--tx-p);
+    word-break: break-all;
+}
+
+.scope-row-sub {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+.scope-owner-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    padding: 1px 8px;
+    border-radius: 999px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scope-entry-chip {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ok-c) 12%, transparent);
+    color: var(--ok-c);
+    border: 1px solid color-mix(in srgb, var(--ok-c) 30%, transparent);
+}
+
+.scope-entry-chip.blocked {
+    background: color-mix(in srgb, var(--er-c) 12%, transparent);
+    color: var(--er-c);
+    border-color: color-mix(in srgb, var(--er-c) 30%, transparent);
+}
+
+.scope-entry-chip.deny {
+    background: color-mix(in srgb, var(--er-c) 12%, transparent);
+    color: var(--er-c);
+    border-color: color-mix(in srgb, var(--er-c) 30%, transparent);
+}
+
+.scope-entry-chip.merge {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.scope-empty {
+    padding: 14px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--tx-t);
+}
+
+.scope-test-result {
+    border: 1px dashed var(--bd);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    font-size: 13px;
+    color: var(--tx-s);
+    min-height: 20px;
+}
+
+.scope-test-result .ok {
+    color: var(--ok-c);
+    font-weight: 700;
+}
+
+.scope-test-result .bad {
+    color: var(--er-c);
+    font-weight: 700;
+}
+
+.scope-select-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--tx-p);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.scope-select-tag.active {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.scope-select-tag.blockactive {
+    background: color-mix(in srgb, var(--er-c) 22%, transparent);
+    border-color: color-mix(in srgb, var(--er-c) 40%, transparent);
+}
+
+/* ========== 拓扑图谱页 ========== */
+
+.topo-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.topo-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.topo-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.topo-legend-line {
+    width: 22px;
+    height: 0;
+    display: inline-block;
+    border-top: 2px solid var(--tx-t);
+}
+
+.topo-legend-line.dashed {
+    border-top-style: dashed;
+}
+
+.topo-legend-line.dotted {
+    border-top-style: dotted;
+}
+
+.topo-stage {
+    position: relative;
+    margin: 4px -28px -28px;
+    height: calc(100vh - 215px);
+    min-height: 430px;
+    background: var(--bg-p);
+    overflow: hidden;
+}
+
+.topo-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+.topo-float {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-s) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--bd);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    font-size: 12px;
+    color: var(--tx-s);
+    max-width: calc(100% - 28px);
+}
+
+.topo-float b {
+    color: var(--tx-p);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.topo-float-tl {
+    top: 14px;
+    left: 14px;
+}
+
+.topo-float-tr {
+    top: 14px;
+    right: 14px;
+}
+
+.topo-float-bl {
+    bottom: 14px;
+    left: 14px;
+}
+
+.topo-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tx-t);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.topo-canvas.dragging {
+    cursor: grabbing;
+}
+
+.topo-detail {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 300px;
+    max-height: calc(100% - 24px);
+    overflow-y: auto;
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    font-size: 12px;
+    color: var(--tx-p);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 5;
+}
+
+.topo-detail h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-break: break-all;
+    padding-right: 26px;
+}
+
+.topo-detail-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.master-dist {
+    margin: 4px 0 4px;
+    padding: 12px 16px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+}
+
+.master-dist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.master-dist-row:last-child {
+    margin-bottom: 2px;
+}
+
+.master-dist-name {
+    width: 110px;
+    flex-shrink: 0;
+    color: var(--tx-s);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.master-dist-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bd) 55%, transparent);
+    overflow: hidden;
+}
+
+.master-dist-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+}
+
+.master-dist-count {
+    width: 26px;
+    flex-shrink: 0;
+    color: var(--tx-t);
+    font-weight: 600;
+    text-align: right;
+}
+
+.topo-detail-kv {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+
+.topo-detail-k {
+    color: var(--tx-t);
+    flex-shrink: 0;
+}
+
+.topo-detail-v {
+    color: var(--tx-p);
+}
+
+.topo-detail-list {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 6px 0;
+}
+
+.topo-detail-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+/* ========== 命令编辑弹窗增强 ========== */
+
+.cmd-owner-badge {
+    cursor: pointer;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+    .perm-stats.four-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .scope-add-platform {
+        width: 120px;
+    }
+
+    .topo-stage {
+        height: calc(100vh - 240px);
+        min-height: 340px;
+        margin: 4px -16px -16px;
+    }
+
+    .topo-float-tl {
+        max-width: calc(100% - 24px);
+    }
+
+    .topo-float-tr {
+        top: auto;
+        bottom: 14px;
+        right: 14px;
+    }
+
+    .topo-float-bl {
+        bottom: 14px;
+        left: 14px;
+        max-width: calc(100% - 150px);
+    }
+
+    .topo-detail {
+        width: calc(100% - 24px);
+    }
+}
+
+/* ========== 作用域专业版 UI：维度导航 / 层级树 / 层级徽章 ========== */
+
+.scope-nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 4px;
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    background: var(--bg-t);
+    width: fit-content;
+    max-width: 100%;
+}
+
+.scope-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    color: var(--tx-s);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.scope-nav-item svg {
+    width: 14px;
+    height: 14px;
+}
+
+.scope-nav-item:hover {
+    color: var(--tx-p);
+    background: color-mix(in srgb, var(--tx-p) 6%, transparent);
+}
+
+.scope-nav-item.active {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.scope-nav-count {
+    font-size: 10px;
+    padding: 0 6px;
+}
+
+.scope-panel {
+    margin-top: 0;
+}
+
+/* ---- 层级树 ---- */
+
+.scope-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.scope-tree-node {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.scope-tree-guide {
+    width: 18px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.scope-tree-guide::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 8px;
+    border-left: 2px solid color-mix(in srgb, var(--bd) 80%, transparent);
+}
+
+.scope-tree-guide.leaf::before {
+    height: 50%;
+}
+
+.scope-tree-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    font-size: 13px;
+    min-width: 0;
+}
+
+.scope-tree-main {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.scope-tree-name {
+    font-weight: 600;
+    color: var(--tx-p);
+    word-break: break-all;
+}
+
+.scope-tree-chips {
+    display: inline-flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.scope-inherit {
+    font-size: 11px;
+    color: var(--tx-t);
+    font-style: italic;
+}
+
+.scope-tree-actions {
+    display: inline-flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* ---- 层级徽章 ---- */
+
+.scope-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.scope-level-badge svg {
+    width: 11px;
+    height: 11px;
+}
+
+.scope-level-badge.lv-p {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+}
+
+.scope-level-badge.lv-b {
+    background: color-mix(in srgb, var(--ok-c) 15%, transparent);
+    color: var(--ok-c);
+}
+
+.scope-level-badge.lv-s {
+    background: color-mix(in srgb, var(--wr-c) 18%, transparent);
+    color: var(--wr-c);
+}
+
+.scope-level-badge.lv-a {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+}
+
+.scope-level-badge.lv-u {
+    background: color-mix(in srgb, var(--wr-c) 40%, var(--accent) 25%, transparent);
+    color: color-mix(in srgb, var(--wr-c) 55%, var(--accent));
+}
+
+/* ---- 编辑器 ---- */
+
+.scope-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--tx-t);
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: var(--radius-lg);
+}
+
+.scope-crumbs .scope-level-badge {
+    margin-right: 2px;
+}
+
+.scope-crumbs-sep {
+    color: var(--tx-t);
+    opacity: 0.6;
+}
+
+.scope-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.scope-editor-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.scope-editor-field > label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tx-s);
+}
+
+.scope-editor-field .fw-input {
+    width: 100%;
+}
+
+/* ---- 策略切换（allow/deny 分段按钮） ---- */
+
+.scope-policy-toggle {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    overflow: hidden;
+    width: fit-content;
+}
+
+.scope-policy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    background: transparent;
+    color: var(--tx-t);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.scope-policy-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.scope-policy-btn + .scope-policy-btn {
+    border-left: 1px solid var(--bd);
+}
+
+.scope-policy-btn.allow.active {
+    background: color-mix(in srgb, var(--ok-c) 16%, transparent);
+    color: var(--ok-c);
+}
+
+.scope-policy-btn.deny.active {
+    background: color-mix(in srgb, var(--er-c) 16%, transparent);
+    color: var(--er-c);
+}
+
+/* ---- 出站动作矩阵行 ---- */
+
+.scope-act-mod {
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.scope-act-type {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--tx-p) 7%, transparent);
+    color: var(--tx-s);
+}
+
+.scope-ms-field .ep-multiselect {
+    width: 100%;
+}
+
+/* ========== 作用域导出/导入模态窗 ========== */
+
+.scope-dim-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scope-dim-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.scope-dim-row:hover {
+    border-color: var(--bd-h, var(--bd));
+}
+
+.scope-dim-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.scope-dim-label {
+    flex: 1;
+    min-width: 0;
+    color: var(--tx-p);
+    font-weight: 600;
+}
+
+.scope-file-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 26px 16px;
+    border: 2px dashed var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    color: var(--tx-t);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.scope-file-zone:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.scope-file-zone.loaded {
+    border-color: var(--ok-c);
+    color: var(--ok-c);
+}
+
+.scope-file-zone svg {
+    width: 28px;
+    height: 28px;
+}
+
+.scope-file-summary {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin: 10px 0 8px;
+    word-break: break-all;
+}
+
+/* ========== 移动端自适应 ========== */
+
+@media (max-width: 720px) {
+    .scope-nav {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .scope-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scope-nav-item {
+        flex-shrink: 0;
+        padding: 7px 11px;
+    }
+
+    .card-header .header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .scope-tree-main {
+        min-width: 0;
+    }
+
+    .scope-tree-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .scope-editor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-box {
+        padding: 16px;
+    }
+
+    .perm-stats,
+    .perm-stats.four-col {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .perm-stats,
+    .perm-stats.four-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========== 拓扑图增强 ========== */
+
+.topo-stats {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.topo-stats .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.topo-stats .chip svg {
+    width: 11px;
+    height: 11px;
+}
+
+.topo-tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 6;
+    display: none;
+    max-width: 260px;
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    padding: 5px 9px;
+    font-size: 12px;
+    color: var(--tx-p);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    word-break: break-all;
+}
+
+.topo-tooltip .tt-type {
+    margin-left: 6px;
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+/* ========== 全局沉浸感 ========== */
+
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.page.active {
+    animation: pageIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    border-color: var(--bd-h, var(--bd));
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page.active {
+        animation: none;
+    }
+
+    .page.active .page-title,
+    .page.active .page-desc {
+        animation: none;
+    }
+}
+
+/* 权限页 Tab 条不拉伸整行 */
+#permTabBar {
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* ========== 沉浸式登录页 ========== */
+
+.login-overlay {
+    background: var(--bg-p);
+    overflow: hidden;
+}
+
+.login-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.login-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.45;
+}
+
+.login-orb-a {
+    width: 480px;
+    height: 480px;
+    left: -120px;
+    top: -140px;
+    background: color-mix(in srgb, var(--accent) 55%, transparent);
+    animation: loginDrift 18s ease-in-out infinite alternate;
+}
+
+.login-orb-b {
+    width: 420px;
+    height: 420px;
+    right: -110px;
+    top: 28%;
+    background: color-mix(in srgb, var(--pr-c) 40%, transparent);
+    animation: loginDrift 22s ease-in-out infinite alternate-reverse;
+}
+
+.login-orb-c {
+    width: 380px;
+    height: 380px;
+    left: 30%;
+    bottom: -160px;
+    background: color-mix(in srgb, var(--ok-c) 32%, transparent);
+    animation: loginDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes loginDrift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+    to {
+        transform: translate(60px, 40px) scale(1.12);
+    }
+}
+
+.login-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        color-mix(in srgb, var(--tx-p) 14%, transparent) 1px,
+        transparent 1px
+    );
+    background-size: 26px 26px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(
+        ellipse at center,
+        #000 30%,
+        transparent 75%
+    );
+}
+
+.login-card {
+    position: relative;
+    z-index: 2;
+    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid color-mix(in srgb, var(--tx-p) 10%, transparent);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    padding: 34px 32px;
+    max-width: 400px;
+}
+
+.login-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.login-avatar img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+.login-brand {
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tx-s);
+}
+
+.login-brand span {
+    color: var(--accent);
+}
+
+.login-card h2 {
+    text-align: center;
+    font-size: 20px;
+    margin: 16px 0 6px;
+}
+
+.login-card > p {
+    text-align: center;
+}
+
+.login-card .form-group input {
+    background: color-mix(in srgb, var(--bg-t) 80%, transparent);
+}
+
+.login-hint {
+    min-height: 18px;
+}
+
+.login-actions {
+    justify-content: stretch;
+}
+
+.login-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.login-footer {
+    margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 26px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-orb {
+        animation: none;
+    }
+}
+
+/* ========== 玻璃参数变量化 + 深色主题微调 ========== */
+
+:root {
+    --glass-line: rgba(255, 255, 255, 0.07);
+    --glass-tint: 94%;
+    --glass-shadow-a: 0.04;
+    --glass-side: 88%;
+}
+
+[data-theme="dark"],
+[data-oled="on"][data-theme="dark"] {
+    --glass-line: rgba(255, 255, 255, 0.05);
+    --glass-tint: 84%;
+    --glass-shadow-a: 0.22;
+    --glass-side: 78%;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+        --glass-line: rgba(255, 255, 255, 0.05);
+        --glass-tint: 84%;
+        --glass-shadow-a: 0.22;
+        --glass-side: 78%;
+    }
+}
+
+.card {
+    background: color-mix(in srgb, var(--bg-t) var(--glass-tint), transparent);
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        0 1px 3px rgba(0, 0, 0, var(--glass-shadow-a));
+}
+
+.card:hover {
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        0 4px 18px rgba(0, 0, 0, var(--glass-shadow-a));
+}
+
+.sidebar {
+    background: color-mix(in srgb, var(--bg-s) var(--glass-side), transparent);
+}
+
+[data-theme="dark"] .btn-primary {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 2px 8px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+[data-theme="dark"] .login-card {
+    background: color-mix(in srgb, var(--bg-s) 58%, transparent);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .card-header > svg {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent) 14%, transparent),
+        color-mix(in srgb, var(--accent) 5%, transparent)
+    );
+}
+
+/* ========== 卡片图标：右下角设计位 ========== */
+
+.card-header > svg {
+    order: 9;
+    margin-left: auto;
+}
+
+.stat-card {
+    position: relative;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.stat-card-icon {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    width: 38px !important;
+    height: 38px !important;
+    margin: 0;
+}
+
+/* ========== 统一空状态 / 行组件（ux-） ========== */
+
+.ux-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 30px 18px;
+    text-align: center;
+    color: var(--tx-t);
+}
+
+.ux-empty-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent) 16%, transparent),
+        color-mix(in srgb, var(--accent) 5%, transparent)
+    );
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.ux-empty-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.ux-empty-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-s);
+}
+
+.ux-empty-desc {
+    font-size: 12px;
+}
+
+.ux-empty-action {
+    margin-top: 12px;
+}
+
+.ux-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ux-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    font-size: 13px;
+    transition: border-color 0.15s ease;
+}
+
+.ux-row:hover {
+    border-color: var(--bd-h, var(--bd));
+}
+
+/* ========== 修复：卡片头双 auto-margin 平分空间导致按钮居中 ========== */
+/* svg 的 margin-left:auto 独自负责右推；有 svg 时 actions 交出 auto margin */
+
+.card-header:has(> svg) .header-actions {
+    margin-left: 0;
+}
+
+/* ========== 文件管理 UX 翻新 ========== */
+
+.fm-action-bar {
+    justify-content: space-between;
+}
+
+.fm-card-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tx-p) 5%, transparent);
+    border: 1px solid var(--bd);
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.fm-card-icon .fm-icon {
+    width: 24px;
+    height: 24px;
+    opacity: 1;
+}
+
+.fm-file-card.is-dir .fm-card-icon {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent) 20%, transparent),
+        color-mix(in srgb, var(--accent) 8%, transparent)
+    );
+    border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+    color: var(--accent);
+}
+
+.fm-file-card {
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.fm-file-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.fm-file-card:hover .fm-card-icon {
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.fm-card-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+    line-height: 1.35;
+    font-weight: 500;
+}
+
+.fm-file-card.is-dir .fm-card-name {
+    color: var(--tx-p);
+}
+
+.fm-card-meta {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+/* ========== 文件管理：沉浸舞台 ========== */
+
+.fm-main-card {
+    margin: 4px -28px -28px;
+    height: calc(100vh - 215px);
+    min-height: 430px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-p);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    padding-top: 12px;
+}
+
+.fm-toolbar-header {
+    margin: 0 14px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-s) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--bd);
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.fm-action-bar {
+    margin: 10px 14px 0;
+    padding: 8px 12px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-s) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--bd);
+    flex-shrink: 0;
+    justify-content: space-between;
+}
+
+.fm-file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+}
+
+@media (max-width: 720px) {
+    .fm-main-card {
+        margin: 4px -16px -16px;
+        height: calc(100vh - 250px);
+        min-height: 340px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fm-main-card {
+        margin: 4px -12px -12px;
+    }
+}
+
+/* ========== 修复：按钮 hover 时图标被劫持为品牌色（蓝底蓝标） ========== */
+
+.btn:hover svg,
+.btn-icon:hover svg {
+    color: inherit;
+}
+
+/* ========== 修复：文件网格被舞台拉伸成巨型卡片 ========== */
+
+.fm-file-list {
+    align-content: start;
+    max-height: none;
+    grid-auto-rows: min-content;
+}
+
+/* ========== 透图：沉浸舞台半透明 + 卡片 tint 下调 ========== */
+
+:root {
+    --glass-tint: 86%;
+    --glass-shadow-a: 0.05;
+}
+
+[data-theme="dark"],
+[data-oled="on"][data-theme="dark"] {
+    --glass-tint: 76%;
+    --glass-shadow-a: 0.26;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+        --glass-tint: 76%;
+        --glass-shadow-a: 0.26;
+    }
+}
+
+.topo-stage,
+.fm-main-card {
+    background: color-mix(in srgb, var(--bg-p) 42%, transparent);
 }

@@ -22,9 +22,12 @@ ErisPulse Dashboard is the official Web management panel module for the ErisPuls
 
 - **System Overview** — Framework version, uptime, adapter and module status at a glance
 - **Bot Management** — View connection status and info for all platform bots
+- **Topology Graph** — Visualize modules / adapters / bots with ownership links of their resources and scope bindings (requires ErisPulse 2.8.0+)
 - **Module Management** — Enable, disable, load modules and adapters
 - **Plugin Store** — Browse remote package repository and install dependencies online
-- **Master System** — Manage framework owners with global or per-platform permissions
+- **Master System** — Manage framework owners with global or per-platform permissions, with master provider ownership display
+- **Scope Management** — Three-dimension control plane (module bindings / identity admission / outbound restrictions), global default-allow switch, runtime stats, runtime-binding ownership management, and a judgement tester (requires ErisPulse 2.8.0+)
+- **Command Management** — Edit command rules with owner module badge, ACL user black/whitelists, parameter overrides (master / hidden), and command transform
 - **Configuration** — View and modify framework configuration at runtime
 - **Storage Management** — View, edit, and delete persistent key-value data
 - **Remote Restart** — Safely restart the framework from the web interface

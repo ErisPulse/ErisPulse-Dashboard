@@ -32,7 +32,7 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=17" />
+        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=31" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -338,6 +338,28 @@
                                     />
                                 </svg>
                                 <span data-i18n="bots"></span>
+                            </a>
+                            <a
+                                class="nav-item"
+                                data-page="topology"
+                                onclick="go('topology', this)"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <circle cx="5" cy="5" r="2.5" />
+                                    <circle cx="19" cy="5" r="2.5" />
+                                    <circle cx="12" cy="19" r="2.5" />
+                                    <path d="M6.8 6.8L10.5 17" />
+                                    <path d="M17.2 6.8L13.5 17" />
+                                    <path d="M7.5 5h9" />
+                                </svg>
+                                <span data-i18n="topology"></span>
                             </a>
                         </div>
                         <!-- 事件 -->
@@ -3315,7 +3337,7 @@
                             <div class="fm-action-bar">
                                 <div class="fm-action-group">
                                     <button
-                                        class="btn btn-primary btn-sm"
+                                        class="btn btn-secondary btn-sm"
                                         onclick="fmNewFile()"
                                     >
                                         <svg
@@ -3349,7 +3371,7 @@
                                         <span data-i18n="new_file"></span>
                                     </button>
                                     <button
-                                        class="btn btn-primary btn-sm"
+                                        class="btn btn-secondary btn-sm"
                                         onclick="fmNewFolder()"
                                     >
                                         <svg
@@ -3384,7 +3406,7 @@
                                 </div>
                                 <div class="fm-action-group">
                                     <button
-                                        class="btn btn-secondary btn-sm"
+                                        class="btn btn-primary btn-sm"
                                         onclick="fmUpload()"
                                     >
                                         <svg
@@ -3502,25 +3524,6 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="fm-table-header">
-                                <span
-                                    class="fm-col-name"
-                                    data-i18n="file_name"
-                                ></span>
-                                <span
-                                    class="fm-col-size"
-                                    data-i18n="file_size"
-                                ></span>
-                                <span
-                                    class="fm-col-perm"
-                                    data-i18n="file_perm"
-                                ></span>
-                                <span
-                                    class="fm-col-time"
-                                    data-i18n="file_modified"
-                                ></span>
-                                <span class="fm-col-actions"></span>
-                            </div>
                             <div id="fmFileList" class="fm-file-list"></div>
                         </div>
                         <div class="modal-overlay fm-editor-modal" id="fmEditorOv">
@@ -3601,10 +3604,13 @@
                                 <span data-i18n="cmd_global_settings"></span>
                                 <div class="header-actions">
                                     <button
-                                        class="btn btn-primary btn-sm"
-                                        onclick="saveCmdGlobalSettings()"
-                                        data-i18n="save"
-                                    ></button>
+                                        class="btn-icon"
+                                        onclick="loadCommands()"
+                                        title="Refresh"
+                                        data-i18n-title="refresh"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                                    </button>
                                 </div>
                             </div>
                             <div id="cmdGlobalSettingsBody" style="padding: 16px 20px"></div>
@@ -3660,10 +3666,18 @@
                         <h1 class="page-title" data-i18n="perm_control"></h1>
                         <p class="page-desc" data-i18n="perm_control_desc"></p>
 
-                        <!-- 子 Tab 视图：主人配置（预留作用域系统等） -->
+                        <!-- 子 Tab 视图：作用域系统 + 主人配置 -->
                         <div class="view-toggle pkg-tabs" id="permTabBar" style="margin-top: 20px">
                             <button
                                 class="view-btn pkg-tab active"
+                                data-tab="perm-scope"
+                                onclick="switchPermTab('perm-scope', this)"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px;vertical-align:-2px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                                <span data-i18n="perm_tab_scope"></span>
+                            </button>
+                            <button
+                                class="view-btn pkg-tab"
                                 data-tab="perm-master"
                                 onclick="switchPermTab('perm-master', this)"
                             >
@@ -3672,7 +3686,7 @@
                             </button>
                         </div>
 
-                        <div id="perm-master-tab" class="tab-section" style="display: block">
+                        <div id="perm-master-tab" class="tab-section" style="display: none">
                             <!-- Stats overview row -->
                             <div class="perm-stats">
                                 <div class="stat-card">
@@ -3698,25 +3712,8 @@
                                 </div>
                             </div>
 
-                            <!-- Add form card -->
-                            <div class="card perm-card">
-                                <div class="card-header">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--accent)">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>
-                                </svg>
-                                <span data-i18n="master_add_title"></span>
-                                </div>
-                                <div class="perm-addbar">
-                                    <select id="masterAddPlatform" class="fw-input perm-add-platform" onchange="onMasterAddPlatformChange()">
-                                        <option value="" data-i18n="master_global"></option>
-                                    </select>
-                                    <input id="masterAddId" class="fw-input perm-add-input" data-i18n-placeholder="master_user_id_placeholder" onkeydown="if(event.key==='Enter'){addMasterFromForm();event.preventDefault()}">
-                                    <button class="btn btn-primary btn-sm perm-add-btn" onclick="addMasterFromForm()">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                        <span data-i18n="master_add"></span>
-                                    </button>
-                                </div>
-                            </div>
+                            <!-- 平台分布可视化 -->
+                            <div id="masterDist" class="master-dist"></div>
 
                             <!-- Master list card -->
                             <div class="card perm-card">
@@ -3736,11 +3733,432 @@
                                                 <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
                                             </svg>
                                         </button>
-                                        <button class="btn btn-primary btn-sm" onclick="saveMasterConfig()" data-i18n="save"></button>
+                                        <button class="btn btn-primary btn-sm" onclick="toggleMasterEditor()">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                            <span data-i18n="master_add"></span>
+                                        </button>
                                     </div>
                                 </div>
                                 <div id="masterListBody" class="perm-list-body"></div>
                             </div>
+
+                            <!-- 添加主人编辑器（scope 风格，默认隐藏） -->
+                            <div class="card perm-card" id="masterEditorCard" style="display: none">
+                                <div class="card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    <span data-i18n="master_add_title"></span>
+                                    <div class="header-actions">
+                                        <button class="btn-icon" onclick="toggleMasterEditor()">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="padding: 14px 20px">
+                                    <div class="scope-editor-grid">
+                                        <div class="scope-editor-field">
+                                            <label data-i18n="master_global"></label>
+                                            <select id="masterAddPlatform" class="fw-input" onchange="onMasterAddPlatformChange()">
+                                                <option value="" data-i18n="master_global"></option>
+                                            </select>
+                                        </div>
+                                        <div class="scope-editor-field">
+                                            <label data-i18n="master_user_id_placeholder"></label>
+                                            <input id="masterAddId" class="fw-input" data-i18n-placeholder="master_user_id_placeholder" onkeydown="if(event.key==='Enter'){addMasterFromForm();event.preventDefault()}">
+                                        </div>
+                                        <div class="scope-editor-field" style="justify-content: flex-end">
+                                            <button class="btn btn-primary btn-sm" onclick="addMasterFromForm()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                <span data-i18n="master_add"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px; font-size: 12px; color: var(--tx-t)" data-i18n="master_merge_hint"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 作用域（scope）子 Tab -->
+                        <div id="perm-scope-tab" class="tab-section" style="display: block">
+                            <div id="scopeUnsupported" class="scope-unsupported" style="display:none" data-i18n="scope_unsupported"></div>
+                            <div id="scopeMain" style="display:none">
+                                <!-- 统计卡片行 -->
+                                <div class="perm-stats four-col">
+                                    <div class="stat-card">
+                                        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                                        <div class="stat-val" id="scopeStatModule" style="font-size: 24px; font-weight: 700;">0</div>
+                                        <div class="stat-label" data-i18n="scope_stat_module"></div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.6 8-10V5.4L12 2.5 4 5.4V12c0 6.4 8 10 8 10z"/></svg>
+                                        <div class="stat-val" id="scopeStatIdentity" style="font-size: 24px; font-weight: 700;">0</div>
+                                        <div class="stat-label" data-i18n="scope_stat_identity"></div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                                        <div class="stat-val" id="scopeStatAction" style="font-size: 24px; font-weight: 700;">0</div>
+                                        <div class="stat-label" data-i18n="scope_stat_action"></div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                        <div class="stat-val" id="scopeStatCache" style="font-size: 24px; font-weight: 700;">0%</div>
+                                        <div class="stat-label" data-i18n="scope_stat_cache"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 全局设置条 -->
+                                <div class="card perm-card">
+                                    <div class="card-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
+                                        <span data-i18n="scope_global_settings"></span>
+                                        <div class="header-actions">
+                                            <button class="btn-icon" onclick="loadScope()" title="Refresh">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" onclick="resetScopeStats()" data-i18n="scope_reset_stats"></button>
+                                            <button class="btn btn-secondary btn-sm" onclick="openScopeTransfer()" data-i18n="scope_transfer"></button>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 14px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+                                        <span style="font-size: 13px; color: var(--tx-s)" data-i18n="scope_default_allow"></span>
+                                        <label class="switch"><input type="checkbox" id="scopeDefaultAllow" onchange="onScopeDefaultAllowChange(this.checked)"/><span class="switch-slider"></span></label>
+                                        <span style="font-size: 12px; color: var(--tx-t)" data-i18n="scope_default_allow_desc"></span>
+                                    </div>
+                                </div>
+
+                                <!-- 维度面板导航 -->
+                                <div class="scope-nav" id="scopeNav">
+                                    <button class="scope-nav-item active" data-panel="mod" onclick="switchScopePanel('mod', this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                                        <span data-i18n="scope_nav_module"></span>
+                                        <span class="chip chip-sc scope-nav-count" id="scopeNavCountMod">0</span>
+                                    </button>
+                                    <button class="scope-nav-item" data-panel="idn" onclick="switchScopePanel('idn', this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <span data-i18n="scope_nav_identity"></span>
+                                        <span class="chip chip-sc scope-nav-count" id="scopeNavCountIdn">0</span>
+                                    </button>
+                                    <button class="scope-nav-item" data-panel="act" onclick="switchScopePanel('act', this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                        <span data-i18n="scope_nav_action"></span>
+                                        <span class="chip chip-sc scope-nav-count" id="scopeNavCountAct">0</span>
+                                    </button>
+                                    <button class="scope-nav-item" data-panel="rt" onclick="switchScopePanel('rt', this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                                        <span data-i18n="scope_nav_runtime"></span>
+                                        <span class="chip chip-sc scope-nav-count" id="scopeNavCountRt">0</span>
+                                    </button>
+                                    <button class="scope-nav-item" data-panel="test" onclick="switchScopePanel('test', this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                        <span data-i18n="scope_nav_test"></span>
+                                    </button>
+                                </div>
+
+                                <!-- ① 模块维度：层级树 -->
+                                <div class="scope-panel" id="scopePanel-mod">
+                                    <div class="card perm-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                                            <span data-i18n="scope_module_title"></span>
+                                            <span class="chip chip-pr" id="scopeModuleCount" style="margin-left: 8px"></span>
+                                            <div class="header-actions">
+                                                <button class="btn btn-primary btn-sm" onclick="openScopeModuleEditor(null)">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    <span data-i18n="scope_add_binding"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 12px 20px 4px; font-size: 12px; color: var(--tx-t)" data-i18n="scope_module_desc"></div>
+                                        <div id="scopeModuleListBody" class="perm-list-body"></div>
+                                    </div>
+
+                                    <!-- 绑定编辑器（新建/编辑共用） -->
+                                    <div class="card perm-card" id="scopeModuleEditorCard" style="display: none">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                            <span id="scopeModuleEditorTitle" data-i18n="scope_editor_new"></span>
+                                            <div class="header-actions">
+                                                <button class="btn-icon" onclick="closeScopeModuleEditor()">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 14px 20px">
+                                            <div class="scope-crumbs" id="scopeModuleCrumbs"></div>
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_level_adapter"></label>
+                                                    <select id="scopeModulePlatform" class="fw-input" onchange="onScopePlatformChange('module')"></select>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_level_bot"></label>
+                                                    <select id="scopeModuleBot" class="fw-input" onchange="onScopePlatformChange('module')"><option value="" data-i18n="scope_all_bots"></option></select>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_level_session"></label>
+                                                    <input id="scopeModuleSession" class="fw-input" data-i18n-placeholder="scope_session_ph" oninput="renderScopeModuleCrumbsFromEditor()"/>
+                                                </div>
+                                            </div>
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label style="color: var(--ok-c)" data-i18n="scope_whitelist_modules"></label>
+                                                    <div id="scopeMsWhitelistHost" class="scope-ms-field"></div>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label style="color: var(--er-c)" data-i18n="scope_blocked_modules"></label>
+                                                    <div id="scopeMsBlocklistHost" class="scope-ms-field"></div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap">
+                                                <label class="switch"><input type="checkbox" id="scopeModuleMerge"/><span class="switch-slider"></span></label>
+                                                <span style="font-size: 12px; color: var(--tx-s)" data-i18n="scope_merge_label"></span>
+                                                <button class="btn btn-primary btn-sm" style="margin-left: auto" onclick="saveScopeModule()"><span data-i18n="save"></span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ② 身份维度：四级分层 -->
+                                <div class="scope-panel" id="scopePanel-idn" style="display: none">
+                                    <div class="card perm-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            <span data-i18n="scope_identity_title"></span>
+                                            <span class="chip chip-pr" id="scopeIdentityCount" style="margin-left: 8px"></span>
+                                            <div class="header-actions">
+                                                <button class="btn btn-primary btn-sm" onclick="toggleScopeIdentityEditor()">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    <span data-i18n="scope_add_binding"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 12px 20px 4px; font-size: 12px; color: var(--tx-t)" data-i18n="scope_identity_desc"></div>
+                                        <div id="scopeIdentityListBody" class="perm-list-body"></div>
+                                    </div>
+                                    <div class="card perm-card" id="scopeIdentityEditorCard" style="display: none">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                            <span data-i18n="scope_add_binding"></span>
+                                            <div class="header-actions">
+                                                <button class="btn-icon" onclick="toggleScopeIdentityEditor()">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 14px 20px">
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_identity_level"></label>
+                                                    <select id="scopeIdnLevel" class="fw-input" onchange="onScopeIdnLevelChange()">
+                                                        <option value="adapter" data-i18n="scope_level_adapter"></option>
+                                                        <option value="bot" data-i18n="scope_level_bot"></option>
+                                                        <option value="session" data-i18n="scope_level_session"></option>
+                                                        <option value="user" data-i18n="scope_level_user"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="topo_type_adapter"></label>
+                                                    <select id="scopeIdnPlatform" class="fw-input" onchange="onScopePlatformChange('identity')"></select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeIdnBotField" style="display:none">
+                                                    <label data-i18n="scope_level_bot"></label>
+                                                    <select id="scopeIdnBot" class="fw-input"><option value="" data-i18n="scope_all_bots"></option></select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeIdnTargetField" style="display:none">
+                                                    <label id="scopeIdnTargetLabel" data-i18n="scope_level_session"></label>
+                                                    <input id="scopeIdnTarget" class="fw-input" data-i18n-placeholder="scope_id_target_ph"/>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_identity_policy"></label>
+                                                    <div class="scope-policy-toggle" id="scopeIdnPolicy">
+                                                        <button type="button" class="scope-policy-btn allow active" data-policy="allow" onclick="setScopeIdnPolicy('allow')">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                            <span data-i18n="scope_policy_allow"></span>
+                                                        </button>
+                                                        <button type="button" class="scope-policy-btn deny" data-policy="deny" onclick="setScopeIdnPolicy('deny')">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                            <span data-i18n="scope_policy_deny"></span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="margin-top: 14px; text-align: right">
+                                                <button class="btn btn-primary btn-sm" onclick="saveScopeIdentity()"><span data-i18n="save"></span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ③ 出站维度 -->
+                                <div class="scope-panel" id="scopePanel-act" style="display: none">
+                                    <div class="card perm-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                            <span data-i18n="scope_action_title"></span>
+                                            <span class="chip chip-pr" id="scopeActionCount" style="margin-left: 8px"></span>
+                                            <div class="header-actions">
+                                                <button class="btn btn-primary btn-sm" onclick="toggleScopeActionEditor()">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    <span data-i18n="scope_add_binding"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 12px 20px 4px; font-size: 12px; color: var(--tx-t)" data-i18n="scope_action_desc"></div>
+                                        <div id="scopeActionListBody" class="perm-list-body"></div>
+                                    </div>
+                                    <div class="card perm-card" id="scopeActionEditorCard" style="display: none">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                            <span data-i18n="scope_add_binding"></span>
+                                            <div class="header-actions">
+                                                <button class="btn-icon" onclick="toggleScopeActionEditor()">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 14px 20px">
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="topo_type_module"></label>
+                                                    <select id="scopeActionModule" class="fw-input"></select>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_action_type"></label>
+                                                    <select id="scopeActionType" class="fw-input">
+                                                        <option value="send">send</option>
+                                                        <option value="api">api</option>
+                                                        <option value="request">request</option>
+                                                        <option value="call">call</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label style="color: var(--ok-c)" data-i18n="scope_allow_entries"></label>
+                                                    <input id="scopeActionAllow" class="fw-input" data-i18n-placeholder="scope_allow_ph"/>
+                                                </div>
+                                                <div class="scope-editor-field">
+                                                    <label style="color: var(--er-c)" data-i18n="scope_deny_entries"></label>
+                                                    <div style="display: flex; gap: 8px; align-items: center">
+                                                        <input id="scopeActionDeny" class="fw-input" data-i18n-placeholder="scope_deny_ph"/>
+                                                        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--tx-s);flex-shrink:0"><input type="checkbox" id="scopeActionDenyAll"/><span data-i18n="scope_deny_all"></span></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="margin-top: 14px; text-align: right">
+                                                <button class="btn btn-primary btn-sm" onclick="saveScopeAction()"><span data-i18n="save"></span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ④ 运行时绑定（归属权） -->
+                                <div class="scope-panel" id="scopePanel-rt" style="display: none">
+                                    <div class="card perm-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                                            <span data-i18n="scope_runtime_title"></span>
+                                            <span class="chip chip-pr" id="scopeRuntimeCount" style="margin-left: 8px"></span>
+                                            <div class="header-actions">
+                                                <button class="btn-icon" onclick="loadScope()" title="Refresh">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 12px 20px 4px; font-size: 12px; color: var(--tx-t)" data-i18n="scope_runtime_desc"></div>
+                                        <div id="scopeRuntimeListBody" class="perm-list-body"></div>
+                                    </div>
+                                </div>
+
+                                <!-- ⑤ 判定测试器 -->
+                                <div class="scope-panel" id="scopePanel-test" style="display: none">
+                                    <div class="card perm-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                            <span data-i18n="scope_test_title"></span>
+                                        </div>
+                                        <div style="padding: 14px 20px 16px">
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field">
+                                                    <label data-i18n="scope_test_kind"></label>
+                                                    <select id="scopeTestKind" class="fw-input" onchange="onScopeTestKindChange()">
+                                                        <option value="module" data-i18n="scope_test_kind_module"></option>
+                                                        <option value="identity" data-i18n="scope_test_kind_identity"></option>
+                                                        <option value="action" data-i18n="scope_test_kind_action"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestPlatformField">
+                                                    <label data-i18n="topo_type_adapter"></label>
+                                                    <select id="scopeTestPlatform" class="fw-input" onchange="onScopePlatformChange('test')"></select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestBotField">
+                                                    <label data-i18n="scope_level_bot"></label>
+                                                    <select id="scopeTestBot" class="fw-input"><option value="" data-i18n="scope_all_bots"></option></select>
+                                                </div>
+                                            </div>
+                                            <div class="scope-editor-grid">
+                                                <div class="scope-editor-field" id="scopeTestSessionField">
+                                                    <label data-i18n="scope_level_session"></label>
+                                                    <input id="scopeTestSession" class="fw-input" data-i18n-placeholder="scope_session_ph"/>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestUserField" style="display:none">
+                                                    <label data-i18n="scope_level_user"></label>
+                                                    <input id="scopeTestUser" class="fw-input" data-i18n-placeholder="scope_user_ph"/>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestModuleField">
+                                                    <label data-i18n="topo_type_module"></label>
+                                                    <select id="scopeTestModule" class="fw-input"></select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestActionField" style="display:none">
+                                                    <label data-i18n="scope_action_type"></label>
+                                                    <select id="scopeTestAction" class="fw-input">
+                                                        <option value="send">send</option>
+                                                        <option value="api">api</option>
+                                                        <option value="request">request</option>
+                                                        <option value="call">call</option>
+                                                    </select>
+                                                </div>
+                                                <div class="scope-editor-field" id="scopeTestNameField" style="display:none">
+                                                    <label data-i18n="scope_test_call_name"></label>
+                                                    <input id="scopeTestName" class="fw-input" data-i18n-placeholder="scope_test_name_ph"/>
+                                                </div>
+                                                <div class="scope-editor-field" style="justify-content: flex-end">
+                                                    <button class="btn btn-primary btn-sm" onclick="runScopeTest()"><span data-i18n="scope_test_run"></span></button>
+                                                </div>
+                                            </div>
+                                            <div id="scopeTestResult" class="scope-test-result" style="margin-top: 6px"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page" id="p-topology">
+                        <h1 class="page-title" data-i18n="topology"></h1>
+                        <p class="page-desc" data-i18n="topology_desc"></p>
+                        <div id="topoUnsupported" class="scope-unsupported" style="display:none" data-i18n="scope_unsupported"></div>
+                        <div class="topo-stage" id="topoStage">
+                            <canvas id="topoCanvas" class="topo-canvas"></canvas>
+                            <div class="topo-float topo-float-tl">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--accent)"><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6.8 6.8L10.5 17"/><path d="M17.2 6.8L13.5 17"/><path d="M7.5 5h9"/></svg>
+                                <b data-i18n="topo_graph_title"></b>
+                                <span class="topo-stats" id="topoStats">
+                                    <span class="chip chip-pr" title="Modules"><span id="topoStatModules">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+                                    <span class="chip chip-ok" title="Adapters"><span id="topoStatAdapters">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+                                    <span class="chip chip-wr" title="Bots"><span id="topoStatBots">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V4M8 4h8"/></svg></span>
+                                </span>
+                            </div>
+                            <div class="topo-float topo-float-tr">
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="topoShowCommands" checked onchange="topoRebuild()"/><span data-i18n="topo_show_resources"></span></label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="topoShowScope" checked onchange="topoRebuild()"/><span data-i18n="topo_show_scope"></span></label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="topoShowDepends" checked onchange="topoRebuild()"/><span data-i18n="topo_show_depends"></span></label>
+                                <button class="btn-icon" onclick="loadTopology()" title="Refresh">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                                </button>
+                            </div>
+                            <div class="topo-float topo-float-bl topo-legend" id="topoLegend"></div>
+                            <div id="topoTooltip" class="topo-tooltip"></div>
+                            <div id="topoDetail" class="topo-detail" style="display:none"></div>
+                            <div id="topoEmpty" class="topo-empty-hint" style="display:none" data-i18n="topo_empty"></div>
                         </div>
                     </div>
                     <div class="page" id="p-config">
@@ -5657,13 +6075,20 @@
         </div>
 
         <div class="login-overlay" id="loginOv">
+            <div class="login-bg" aria-hidden="true">
+                <div class="login-orb login-orb-a"></div>
+                <div class="login-orb login-orb-b"></div>
+                <div class="login-orb login-orb-c"></div>
+                <div class="login-dots"></div>
+            </div>
             <div class="login-card">
-                                <div class="login-avatar">
+                <div class="login-avatar">
                     <img
                         src="/Dashboard/static/res/erispulse_logo_hp.png"
                         alt="ErisPulse"
                     />
                 </div>
+                <div class="login-brand">ErisPulse <span>Dashboard</span></div>
                 <h2 data-i18n="auth_title"></h2>
                 <p data-i18n="auth_desc_text"></p>
                 <div class="form-group">
@@ -5776,6 +6201,154 @@
                                 id="cmdEnabled"
                                 checked /><span class="switch-slider"></span
                         ></label>
+                        <span
+                            class="chip chip-pr cmd-owner-badge"
+                            id="cmdOwnerBadge"
+                            style="display: none"
+                            title=""
+                        ></span>
+                    </div>
+                    <div style="margin-bottom: 12px">
+                        <label
+                            style="
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: var(--tx-s);
+                                display: block;
+                                margin-bottom: 6px;
+                            "
+                            data-i18n="cmd_param_overrides"
+                        ></label>
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap">
+                            <label style="display: flex; align-items: center; gap: 8px"
+                                ><span
+                                    style="font-size: 13px; color: var(--tx-s)"
+                                    data-i18n="cmd_param_master"
+                                ></span>
+                                <label class="switch"
+                                    ><input
+                                        type="checkbox"
+                                        id="cmdOverrideMaster" /><span
+                                        class="switch-slider"
+                                    ></span
+                                ></label>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px"
+                                ><span
+                                    style="font-size: 13px; color: var(--tx-s)"
+                                    data-i18n="cmd_param_hidden"
+                                ></span>
+                                <label class="switch"
+                                    ><input
+                                        type="checkbox"
+                                        id="cmdOverrideHidden" /><span
+                                        class="switch-slider"
+                                    ></span
+                                ></label>
+                            </label>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px">
+                        <label
+                            style="
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: var(--tx-s);
+                                display: block;
+                                margin-bottom: 4px;
+                            "
+                            data-i18n="cmd_acl_allow"
+                        ></label>
+                        <div
+                            style="
+                                font-size: 12px;
+                                color: var(--tx-t);
+                                margin-bottom: 4px;
+                            "
+                            data-i18n="cmd_acl_hint"
+                        ></div>
+                        <div
+                            style="
+                                display: flex;
+                                gap: 6px;
+                                flex-wrap: wrap;
+                                margin-bottom: 6px;
+                            "
+                            id="cmdAclAllowTags"
+                        ></div>
+                        <div style="display: flex; gap: 6px">
+                            <select
+                                id="cmdAclAllowPlatform"
+                                class="input"
+                                style="width: 130px"
+                            ></select>
+                            <input
+                                type="text"
+                                id="cmdAclAllowInput"
+                                class="input"
+                                style="flex: 1"
+                                data-i18n-placeholder="cmd_acl_uid_ph"
+                                onkeydown="
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        addCmdAclTag('allow');
+                                    }
+                                "
+                            />
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                onclick="addCmdAclTag('allow')"
+                            >
+                                +
+                            </button>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px">
+                        <label
+                            style="
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: var(--tx-s);
+                                display: block;
+                                margin-bottom: 4px;
+                            "
+                            data-i18n="cmd_acl_deny"
+                        ></label>
+                        <div
+                            style="
+                                display: flex;
+                                gap: 6px;
+                                flex-wrap: wrap;
+                                margin-bottom: 6px;
+                            "
+                            id="cmdAclDenyTags"
+                        ></div>
+                        <div style="display: flex; gap: 6px">
+                            <select
+                                id="cmdAclDenyPlatform"
+                                class="input"
+                                style="width: 130px"
+                            ></select>
+                            <input
+                                type="text"
+                                id="cmdAclDenyInput"
+                                class="input"
+                                style="flex: 1"
+                                data-i18n-placeholder="cmd_acl_uid_ph"
+                                onkeydown="
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        addCmdAclTag('deny');
+                                    }
+                                "
+                            />
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                onclick="addCmdAclTag('deny')"
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
                     <div style="margin-bottom: 12px">
                         <label
@@ -5875,8 +6448,10 @@
                             id="cmdTransformTo"
                             class="input"
                             style="width: 100%"
+                            list="cmdTransformOptions"
                             data-i18n-placeholder="cmd_transform_placeholder"
                         />
+                        <datalist id="cmdTransformOptions"></datalist>
                     </div>
                     <div
                         style="
@@ -6052,6 +6627,136 @@
                 </div>
             </div>
         </div>
+        <div
+            class="modal-overlay"
+            id="scopeTransferOverlay"
+            style="display: none"
+            onclick="if (event.target === this) closeScopeTransfer()"
+        >
+            <div
+                class="modal-box"
+                style="
+                    max-width: 540px;
+                    width: 92%;
+                    max-height: 85vh;
+                    display: flex;
+                    flex-direction: column;
+                "
+            >
+                <div
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 14px;
+                    "
+                >
+                    <h3
+                        style="flex: 1; margin: 0; font-size: 16px"
+                        data-i18n="scope_transfer"
+                    ></h3>
+                    <button class="btn-icon" onclick="closeScopeTransfer()">
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="view-toggle" id="scopeTransferTabs" style="margin-bottom: 14px">
+                    <button
+                        class="view-btn active"
+                        data-tab="export"
+                        onclick="switchScopeTransfer('export', this)"
+                        data-i18n="scope_export"
+                    ></button>
+                    <button
+                        class="view-btn"
+                        data-tab="import"
+                        onclick="switchScopeTransfer('import', this)"
+                        data-i18n="scope_import"
+                    ></button>
+                </div>
+                <!-- 导出面板 -->
+                <div id="scopeTransferExport" style="flex: 1; overflow-y: auto; min-height: 0">
+                    <div class="scope-dim-list" id="scopeExportDims"></div>
+                    <button
+                        class="btn btn-primary"
+                        style="width: 100%; margin-top: 14px"
+                        onclick="doScopeExport()"
+                        data-i18n="scope_export_run"
+                    ></button>
+                </div>
+                <!-- 导入面板 -->
+                <div
+                    id="scopeTransferImport"
+                    style="display: none; flex: 1; overflow-y: auto; min-height: 0"
+                >
+                    <div
+                        class="scope-file-zone"
+                        id="scopeFileZone"
+                        onclick="document.getElementById('scopeImportFile').click()"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        <span data-i18n="scope_import_file_ph"></span>
+                    </div>
+                    <input
+                        type="file"
+                        id="scopeImportFile"
+                        accept=".json,application/json"
+                        style="display: none"
+                        onchange="onScopeImportFilePicked(this)"
+                    />
+                    <div id="scopeImportParsed" style="display: none">
+                        <div class="scope-file-summary" id="scopeFileSummary"></div>
+                        <div class="scope-dim-list" id="scopeImportDims"></div>
+                        <div class="scope-policy-toggle" style="margin: 12px 0 8px">
+                            <button
+                                type="button"
+                                class="scope-policy-btn allow active"
+                                data-mode="merge"
+                                onclick="setScopeImportMode('merge')"
+                                data-i18n="scope_import_merge"
+                            ></button>
+                            <button
+                                type="button"
+                                class="scope-policy-btn deny"
+                                data-mode="replace"
+                                onclick="setScopeImportMode('replace')"
+                                data-i18n="scope_import_replace"
+                            ></button>
+                        </div>
+                        <div
+                            id="scopeReplaceWarn"
+                            class="scope-unsupported"
+                            style="display: none; margin: 0 0 10px"
+                            data-i18n="scope_import_replace_confirm"
+                        ></div>
+                        <button
+                            class="btn btn-primary"
+                            style="width: 100%"
+                            onclick="doScopeImport()"
+                            data-i18n="scope_import_run"
+                        ></button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/python/python.min.js"></script>
@@ -6069,6 +6774,6 @@
         <script src="/Dashboard/static/res/i18n/zh-TW.js"></script>
         <script src="/Dashboard/static/res/i18n/ja.js"></script>
         <script src="/Dashboard/static/res/i18n/ru.js"></script>
-        <script src="/Dashboard/static/dash.js?v=26"></script>
+        <script src="/Dashboard/static/dash.js?v=35"></script>
     </body>
 </html>
