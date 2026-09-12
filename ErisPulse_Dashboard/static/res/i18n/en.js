@@ -354,6 +354,8 @@
     module_author: "Author",
     module_no_desc: "No description",
     module_enabled_not_loaded: "Enabled",
+    module_lazy_pending: "Lazy · pending",
+    module_lazy_desc: "This lazy module is mounted and will auto-load on first use — no manual load needed",
     module_disabled: "Disabled",
     reload: "Reload",
     action_enable_module: "Enable Module",
