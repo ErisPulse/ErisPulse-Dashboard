@@ -350,6 +350,8 @@
     module_author: "作者",
     module_no_desc: "无描述",
     module_enabled_not_loaded: "已启用未加载",
+    module_lazy_pending: "懒加载 · 待触发",
+    module_lazy_desc: "懒加载模块已挂载，首次被调用时框架会自动加载，无需手动加载",
     module_disabled: "已禁用",
     reload: "重载",
     action_enable_module: "启用模块",

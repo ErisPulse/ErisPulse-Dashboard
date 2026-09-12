@@ -11758,3 +11758,111 @@ input, textarea, select, button,
     -webkit-user-select: none;
     user-select: none;
 }
+
+/* ========== 移动端：性能降级 + 模块管理布局 ========== */
+
+@media (max-width: 720px) {
+    /* 毛玻璃在移动端开销大：全部替换为近实底 */
+    .sidebar,
+    .topo-float,
+    .adapter-selector-bar,
+    .fm-toolbar-header,
+    .fm-action-bar {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: color-mix(in srgb, var(--bg-s) 97%, transparent) !important;
+    }
+
+    /* 入场动画在低端机掉帧：关闭 */
+    .page.active,
+    .page.active .page-title,
+    .page.active .page-desc {
+        animation: none !important;
+    }
+
+    /* 模块管理：统计卡 2 列 */
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    .grid-4 .stat-card {
+        padding: 12px 14px;
+    }
+
+    /* 模块行：动作按钮整行右对齐，不与名称挤在一行 */
+    .module-row {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .module-actions {
+        width: 100%;
+        justify-content: flex-end;
+        row-gap: 6px;
+    }
+}
+
+/* ========== 移动端模块行大按钮（header 跟随仪表盘标题配置，无页标题元素） ========== */
+
+@media (max-width: 720px) {
+    /* 模块行：动作按钮全宽均分，大触摸目标 */
+    .module-actions {
+        width: 100%;
+        margin-top: 2px;
+        row-gap: 6px;
+    }
+
+    .module-actions .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .module-actions .module-expand-btn {
+        flex: 0 0 42px;
+    }
+
+    .module-status-chip {
+        margin-right: auto;
+    }
+}
+
+/* ========== 侧边栏头部（移动端抽屉，联动仪表盘标题） ========== */
+
+.sidebar-header {
+    display: none;
+}
+
+.sidebar-header-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--tx-p);
+    letter-spacing: 0.02em;
+}
+
+/* 断点与移动端抽屉（768px）对齐；高度与 header 对齐 */
+@media (max-width: 768px) {
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        min-height: 46px;
+        padding: 6px 20px;
+        border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
+    }
+}
+
+@media (max-width: 720px) {
+    /* 模块行：移动端去掉 hr 式隔断线，用留白 + 圆角分组 */
+    .module-row {
+        border-bottom: none;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--bg-t) 90%, transparent);
+    }
+
+    .module-row-wrap {
+        margin-bottom: 6px;
+    }
+}

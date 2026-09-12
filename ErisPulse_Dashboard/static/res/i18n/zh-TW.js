@@ -341,6 +341,8 @@
     module_author: "作者",
     module_no_desc: "無描述",
     module_enabled_not_loaded: "已啟用未載入",
+    module_lazy_pending: "懶載入 · 待觸發",
+    module_lazy_desc: "懶載入模組已掛載，首次被呼叫時框架會自動載入，無需手動載入",
     module_disabled: "已禁用",
     reload: "重新載入",
     action_enable_module: "啟用模組",

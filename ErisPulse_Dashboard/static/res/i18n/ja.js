@@ -349,6 +349,8 @@
     module_author: "作者",
     module_no_desc: "説明なし",
     module_enabled_not_loaded: "有効化済み（未ロード）",
+    module_lazy_pending: "遅延読み込み · 待機中",
+    module_lazy_desc: "遅延読み込みモジュールはマウント済みで、初回呼び出し時に自動的にロードされます。手動ロードは不要です",
     module_disabled: "無効",
     reload: "リロード",
     action_enable_module: "モジュールを有効化",

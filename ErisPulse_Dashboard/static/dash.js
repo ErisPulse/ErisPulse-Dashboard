@@ -1856,14 +1856,22 @@ function renderPluginRow(m, isAd) {
   let statusDot = "",
     statusText = "",
     statusClass = "";
+  var isLazyModule = false;
   if (m.loaded) {
     statusDot = "loaded";
     statusText = t("active");
     statusClass = "chip-ok";
   } else if (m.enabled) {
     statusDot = "enabled";
-    statusText = t("module_enabled_not_loaded");
-    statusClass = "chip-wr";
+    if (m.load_strategy && m.load_strategy.lazy_load) {
+      // 懒加载模块已挂载，首次调用时框架会自动加载——不是"出了问题没加载"
+      isLazyModule = true;
+      statusText = t("module_lazy_pending");
+      statusClass = "chip-pr";
+    } else {
+      statusText = t("module_enabled_not_loaded");
+      statusClass = "chip-wr";
+    }
   } else {
     statusDot = "disabled";
     statusText = t("module_disabled");
@@ -2091,7 +2099,11 @@ function renderPluginRow(m, isAd) {
     '</div></div><div class="module-actions">' +
     '<span class="chip ' +
     statusClass +
-    ' module-status-chip">' +
+    ' module-status-chip"' +
+    (isLazyModule
+      ? ' title="' + esc(t("module_lazy_desc")) + '"'
+      : "") +
+    ">" +
     esc(statusText) +
     "</span>" +
     acts +
@@ -3562,6 +3574,9 @@ function applyDashTitle(title) {
   var el = document.getElementById("appTitle");
   if (el) el.textContent = title;
   document.title = title;
+  // 联动：侧边栏头部（移动端抽屉顶部）同步仪表盘标题
+  var sbTitle = document.getElementById("sidebarPageTitle");
+  if (sbTitle) sbTitle.textContent = title;
 }
 
 function applyGlobalAppearanceData(app) {
@@ -3976,7 +3991,7 @@ document.addEventListener(
     if (dx > 0 && !sb.classList.contains("open") && _swipeX < 40) {
       toggleSidebar();
     } else if (dx < 0 && sb.classList.contains("open")) {
-      closeSidebar();
+  closeSidebar();
     }
   },
   { passive: true },
@@ -8503,6 +8518,14 @@ async function loadPerformance() {
   if (document.getElementById("procMemVal"))
     document.getElementById("procMemVal").textContent = fmt(rssMb, " MB");
 
+  // psutil 不可用且降级链也未取到数据时显示 N/A（而非误导性 0%）
+  if (memory.psutil_ok === false) {
+    var naCpu = document.getElementById("cpuProgressText");
+    if (naCpu) naCpu.textContent = "N/A";
+    var naMem = document.getElementById("memProgressText");
+    if (naMem) naMem.textContent = "N/A";
+  }
+
   // popover详情
   const setEl = (id, v, unit = "") => {
     const el = document.getElementById(id);
@@ -12419,13 +12442,14 @@ async function saveCmdEdit() {
   applyCustomTheme();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
-  // 恢复保存的仪表盘标题
+  // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）
   var savedTitle = getSetting("dash_title", "");
-  if (savedTitle) {
-    var titleEl = document.getElementById("appTitle");
-    if (titleEl) titleEl.textContent = savedTitle;
-    document.title = savedTitle;
-  }
+  var effectiveTitle = savedTitle || "ErisPulse Dashboard";
+  var titleEl = document.getElementById("appTitle");
+  if (titleEl) titleEl.textContent = effectiveTitle;
+  document.title = effectiveTitle;
+  var sbTitleEl = document.getElementById("sidebarPageTitle");
+  if (sbTitleEl) sbTitleEl.textContent = effectiveTitle;
   updateNodeSelectorUI();
   const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
   // 默认收起侧边栏（首次使用或无设置时）

@@ -347,6 +347,8 @@
     module_author: "Автор",
     module_no_desc: "Без описания",
     module_enabled_not_loaded: "Включён, не загружен",
+    module_lazy_pending: "Ленивая · ожидает",
+    module_lazy_desc: "Ленивый модуль смонтирован и загрузится автоматически при первом использовании — ручная загрузка не нужна",
     module_disabled: "Отключён",
     reload: "Перезагрузить",
     action_enable_module: "Включить модуль",
