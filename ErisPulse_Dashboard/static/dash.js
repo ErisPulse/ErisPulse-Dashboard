@@ -11359,7 +11359,7 @@ function renderScopeModuleList(topo) {
   });
   var countEl = document.getElementById("scopeModuleCount");
   if (countEl) countEl.textContent = total;
-  if (!rows.length) {
+  if (!total) {
     container.innerHTML = renderUxEmpty(
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
       "scope_no_rules"
