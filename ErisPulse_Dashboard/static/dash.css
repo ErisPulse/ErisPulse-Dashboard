@@ -11750,3 +11750,11 @@ input, textarea, select, button,
 .fm-main-card {
     background: color-mix(in srgb, var(--bg-p) 42%, transparent);
 }
+
+/* ========== 拓扑画布触摸手势 ========== */
+
+.topo-canvas {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}

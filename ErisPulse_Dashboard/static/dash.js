@@ -13780,6 +13780,118 @@ function _topoBindEvents() {
     _topoHideTooltip();
     _topoDraw(0);
   });
+
+  // ---- 触摸：单指拖动/平移，双指捏合缩放，双击复位 ----
+
+  canvas.addEventListener("touchstart", function (ev) {
+    if (ev.touches.length === 1) {
+      var t = ev.touches[0];
+      var rect = canvas.getBoundingClientRect();
+      var px = t.clientX - rect.left;
+      var py = t.clientY - rect.top;
+      var node = _topoNodeAt(px, py);
+      canvas._tapStart = { x: t.clientX, y: t.clientY };
+      canvas._tapLast = { x: t.clientX, y: t.clientY };
+      if (node) {
+        _topoDrag = node;
+      } else {
+        _topoPanning = true;
+        canvas._panStart = { x: t.clientX, y: t.clientY, vx: _topoView.x, vy: _topoView.y };
+      }
+      canvas.classList.add("dragging");
+      _topoHideTooltip();
+      ev.preventDefault();
+    } else if (ev.touches.length === 2) {
+      _topoDrag = null;
+      _topoPanning = false;
+      var a = ev.touches[0];
+      var b = ev.touches[1];
+      canvas._pinch = {
+        dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1,
+        k: _topoView.k,
+        midX: (a.clientX + b.clientX) / 2,
+        midY: (a.clientY + b.clientY) / 2,
+        vx: _topoView.x,
+        vy: _topoView.y,
+      };
+      ev.preventDefault();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", function (ev) {
+    if (ev.touches.length === 2 && canvas._pinch) {
+      var a = ev.touches[0];
+      var b = ev.touches[1];
+      var p = canvas._pinch;
+      var dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1;
+      var midX = (a.clientX + b.clientX) / 2;
+      var midY = (a.clientY + b.clientY) / 2;
+      var newK = Math.max(0.15, Math.min(3.5, p.k * (dist / p.dist)));
+      var rect = canvas.getBoundingClientRect();
+      var w = canvas.parentElement.clientWidth;
+      var h = canvas.clientHeight || 560;
+      var cx = p.midX - rect.left - w / 2;
+      var cy = p.midY - rect.top - h / 2;
+      _topoView.x = cx - ((cx - p.vx) * newK) / p.k;
+      _topoView.y = cy - ((cy - p.vy) * newK) / p.k;
+      _topoView.k = newK;
+      _topoView.x += midX - p.midX;
+      _topoView.y += midY - p.midY;
+      _topoDraw();
+      ev.preventDefault();
+    } else if (ev.touches.length === 1) {
+      var t = ev.touches[0];
+      canvas._tapLast = { x: t.clientX, y: t.clientY };
+      var rect = canvas.getBoundingClientRect();
+      var px = t.clientX - rect.left;
+      var py = t.clientY - rect.top;
+      if (_topoDrag) {
+        var pos = _topoScreenToWorld(px, py);
+        _topoDrag.x = pos.x;
+        _topoDrag.y = pos.y;
+        _startTopoSim();
+        ev.preventDefault();
+      } else if (_topoPanning && canvas._panStart) {
+        _topoView.x = canvas._panStart.vx + (t.clientX - canvas._panStart.x);
+        _topoView.y = canvas._panStart.vy + (t.clientY - canvas._panStart.y);
+        _topoDraw();
+        ev.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  function _topoTouchEnd() {
+    if (_topoDrag) {
+      _topoSelected = _topoDrag;
+      _showTopoDetail(_topoDrag);
+    }
+    // 双击空白复位
+    var moved = 0;
+    if (canvas._tapStart && canvas._tapLast) {
+      moved = Math.hypot(
+        canvas._tapLast.clientX - canvas._tapStart.clientX,
+        canvas._tapLast.clientY - canvas._tapStart.clientY,
+      );
+    }
+    if (moved < 10) {
+      var now = Date.now();
+      if (now - (canvas._lastTap || 0) < 300) {
+        _topoView = { x: 0, y: 0, k: 1 };
+        _startTopoSim();
+        canvas._lastTap = 0;
+      } else {
+        canvas._lastTap = now;
+      }
+    }
+    _topoDrag = null;
+    _topoPanning = false;
+    canvas._pinch = null;
+    canvas._panStart = null;
+    canvas.classList.remove("dragging");
+    _topoDraw(0);
+  }
+  canvas.addEventListener("touchend", _topoTouchEnd);
+  canvas.addEventListener("touchcancel", _topoTouchEnd);
 }
 
 function _topoUpdateTooltip(node, px, py) {
