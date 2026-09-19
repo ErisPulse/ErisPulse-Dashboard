@@ -17,7 +17,6 @@ STATIC_DIR="$REPO_ROOT/ErisPulse_Dashboard/static"
 
 echo "==> Copying static files..."
 cp "$STATIC_DIR/dash.css" "$DEMO_DIR/dash.css"
-cp "$STATIC_DIR/dash.js" "$DEMO_DIR/dash.js"
 
 echo "==> Generating index.html from dash.html..."
 if command -v python3 >/dev/null 2>&1; then PY=python3
@@ -33,6 +32,13 @@ demo = os.environ["DEMO_DIR"]
 
 with open(os.path.join(static, "dash.html"), "r", encoding="utf-8") as f:
     html = f.read()
+
+# Rewrite static paths in dash.js too (status icons use /Dashboard/static/res/...)
+with open(os.path.join(static, "dash.js"), "rb") as f:
+    js = f.read()
+js = js.replace(b"/Dashboard/static/", b"")
+with open(os.path.join(demo, "dash.js"), "wb") as f:
+    f.write(js)
 
 html = html.replace("/Dashboard/static/dash.css", "dash.css")
 html = html.replace("/Dashboard/static/dash.js", "dash.js")

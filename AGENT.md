@@ -28,7 +28,7 @@
 - 17. README 多语言 5 文件必须同步更新，当前语言在顶部切换链接中加粗，图片使用相对路径 `.github/dash_bot.png`
 
 ## Demo
-- 18. 修改前端或 mock 后必须运行 `bash demo/build.sh` 重新生成产物
+- 18. 修改前端或 mock 后必须运行 `bash demo/build.sh` 重新生成产物；构建时会把 `index.html` 与 `dash.js` 中的 `/Dashboard/static/` 路径重写为相对路径，前端 JS 中新增静态资源引用无需特殊处理
 - 19. `mock.js` 拦截 `fetch` 与 `WebSocket` 模拟后端：简单路径加 `API_MAP`，动态路径加正则匹配；登录 token 固定为 `demo`
 - 20. Demo 横幅由 `build.sh` 注入（左下角浮动胶囊，`sessionStorage` 记住关闭状态）；登录页 Demo 提示靠 `MutationObserver` 对抗 `applyI18n` 对 `#authHint` 的覆盖，改动登录提示渲染时不得破坏该机制
 
