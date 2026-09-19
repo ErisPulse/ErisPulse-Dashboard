@@ -1478,34 +1478,104 @@ function doLogout() {
   showLogin();
 }
 
-function evHtml(e) {
+var EV_TYPE_ICONS = {
+  message:
+    '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+  notice:
+    '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
+  request:
+    '<path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>',
+  meta: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+};
+function isHeartbeatEvent(e) {
+  return (
+    !!e &&
+    e.type === "meta" &&
+    (e.detail_type === "heartbeat" || e.alt_message === "heartbeat")
+  );
+}
+function evHtml(e, count) {
   const tm = new Date(e.time * 1000).toLocaleTimeString(getLocale(), {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   });
   var denseCls = getEventDensity() === "compact" ? " ev-dense" : "";
+  var type = e.type || "meta";
+  var ico = EV_TYPE_ICONS[type] || EV_TYPE_ICONS.meta;
+  var hb = isHeartbeatEvent(e);
   return (
-    '<div class="ev-item' +
+    '<div class="ev-item ev-' +
+    esc(type) +
     denseCls +
-    '"><span class="ev-badge ' +
-    e.type +
-    '">' +
-    esc(e.type) +
-    '</span><div style="flex:1;min-width:0"><div>' +
+    (hb ? ' ev-hb" data-platform="' + esc(e.platform || "") : "") +
+    '" title="' +
+    esc(t(type) || type) +
+    '"><span class="ev-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    ico +
+    '</svg></span><div class="ev-body"><div class="ev-title"><span class="ev-title-text">' +
     esc(privText(e.alt_message || e.detail_type || "-")) +
+    "</span>" +
+    (count > 1
+      ? '<span class="ev-hb-count">&times;' + count + "</span>"
+      : "") +
     "</div>" +
     (e.user_id
-      ? '<div style="font-size:11px;color:var(--tx-s)">user: ' +
-        esc(privText(e.user_id)) +
-        "</div>"
+      ? '<div class="ev-sub">user: ' + esc(privText(e.user_id)) + "</div>"
       : "") +
-    '</div><span style="font-size:11px;color:var(--tx-s);flex-shrink:0">' +
-    esc(e.platform) +
-    '</span><span style="font-size:11px;color:var(--tx-t);flex-shrink:0">' +
+    '</div><div class="ev-side"><span class="ev-plat">' +
+    esc(e.platform || "-") +
+    '</span><span class="ev-time">' +
     tm +
-    "</span></div>"
+    "</span></div></div>"
   );
+}
+// 渲染事件列表：连续的同平台心跳折叠为一条（×N）
+function renderEventsHtml(events) {
+  var html = "";
+  var i = 0;
+  while (i < events.length) {
+    var e = events[i];
+    if (isHeartbeatEvent(e)) {
+      var n = 1;
+      while (
+        i + n < events.length &&
+        isHeartbeatEvent(events[i + n]) &&
+        events[i + n].platform === e.platform
+      )
+        n++;
+      html += evHtml(e, n);
+      i += n;
+    } else {
+      html += evHtml(e);
+      i++;
+    }
+  }
+  return html;
+}
+// 实时插入事件：心跳若与列表首条折叠行同平台则合并计数
+function prependEventHtml(container, ev) {
+  if (isHeartbeatEvent(ev)) {
+    var first = container.firstElementChild;
+    if (
+      first &&
+      first.classList.contains("ev-hb") &&
+      first.dataset.platform === (ev.platform || "")
+    ) {
+      var c = (parseInt(first.dataset.count || "1", 10) || 1) + 1;
+      first.dataset.count = c;
+      var cnt = first.querySelector(".ev-hb-count");
+      if (cnt) cnt.textContent = "\u00d7" + c;
+      var tmEl = first.querySelector(".ev-time");
+      if (tmEl)
+        tmEl.textContent = new Date(ev.time * 1000).toLocaleTimeString(
+          getLocale(),
+          { hour: "2-digit", minute: "2-digit", second: "2-digit" },
+        );
+      return;
+    }
+  }
+  container.insertAdjacentHTML("afterbegin", evHtml(ev));
 }
 
 async function refreshDashboard() {
@@ -1629,12 +1699,12 @@ async function loadEvents() {
   allEvents = d.events || [];
   if (d.total_count !== undefined) _totalEventCount = d.total_count;
   document.getElementById("eventList").innerHTML = allEvents.length
-    ? allEvents.slice().reverse().map(evHtml).join("")
+    ? renderEventsHtml(allEvents.slice().reverse())
     : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><p>' +
       t("no_events") +
       "</p></div>";
   document.getElementById("dashEvents").innerHTML =
-    allEvents.slice(-20).reverse().map(evHtml).join("") ||
+    renderEventsHtml(allEvents.slice(-20).reverse()) ||
     '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
       t("waiting_events") +
       "</div>";
@@ -1988,7 +2058,7 @@ function renderPluginRow(m, isAd) {
     }
     if (m.capabilities && m.capabilities.length) {
       detailItems.push(
-        '<span class="module-detail-item"><strong>' +
+        '<span class="module-detail-item cap-item"><strong>' +
           t("capability") +
           ":</strong> " +
           m.capabilities
@@ -4231,14 +4301,14 @@ function refreshEventViews() {
   if (evl && all.length) {
     var active = document.querySelector(".page.active");
     if (!active || active.id === "p-event-stream") {
-      evl.innerHTML = all.slice().reverse().map(evHtml).join("");
+      evl.innerHTML = renderEventsHtml(all.slice().reverse());
     }
   }
   if (dh) {
     var s = document.querySelector(".page.active");
     if (!s || s.id === "p-dashboard") {
       dh.innerHTML =
-        all.slice(-20).reverse().map(evHtml).join("") ||
+        renderEventsHtml(all.slice(-20).reverse()) ||
         '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
           t("waiting_events") +
           "</div>";
@@ -7218,7 +7288,7 @@ function _flushEventStream() {
   const em = el.querySelector(".empty-state");
   if (em) em.remove();
   _wsEventBuffer.forEach((ev) => {
-    el.insertAdjacentHTML("afterbegin", evHtml(ev));
+    prependEventHtml(el, ev);
   });
   while (el.children.length > 100) el.removeChild(el.lastChild);
   if (getEventAutoTop()) {
@@ -7300,7 +7370,7 @@ function wsConnect() {
           const dh = document.getElementById("dashEvents");
           const em = dh?.querySelector(".empty-state");
           if (em) em.remove();
-          dh?.insertAdjacentHTML("afterbegin", evHtml(m.data));
+          if (dh) prependEventHtml(dh, m.data);
           while (dh && dh.children.length > 20) dh.removeChild(dh.lastChild);
         }
         if (

@@ -1825,69 +1825,160 @@ body {
 
 .ev-item {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 18px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
     border-bottom: 1px solid var(--bd);
     font-size: 13px;
     transition: background 0.2s;
+}
+
+.ev-item:last-child {
+    border-bottom: none;
 }
 
 .ev-item:hover {
     background: var(--bg-s);
 }
 
+.ev-ico {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ev-ico svg {
+    width: 15px;
+    height: 15px;
+}
+
+.ev-item.ev-message .ev-ico {
+    background: var(--pr-bg);
+    color: var(--pr-c);
+}
+
+.ev-item.ev-meta .ev-ico {
+    background: var(--sc-bg);
+    color: var(--sc-c);
+}
+
+.ev-item.ev-notice .ev-ico {
+    background: var(--wr-bg);
+    color: var(--wr-c);
+}
+
+.ev-item.ev-request .ev-ico {
+    background: var(--er-bg);
+    color: var(--er-c);
+}
+
+.ev-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ev-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.ev-title-text {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ev-hb-count {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--sc-bg);
+    color: var(--sc-c);
+}
+
+.ev-item.ev-hb .ev-ico {
+    opacity: 0.65;
+}
+
+.ev-sub {
+    font-size: 11px;
+    color: var(--tx-s);
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ev-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.ev-plat {
+    font-size: 11px;
+    color: var(--tx-s);
+    padding: 1px 8px;
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    background: var(--bg-s);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ev-time {
+    font-size: 11px;
+    color: var(--tx-t);
+    font-variant-numeric: tabular-nums;
+}
+
 .ev-item.ev-dense {
-    padding: 4px 18px;
+    padding: 4px 16px;
     gap: 8px;
     font-size: 12px;
 }
 
-.ev-item.ev-dense .ev-badge {
-    font-size: 9px;
-    padding: 1px 6px;
-    min-width: 48px;
+.ev-item.ev-dense .ev-ico {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
 }
 
-.ev-item.ev-dense [style*="font-size:11px"] {
-    font-size: 10px !important;
+.ev-item.ev-dense .ev-ico svg {
+    width: 12px;
+    height: 12px;
+}
+
+.ev-item.ev-dense .ev-sub {
+    font-size: 10px;
+}
+
+.ev-item.ev-dense .ev-plat,
+.ev-item.ev-dense .ev-time {
+    font-size: 10px;
+}
+
+.ev-item.ev-dense .ev-hb-count {
+    font-size: 9px;
+    padding: 1px 6px;
 }
 
 body.privacy-on .ev-item {
     -webkit-filter: blur(0);
     filter: blur(0);
-}
-
-.ev-badge {
-    font-weight: 600;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    min-width: 56px;
-    text-align: center;
-    flex-shrink: 0;
-    letter-spacing: 0.3px;
-}
-
-.ev-badge.message {
-    background: var(--pr-bg);
-    color: var(--pr-c);
-}
-
-.ev-badge.meta {
-    background: var(--sc-bg);
-    color: var(--sc-c);
-}
-
-.ev-badge.notice {
-    background: var(--wr-bg);
-    color: var(--wr-c);
-}
-
-.ev-badge.request {
-    background: var(--er-bg);
-    color: var(--er-c);
 }
 
 .bot-card {
@@ -4218,12 +4309,25 @@ select.form-select::-ms-expand {
     align-items: center;
     gap: 4px;
 }
+.module-detail-item.cap-item {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    row-gap: 5px;
+}
+.module-detail-item.cap-item strong {
+    flex-shrink: 0;
+}
 .module-cap-tag {
     display: inline-block;
-    font-size: 9px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-size: 10px;
     font-weight: 500;
-    padding: 1px 5px;
-    border-radius: 3px;
+    padding: 2px 7px;
+    border-radius: 5px;
     background: var(--bg-t);
     color: var(--tx-s);
     border: 1px solid var(--bd);
@@ -11837,6 +11941,21 @@ input, textarea, select, button,
 
     .module-detail {
         padding: 10px 12px 12px;
+    }
+
+    /* 事件流：窄屏收紧 */
+    .ev-item {
+        padding: 9px 12px;
+        gap: 10px;
+    }
+    .ev-side {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ev-plat {
+        display: none;
     }
 }
 
