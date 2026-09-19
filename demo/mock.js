@@ -1003,19 +1003,31 @@ var _FRAMEWORK_VERSIONS = ["2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2
     window.__DEMO_MODE__ = true;
     window.__DEMO_TOKEN__ = DEMO_TOKEN;
 
-    // Demo 登录页提示 token
+    // Demo 登录页提示 token（applyI18n 会覆盖 authHint，需监听并恢复）
+    function _demoHintHTML() {
+        return '<div style="padding:8px 12px;border-radius:8px;background:color-mix(in srgb,#f59e0b 12%,transparent);border:1px solid color-mix(in srgb,#f59e0b 30%,transparent);font-size:12px;color:#f59e0b;margin-top:4px">演示密码 / Demo Token: <code style="font-weight:700;user-select:all;cursor:pointer" onclick="document.getElementById(\'loginInput\').value=\'demo\'">demo</code> — 点击自动填入</div>';
+    }
+    function _applyDemoHint() {
+        var hint = document.getElementById('authHint');
+        if (!hint) return;
+        var app = document.querySelector('.app');
+        if (app && app.classList.contains('authed')) return;
+        if (hint.innerHTML.indexOf('Demo Token') !== -1) return;
+        hint.innerHTML = _demoHintHTML();
+    }
     function _showDemoTokenHint() {
         var hint = document.getElementById('authHint');
         if (!hint) {
             setTimeout(_showDemoTokenHint, 200);
             return;
         }
-        var app = document.querySelector('.app');
-        var isAuthed = app && app.classList.contains('authed');
-        if (isAuthed) return;
-        hint.innerHTML = '<div style="padding:8px 12px;border-radius:8px;background:color-mix(in srgb,#f59e0b 12%,transparent);border:1px solid color-mix(in srgb,#f59e0b 30%,transparent);font-size:12px;color:#f59e0b;margin-top:4px">Demo Token: <code style="font-weight:700;user-select:all;cursor:pointer" onclick="document.getElementById(\'loginInput\').value=\'demo\'">demo</code> — 点击填入</div>';
         var input = document.getElementById('loginInput');
         if (input && !input.value) input.placeholder = 'demo';
+        _applyDemoHint();
+        if (window.MutationObserver && !hint.__demoObserver) {
+            hint.__demoObserver = new MutationObserver(function () { _applyDemoHint(); });
+            hint.__demoObserver.observe(hint, { childList: true, characterData: true, subtree: true });
+        }
     }
     setTimeout(_showDemoTokenHint, 500);
 
@@ -1023,12 +1035,11 @@ var _FRAMEWORK_VERSIONS = ["2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2
         function _toggleDemoBanner() {
             var app = document.querySelector('.app');
             var banner = document.getElementById('demoBanner');
-            var header = document.querySelector('.header');
             if (!app || !banner) return;
             var show = app.classList.contains('authed');
-            banner.style.display = show ? 'block' : 'none';
-            if (header) header.style.marginTop = show ? '30px' : '';
-            if (show && typeof applyI18n === 'function') applyI18n();
+            var dismissed = false;
+            try { dismissed = sessionStorage.getItem('ep_demo_banner_dismissed') === '1'; } catch (e) {}
+            banner.style.display = show && !dismissed ? 'flex' : 'none';
         }
         var _appEl = document.querySelector('.app');
         if (_appEl) {
