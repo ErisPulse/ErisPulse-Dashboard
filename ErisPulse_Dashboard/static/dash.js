@@ -1886,70 +1886,76 @@ function renderPluginRow(m, isAd) {
   if (!meta && m.description) meta = "<span>" + esc(m.description) + "</span>";
   if (!meta) meta = "<span>" + t("module_no_desc") + "</span>";
 
+  // 主操作按钮：加载/启用（实心）、停止加载（描边）；低频与危险操作收进 ⋯ 菜单
   let acts = "";
-  // Expand toggle always shown
-  acts +=
-    '<button class="btn btn-secondary btn-xs module-expand-btn" onclick="toggleModuleDetail(this)" title="' +
-    t("view_detail") +
-    '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg></button> ';
   if (m.loaded) {
-    if (!isAd)
-      acts +=
-        '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' +
-        esc(m.name) +
-        "','reload','" +
-        esc(m.type) +
-        "')\">" +
-        t("reload") +
-        "</button> ";
     acts +=
-      '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' +
-      esc(m.name) +
+      '<button class="btn btn-secondary btn-xs module-primary-btn" onclick="moduleAction(\'' +
+      _jsq(m.name) +
       "','unload','" +
-      esc(m.type) +
+      _jsq(m.type) +
       "')\">" +
       t("unload") +
       "</button> ";
   } else if (m.enabled) {
     acts +=
-      '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' +
-      esc(m.name) +
+      '<button class="btn btn-primary btn-xs module-primary-btn" onclick="moduleAction(\'' +
+      _jsq(m.name) +
       "','load','" +
-      esc(m.type) +
+      _jsq(m.type) +
       "')\">" +
       t("load") +
       "</button> ";
-  }
-  if (m.enabled) {
-    acts +=
-      '<button class="btn btn-secondary btn-xs" onclick="moduleAction(\'' +
-      esc(m.name) +
-      "','disable','" +
-      esc(m.type) +
-      "')\">" +
-      t("disable_module") +
-      "</button> ";
   } else {
     acts +=
-      '<button class="btn btn-primary btn-xs" onclick="moduleAction(\'' +
-      esc(m.name) +
+      '<button class="btn btn-primary btn-xs module-primary-btn" onclick="moduleAction(\'' +
+      _jsq(m.name) +
       "','enable','" +
-      esc(m.type) +
+      _jsq(m.type) +
       "')\">" +
       t("enable_module") +
       "</button> ";
   }
-  if (!isAd && m.package) {
+  // ⋯ 菜单：重载（仅模块）、禁用/启用、卸载（仅模块）
+  var menuItems = [];
+  if (m.loaded && !isAd)
+    menuItems.push({ label: t("reload"), action: "reload", danger: false });
+  if (m.enabled) {
+    menuItems.push({
+      label: t("disable_module"),
+      action: "disable",
+      danger: true,
+    });
+  } else {
+    menuItems.push({
+      label: t("enable_module"),
+      action: "enable",
+      danger: false,
+    });
+  }
+  if (!isAd && m.package)
+    menuItems.push({
+      label: t("uninstall_module"),
+      action: "uninstall",
+      danger: true,
+    });
+  if (menuItems.length) {
     acts +=
-      '<button class="btn btn-danger btn-xs" onclick="moduleAction(\'' +
-      esc(m.name) +
-      "','uninstall','" +
-      esc(m.type) +
-      "','" +
-      esc(m.package) +
-      "')\">" +
-      t("uninstall_module") +
-      "</button> ";
+      '<button class="btn btn-secondary btn-xs module-more-btn" title="' +
+      esc(t("more_actions")) +
+      '" data-name="' +
+      _jsq(m.name) +
+      '" data-type="' +
+      _jsq(m.type) +
+      '" data-pkg="' +
+      _jsq(m.package || "") +
+      '" data-loaded="' +
+      (m.loaded ? 1 : 0) +
+      '" data-enabled="' +
+      (m.enabled ? 1 : 0) +
+      '" data-isad="' +
+      (isAd ? 1 : 0) +
+      '" onclick="toggleModuleMenu(event, this)"><svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>';
   }
 
   // Build detail section
@@ -2087,17 +2093,17 @@ function renderPluginRow(m, isAd) {
 
   const adLogo = isAd ? adapterLogoImg(m.name, 20) : "";
   var html =
-    '<div class="module-row-wrap">' +
-    '<div class="module-row"><span class="module-status-dot ' +
+    '<div class="module-card">' +
+    '<div class="module-card-main">' +
+    '<div class="module-card-id" role="button" onclick="toggleModuleDetail(this)">' +
+    '<span class="module-status-dot ' +
     statusDot +
     '"></span>' +
     adLogo +
-    '<div class="module-info"><div class="module-name">' +
+    '<div class="module-card-info"><div class="module-name-row">' +
+    '<span class="module-name">' +
     esc(m.name) +
-    '</div><div class="module-meta">' +
-    meta +
-    '</div></div><div class="module-actions">' +
-    '<span class="chip ' +
+    '</span><span class="chip ' +
     statusClass +
     ' module-status-chip"' +
     (isLazyModule
@@ -2105,28 +2111,121 @@ function renderPluginRow(m, isAd) {
       : "") +
     ">" +
     esc(statusText) +
-    "</span>" +
+    '</span></div><div class="module-meta">' +
+    meta +
+    '</div></div>' +
+    '<span class="module-card-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>' +
+    '</div>' +
+    '<div class="module-card-side">' +
     acts +
-    "</div></div>" +
+    '</div></div>' +
     detailHtml +
     "</div>";
   return html;
 }
-function toggleModuleDetail(btn) {
-  var wrap = btn.closest(".module-row-wrap");
+function toggleModuleDetail(el) {
+  var wrap = el.closest(".module-card");
   if (!wrap) return;
   var detail = wrap.querySelector(".module-detail");
   if (!detail) return;
-  var svg = btn.querySelector("svg");
   if (detail.classList.contains("hidden")) {
     detail.classList.remove("hidden");
     wrap.classList.add("expanded");
-    if (svg) svg.innerHTML = '<polyline points="6 15 12 9 18 15"/>';
   } else {
     detail.classList.add("hidden");
     wrap.classList.remove("expanded");
-    if (svg) svg.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
   }
+}
+function _moduleMenuOutside(e) {
+  var menu = document.getElementById("moduleActionMenu");
+  if (!menu) return;
+  if (menu.contains(e.target)) return;
+  if (menu._anchor && menu._anchor.contains(e.target)) return;
+  closeModuleMenu();
+}
+function _moduleMenuEsc(e) {
+  if (e.key === "Escape") closeModuleMenu();
+}
+function closeModuleMenu() {
+  var menu = document.getElementById("moduleActionMenu");
+  if (menu) menu.remove();
+  document.removeEventListener("click", _moduleMenuOutside);
+  document.removeEventListener("keydown", _moduleMenuEsc);
+}
+function toggleModuleMenu(ev, btn) {
+  ev.stopPropagation();
+  var existing = document.getElementById("moduleActionMenu");
+  if (existing) {
+    var same = existing._anchor === btn;
+    closeModuleMenu();
+    if (same) return;
+  }
+  var name = btn.dataset.name,
+    type = btn.dataset.type,
+    pkg = btn.dataset.pkg,
+    loaded = btn.dataset.loaded === "1",
+    enabled = btn.dataset.enabled === "1",
+    isAd = btn.dataset.isad === "1";
+  var items = [];
+  if (loaded && !isAd)
+    items.push({ action: "reload", label: t("reload"), danger: false });
+  if (enabled) {
+    items.push({
+      action: "disable",
+      label: t("disable_module"),
+      danger: true,
+    });
+  } else {
+    items.push({ action: "enable", label: t("enable_module"), danger: false });
+  }
+  if (!isAd && pkg)
+    items.push({
+      action: "uninstall",
+      label: t("uninstall_module"),
+      danger: true,
+    });
+  if (!items.length) return;
+  var menu = document.createElement("div");
+  menu.id = "moduleActionMenu";
+  menu.className = "module-action-menu";
+  menu._anchor = btn;
+  menu.innerHTML = items
+    .map(function (it) {
+      var call =
+        "closeModuleMenu();moduleAction('" +
+        _jsq(name) +
+        "','" +
+        it.action +
+        "','" +
+        _jsq(type) +
+        "'" +
+        (it.action === "uninstall" ? ",'" + _jsq(pkg) + "'" : "") +
+        ")";
+      return (
+        '<button class="module-menu-item' +
+        (it.danger ? " danger" : "") +
+        '" onclick="' +
+        esc(call) +
+        '">' +
+        esc(it.label) +
+        "</button>"
+      );
+    })
+    .join("");
+  document.body.appendChild(menu);
+  var r = btn.getBoundingClientRect();
+  var mw = menu.offsetWidth,
+    mh = menu.offsetHeight;
+  var left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8);
+  var top = r.bottom + 6;
+  if (top + mh > window.innerHeight - 8) top = r.top - mh - 6;
+  if (top < 8) top = 8;
+  menu.style.left = left + "px";
+  menu.style.top = top + "px";
+  setTimeout(function () {
+    document.addEventListener("click", _moduleMenuOutside);
+    document.addEventListener("keydown", _moduleMenuEsc);
+  }, 0);
 }
 async function moduleAction(name, action, type, pkg) {
   if (!authed) return showLogin();

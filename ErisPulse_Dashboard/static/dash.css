@@ -4031,34 +4031,151 @@ select.form-select::-ms-expand {
     filter: none;
 }
 
-/* 模块管理增强样式 */
-.module-row-wrap {
-    border-bottom: 1px solid var(--bd);
+/* 模块管理卡片样式 */
+#adapterList,
+#moduleList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
 }
-.module-row-wrap:last-child {
-    border-bottom: none;
+.module-card {
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.module-row-wrap .module-row:last-child {
-    border-bottom: none;
+.module-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--bd));
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
-.module-row {
+.module-card.expanded {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--bd));
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+.module-card-main {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--bd);
-    transition: background 0.2s;
+    gap: 10px;
+    padding: 12px 14px;
     font-size: 13px;
 }
-
-.module-row:last-child {
-    border-bottom: none;
+.module-card-id {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
 }
-
-.module-row:hover {
+.module-card-info {
+    flex: 1;
+    min-width: 0;
+}
+.module-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.module-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+.module-status-chip {
+    font-size: 10px;
+    padding: 1px 7px;
+}
+.module-meta {
+    font-size: 11px;
+    color: var(--tx-t);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.module-meta span:not(:last-child)::after {
+    content: "·";
+    margin: 0 5px;
+    opacity: 0.55;
+}
+.module-card-chevron {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    color: var(--tx-t);
+    transition: transform 0.2s;
+}
+.module-card-chevron svg {
+    width: 14px;
+    height: 14px;
+}
+.module-card.expanded .module-card-chevron {
+    transform: rotate(180deg);
+}
+.module-card-side {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.module-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 7px;
+}
+.module-action-menu {
+    position: fixed;
+    z-index: 1200;
+    min-width: 132px;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    animation: moduleMenuIn 0.14s ease;
+}
+@keyframes moduleMenuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.module-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--tx-p);
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.module-menu-item:hover {
     background: var(--bg-s);
 }
-
+.module-menu-item.danger {
+    color: var(--er-c);
+}
+.module-menu-item.danger:hover {
+    background: var(--er-bg);
+}
 .module-status-dot {
     width: 8px;
     height: 8px;
@@ -4077,50 +4194,11 @@ select.form-select::-ms-expand {
 .module-status-dot.disabled {
     background: var(--tx-t);
 }
-
-.module-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.module-name {
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.module-meta {
-    font-size: 11px;
-    color: var(--tx-t);
-    margin-top: 2px;
-}
-
-.module-meta span {
-    margin-right: 12px;
-}
-
-.module-actions {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
-}
-.module-expand-btn {
-    transition: transform 0.2s;
-}
-.module-row-wrap.expanded .module-expand-btn {
-    transform: rotate(180deg);
-}
-.module-status-chip {
-    font-size: 10px;
-    padding: 1px 6px;
-    margin-right: 4px;
-}
 .module-detail {
-    padding: 8px 16px 10px 16px;
+    padding: 10px 14px 12px 14px;
     border-top: 1px solid var(--bd);
-    background: var(--bg-s);
+    border-radius: 0 0 12px 12px;
+    background: color-mix(in srgb, var(--bg-s) 60%, transparent);
     display: block;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -4608,52 +4686,6 @@ select.form-select::-ms-expand {
     .fm-card-icon .fm-icon {
         width: 26px;
         height: 26px;
-    }
-    .module-meta {
-        display: none;
-    }
-    .module-actions {
-        flex-direction: column;
-    }
-    /* 模块管理移动端紧凑布局 */
-    .module-row {
-        flex-wrap: wrap;
-        gap: 6px;
-        padding: 8px 10px;
-    }
-    .module-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 3px;
-        width: 100%;
-        justify-content: flex-start;
-        margin-top: 4px;
-        padding-top: 4px;
-        border-top: 1px solid var(--bd);
-    }
-    .module-actions .btn-xs {
-        padding: 2px 6px;
-        font-size: 10px;
-        min-height: 22px;
-    }
-    .module-status-chip {
-        display: none;
-    }
-    .module-expand-btn {
-        position: absolute;
-        right: 6px;
-        top: 6px;
-    }
-    .module-row-wrap {
-        position: relative;
-    }
-    .module-info {
-        min-width: 0;
-        flex: 1;
-    }
-    .module-name {
-        font-size: 13px;
-        padding-right: 28px;
     }
     #fmEditorContainer {
         height: 300px !important;
@@ -9082,7 +9114,7 @@ a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 }
 
 .list-row, .ev-item, .bot-card, .store-card, .kv-row,
-.module-row, .cmd-row, .route-item, .lifecycle-item,
+.module-card, .cmd-row, .route-item, .lifecycle-item,
 .fm-file-row, .pkg-row, .log-entry {
     transition: background 0.15s ease;
 }
@@ -9574,26 +9606,11 @@ select:hover:not(:disabled) {
     }
 
     /* 模块详情 */
-    .module-row {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .module-actions {
-        flex: 1 1 100%;
-        justify-content: flex-start;
-        gap: 4px;
-    }
     .module-detail-row {
         gap: 6px;
     }
     .module-detail-item {
         font-size: 11px;
-    }
-    .module-status-chip {
-        display: none;
-    }
-    .module-expand-btn {
-        margin-left: auto;
     }
 
     /* 商店标签 */
@@ -11790,42 +11807,36 @@ input, textarea, select, button,
         padding: 12px 14px;
     }
 
-    /* 模块行：动作按钮整行右对齐，不与名称挤在一行 */
-    .module-row {
-        padding: 10px 12px;
+    /* 模块卡片：信息行在上、操作行在下 */
+    .module-card-main {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 11px 12px;
+    }
+
+    .module-card-side {
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid var(--bd);
+    }
+
+    .module-primary-btn {
+        flex: 1;
+        min-height: 36px;
+        justify-content: center;
+    }
+
+    .module-more-btn {
+        flex: 0 0 36px;
+        min-height: 36px;
+    }
+
+    .module-card-id {
         gap: 8px;
     }
 
-    .module-actions {
-        width: 100%;
-        justify-content: flex-end;
-        row-gap: 6px;
-    }
-}
-
-/* ========== 移动端模块行大按钮（header 跟随仪表盘标题配置，无页标题元素） ========== */
-
-@media (max-width: 720px) {
-    /* 模块行：动作按钮全宽均分，大触摸目标 */
-    .module-actions {
-        width: 100%;
-        margin-top: 2px;
-        row-gap: 6px;
-    }
-
-    .module-actions .btn {
-        flex: 1;
-        justify-content: center;
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .module-actions .module-expand-btn {
-        flex: 0 0 42px;
-    }
-
-    .module-status-chip {
-        margin-right: auto;
+    .module-detail {
+        padding: 10px 12px 12px;
     }
 }
 
@@ -11851,18 +11862,5 @@ input, textarea, select, button,
         min-height: 46px;
         padding: 6px 20px;
         border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
-    }
-}
-
-@media (max-width: 720px) {
-    /* 模块行：移动端去掉 hr 式隔断线，用留白 + 圆角分组 */
-    .module-row {
-        border-bottom: none;
-        border-radius: 12px;
-        background: color-mix(in srgb, var(--bg-t) 90%, transparent);
-    }
-
-    .module-row-wrap {
-        margin-bottom: 6px;
     }
 }

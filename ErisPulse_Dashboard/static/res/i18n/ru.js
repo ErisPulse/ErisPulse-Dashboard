@@ -721,6 +721,7 @@ settings_tab_colorfont: "Цвет и шрифт",
     pkg_detail_loading: "Загрузка деталей...",
     pkg_detail_failed: "Не удалось загрузить детали",
     view_detail: "Детали",
+    more_actions: "Дополнительные действия",
     pkg_git_install: "Установка из Git",
     pkg_git_install_desc:
       "Установка напрямую из Git-репозитория, PyPI не требуется",
