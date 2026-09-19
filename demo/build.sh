@@ -47,13 +47,20 @@ else:
     html = html.replace("</body>", mock + "</body>")
 
 banner = (
-    '<div id="demoBanner" style="display:none;position:fixed;top:0;left:0;right:0;'
-    "z-index:9999;background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;"
-    'text-align:center;padding:6px 12px;font-size:12px;font-weight:600;'
-    'box-shadow:0 1px 4px rgba(0,0,0,.15)">'
-    '⚠ Demo Mode — All data is simulated. '
-    '<a href="https://github.com/ErisPulse/ErisPulse-Dashboard" target="_blank" '
-    'style="color:#fff;text-decoration:underline">View Source</a></div>\n'
+    '<div id="demoBanner" style="display:none;position:fixed;left:12px;bottom:12px;'
+    "z-index:9000;max-width:min(92vw,360px);padding:7px 8px 7px 14px;"
+    "background:linear-gradient(90deg,rgba(245,158,11,.95),rgba(239,68,68,.95));"
+    "color:#fff;border-radius:14px;font-size:12px;font-weight:600;line-height:1.5;"
+    "box-shadow:0 4px 14px rgba(0,0,0,.22);align-items:center;gap:8px;"
+    'backdrop-filter:blur(4px)">'
+    '<span style="flex:1">⚠ Demo Mode — All data is simulated. '
+    '<a href="https://github.com/ErisPulse/ErisPulse-Dashboard" target="_blank" rel="noopener" '
+    'style="color:#fff;text-decoration:underline;white-space:nowrap">View Source</a></span>'
+    '<button onclick="(function(b){try{sessionStorage.setItem(\'ep_demo_banner_dismissed\',\'1\')}catch(e){}b.parentElement.style.display=\'none\'})(this)" '
+    'aria-label="Dismiss" style="cursor:pointer;flex:none;width:20px;height:20px;border:none;'
+    "border-radius:50%;background:rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:700;"
+    'font-family:inherit;padding:0;display:flex;align-items:center;justify-content:center">✕</button>'
+    "</div>\n"
 )
 html = html.replace("<body>", "<body>" + banner, 1)
 
