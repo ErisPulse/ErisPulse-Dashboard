@@ -99,17 +99,23 @@
         return events;
     }
 
+    function _fmtTs(epochSec) {
+        var d = new Date(epochSec * 1000);
+        function _p(n) { return (n < 10 ? '0' : '') + n; }
+        return d.getFullYear() + '-' + _p(d.getMonth() + 1) + '-' + _p(d.getDate()) + ' ' + _p(d.getHours()) + ':' + _p(d.getMinutes()) + ':' + _p(d.getSeconds());
+    }
+
     function _genLogs(count) {
         var logs = [];
         for (var i = 0; i < count; i++) {
             logs.push({
-                timestamp: NOW - _r(0, 3600 * 6),
+                timestamp: _fmtTs(NOW - _r(0, 3600 * 6)),
                 level: _pick(LOG_LEVELS),
                 module: _pick(LOG_MODULES),
                 message: _pick(LOG_MSGS)
             });
         }
-        logs.sort(function (a, b) { return a.timestamp - b.timestamp; });
+        logs.sort(function (a, b) { return a.timestamp < b.timestamp ? 1 : -1; });
         return logs;
     }
 
