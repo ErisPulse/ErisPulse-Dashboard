@@ -728,6 +728,7 @@ settings_tab_colorfont: "Colors & Font",
     pkg_detail_loading: "Loading details...",
     pkg_detail_failed: "Failed to load details",
     view_detail: "Details",
+    more_actions: "More actions",
     pkg_git_install: "Git Install",
     pkg_git_install_desc:
       "Install directly from Git repository, no PyPI needed",
