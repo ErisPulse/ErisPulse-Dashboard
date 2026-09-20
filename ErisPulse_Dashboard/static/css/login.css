@@ -1,0 +1,342 @@
+/* ErisPulse Dashboard – login (auto-split from dash.css, aligned with js/) */
+.login-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal);
+    backdrop-filter: none;
+    z-index: 1001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.login-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.login-card {
+    background: var(--bg-t);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: none;
+    animation: scaleIn 0.2s ease-out;
+}
+
+.login-card h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.login-avatar {
+    display: none;
+}
+
+.login-decor {
+    display: none;
+}
+
+.login-bg-loader {
+    display: none;
+}
+
+.login-card p {
+    font-size: 14px;
+    color: var(--tx-s);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-t);
+}
+
+.form-group input::placeholder {
+    color: var(--tx-t);
+}
+
+.login-hint {
+    font-size: 12px;
+    color: var(--tx-t);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.login-hint code {
+    background: var(--bg-s);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    border: 1px solid var(--bd);
+}
+
+.login-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.login-lang-select {
+    padding: 4px 24px 4px 8px;
+    border: 1px solid var(--bd);
+    border-radius: 6px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 12px;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+}
+
+.login-lang-select:hover {
+    border-color: var(--accent);
+    color: var(--tx-p);
+}
+
+.login-lang-select:focus {
+    border-color: var(--accent);
+}
+
+.login-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--bd);
+}
+
+.login-globe-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--tx-t);
+    flex-shrink: 0;
+}
+
+.login-lang-select option {
+    background: var(--bg-t);
+    color: var(--tx-p);
+}
+.login-card { border-radius: var(--radius-xl); }
+.module-search, .ep-select, .form-input, .form-select, .settings-input {
+    border-radius: var(--radius-sm);
+}
+.ep-combobox-trigger { border-radius: var(--radius-sm); }
+.ep-multiselect-search { border-radius: var(--radius-sm); }
+.log-level-chip { border-radius: var(--radius-sm); }
+.store-card { border-radius: var(--radius-lg); }
+.cluster-card { border-radius: var(--radius-lg); }
+.event-card, .ev-item { border-radius: var(--radius-md); }
+.list-row { border-radius: var(--radius-md); }
+.toast { border-radius: var(--radius-md); }
+.conn-panel { border-radius: var(--radius-lg); }
+.conn-badge { border-radius: var(--radius-sm); }
+.popover { border-radius: var(--radius-lg); }
+.pkg-row { border-radius: var(--radius-md); }
+.route-group-card { border-radius: var(--radius-lg); }
+.master-card { border-radius: var(--radius-lg); }
+.bot-card { border-radius: var(--radius-lg); }
+
+.login-avatar {
+    display: block;
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.login-avatar img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+/* ========== 沉浸式登录页 ========== */
+
+.login-overlay {
+    background: var(--bg-p);
+    overflow: hidden;
+}
+
+.login-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.login-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.45;
+}
+
+.login-orb-a {
+    width: 480px;
+    height: 480px;
+    left: -120px;
+    top: -140px;
+    background: color-mix(in srgb, var(--accent) 55%, transparent);
+    animation: loginDrift 18s ease-in-out infinite alternate;
+}
+
+.login-orb-b {
+    width: 420px;
+    height: 420px;
+    right: -110px;
+    top: 28%;
+    background: color-mix(in srgb, var(--pr-c) 40%, transparent);
+    animation: loginDrift 22s ease-in-out infinite alternate-reverse;
+}
+
+.login-orb-c {
+    width: 380px;
+    height: 380px;
+    left: 30%;
+    bottom: -160px;
+    background: color-mix(in srgb, var(--ok-c) 32%, transparent);
+    animation: loginDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes loginDrift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+    to {
+        transform: translate(60px, 40px) scale(1.12);
+    }
+}
+
+.login-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        color-mix(in srgb, var(--tx-p) 14%, transparent) 1px,
+        transparent 1px
+    );
+    background-size: 26px 26px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(
+        ellipse at center,
+        #000 30%,
+        transparent 75%
+    );
+}
+
+.login-card {
+    position: relative;
+    z-index: 2;
+    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid color-mix(in srgb, var(--tx-p) 10%, transparent);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    padding: 34px 32px;
+    max-width: 400px;
+}
+
+.login-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.login-avatar img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+.login-brand {
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tx-s);
+}
+
+.login-brand span {
+    color: var(--accent);
+}
+
+.login-card h2 {
+    text-align: center;
+    font-size: 20px;
+    margin: 16px 0 6px;
+}
+
+.login-card > p {
+    text-align: center;
+}
+
+.login-card .form-group input {
+    background: color-mix(in srgb, var(--bg-t) 80%, transparent);
+}
+
+.login-hint {
+    min-height: 18px;
+}
+
+.login-actions {
+    justify-content: stretch;
+}
+
+.login-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.login-footer {
+    margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 26px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-orb {
+        animation: none;
+    }
+}

@@ -51,6 +51,7 @@ class Main(BaseModule):
         self._max_log = 500
         self._start_time = time.time()
         self._install_tasks: dict[str, dict] = {}
+        self._psutil_mod = None
         self._login_fails = 0
         self._last_login_fail = 0.0
         self._events_dirty = False
@@ -1008,6 +1009,9 @@ class Main(BaseModule):
                     }
                 )
                 self._dynamic_load_new_modules()
+                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
+                if self._packages_contain_dashboard(packages):
+                    self._schedule_dashboard_self_reload()
             else:
                 self._install_tasks[task_id]["status"] = "error"
                 self._install_tasks[task_id]["error"] = "\n".join(combined_lines[-20:])
@@ -1207,7 +1211,13 @@ class Main(BaseModule):
         psutil_ok = False
         proc = None
         try:
-            import psutil
+            # 使用缓存引用：运行期商店安装若连带升级 psutil，
+            # 重新 import 可能拿到磁盘上被替换一半的模块导致属性缺失
+            psutil = self._psutil_mod
+            if psutil is None:
+                import psutil as _psutil
+
+                psutil = self._psutil_mod = _psutil
 
             proc = psutil.Process(os.getpid())
             psutil_ok = True
@@ -1495,6 +1505,30 @@ class Main(BaseModule):
 
         r.register_http_route(
             mn, "/static/res/{path:path}", handler=_static_res, methods=["GET"]
+        )
+
+        # 通用静态资源
+        async def _static_any(request: Request):
+            subpath = request.path_params.get("path", "")
+            file_path = static_dir / subpath
+            try:
+                resolved = file_path.resolve()
+                if (
+                    file_path.exists()
+                    and file_path.is_file()
+                    and str(resolved).startswith(str(static_dir.resolve()))
+                ):
+                    ct, _ = _mimetypes.guess_type(str(file_path))
+                    return Response(
+                        content=file_path.read_bytes(),
+                        media_type=ct or "application/octet-stream",
+                    )
+            except Exception:
+                pass
+            return JSONResponse({"error": "Not found"}, status_code=404)
+
+        r.register_http_route(
+            mn, "/static/{path:path}", handler=_static_any, methods=["GET"]
         )
 
         # API 路由保持不变
@@ -3088,6 +3122,91 @@ class Main(BaseModule):
         self._add_audit_log("package_git_upgrade", git_url, request)
         return JSONResponse({"success": True, "task_id": task_id})
 
+    @staticmethod
+    def _packages_contain_dashboard(packages: list[str]) -> bool:
+        """判断升级包列表是否包含 Dashboard 自身（兼容 wheel 文件名/带版本号形式）"""
+        for p in packages or []:
+            name = p.split("==", 1)[0].strip().lower().replace("_", "-")
+            if name == "erispulse-dashboard" or name.startswith("erispulse-dashboard-"):
+                return True
+        return False
+
+    def _schedule_dashboard_self_reload(self, delay: float = 1.5):
+        """
+        升级涉及 Dashboard 自身：延迟卸载并重新加载模块，使新后端代码生效。
+        延迟是为了让最终的 install_progress 广播先送达前端（前端收到后自动刷新页面）。
+        """
+        def _do():
+            if not self._loop or self._loop.is_closed():
+                return
+
+            async def _reload():
+                try:
+                    await self.sdk.module.unload("Dashboard")
+                except Exception:
+                    pass
+                try:
+                    await self.sdk.module.load("Dashboard")
+                except Exception as e:
+                    self.logger.warning(f"Dashboard self-reload failed: {e}")
+                    return
+                self._safe_broadcast({"type": "dashboard_reloaded"})
+
+            asyncio.run_coroutine_threadsafe(_reload(), self._loop)
+
+        t = threading.Timer(delay, _do)
+        t.daemon = True
+        t.start()
+
+    def _reload_upgraded_registered_modules(self, packages: list[str]):
+        """
+        升级完成后，重载受影响且已注册的模块（unload+load，遵守 enabled 状态）。
+        使"升级包后无需重启框架"即可让新代码生效。Dashboard 由
+        _schedule_dashboard_self_reload 单独处理。
+        """
+        norm = set()
+        for p in packages or []:
+            norm.add(p.split("==", 1)[0].strip().lower().replace("_", "-"))
+        if not norm:
+            return
+        try:
+            from ErisPulse.finders import ModuleFinder
+
+            mf = ModuleFinder()
+            mf.clear_cache()
+            targets = []
+            for ep_name, ep in mf.get_entry_point_map().items():
+                if ep_name == "Dashboard":
+                    continue
+                if ep_name not in set(self.sdk.module.list_registered()):
+                    continue
+                dist_name = (ep.dist.name if ep else "") or ""
+                if dist_name.lower().replace("_", "-") in norm:
+                    targets.append(ep_name)
+        except Exception as e:
+            self.logger.warning(f"resolve upgraded modules failed: {e}")
+            return
+        if not targets or not self._loop or self._loop.is_closed():
+            return
+
+        async def _reload_all():
+            for name in targets:
+                if not self.sdk.module.is_enabled(name):
+                    self.logger.info(
+                        f"Module {name} is disabled, skip reload after upgrade"
+                    )
+                    continue
+                try:
+                    was_loaded = self.sdk.module.is_loaded(name)
+                    if was_loaded:
+                        await self.sdk.module.unload(name)
+                        await self.sdk.module.load(name)
+                        self.logger.info(f"Module {name} reloaded after upgrade")
+                except Exception as e:
+                    self.logger.warning(f"Reload module {name} after upgrade failed: {e}")
+
+        asyncio.run_coroutine_threadsafe(_reload_all(), self._loop)
+
     def _run_pip_upgrade(
         self, packages: list[str], task_id: str, index_url: str = None
     ):
@@ -3187,6 +3306,8 @@ class Main(BaseModule):
                     }
                 )
                 self._get_pkg_manager().invalidate_caches()
+                # 重载受升级影响的已注册模块（遵守 enabled 状态）
+                self._reload_upgraded_registered_modules(packages)
                 self._safe_broadcast(
                     {"type": "module_changed", "data": {"action": "upgraded"}}
                 )
@@ -3360,6 +3481,9 @@ class Main(BaseModule):
                     }
                 )
                 self._dynamic_load_new_modules()
+                # 本地文件安装涉及本模块时：延迟重载 Dashboard
+                if self._packages_contain_dashboard([filename]):
+                    self._schedule_dashboard_self_reload()
             else:
                 self._install_tasks[task_id] = {
                     "status": "error",

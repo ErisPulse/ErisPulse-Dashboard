@@ -300,6 +300,244 @@ function connStateChange(state, animate) {
   }
 }
 
+// ── WS 连接详情面板 ──
+var _wsLog = [];
+var _wsMeta = { connectedAt: 0, reconnects: 0, frames: 0, events: 0, url: "" };
+var _wsLogSeq = 0;
+var _wsLogHeadSeq = -1; // 已渲染日志的首条 seq（-1 = 未渲染）
+var _wsInspTimer = null;
+var WS_LOG_MAX = 100;
+var WS_LOG_PREVIEW_MAX = 1200;
+
+// 展示用时脱敏 URL 中的 token
+function wsSafeUrl(u) {
+  return String(u || "").replace(/(token=)[^&]+/g, "$1******");
+}
+// 折叠签名：去掉易变字段（时间戳类），同签名连续帧合并为 ×N
+function wsLogSig(type, pretty) {
+  return (
+    type +
+    "|" +
+    pretty
+      .replace(/"(time|timestamp|ts)"\s*:\s*[-\d.]+/g, "")
+      .replace(/\s+/g, "")
+  );
+}
+function wsLogPush(type, raw) {
+  _wsMeta.frames++;
+  var pretty = raw;
+  try {
+    pretty = JSON.stringify(JSON.parse(raw), null, 2);
+  } catch (e) {}
+  var truncated = false;
+  if (pretty.length > WS_LOG_PREVIEW_MAX) {
+    pretty = pretty.slice(0, WS_LOG_PREVIEW_MAX) + "\n…";
+    truncated = true;
+  }
+  var sig = wsLogSig(type || "message", pretty);
+  var top = _wsLog[0];
+  if (top && top.sig === sig) {
+    top.count++;
+    top.seq = ++_wsLogSeq;
+    top.time = new Date().toLocaleTimeString(getLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    return;
+  }
+  _wsLog.unshift({
+    seq: ++_wsLogSeq,
+    sig: sig,
+    type: type || "message",
+    pretty: pretty,
+    size: raw.length,
+    truncated: truncated,
+    count: 1,
+    time: new Date().toLocaleTimeString(getLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+  });
+  if (_wsLog.length > WS_LOG_MAX) _wsLog.pop();
+}
+function wsLogItemHtml(f) {
+  return (
+    '<div class="wslog-item' +
+    (f.count > 1 ? " has-count" : "") +
+    '" data-seq="' +
+    f.seq +
+    '" onclick="this.classList.toggle(\'open\')">' +
+    '<div class="wslog-head"><span class="wslog-dir">&#8595;</span><span class="wslog-type">' +
+    esc(f.type) +
+    '</span><span class="wslog-count">&times;' +
+    f.count +
+    '</span><span class="wslog-size">' +
+    f.size +
+    "B" +
+    (f.truncated ? "+" : "") +
+    '</span><span class="wslog-time">' +
+    esc(f.time) +
+    "</span></div>" +
+    '<pre class="wslog-payload">' +
+    esc(f.pretty) +
+    "</pre></div>"
+  );
+}
+function wsFmtUptime(ms) {
+  if (!ms) return "—";
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  return (
+    (h ? h + "h " : "") + (h || m ? m + "m " : "") + sec + "s"
+  );
+}
+function renderWsInspector() {
+  var info = document.getElementById("wsInspInfo");
+  if (!info) return;
+  var isLocal = currentNode === "local";
+  var url =
+    _wsMeta.url ||
+    (function () {
+      var p = location.protocol === "https:" ? "wss:" : "ws:";
+      return p + "//" + location.host + API + "/ws";
+    })();
+  var safe = wsSafeUrl(url);
+  info.innerHTML =
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_url")) +
+    '</span><code class="ws-insp-val" title="' +
+    esc(safe) +
+    '">' +
+    esc(safe) +
+    "</code></div>" +
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_node")) +
+    '</span><span class="ws-insp-val">' +
+    esc(isLocal ? t("node_local") || "local" : currentNode) +
+    "</span></div>" +
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_uptime")) +
+    '</span><span class="ws-insp-val">' +
+    esc(wsFmtUptime(_wsMeta.connectedAt ? Date.now() - _wsMeta.connectedAt : 0)) +
+    "</span></div>" +
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_reconnects")) +
+    '</span><span class="ws-insp-val">' +
+    _wsMeta.reconnects +
+    "</span></div>" +
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_frames")) +
+    '</span><span class="ws-insp-val">' +
+    _wsMeta.frames +
+    "</span></div>" +
+    '<div class="ws-insp-row"><span>' +
+    esc(t("ws_events")) +
+    '</span><span class="ws-insp-val">' +
+    _wsMeta.events +
+    "</span></div>";
+  var log = document.getElementById("wsInspLog");
+  if (!log || !_wsLog.length) {
+    if (log && _wsLogHeadSeq !== 0) {
+      log.innerHTML = _wsLog.length
+        ? ""
+        : '<div class="wslog-empty">' + esc(t("ws_log_empty")) + "</div>";
+      _wsLogHeadSeq = 0;
+    }
+    return;
+  }
+  var head = _wsLog[0];
+  if (_wsLogHeadSeq === -1) {
+    // 首次（或清空后）全量渲染
+    log.innerHTML = _wsLog.map(wsLogItemHtml).join("");
+    _wsLogHeadSeq = head.seq;
+  } else if (_wsLogHeadSeq !== head.seq) {
+    // 增量：把新条目插到最前，保留已有 DOM 的展开状态
+    var idx = -1,
+      i;
+    for (i = 0; i < _wsLog.length; i++) {
+      if (_wsLog[i].seq === _wsLogHeadSeq) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx === -1) {
+      log.innerHTML = _wsLog.map(wsLogItemHtml).join("");
+    } else {
+      var frag = "";
+      for (i = idx - 1; i >= 0; i--) frag += wsLogItemHtml(_wsLog[i]);
+      var empty = log.querySelector(".wslog-empty");
+      if (empty) empty.remove();
+      log.insertAdjacentHTML("afterbegin", frag);
+      while (log.children.length > WS_LOG_MAX) log.removeChild(log.lastChild);
+    }
+    _wsLogHeadSeq = head.seq;
+  }
+  // 首条折叠计数/时间可能原地更新
+  var first = log.firstElementChild;
+  if (first && String(head.seq) === first.dataset.seq) {
+    var cnt = first.querySelector(".wslog-count");
+    if (cnt) {
+      cnt.textContent = "\u00d7" + head.count;
+      first.classList.toggle("has-count", head.count > 1);
+    }
+    var tmEl = first.querySelector(".wslog-time");
+    if (tmEl) tmEl.textContent = head.time;
+  }
+}
+function toggleWsInspector(ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  var p = document.getElementById("wsInspector");
+  if (!p) return;
+  if (p.classList.contains("open")) {
+    closeWsInspector();
+    return;
+  }
+  _wsLogHeadSeq = -1;
+  renderWsInspector();
+  p.classList.add("open");
+  document.addEventListener("click", _wsInspOutside);
+  document.addEventListener("keydown", _wsInspEsc);
+  if (_wsInspTimer) clearInterval(_wsInspTimer);
+  _wsInspTimer = setInterval(function () {
+    if (!document.getElementById("wsInspector")?.classList.contains("open")) {
+      closeWsInspector();
+      return;
+    }
+    renderWsInspector();
+  }, 1000);
+}
+function closeWsInspector() {
+  var p = document.getElementById("wsInspector");
+  if (p) p.classList.remove("open");
+  if (_wsInspTimer) {
+    clearInterval(_wsInspTimer);
+    _wsInspTimer = null;
+  }
+  document.removeEventListener("click", _wsInspOutside);
+  document.removeEventListener("keydown", _wsInspEsc);
+}
+function _wsInspOutside(e) {
+  var p = document.getElementById("wsInspector");
+  if (!p) return;
+  if (p.contains(e.target)) return;
+  var badge = document.getElementById("connBadge");
+  if (badge && badge.contains(e.target)) return;
+  closeWsInspector();
+}
+function _wsInspEsc(e) {
+  if (e.key === "Escape") closeWsInspector();
+}
+function clearWsLog() {
+  _wsLog = [];
+  _wsLogHeadSeq = 0;
+  var log = document.getElementById("wsInspLog");
+  if (log) log.innerHTML = '<div class="wslog-empty">' + esc(t("ws_log_empty")) + "</div>";
+}
+
 function createBotStatusIcon(botCard) {
   var container = document.createElement("div");
   container.className = "bot-card-status";
@@ -7347,10 +7585,14 @@ function wsConnect() {
       encodeURIComponent(info.token || "");
   }
   ws = new WebSocket(u);
+  _wsMeta.url = u;
   ws.onopen = () => {
+    _wsMeta.connectedAt = Date.now();
     connStateChange(1, true);
   };
   ws.onclose = () => {
+    if (_wsMeta.connectedAt) _wsMeta.reconnects++;
+    _wsMeta.connectedAt = 0;
     connStateChange(0, true);
     setTimeout(wsConnect, 3000);
   };
@@ -7358,7 +7600,9 @@ function wsConnect() {
   ws.onmessage = (e) => {
     try {
       const m = JSON.parse(e.data);
+      wsLogPush(m.type, e.data);
       if (m.type === "event") {
+        _wsMeta.events++;
         allEvents.push(m.data);
         _totalEventCount++;
         if (allEvents.length > 500) allEvents.shift();

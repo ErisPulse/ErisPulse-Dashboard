@@ -1,0 +1,150 @@
+/* ErisPulse Dashboard – bots (auto-split from dash.css, aligned with js/) */
+.bot-card {
+    background: var(--bg-t);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.bot-card:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+.bot-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg-s));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.bot-avatar img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.bot-avatar.has-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg-s));
+}
+
+.bot-avatar.has-logo img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.bot-avatar svg {
+    width: 24px;
+    height: 24px;
+    color: var(--tx-p);
+    opacity: 0.7;
+}
+
+.bot-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.bot-name {
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bot-platform-row {
+    font-size: 11px;
+    color: var(--tx-s);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.bot-id-code {
+    font-family: monospace;
+    font-size: 10px;
+    color: var(--tx-t);
+    background: var(--bg-s);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.bot-caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+}
+.bot-cap-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    border: 1px solid var(--bd);
+}
+.bot-cap-tag.bot-cap-more {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    border-color: var(--accent);
+}
+.bot-card-right {
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+.bot-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+.bot-last-active {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+.adapter-status-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+}
+
+.bot-card-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+@media (max-width: 768px) {
+    .status-icons-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .status-icon-frames.size-lg {
+        width: 56px;
+        height: 56px;
+    }
+}
+

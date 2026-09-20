@@ -1,0 +1,702 @@
+/* ErisPulse Dashboard – framework (auto-split from dash.css, aligned with js/) */
+.fw-update-card {
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    overflow: hidden;
+    max-width: 720px;
+    margin: 20px auto 0;
+}
+
+/* 框架更新 */
+.fw-hero {
+    padding: 22px 24px 20px;
+    border-bottom: 1px solid var(--bd);
+}
+
+.fw-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.fw-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--tx-s);
+    background: color-mix(in srgb, var(--tx-s) 8%, transparent);
+}
+
+.fw-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.fw-status-badge.ok {
+    color: var(--ok-c);
+    background: color-mix(in srgb, var(--ok-c) 10%, transparent);
+}
+
+.fw-status-badge.update {
+    color: var(--wr-c);
+    background: color-mix(in srgb, var(--wr-c) 12%, transparent);
+}
+
+.fw-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--bd);
+    background: var(--bg-t);
+    color: var(--tx-s);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.fw-refresh-btn:hover {
+    color: var(--tx-p);
+    border-color: var(--tx-t);
+}
+
+.fw-refresh-btn.spinning svg {
+    animation: fw-spin 0.8s linear infinite;
+}
+
+@keyframes fw-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fw-ver-flow {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.fw-ver-block {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.fw-ver-label {
+    font-size: 11px;
+    color: var(--tx-t);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.fw-ver-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+    color: var(--tx-p);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.fw-ver-latest {
+    color: var(--tx-s);
+}
+
+.fw-ver-value.has-update {
+    color: var(--accent);
+}
+
+.fw-ver-arrow {
+    color: var(--tx-t);
+    padding-bottom: 4px;
+}
+
+.fw-update-body {
+    padding: 18px 24px 22px;
+}
+
+/* 显示密度：紧凑模式 */
+[data-density="compact"] .page {
+    padding: 18px 20px;
+}
+[data-density="compact"] .card-header {
+    padding: 12px 18px;
+}
+[data-density="compact"] .card-body {
+    padding: 14px 18px;
+}
+[data-density="compact"] .settings-item {
+    padding: 10px 0;
+}
+[data-density="compact"] .settings-card-body {
+    padding: 4px 18px 14px;
+}
+[data-density="compact"] .stat-card {
+    padding: 10px 12px;
+}
+[data-density="compact"] .list-row {
+    padding: 7px 0;
+}
+[data-density="compact"] .fw-row {
+    padding: 8px 0;
+}
+[data-density="compact"] .fw-hero {
+    padding: 16px 18px 14px;
+}
+[data-density="compact"] .fw-update-body {
+    padding: 14px 18px 16px;
+}
+[data-density="compact"] .fw-ver-value {
+    font-size: 20px;
+}
+
+.fw-win-warn {
+    font-size: 12px;
+    color: var(--wr-c);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--wr-bg);
+    border: 1px solid var(--wr-bd);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.fw-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.fw-toolbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fw-toolbar .ep-select {
+    min-width: 200px;
+}
+
+.fw-pre-label {
+    font-size: 11px;
+    color: var(--tx-t);
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+}
+
+.fw-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+}
+
+.fw-gh-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--tx-s);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.fw-gh-link:hover {
+    color: var(--tx-p);
+    text-decoration: underline;
+}
+
+/* 发行说明 */
+.fw-notes {
+    font-size: 13px;
+}
+
+.fw-notes-loading {
+    padding: 24px 0;
+    text-align: center;
+    color: var(--tx-t);
+    font-size: 13px;
+}
+
+.fw-notes-loading a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.fw-notes-loading a:hover {
+    text-decoration: underline;
+}
+
+.fw-notes-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.fw-notes-ver {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+    color: var(--tx-p);
+}
+
+.fw-notes-date {
+    font-size: 12px;
+    color: var(--tx-t);
+}
+
+.fw-notes-type {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    color: var(--tx-s);
+    background: color-mix(in srgb, var(--tx-s) 8%, transparent);
+}
+
+.fw-notes-type.stable {
+    color: var(--ok-c);
+    background: color-mix(in srgb, var(--ok-c) 10%, transparent);
+}
+
+.fw-notes-type.dev {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.fw-notes-summary {
+    color: var(--tx-s);
+    line-height: 1.7;
+}
+
+.fw-notes-callout {
+    margin: 10px 0;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    line-height: 1.6;
+    border: 1px solid color-mix(in srgb, var(--wr-c) 30%, transparent);
+    background: color-mix(in srgb, var(--wr-c) 7%, transparent);
+    color: var(--tx-s);
+}
+
+.fw-notes-callout .fw-callout-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--wr-c);
+    margin-bottom: 4px;
+}
+
+.fw-notes-callout p {
+    margin: 3px 0;
+}
+
+.fw-notes-callout ul,
+.fw-notes-callout ol {
+    margin: 4px 0;
+    padding-left: 18px;
+}
+
+.fw-notes-callout.danger {
+    border-color: color-mix(in srgb, var(--er-c) 35%, transparent);
+    background: color-mix(in srgb, var(--er-c) 7%, transparent);
+}
+
+.fw-notes-callout.danger .fw-callout-label {
+    color: var(--er-c);
+}
+
+.fw-notes-agg {
+    margin: 12px 0 2px;
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+.fw-notes-groups {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fw-notes-group {
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    background: var(--bg-p);
+    overflow: hidden;
+}
+
+.fw-notes-group > summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+    user-select: none;
+}
+
+.fw-notes-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+.fw-notes-group > summary::after {
+    content: "▾";
+    margin-left: auto;
+    color: var(--tx-t);
+    font-size: 11px;
+    transition: transform 0.15s ease;
+}
+
+.fw-notes-group[open] > summary::after {
+    transform: rotate(180deg);
+}
+
+.fw-cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tx-t);
+    flex-shrink: 0;
+}
+
+.fw-cat-added .fw-cat-dot {
+    background: var(--ok-c);
+}
+.fw-cat-improved .fw-cat-dot,
+.fw-cat-changed .fw-cat-dot,
+.fw-cat-refactored .fw-cat-dot {
+    background: var(--accent);
+}
+.fw-cat-fixed .fw-cat-dot {
+    background: var(--wr-c);
+}
+.fw-cat-removed .fw-cat-dot,
+.fw-cat-deprecated .fw-cat-dot,
+.fw-cat-security .fw-cat-dot,
+.fw-cat-breaking .fw-cat-dot {
+    background: var(--er-c);
+}
+
+.fw-cat-count {
+    margin-left: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tx-t);
+    background: color-mix(in srgb, var(--bd) 45%, transparent);
+    padding: 1px 8px;
+    border-radius: 999px;
+}
+
+.fw-notes-group-body {
+    padding: 4px 14px 12px;
+    border-top: 1px solid var(--bd);
+    color: var(--tx-s);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* 发行说明 Markdown 渲染 */
+.fw-notes h1,
+.fw-notes h2,
+.fw-notes h3,
+.fw-notes h4 {
+    color: var(--tx-p);
+    line-height: 1.4;
+}
+
+.fw-notes h1 { font-size: 15px; margin: 14px 0 6px; font-weight: 700; }
+.fw-notes h2 { font-size: 14px; margin: 12px 0 5px; font-weight: 600; }
+.fw-notes h3 { font-size: 13px; margin: 10px 0 4px; font-weight: 600; }
+.fw-notes h4 { font-size: 12px; margin: 8px 0 3px; font-weight: 600; }
+
+.fw-notes h1:first-child,
+.fw-notes h2:first-child,
+.fw-notes h3:first-child,
+.fw-notes h4:first-child {
+    margin-top: 0;
+}
+
+.fw-notes p {
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.fw-notes strong {
+    color: var(--tx-p);
+    font-weight: 600;
+}
+
+.fw-notes ul,
+.fw-notes ol {
+    padding-left: 20px;
+    margin: 6px 0;
+    font-size: 13px;
+}
+
+.fw-notes li {
+    margin: 3px 0;
+    line-height: 1.55;
+}
+
+.fw-notes li::marker {
+    color: var(--tx-t);
+}
+
+.fw-notes code {
+    font-size: 12px;
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-p));
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+    color: var(--tx-p);
+}
+
+.fw-notes pre {
+    font-size: 12px;
+    background: var(--bg-p);
+    padding: 12px 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 8px 0;
+    border: 1px solid color-mix(in srgb, var(--bd) 30%, transparent);
+    line-height: 1.45;
+}
+
+.fw-notes pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+.fw-notes blockquote {
+    margin: 8px 0;
+    padding: 6px 14px;
+    border-left: 3px solid var(--accent);
+    color: var(--tx-s);
+}
+
+.fw-notes a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.fw-notes a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.fw-notes img {
+    max-width: 100%;
+    border-radius: 6px;
+}
+
+.fw-notes hr {
+    border: none;
+    border-top: 1px solid var(--bd);
+    margin: 12px 0;
+}
+
+.fw-notes table {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .fw-ver-flow {
+        gap: 12px;
+    }
+    .fw-ver-value {
+        font-size: 19px;
+    }
+    .fw-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .fw-toolbar-actions {
+        margin-left: 0;
+        justify-content: flex-end;
+    }
+}
+
+
+/* 框架配置页面样式 */
+.restart-banner {
+    background: var(--wr-bg);
+    border: 1px solid var(--wr-bd);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--wr-c);
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.version-note {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--bg-s);
+    border-radius: 8px;
+    border: 1px solid var(--bd);
+}
+
+[data-theme="dark"] .restart-banner {
+    background: var(--wr-bg);
+    border-color: var(--wr-bd);
+    color: var(--wr-c);
+}
+
+.fw-section {
+    background: var(--bg-t);
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    box-shadow: none;
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.fw-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--tx-t);
+    padding: 14px 18px;
+    background: color-mix(in srgb, var(--bg-p) 20%, var(--bg-t));
+    position: relative;
+}
+
+.fw-section-title::before {
+    display: none;
+}
+
+.fw-section-body {
+    padding: 6px 12px 12px;
+}
+
+.fw-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+}
+
+.fw-row + .fw-row {
+    margin-top: 1px;
+}
+
+.fw-row:hover {
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.fw-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tx-p);
+    flex: 1;
+    min-width: 0;
+}
+
+.fw-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.fw-input {
+    padding: 8px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    background: var(--bg-s);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 200px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fw-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.fw-textarea {
+    resize: vertical;
+    min-height: 36px;
+    font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+}
+
+.fw-desc {
+    font-size: 11px;
+    color: var(--tx-s);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+.fw-list-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    max-width: 320px;
+}
+.fw-list-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.fw-list-input {
+    flex: 1;
+    min-width: 0;
+}
+.fw-list-add-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+.fw-list-save-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.fw-add-field-bar {
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--bd);
+}

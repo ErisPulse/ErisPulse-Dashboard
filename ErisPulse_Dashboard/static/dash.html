@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
@@ -32,7 +32,26 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/dash.css?v=40" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=51" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=51" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -89,7 +108,12 @@
                         <span class="task-badge-count" id="taskCount">0</span>
                     </button>
                     <div class="conn-badge-wrapper">
-                        <div class="conn-badge disconnected" id="connBadge">
+                        <div
+                            class="conn-badge disconnected"
+                            id="connBadge"
+                            onclick="toggleWsInspector(event)"
+                            title="Connection Details"
+                        >
                             <div id="status-badge-icon"></div>
                             <span
                                 class="conn-badge-text"
@@ -109,6 +133,51 @@
                                     id="connPanelDesc"
                                 ></div>
                             </div>
+                        </div>
+                        <div class="ws-inspector" id="wsInspector">
+                            <div class="ws-insp-head">
+                                <div
+                                    class="ws-insp-title"
+                                    data-i18n="ws_inspector"
+                                ></div>
+                                <div class="ws-insp-actions">
+                                    <button
+                                        class="btn btn-secondary btn-xs"
+                                        onclick="clearWsLog()"
+                                        data-i18n="clear_log"
+                                    ></button>
+                                    <button
+                                        class="btn btn-secondary btn-xs ws-insp-close"
+                                        onclick="closeWsInspector()"
+                                        title="ESC"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            style="width: 12px; height: 12px"
+                                        >
+                                            <line
+                                                x1="18"
+                                                y1="6"
+                                                x2="6"
+                                                y2="18"
+                                            />
+                                            <line
+                                                x1="6"
+                                                y1="6"
+                                                x2="18"
+                                                y2="18"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="ws-insp-info" id="wsInspInfo"></div>
+                            <div class="ws-insp-log" id="wsInspLog"></div>
                         </div>
                     </div>
                     <button
@@ -6780,6 +6849,6 @@
         <script src="/Dashboard/static/res/i18n/zh-TW.js"></script>
         <script src="/Dashboard/static/res/i18n/ja.js"></script>
         <script src="/Dashboard/static/res/i18n/ru.js"></script>
-        <script src="/Dashboard/static/dash.js?v=43"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=51"></script>
     </body>
 </html>

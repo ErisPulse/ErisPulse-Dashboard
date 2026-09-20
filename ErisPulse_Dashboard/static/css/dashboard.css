@@ -1,0 +1,743 @@
+/* ErisPulse Dashboard – dashboard (auto-split from dash.css, aligned with js/) */
+#statGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 18px;
+}
+
+.stat-card {
+    background: var(--bg-t);
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+}
+
+.stat-card-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--tx-t);
+    flex-shrink: 0;
+}
+
+.stat-val {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--tx-p);
+    line-height: 1.1;
+    transition: color 0.2s ease;
+}
+
+.stat-card:hover .stat-val {
+    
+}
+
+.stat-value-sm {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--tx-p);
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.stat-item {
+    padding: 8px 12px;
+    background: var(--bg-s);
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-item:hover {
+    background: var(--bg-t);
+    box-shadow: none;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--tx-s);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-s);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--accent);
+}
+
+.progress-bar-fill.high {
+    background: var(--wr-c);
+}
+
+.progress-bar-fill.critical {
+    background: var(--er-c);
+}
+
+.circular-progress {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+}
+
+.circular-progress circle {
+    fill: none;
+    stroke-width: 4;
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circular-progress-bg {
+    stroke: var(--bg-s);
+}
+
+.circular-progress-fill {
+    stroke: var(--accent);
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.circular-progress-fill.high {
+    stroke: var(--wr-c);
+}
+
+.circular-progress-fill.critical {
+    stroke: var(--er-c);
+}
+
+.circular-progress-text {
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--tx-p);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.perf-card-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 0;
+}
+
+.perf-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.perf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.perf-section {
+    position: relative;
+    cursor: pointer;
+    padding: 24px;
+    border-radius: 16px;
+    background: var(--bg-t);
+    box-shadow: none;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.perf-section:hover {
+    box-shadow: none;
+    border-color: var(--bd);
+    transform: none;
+}
+
+.perf-section:active {
+    
+}
+
+.perf-ring-label {
+    font-size: 13px;
+    color: var(--tx-s);
+    text-align: center;
+    font-weight: 500;
+}
+
+.perf-info-section {
+    position: relative;
+    padding: 24px;
+    border-radius: 16px;
+    background: var(--bg-t);
+    box-shadow: none;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.perf-info-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.perf-info-label {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.perf-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.popover {
+    position: fixed;
+    z-index: 1000;
+    min-width: 260px;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    box-shadow:
+        0 12px 32px var(--sh),
+        0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    pointer-events: none;
+    scrollbar-width: thin;
+}
+
+.popover::-webkit-scrollbar {
+    width: 4px;
+}
+
+.popover::-webkit-scrollbar-thumb {
+    background: var(--bd);
+    border-radius: 2px;
+}
+
+.popover::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.popover.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.popover-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--bd);
+}
+
+.popover-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.popover-close {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    color: var(--tx-s);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+}
+
+.popover-close:hover {
+    background: var(--bg-s);
+    color: var(--tx-p);
+}
+
+.popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.popover-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    transition: background-color 0.15s ease;
+    border-radius: 6px;
+}
+
+.popover-item:hover {
+    background-color: var(--bg-s);
+}
+
+.popover-item-label {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.popover-item-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.popover-item-bar {
+    flex: 1;
+    margin: 0 12px;
+    height: 4px;
+    background: var(--bg-s);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.popover-item-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    background: var(--accent);
+}
+
+.popover-item-bar-fill.high {
+    background: var(--wr-c);
+}
+
+.popover-item-bar-fill.critical {
+    background: var(--er-c);
+}
+
+@keyframes popoverFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popover.show {
+    animation: popoverFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+    .circular-progress {
+        width: 60px;
+        height: 60px;
+    }
+
+    .circular-progress-text {
+        font-size: 12px;
+    }
+
+    .perf-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .perf-info-section {
+        grid-column: 1 / -1;
+    }
+
+    .popover {
+        min-width: 220px;
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .circular-progress {
+        width: 52px;
+        height: 52px;
+    }
+
+    .circular-progress-text {
+        font-size: 11px;
+    }
+
+    .perf-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .popover {
+        min-width: 200px;
+        max-width: 260px;
+        padding: 12px;
+    }
+
+    .popover-item {
+        padding: 6px 8px;
+    }
+
+    .popover-item-label,
+    .popover-item-value {
+        font-size: 11px;
+    }
+}
+
+.stat-bar-chart {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.stat-bar-label {
+    min-width: 60px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tx-s);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stat-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-s);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    min-width: 2px;
+    background: var(--accent);
+}
+
+.stat-bar-value {
+    font-size: 11px;
+    color: var(--tx-t);
+    min-width: 70px;
+    text-align: right;
+}
+
+/* 24小时趋势图 */
+.hourly-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 80px;
+}
+
+.hourly-bar-wrap {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.hourly-bar {
+    width: 100%;
+    border-radius: 2px 2px 0 0;
+    background: var(--accent);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.hourly-bar-wrap:hover .hourly-bar {
+    opacity: 1;
+}
+
+.hourly-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 2px 0;
+}
+
+.hourly-label {
+    font-size: 10px;
+    color: var(--tx-t);
+}
+
+.stat-bar-value {
+    min-width: 60px;
+    font-size: 11px;
+    color: var(--tx-s);
+}
+
+
+/* 可点击的统计卡 - 下钻 */
+.stat-card.is-link {
+    cursor: pointer;
+}
+.stat-card.is-link:hover {
+    border-color: inherit;
+}
+.stat-card.is-link:hover .stat-val {
+    color: inherit;
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--bd);
+    background: var(--bg-t);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease;
+}
+.quick-action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--bg-s);
+}
+.quick-action svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.home-section-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 30%, transparent);
+}
+.home-section-hd > span {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--tx-p);
+}
+.home-pins {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}
+.home-pin {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--bd);
+    background: var(--bg-t);
+    box-shadow: none;
+    color: var(--tx-p);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
+.home-pin:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.home-pin svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.home-pin-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-pin.editing {
+    cursor: grab;
+}
+.home-pin.editing:active {
+    cursor: grabbing;
+}
+.home-pin-grip {
+    color: var(--tx-t);
+    font-size: 12px;
+    letter-spacing: -2px;
+    opacity: 0;
+    flex-shrink: 0;
+    width: 0;
+    overflow: hidden;
+    transition:
+        opacity 0.2s ease,
+        width 0.2s ease;
+}
+.home-pin.editing .home-pin-grip {
+    opacity: 1;
+    width: 12px;
+}
+.home-pin.dragging {
+    opacity: 0.4;
+}
+.home-pin.drag-over {
+    border-color: var(--accent);
+    transform: none;
+}
+.home-pin-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: var(--er-c);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.home-pin.editing .home-pin-remove {
+    display: flex;
+}
+.home-pin-section {
+    position: relative;
+}
+.home-pin-add {
+    position: absolute;
+    left: 50%;
+    
+    bottom: -18px;
+    z-index: 10;
+    margin-top: 0;
+}
+.home-pin-picker {
+    position: absolute;
+    left: 50%;
+    
+    bottom: calc(100% + 8px);
+    padding: 8px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    background: var(--bg-t);
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+    max-height: 240px;
+    min-width: 300px;
+    overflow-y: auto;
+}
+.home-pin-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--tx-p);
+    transition: background 0.15s ease;
+}
+.home-pin-option:hover {
+    background: var(--bg-s);
+}
+.home-pin-option svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+
+/* Pin 选择器子 tab */
+.home-pin-subgroup {
+    margin-top: 4px;
+    padding-left: 12px;
+    border-left: 2px solid var(--bd);
+}
+.home-pin-suboption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--tx-s);
+    transition: background 0.15s ease;
+}
+.home-pin-suboption:hover {
+    background: var(--bg-s);
+    color: var(--tx-p);
+}
+.home-pin-suboption svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+.home-pin-group-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tx-t);
+    cursor: default;
+    margin-top: 4px;
+}
+.home-pin-group-label svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tab-section {
+    display: none;
+}
+.tab-section.active {
+    display: block;
+}

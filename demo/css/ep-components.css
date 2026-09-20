@@ -1,0 +1,357 @@
+/* ErisPulse Dashboard – ep-components 2.0（与 1.x 类名/DOM 完全兼容，旧页面零改动） */
+
+/* ========== 基础控件（原生 select / input / search） ========== */
+.ep-search,
+.ep-select,
+.ep-input {
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background-color 0.18s ease;
+}
+.ep-search:hover,
+.ep-select:hover,
+.ep-input:hover {
+    border-color: var(--bd-h);
+}
+.ep-search:focus,
+.ep-select:focus,
+.ep-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.ep-search::placeholder,
+.ep-input::placeholder {
+    color: var(--tx-t);
+}
+.ep-select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px;
+}
+
+/* ========== EP 组件库 2.0：自定义下拉（ep-combobox） ========== */
+.ep-native-hidden {
+    display: none !important;
+}
+.ep-combobox {
+    position: relative;
+    display: inline-block;
+    min-width: 90px;
+    vertical-align: middle;
+}
+.ep-combobox-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background-color 0.18s ease;
+}
+.ep-combobox-trigger:hover {
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--bd));
+}
+.ep-combobox-trigger:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.ep-combobox-trigger:active {
+    background: color-mix(in srgb, var(--accent) 5%, var(--bg-s));
+}
+.ep-combobox-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ep-combobox-arrow {
+    flex-shrink: 0;
+    display: flex;
+    color: var(--tx-t);
+    transition: transform 0.18s ease;
+}
+.ep-combobox[data-open="1"] .ep-combobox-trigger {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.ep-combobox[data-open="1"] .ep-combobox-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+}
+.ep-combobox.disabled .ep-combobox-trigger {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: saturate(0.6);
+}
+/* 下拉列表 v2：层级阴影 + 弹出动画 + 主题化滚动条 */
+.ep-combobox-list {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 160px;
+    max-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg-t);
+    border: 1px solid color-mix(in srgb, var(--bd) 85%, transparent);
+    border-radius: 12px;
+    box-shadow:
+        0 2px 6px -2px rgba(0, 0, 0, 0.1),
+        0 12px 32px -6px rgba(0, 0, 0, 0.25);
+    z-index: 1300;
+    padding: 5px;
+    animation: epPop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.ep-combobox-list::-webkit-scrollbar,
+.ep-multiselect-panel::-webkit-scrollbar {
+    width: 8px;
+}
+.ep-combobox-list::-webkit-scrollbar-thumb,
+.ep-multiselect-panel::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--tx-t) 35%, transparent);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.ep-combobox-list::-webkit-scrollbar-track,
+.ep-multiselect-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.ep-combobox-opt {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 30px 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--tx-p);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.12s ease;
+}
+.ep-combobox-opt:hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.ep-combobox-opt.ep-kb-active {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.ep-combobox-opt[data-selected="1"] {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    font-weight: 600;
+}
+.ep-combobox-opt[data-selected="1"]::after {
+    content: "";
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    width: 5px;
+    height: 10px;
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    transform: translateY(-50%) rotate(45deg);
+}
+.ep-combobox-group-label {
+    padding: 7px 10px 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--tx-t);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+/* 键盘高亮项选中时勾号颜色跟随 */
+.ep-combobox-opt.ep-kb-active[data-selected="1"]::after {
+    border-color: var(--accent);
+}
+
+/* ========== EP 组件库 2.0：可搜索多选（ep-multiselect） ========== */
+.ep-multiselect {
+    position: relative;
+    display: inline-block;
+    min-width: 220px;
+    vertical-align: middle;
+}
+.ep-multiselect-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background-color 0.18s ease;
+}
+.ep-multiselect-trigger:hover {
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--bd));
+}
+.ep-multiselect-trigger:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.ep-multiselect[data-open="1"] .ep-multiselect-trigger {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.ep-multiselect-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+/* 已选计数徽章（2.0 新增，render() 写入；旧版纯文本不受影响） */
+.ep-multiselect-count {
+    flex-shrink: 0;
+    display: inline-block;
+    line-height: 1;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+.ep-multiselect-arrow {
+    flex-shrink: 0;
+    display: flex;
+    color: var(--tx-t);
+    transition: transform 0.18s ease;
+}
+.ep-multiselect[data-open="1"] .ep-multiselect-trigger {
+    border-color: var(--accent);
+}
+.ep-multiselect[data-open="1"] .ep-multiselect-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+}
+.ep-multiselect-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg-t);
+    border: 1px solid color-mix(in srgb, var(--bd) 85%, transparent);
+    border-radius: 12px;
+    box-shadow:
+        0 2px 6px -2px rgba(0, 0, 0, 0.1),
+        0 12px 32px -6px rgba(0, 0, 0, 0.25);
+    z-index: 1300;
+    padding: 8px;
+    animation: epPop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.ep-multiselect-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ep-multiselect-search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.ep-multiselect-actions {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0;
+}
+.ep-multiselect-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--tx-p);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+.ep-multiselect-opt:hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.ep-multiselect-opt input {
+    accent-color: var(--accent);
+    margin: 0;
+}
+.ep-multiselect-empty {
+    padding: 10px 8px;
+    font-size: 12px;
+    color: var(--tx-t);
+    text-align: center;
+}
+
+/* ========== 2.0 动效 ========== */
+@keyframes epPop {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ep-combobox-list,
+    .ep-multiselect-panel {
+        animation: none;
+    }
+    .ep-combobox-arrow,
+    .ep-multiselect-arrow,
+    .ep-combobox-opt,
+    .ep-multiselect-opt {
+        transition: none;
+    }
+}

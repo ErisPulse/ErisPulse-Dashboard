@@ -15,8 +15,16 @@ else
 fi
 STATIC_DIR="$REPO_ROOT/ErisPulse_Dashboard/static"
 
-echo "==> Copying static files..."
-cp "$STATIC_DIR/dash.css" "$DEMO_DIR/dash.css"
+# 2.0 起前端拆分为 js/ 与 css/ 目录，构建同步整个目录树
+echo "==> Syncing split frontend assets (js/ css/)..."
+rm -rf "$DEMO_DIR/js" "$DEMO_DIR/css"
+rm -f "$DEMO_DIR/dash.js" "$DEMO_DIR/dash.css"  # 1.x 单文件遗留
+cp -r "$STATIC_DIR/js" "$DEMO_DIR/js"
+cp -r "$STATIC_DIR/css" "$DEMO_DIR/css"
+
+echo "==> Stripping /Dashboard/static/ prefixes in js/css..."
+find "$DEMO_DIR/js" "$DEMO_DIR/css" -type f \( -name "*.js" -o -name "*.css" \) -print0 |
+  xargs -0 sed -i 's|/Dashboard/static/||g'
 
 echo "==> Generating index.html from dash.html..."
 if command -v python3 >/dev/null 2>&1; then PY=python3
@@ -25,7 +33,7 @@ elif command -v python.exe >/dev/null 2>&1; then PY=python.exe
 elif command -v py >/dev/null 2>&1; then PY=py
 else echo "!! python not found in PATH"; exit 1; fi
 STATIC_DIR="$STATIC_DIR" DEMO_DIR="$DEMO_DIR" $PY - <<'PYEOF'
-import re, os
+import os
 
 static = os.environ["STATIC_DIR"]
 demo = os.environ["DEMO_DIR"]
@@ -33,24 +41,13 @@ demo = os.environ["DEMO_DIR"]
 with open(os.path.join(static, "dash.html"), "r", encoding="utf-8") as f:
     html = f.read()
 
-# Rewrite static paths in dash.js too (status icons use /Dashboard/static/res/...)
-with open(os.path.join(static, "dash.js"), "rb") as f:
-    js = f.read()
-js = js.replace(b"/Dashboard/static/", b"")
-with open(os.path.join(demo, "dash.js"), "wb") as f:
-    f.write(js)
-
-html = html.replace("/Dashboard/static/dash.css", "dash.css")
-html = html.replace("/Dashboard/static/dash.js", "dash.js")
-# Replace ALL remaining /Dashboard/static/ references (res/, icons, images, etc.)
+# 所有静态引用改为相对路径（css/*.css、js/main.js、res/i18n/*.js 等）
 html = html.replace("/Dashboard/static/", "")
 
+# mock.js 需在应用模块执行前加载：经典脚本先于 deferred module 运行，
+# 注入到 </body> 前即可
 mock = '<script src="mock.js"></script>\n'
-m = re.search(r'(<script[^>]*src="[^"]*dash\.js[^"]*"[^>]*>\s*</script>)', html)
-if m:
-    html = html[:m.start()] + mock + html[m.start():]
-else:
-    html = html.replace("</body>", mock + "</body>")
+html = html.replace("</body>", mock + "</body>", 1)
 
 banner = (
     '<div id="demoBanner" style="display:none;position:fixed;left:12px;bottom:12px;'
