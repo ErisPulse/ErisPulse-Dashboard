@@ -38,6 +38,102 @@ VIEW_LANG_KEY_TO_I18N = {
 _VIEW_I18N_LOCK = threading.RLock()
 
 
+class _CoreHelpers:
+    """无状态工具函数集合（不依赖实例，供 Main 各分区调用）"""
+
+    @staticmethod
+    def _pep440_sort_key(v: str) -> tuple:
+        """
+        生成 PEP-440 感知的版本排序键（正式版 > rc > beta > alpha > dev）。
+
+        与 packaging.version 行为一致，但容错：无法解析的字符串不会抛异常，
+        避免单个异常版本导致整体回退到字典序。
+
+        :param v: str 版本字符串
+        :return: tuple 排序键 (数字段列表, 预发布等级, 预发布序号, 原串)
+        """
+        import re
+
+        s = str(v).lstrip("vV").lower()
+        m = re.match(
+            r"^(\d+(?:\.\d+)*)(?:[-.]?(dev|a|alpha|b|beta|c|rc|pre|post)(?:[-.]?(\d+))?)?",
+            s,
+        )
+        if not m:
+            return ([], 0, 0, s)
+        nums = [int(x) for x in m.group(1).split(".")]
+        tag = m.group(2)
+        pnum = int(m.group(3) or 0) if m.group(3) else 0
+        rank = {
+            "dev": 0,
+            "a": 1,
+            "alpha": 1,
+            "b": 2,
+            "beta": 2,
+            "c": 3,
+            "rc": 3,
+            "pre": 3,
+            "post": 5,
+        }.get(tag, 4)
+        return (nums, rank, pnum, s)
+
+    @staticmethod
+    def _display_width(s: str) -> int:
+        """计算字符串的显示宽度（CJK 字符算 2 列）"""
+        import unicodedata
+
+        w = 0
+        for ch in s:
+            w += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+        return w
+
+    @classmethod
+    def _pad_banner(cls, text: str, width: int) -> str:
+        """按显示宽度右填充空格，对齐表格边框（兼容 CJK）"""
+        pad = width - cls._display_width(text)
+        return text + (" " * pad if pad > 0 else "")
+
+    @staticmethod
+    def _fmt_uptime(s):
+        d, s = divmod(int(s), 86400)
+        h, s = divmod(s, 3600)
+        m, s = divmod(s, 60)
+        if d:
+            return f"{d}d {h}h {m}m"
+        if h:
+            return f"{h}h {m}m"
+        if m:
+            return f"{m}m {s}s"
+        return f"{s}s"
+
+    @staticmethod
+    def _packages_contain_dashboard(packages: list[str]) -> bool:
+        """判断升级包列表是否包含 Dashboard 自身（兼容 wheel 文件名/带版本号形式）"""
+        for p in packages or []:
+            name = p.split("==", 1)[0].strip().lower().replace("_", "-")
+            if name == "erispulse-dashboard" or name.startswith("erispulse-dashboard-"):
+                return True
+        return False
+
+    @staticmethod
+    def _json_safe(value, _depth: int = 0):
+        """深度净化为可 JSON 序列化的结构（拓扑元数据含类对象等）"""
+        if _depth > 12:
+            return str(value)
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, dict):
+            return {
+                str(k): Main._json_safe(v, _depth + 1)
+                for k, v in value.items()
+            }
+        if isinstance(value, (list, tuple, set)):
+            return [Main._json_safe(v, _depth + 1) for v in value]
+        if isinstance(value, type):
+            return getattr(value, "__name__", str(value))
+        return str(value)
+
+
 class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
@@ -118,58 +214,6 @@ class Main(BaseModule):
         except Exception:
             pass
 
-    @staticmethod
-    def _pep440_sort_key(v: str) -> tuple:
-        """
-        生成 PEP-440 感知的版本排序键（正式版 > rc > beta > alpha > dev）。
-
-        与 packaging.version 行为一致，但容错：无法解析的字符串不会抛异常，
-        避免单个异常版本导致整体回退到字典序。
-
-        :param v: str 版本字符串
-        :return: tuple 排序键 (数字段列表, 预发布等级, 预发布序号, 原串)
-        """
-        import re
-
-        s = str(v).lstrip("vV").lower()
-        m = re.match(
-            r"^(\d+(?:\.\d+)*)(?:[-.]?(dev|a|alpha|b|beta|c|rc|pre|post)(?:[-.]?(\d+))?)?",
-            s,
-        )
-        if not m:
-            return ([], 0, 0, s)
-        nums = [int(x) for x in m.group(1).split(".")]
-        tag = m.group(2)
-        pnum = int(m.group(3) or 0) if m.group(3) else 0
-        rank = {
-            "dev": 0,
-            "a": 1,
-            "alpha": 1,
-            "b": 2,
-            "beta": 2,
-            "c": 3,
-            "rc": 3,
-            "pre": 3,
-            "post": 5,
-        }.get(tag, 4)
-        return (nums, rank, pnum, s)
-
-    @staticmethod
-    def _display_width(s: str) -> int:
-        """计算字符串的显示宽度（CJK 字符算 2 列）"""
-        import unicodedata
-
-        w = 0
-        for ch in s:
-            w += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
-        return w
-
-    @classmethod
-    def _pad_banner(cls, text: str, width: int) -> str:
-        """按显示宽度右填充空格，对齐表格边框（兼容 CJK）"""
-        pad = width - cls._display_width(text)
-        return text + (" " * pad if pad > 0 else "")
-
     async def _show_token_later(self):
         await asyncio.sleep(2)
         i18n = self.sdk.i18n
@@ -199,12 +243,12 @@ class Main(BaseModule):
             "  " + extra_line,
         ]
         # 根据最长行（含前导两空格）动态决定边框宽度，避免超长令牌/翻译溢出
-        W = max(self._display_width(ln) for ln in lines)
+        W = max(_CoreHelpers._display_width(ln) for ln in lines)
         border = "═" * W
         self.logger.warning("")
         self.logger.warning("╔%s╗", border)
         for ln in lines:
-            self.logger.warning("║%s║", self._pad_banner(ln, W))
+            self.logger.warning("║%s║", _CoreHelpers._pad_banner(ln, W))
         self.logger.warning("╚%s╝", border)
         self.logger.warning("")
 
@@ -225,6 +269,8 @@ class Main(BaseModule):
         self.logger.info("WebUI module unloaded")
         return True
 
+
+    # ════════════════ 配置与访问令牌 ════════════════
     def _load_config(self):
         config = self.sdk.config.getConfig("Dashboard")
         if not config:
@@ -249,7 +295,6 @@ class Main(BaseModule):
         return secrets.compare_digest(
             str(provided).encode("utf-8"), self._token.encode("utf-8")
         )
-
 
     def _resolve_view_value(self, value, lang_key: str) -> str:
         """将单个标题/分组标题的值解析为指定前端语言键下的字符串。
@@ -318,6 +363,8 @@ class Main(BaseModule):
                 out[lk] = self._resolve_view_value(src, lk)
         return out
 
+
+    # ════════════════ 模块内嵌视图 i18n ════════════════
     def register_view(
         self,
         *,
@@ -418,6 +465,8 @@ class Main(BaseModule):
     def verify_request(self, request: Request) -> bool:
         return self.verify_token(self._get_token_from_request(request))
 
+
+    # ════════════════ 命令系统中间件 ════════════════
     def _load_command_rules(self):
         try:
             rules = self.storage.get("__ep_command_rules__")
@@ -614,6 +663,8 @@ class Main(BaseModule):
 
         self._command_middleware_func = _command_middleware
 
+
+    # ════════════════ 事件 / 日志 / 审计采集与持久化 ════════════════
     def _setup_log_streaming(self):
         """注册日志订阅器，通过 WebSocket 实时推送日志"""
         try:
@@ -919,6 +970,8 @@ class Main(BaseModule):
         if self._loop and not self._loop.is_closed():
             asyncio.run_coroutine_threadsafe(self._broadcast(msg), self._loop)
 
+
+    # ════════════════ 包安装 / 升级 / 动态加载 / ghost 模块 ════════════════
     def _run_pip_install(
         self,
         packages: list[str],
@@ -1010,7 +1063,7 @@ class Main(BaseModule):
                 )
                 self._dynamic_load_new_modules()
                 # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
-                if self._packages_contain_dashboard(packages):
+                if _CoreHelpers._packages_contain_dashboard(packages):
                     self._schedule_dashboard_self_reload()
             else:
                 self._install_tasks[task_id]["status"] = "error"
@@ -1428,7 +1481,7 @@ class Main(BaseModule):
             ec[t] = ec.get(t, 0) + 1
         return {
             "uptime_seconds": round(uptime),
-            "uptime_human": self._fmt_uptime(uptime),
+            "uptime_human": _CoreHelpers._fmt_uptime(uptime),
             "platform": pf.system(),
             "platform_release": pf.release(),
             "platform_machine": pf.machine(),
@@ -1439,19 +1492,8 @@ class Main(BaseModule):
             "total_events": self._total_event_count,
         }
 
-    @staticmethod
-    def _fmt_uptime(s):
-        d, s = divmod(int(s), 86400)
-        h, s = divmod(s, 3600)
-        m, s = divmod(s, 60)
-        if d:
-            return f"{d}d {h}h {m}m"
-        if h:
-            return f"{h}h {m}m"
-        if m:
-            return f"{m}m {s}s"
-        return f"{s}s"
 
+    # ════════════════ 路由注册 ════════════════
     def _register_routes(self):
         r = self.sdk.router
         mn = "Dashboard"
@@ -2051,6 +2093,8 @@ class Main(BaseModule):
             return auth[7:]
         return request.query_params.get("token")
 
+
+    # ════════════════ API · 认证与系统状态 ════════════════
     async def _api_auth(self, request: Request) -> JSONResponse:
         if self._login_fails >= 10 and time.time() - self._last_login_fail > 60:
             self._login_fails = 0
@@ -2094,6 +2138,8 @@ class Main(BaseModule):
     async def _api_system(self, request: Request) -> JSONResponse:
         return JSONResponse(await self._get_system_status())
 
+
+    # ════════════════ API · 适配器与模块管理 ════════════════
     async def _api_adapters(self, request: Request) -> JSONResponse:
         adapters = []
         for platform in self.sdk.adapter.list_registered():
@@ -2421,8 +2467,6 @@ class Main(BaseModule):
                     logos[name] = "/Dashboard/static/res/adapter_logo/" + f
         return JSONResponse({"logos": logos})
 
-    # ========== 模块配置 Schema API ==========
-
     def _get_module_config_info(self, module_name: str) -> dict | None:
         """获取模块配置信息（schema + 当前值）"""
         module_manager = self.sdk.module
@@ -2534,6 +2578,12 @@ class Main(BaseModule):
             return JSONResponse({"error": "name and action required"}, status_code=400)
 
         if mtype == "adapter":
+            # 禁用后的适配器失去句柄：enable/load 前尝试经 Finder 重新注册
+            if action in ("load", "enable") and not self.sdk.adapter.get(name):
+                if not self._register_ghost_adapter(name):
+                    return JSONResponse(
+                        {"error": "adapter discover failed"}, status_code=400
+                    )
             if action == "load":
                 load_adapter = self.sdk.adapter.get(name)
                 if load_adapter:
@@ -2577,6 +2627,17 @@ class Main(BaseModule):
                     {"error": f"unknown action for adapter: {action}"}, status_code=400
                 )
             return JSONResponse({"error": "adapter not found"}, status_code=404)
+
+        # 禁用后的模块失去句柄：enable/load 前尝试经 Finder 重新注册
+        if (
+            action in ("enable", "load")
+            and name not in set(self.sdk.module.list_registered())
+        ):
+            if not self._register_ghost_module(name):
+                return JSONResponse(
+                    {"error": "module discover failed"}, status_code=400
+                )
+            self._ghost_cache["ts"] = 0
 
         if action == "load":
             result = await self.sdk.module.load(name)
@@ -2677,6 +2738,7 @@ class Main(BaseModule):
                 self.sdk.config.setConfig(
                     f"ErisPulse.modules.status.{module_name}", None
                 )
+                self._ghost_cache["ts"] = 0
                 self._install_tasks[task_id] = {
                     "status": "success",
                     "started_at": time.time(),
@@ -2730,6 +2792,8 @@ class Main(BaseModule):
                 }
             )
 
+
+    # ════════════════ API · 机器人 / 事件 / 配置 / 外观 / 存储 ════════════════
     async def _api_bots(self, request: Request) -> JSONResponse:
         # 一次性获取所有 bots 数据，避免重复调用 list_bots
         all_bots = self.sdk.adapter.list_bots()
@@ -2989,6 +3053,8 @@ class Main(BaseModule):
         self._add_audit_log("storage_delete", key, request)
         return JSONResponse({"success": True})
 
+
+    # ════════════════ API · 商店与包管理 ════════════════
     async def _api_store_remote(self, request: Request) -> JSONResponse:
         try:
             force = request.query_params.get("force", "") == "true"
@@ -3122,15 +3188,6 @@ class Main(BaseModule):
         self._add_audit_log("package_git_upgrade", git_url, request)
         return JSONResponse({"success": True, "task_id": task_id})
 
-    @staticmethod
-    def _packages_contain_dashboard(packages: list[str]) -> bool:
-        """判断升级包列表是否包含 Dashboard 自身（兼容 wheel 文件名/带版本号形式）"""
-        for p in packages or []:
-            name = p.split("==", 1)[0].strip().lower().replace("_", "-")
-            if name == "erispulse-dashboard" or name.startswith("erispulse-dashboard-"):
-                return True
-        return False
-
     def _schedule_dashboard_self_reload(self, delay: float = 1.5):
         """
         升级涉及 Dashboard 自身：延迟卸载并重新加载模块，使新后端代码生效。
@@ -3206,6 +3263,174 @@ class Main(BaseModule):
                     self.logger.warning(f"Reload module {name} after upgrade failed: {e}")
 
         asyncio.run_coroutine_threadsafe(_reload_all(), self._loop)
+
+    def _ghost_enabled(self, kind: str, name: str) -> bool:
+        """未注册模块从配置读取启用状态：仅显式 False 视为禁用"""
+        try:
+            mgr = self.sdk.module if kind == "modules" else self.sdk.adapter
+            return bool(mgr.is_enabled(name))
+        except Exception:
+            pass
+        try:
+            v = self.sdk.config.getConfig(f"ErisPulse.{kind}.status.{name}")
+            if v is not None:
+                return bool(v)
+        except Exception:
+            pass
+        return True
+
+    def _discover_ghost_modules(self, known_adapters: list) -> list:
+        """
+        发现未注册（禁用后失去句柄）的模块/适配器：
+        通过 Finder 入口点 + 配置文件还原其启用状态，供 WebUI 展示为
+        "未加载 / 禁用中"，允许用户自行启用。结果缓存 30 秒。
+        """
+        now = time.time()
+        if self._ghost_cache.get("ts", 0) > now - 30:
+            return self._ghost_cache.get("data", [])
+        data: list[dict] = []
+        try:
+            import importlib.metadata as imd
+
+            from ErisPulse.finders import AdapterFinder, ModuleFinder
+
+            mf = ModuleFinder()
+            mf.clear_cache()
+            af = AdapterFinder()
+            af.clear_cache()
+
+            known_m = set(self.sdk.module.list_registered())
+            for ep_name, ep in mf.get_entry_point_map().items():
+                if ep_name in known_m:
+                    continue
+                try:
+                    dist = imd.distribution(ep.dist.name) if ep.dist else None
+                    version = dist.version if dist else ""
+                except Exception:
+                    version = ""
+                data.append(
+                    {
+                        "name": ep_name,
+                        "type": "module",
+                        "enabled": self._ghost_enabled("modules", ep_name),
+                        "loaded": False,
+                        "unregistered": True,
+                        "version": version,
+                        "description": "",
+                        "author": "",
+                        "package": (ep.dist.name if ep.dist else ""),
+                        "has_config": False,
+                    }
+                )
+
+            for ep_name, ep in af.get_entry_point_map().items():
+                if ep_name in known_adapters:
+                    continue
+                data.append(
+                    {
+                        "name": ep_name,
+                        "type": "adapter",
+                        "enabled": self._ghost_enabled("adapters", ep_name),
+                        "loaded": False,
+                        "unregistered": True,
+                        "version": "",
+                        "description": "",
+                        "author": "",
+                        "package": (ep.dist.name if ep.dist else ""),
+                    }
+                )
+        except Exception as e:
+            self.logger.warning(f"ghost module discovery failed: {e}")
+        self._ghost_cache = {"ts": now, "data": data}
+        return data
+
+    def _register_ghost_module(self, name: str) -> bool:
+        """通过 Finder 入口点重新注册失去句柄的模块（禁用后未持有实例）"""
+        try:
+            from ErisPulse.finders import ModuleFinder
+
+            mf = ModuleFinder()
+            mf.clear_cache()
+            ep = mf.get_entry_point_map().get(name)
+            if not ep:
+                return False
+            module_class = ep.load()
+            import importlib.metadata as imd
+            import sys
+
+            dist = imd.distribution(ep.dist.name) if ep.dist else None
+            module_pkg = sys.modules.get(module_class.__module__)
+            module_info = {
+                "meta": {
+                    "name": name,
+                    "version": getattr(
+                        module_pkg,
+                        "__version__",
+                        dist.version if dist else "1.0.0",
+                    ),
+                    "description": getattr(module_pkg, "__description__", ""),
+                    "author": getattr(module_pkg, "__author__", ""),
+                    "license": getattr(module_pkg, "__license__", ""),
+                    "package": ep.dist.name if ep.dist else "",
+                    "lazy_load": False,
+                    "priority": 0,
+                    "is_base_module": True,
+                },
+                "module_class": module_class,
+            }
+            self.sdk.module._config_register(name, True)
+            self.sdk.module.register(name, module_class, module_info)
+            self._ghost_cache["ts"] = 0
+            return True
+        except Exception as e:
+            self.logger.warning(f"register ghost module {name} failed: {e}")
+            return False
+
+    def _register_ghost_adapter(self, name: str) -> bool:
+        """通过 Finder 入口点重新注册失去句柄的适配器"""
+        try:
+            from ErisPulse.finders import AdapterFinder
+
+            af = AdapterFinder()
+            af.clear_cache()
+            ep = af.get_entry_point_map().get(name)
+            if not ep:
+                return False
+            adapter_class = ep.load()
+            import importlib.metadata as imd
+            import sys
+
+            adapter_obj = sys.modules.get(adapter_class.__module__)
+            dist = imd.distribution(ep.dist.name) if ep.dist else None
+            adapter_info = {
+                "meta": {
+                    "name": name,
+                    "version": getattr(
+                        adapter_obj,
+                        "__version__",
+                        dist.version if dist else "1.0.0",
+                    ),
+                    "description": getattr(
+                        adapter_obj, "__description__", ""
+                    ),
+                    "author": getattr(adapter_obj, "__author__", ""),
+                    "license": getattr(adapter_obj, "__license__", ""),
+                    "package": ep.dist.name if ep.dist else "",
+                    "top_level_packages": [],
+                },
+                "adapter_class": adapter_class,
+            }
+            if adapter_obj is not None and not hasattr(
+                adapter_obj, "adapterInfo"
+            ):
+                setattr(adapter_obj, "adapterInfo", {})
+            self.sdk.adapter._config_register(name, True)
+            self.sdk.adapter.register(name, adapter_class, adapter_info)
+            self._ghost_cache["ts"] = 0
+            return True
+        except Exception as e:
+            self.logger.warning(f"register ghost adapter {name} failed: {e}")
+            return False
 
     def _run_pip_upgrade(
         self, packages: list[str], task_id: str, index_url: str = None
@@ -3482,7 +3707,7 @@ class Main(BaseModule):
                 )
                 self._dynamic_load_new_modules()
                 # 本地文件安装涉及本模块时：延迟重载 Dashboard
-                if self._packages_contain_dashboard([filename]):
+                if _CoreHelpers._packages_contain_dashboard([filename]):
                     self._schedule_dashboard_self_reload()
             else:
                 self._install_tasks[task_id] = {
@@ -3653,8 +3878,13 @@ class Main(BaseModule):
                     "has_accounts": getattr(adapter_instance, "AccountConfigClass", None) is not None if adapter_instance else False,
                 }
             )
+        # 未注册（禁用后失去句柄）的模块/适配器：Finder + 配置还原状态，
+        # WebUI 展示为"未加载/禁用中"，用户可自行启用
+        modules.extend(self._discover_ghost_modules(adapter_list))
         return JSONResponse({"modules": modules})
 
+
+    # ════════════════ WebSocket 实时通道 ════════════════
     async def _ws_handler(self, websocket: WebSocket):
         token = websocket.query_params.get("token", "")
         if not self._verify_token(token):
@@ -3683,8 +3913,8 @@ class Main(BaseModule):
             if websocket in self._ws_clients:
                 self._ws_clients.remove(websocket)
 
-    # ========== 事件构建器相关 API ==========
 
+    # ════════════════ API · 事件构建器 ════════════════
     async def _api_builder_validate(self, request: Request) -> JSONResponse:
         """验证事件数据"""
 
@@ -3847,8 +4077,8 @@ class Main(BaseModule):
             }
         )
 
-    # ========== 框架版本/更新相关 API ==========
 
+    # ════════════════ API · 框架版本与升级 ════════════════
     async def _api_framework_versions(self, request: Request) -> JSONResponse:
 
         notes_ver = request.query_params.get("notes", "")
@@ -4087,8 +4317,8 @@ except Exception:
 
         threading.Thread(target=_shutdown_and_exit, daemon=True).start()
 
-    # ========== 配置源码相关 API ==========
 
+    # ════════════════ API · 配置源码 ════════════════
     async def _api_config_source(self, request: Request) -> JSONResponse:
         """获取/更新配置文件源码"""
 
@@ -4116,8 +4346,8 @@ except Exception:
             else:
                 return JSONResponse({"error": "Config file not found"}, status_code=404)
 
-    # ========== 日志相关 API ==========
 
+    # ════════════════ API · 日志 / 审计 / 生命周期 / 性能 ════════════════
     async def _api_logs(self, request: Request) -> JSONResponse:
         """获取日志（从 Dashboard 按级别分缓冲读取）"""
 
@@ -4237,8 +4467,6 @@ except Exception:
         self._add_audit_log("logs_clear", "", request)
         return JSONResponse({"success": True, "message": "日志缓存已清空"})
 
-    # ========== 生命周期相关 API ==========
-
     async def _api_lifecycle(self, request: Request) -> JSONResponse:
         """获取生命周期事件"""
 
@@ -4253,8 +4481,6 @@ except Exception:
         self._lifecycle_counts.clear()
         self._add_audit_log("lifecycle_clear", "", request)
         return JSONResponse({"success": True})
-
-    # ========== 性能监控相关 API ==========
 
     async def _api_performance(self, request: Request) -> JSONResponse:
         """获取性能监控数据"""
@@ -4276,7 +4502,6 @@ except Exception:
             }
         )
 
-    # ========== API 路由列表相关 API ==========
     async def _api_routes(self, request: Request) -> JSONResponse:
         """获取所有注册的 API 路由"""
 
@@ -4366,8 +4591,6 @@ except Exception:
 
         return JSONResponse({"http_routes": http_routes, "ws_routes": ws_routes})
 
-    # ========== 消息统计相关 API ==========
-
     async def _api_message_stats(self, request: Request) -> JSONResponse:
         """获取消息统计"""
 
@@ -4404,8 +4627,6 @@ except Exception:
             }
         )
 
-    # ========== 操作审计日志 API ==========
-
     async def _api_audit(self, request: Request) -> JSONResponse:
         limit = int(request.query_params.get("limit", "200"))
         action_filter = request.query_params.get("action", "")
@@ -4420,8 +4641,8 @@ except Exception:
         self._add_audit_log("audit_clear", "", request)
         return JSONResponse({"success": True})
 
-    # ========== 数据备份与恢复 API ==========
 
+    # ════════════════ API · 备份与文件管理 ════════════════
     async def _api_backup_export(self, request: Request) -> JSONResponse:
         config_data = dict(self.sdk.config._cache)
         storage_keys = self.storage.get_all_keys()
@@ -4467,8 +4688,6 @@ except Exception:
                 "storage_restored": len(storage_data),
             }
         )
-
-    # ========== 文件管理 API ==========
 
     def _get_project_root(self) -> Path:
         return Path.cwd()
@@ -4948,8 +5167,8 @@ except Exception:
             }
         )
 
-    # ========== 命令管理 API ==========
 
+    # ════════════════ API · 命令 / 主人 / 作用域 ════════════════
     async def _api_commands(self, request: Request) -> JSONResponse:
         commands = self._get_all_commands_info()
         try:
@@ -5239,8 +5458,6 @@ except Exception:
         self._add_audit_log("master_update", f"users_count={len(cleaned)}", request)
         return JSONResponse({"success": True, "master": new_master})
 
-    # ========== 作用域（scope）API ==========
-
     def _get_scope(self):
         """获取作用域管理器（SDK < 2.8.0 无此属性时返回 None）"""
         return getattr(self.sdk, "scope", None)
@@ -5288,9 +5505,9 @@ except Exception:
             {
                 "supported": True,
                 "default_allow": default_allow,
-                "topology": self._json_safe(topology),
-                "stats": self._json_safe(stats),
-                "runtime_bindings": self._json_safe(
+                "topology": _CoreHelpers._json_safe(topology),
+                "stats": _CoreHelpers._json_safe(stats),
+                "runtime_bindings": _CoreHelpers._json_safe(
                     self._scope_runtime_bindings(scope_obj)
                 ),
             }
@@ -5528,7 +5745,7 @@ except Exception:
             "config": scope_obj.topology(),
         }
         self._add_audit_log("scope_export", "", request)
-        return JSONResponse(self._json_safe(payload))
+        return JSONResponse(_CoreHelpers._json_safe(payload))
 
     async def _api_scope_import(self, request: Request) -> JSONResponse:
         scope_obj = self._get_scope()
@@ -5662,26 +5879,6 @@ except Exception:
         )
         return JSONResponse({"success": True, "mode": mode, "imported": counts})
 
-    # ========== 拓扑树 API ==========
-
-    @staticmethod
-    def _json_safe(value, _depth: int = 0):
-        """深度净化为可 JSON 序列化的结构（拓扑元数据含类对象等）"""
-        if _depth > 12:
-            return str(value)
-        if value is None or isinstance(value, (str, int, float, bool)):
-            return value
-        if isinstance(value, dict):
-            return {
-                str(k): Main._json_safe(v, _depth + 1)
-                for k, v in value.items()
-            }
-        if isinstance(value, (list, tuple, set)):
-            return [Main._json_safe(v, _depth + 1) for v in value]
-        if isinstance(value, type):
-            return getattr(value, "__name__", str(value))
-        return str(value)
-
     async def _api_topology(self, request: Request) -> JSONResponse:
         try:
             topology = self.sdk.get_topology()
@@ -5710,15 +5907,11 @@ except Exception:
             if isinstance(info, dict):
                 info["depends"] = depends
         return JSONResponse(
-            {"supported": True, "topology": self._json_safe(topology)}
+            {"supported": True, "topology": _CoreHelpers._json_safe(topology)}
         )
-
-    # ========== 模块视窗 API ==========
 
     async def _api_views(self, request: Request) -> JSONResponse:
         return JSONResponse({"views": self.get_registered_views()})
-
-    # ========== 集群管理 API ==========
 
     async def _api_cluster_nodes_list(self, request: Request) -> JSONResponse:
         if not self._cluster:
@@ -5929,3 +6122,5 @@ except Exception:
             "cluster_sync_events", f"from={source_node} to={target_nodes}", request
         )
         return JSONResponse({"results": results})
+
+

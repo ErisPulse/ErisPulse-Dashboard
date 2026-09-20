@@ -91,7 +91,8 @@ export function renderPluginRow(m, isAd) {
     }
   } else {
     statusDot = "disabled";
-    statusText = t("module_disabled");
+    // 未注册（失去句柄）的禁用模块：展示为"禁用中"，与常规已禁用区分
+    statusText = m.unregistered ? t("module_disabled_running") : t("module_disabled");
     statusClass = "chip-er";
   }
 

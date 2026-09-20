@@ -199,38 +199,30 @@
     pointer-events: none;
 }
 
+/* 光斑：颜色取自主题 accent，低不透明度只做质感不抢色彩 */
 .login-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.45;
+    filter: blur(80px);
+    opacity: 0.22;
 }
 
 .login-orb-a {
-    width: 480px;
-    height: 480px;
+    width: 460px;
+    height: 460px;
     left: -120px;
     top: -140px;
-    background: color-mix(in srgb, var(--accent) 55%, transparent);
-    animation: loginDrift 18s ease-in-out infinite alternate;
+    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    animation: loginDrift 20s ease-in-out infinite alternate;
 }
 
 .login-orb-b {
-    width: 420px;
-    height: 420px;
-    right: -110px;
-    top: 28%;
-    background: color-mix(in srgb, var(--pr-c) 40%, transparent);
-    animation: loginDrift 22s ease-in-out infinite alternate-reverse;
-}
-
-.login-orb-c {
     width: 380px;
     height: 380px;
-    left: 30%;
-    bottom: -160px;
-    background: color-mix(in srgb, var(--ok-c) 32%, transparent);
-    animation: loginDrift 26s ease-in-out infinite alternate;
+    right: -100px;
+    bottom: -120px;
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    animation: loginDrift 26s ease-in-out infinite alternate-reverse;
 }
 
 @keyframes loginDrift {
@@ -266,48 +258,24 @@
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid color-mix(in srgb, var(--tx-p) 10%, transparent);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-    padding: 34px 32px;
-    max-width: 400px;
+    padding: 32px 28px;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .login-avatar {
     display: flex;
     justify-content: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .login-avatar img {
-    width: 72px;
-    height: 72px;
+    width: 68px;
+    height: 68px;
     object-fit: contain;
-    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent));
-}
-
-.login-brand {
-    text-align: center;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--tx-s);
-}
-
-.login-brand span {
-    color: var(--accent);
-}
-
-.login-card h2 {
-    text-align: center;
-    font-size: 20px;
-    margin: 16px 0 6px;
-}
-
-.login-card > p {
-    text-align: center;
-}
-
-.login-card .form-group input {
-    background: color-mix(in srgb, var(--bg-t) 80%, transparent);
+    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--accent) 30%, transparent));
 }
 
 .login-hint {
