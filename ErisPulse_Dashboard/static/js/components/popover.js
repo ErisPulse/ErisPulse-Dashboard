@@ -57,6 +57,15 @@ export function initPopovers() {
   if (cpuSection && cpuPopover) {
     let cpuPinned = false;
 
+    // ✕ 关闭按钮在 popover 内部，需单独绑定（点击冒泡不经过触发卡片）
+    if (cpuClose) {
+      cpuClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        cpuPinned = false;
+        cpuPopover.classList.remove("show");
+      });
+    }
+
     // 点击显示/隐藏
     cpuSection.addEventListener("click", function (e) {
       if (e.target.closest(".popover-close")) {
@@ -82,6 +91,15 @@ export function initPopovers() {
 
   if (memSection && memPopover) {
     let memPinned = false;
+
+    // ✕ 关闭按钮在 popover 内部，需单独绑定（点击冒泡不经过触发卡片）
+    if (memClose) {
+      memClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        memPinned = false;
+        memPopover.classList.remove("show");
+      });
+    }
 
     // 点击显示/隐藏
     memSection.addEventListener("click", function (e) {

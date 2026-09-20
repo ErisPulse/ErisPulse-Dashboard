@@ -1,5 +1,6 @@
 /* ErisPulse Dashboard – events (auto-split from dash.css, aligned with js/) */
 .ev-item {
+    border-radius: 0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -18,13 +19,14 @@
 }
 
 .ev-ico {
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
+    width: 20px;
+    height: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    background: none;
+    color: var(--tx-t);
 }
 
 .ev-ico svg {
@@ -32,23 +34,12 @@
     height: 15px;
 }
 
-.ev-item.ev-message .ev-ico {
-    background: var(--pr-bg);
-    color: var(--pr-c);
-}
-
-.ev-item.ev-meta .ev-ico {
-    background: var(--sc-bg);
-    color: var(--sc-c);
-}
-
+/* 高频类型（message/meta）中性弱化，仅通知/请求保留柔和彩 */
 .ev-item.ev-notice .ev-ico {
-    background: var(--wr-bg);
     color: var(--wr-c);
 }
 
 .ev-item.ev-request .ev-ico {
-    background: var(--er-bg);
     color: var(--er-c);
 }
 

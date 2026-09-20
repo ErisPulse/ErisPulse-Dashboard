@@ -17,13 +17,8 @@ window._lastOverview = null;
 window._badgeInst = null;
 window._panelInst = null;
 window._collapseTimer = null;
-window._wsLog = [];
 window._wsMeta = { connectedAt: 0, reconnects: 0, frames: 0, events: 0, url: "" };
-window._wsLogSeq = 0;
-window._wsLogHeadSeq = -1;
 window._wsInspTimer = null;
-window.WS_LOG_MAX = 100;
-window.WS_LOG_PREVIEW_MAX = 1200;
 window.FIXED_UI_STYLE = "eris";
 window.FONT_PRESETS = [
   { id: "sora", name: "Sora", display: '"Sora", sans-serif', body: '"Sora", sans-serif',
