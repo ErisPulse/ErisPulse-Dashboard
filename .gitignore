@@ -4,6 +4,7 @@ main.py
 venvs
 config.toml
 uv.lock
+.erispulse_config.lock
 snapshots/
 config.db*
 .website
