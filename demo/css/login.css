@@ -163,7 +163,7 @@
 .log-level-chip { border-radius: var(--radius-sm); }
 .store-card { border-radius: var(--radius-lg); }
 .cluster-card { border-radius: var(--radius-lg); }
-.event-card, .ev-item { border-radius: var(--radius-md); }
+.event-card { border-radius: var(--radius-md); }
 .list-row { border-radius: var(--radius-md); }
 .toast { border-radius: var(--radius-md); }
 .conn-panel { border-radius: var(--radius-lg); }

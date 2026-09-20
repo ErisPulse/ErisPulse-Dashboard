@@ -58,6 +58,15 @@ export function initPopovers() {
     let cpuPinned = false;
 
      
+    if (cpuClose) {
+      cpuClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        cpuPinned = false;
+        cpuPopover.classList.remove("show");
+      });
+    }
+
+     
     cpuSection.addEventListener("click", function (e) {
       if (e.target.closest(".popover-close")) {
         cpuPinned = false;
@@ -82,6 +91,15 @@ export function initPopovers() {
 
   if (memSection && memPopover) {
     let memPinned = false;
+
+     
+    if (memClose) {
+      memClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        memPinned = false;
+        memPopover.classList.remove("show");
+      });
+    }
 
      
     memSection.addEventListener("click", function (e) {
