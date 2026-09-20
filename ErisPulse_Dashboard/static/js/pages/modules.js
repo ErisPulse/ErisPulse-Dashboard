@@ -91,7 +91,8 @@ export function renderPluginRow(m, isAd) {
     }
   } else {
     statusDot = "disabled";
-    statusText = t("module_disabled");
+     
+    statusText = m.unregistered ? t("module_disabled_running") : t("module_disabled");
     statusClass = "chip-er";
   }
 

@@ -350,6 +350,7 @@
     module_lazy_pending: "Ленивая · ожидает",
     module_lazy_desc: "Ленивый модуль смонтирован и загрузится автоматически при первом использовании — ручная загрузка не нужна",
     module_disabled: "Отключён",
+    module_disabled_running: "Отключён",
     reload: "Перезагрузить",
     action_enable_module: "Включить модуль",
     action_disable_module: "Отключить модуль",
