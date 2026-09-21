@@ -621,37 +621,7 @@
         width: 120px;
     }
 
-    .topo-stage {
-        height: calc(100vh - 240px);
-        min-height: 340px;
-        margin: 4px -16px -16px;
-    }
-
-    .topo-float-tl {
-        left: 12px;
-        right: 12px;
-        top: 12px;
-        max-width: none;
-        flex-wrap: wrap;
-    }
-
-    .topo-float-tr {
-        left: 12px;
-        right: 12px;
-        top: auto;
-        bottom: 12px;
-        max-width: none;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .topo-float-bl {
-        display: none;
-    }
-
-    .topo-detail {
-        width: calc(100% - 24px);
-    }
+     
 }
 
  

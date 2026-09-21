@@ -107,12 +107,14 @@ for (const ns of __namespaces) Object.assign(window, ns);
   var splashEl = document.getElementById("splash");
   var _splashReady = false;
   var _splashDismissed = false;
-  setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1750);
+   
+  setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1200);
   function dismissSplash() {
     _splashDismissed = true;
     if (!_splashReady || !splashEl) return;
     splashEl.classList.add("hide");
-    setTimeout(function () { if (splashEl) splashEl.remove(); }, 950);
+     
+    setTimeout(function () { if (splashEl) splashEl.remove(); }, 600);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {

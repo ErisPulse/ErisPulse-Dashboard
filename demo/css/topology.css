@@ -273,3 +273,51 @@
     -webkit-user-select: none;
     user-select: none;
 }
+
+
+
+
+
+@media (max-width: 720px) {
+    .topo-stage {
+        height: calc(100vh - 240px);
+        min-height: 340px;
+        margin: 4px -16px -16px;
+    }
+
+    .topo-float-tl {
+        left: 12px;
+        right: 12px;
+        top: 12px;
+        max-width: none;
+        flex-wrap: wrap;
+    }
+
+    .topo-float-tr {
+        left: 12px;
+        right: 12px;
+        top: auto;
+        bottom: 12px;
+        max-width: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 6px 12px;
+        gap: 6px 14px;
+    }
+
+    .topo-float-tr input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        accent-color: var(--accent);
+        flex-shrink: 0;
+    }
+
+    .topo-float-bl {
+        display: none;
+    }
+
+    .topo-detail {
+        width: calc(100% - 24px);
+    }
+}
