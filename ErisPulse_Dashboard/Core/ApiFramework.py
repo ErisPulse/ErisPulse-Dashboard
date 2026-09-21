@@ -13,6 +13,8 @@ from ErisPulse.Core.Bases.errors import ClientError
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from .Helpers import _CoreHelpers
+
 
 class ApiFrameworkMixin:
     """框架版本 / 更新日志查询、框架自升级与进程重启 API。"""
@@ -165,7 +167,7 @@ class ApiFrameworkMixin:
             if not pre and re.search(r"(a|alpha|b|beta|rc|dev|preview)", ver, re.I):
                 continue
             all_versions.append(ver)
-        all_versions.sort(key=self._pep440_sort_key, reverse=True)
+        all_versions.sort(key=_CoreHelpers._pep440_sort_key, reverse=True)
         return all_versions[:50]
 
     async def _api_framework_update(self, request: Request) -> JSONResponse:

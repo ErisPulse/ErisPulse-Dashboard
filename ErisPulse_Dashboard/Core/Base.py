@@ -55,6 +55,7 @@ class MainBase:
         self._registered_views: dict[str, dict] = {}
         self._cluster: ClusterManager | None = None
         self._lifecycle_counts: dict[str, int] = {}
+        self._ghost_cache: dict = {}
         self._register_routes()
 
     @staticmethod
