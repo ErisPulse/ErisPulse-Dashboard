@@ -3,7 +3,7 @@
 你必须遵守以下规则：
 
 ## 项目结构
-- 1. 后端 `ErisPulse_Dashboard/Core.py`（生命周期、路由注册、全部 API handler）；`Cluster.py` 集群管理与能力探测；`PackageManager.py` 包管理；`Config.py` / `Constants.py` / `I18n.py` 为纯数据文件
+- 1. 后端 `ErisPulse_Dashboard/Core/` 子包：`__init__.py` 将 `Main` 组合自各职责 Mixin（`Base.py` 生命周期/配置/令牌、`Routes.py` 路由注册与注销、`Api*.py` 按域拆分的 API handler、`EventLog.py`/`Commands.py`/`PipOps.py`/`ModulesOps.py`/`Status.py`/`Views.py` 等机制层）；`Cluster.py` 集群管理与能力探测；`PackageManager.py` 包管理；`Config.py` / `Constants.py` / `I18n.py` / `Helpers.py` 为纯数据与工具文件
 - 2. 前端 `ErisPulse_Dashboard/static/`：`dash.html` + `dash.js` + `dash.css`，无构建步骤，直接修改源文件
 - 3. `demo/` 为 Cloudflare Pages 演示站，仅 `mock.js` 与 `build.sh` 手动维护，其余（`index.html`、`dash.js`、`dash.css`、`res/`）为构建产物，已被 `.gitignore` 忽略
 
@@ -15,7 +15,7 @@
 - 8. uv/pip 参数差异：`uv pip uninstall` 不支持 `-y`，`pip uninstall` 必须 `-y`；通过 `is_using_uv()` 分支构造命令
 
 ## 前端
-- 9. 新增页面必须同步 5 处：`dash.html` 侧边栏 `nav-item`、`dash.js` 两个 loader maps（`toggleLang()` 与 `go()` 内各一处）、5 语言 i18n key、`Cluster.py` 能力映射、`Core.py` API 路由
+- 9. 新增页面必须同步 5 处：`dash.html` 侧边栏 `nav-item`、`dash.js` 两个 loader maps（`toggleLang()` 与 `go()` 内各一处）、5 语言 i18n key、`Cluster.py` 能力映射、`Core/Routes.py` API 路由
 - 10. 侧边栏每组页面数不超过 4 个，按使用频率排序：概览 → 事件 → 扩展 → 管理 → 运维
 - 11. 新增 `<select>` 无需手动处理，`window.EP` 组件库自动增强，保持 `.value` / `change` 契约即可
 - 12. 新增框架配置字段必须同步三处：`_fwDefaults`（默认值）、`_fwFieldDescs`（中文兜底描述）、5 语言 `fw_field_*` i18n key
