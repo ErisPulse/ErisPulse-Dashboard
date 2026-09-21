@@ -430,48 +430,25 @@ select:hover:not(:disabled) {
     animation: splashPulse 3s ease-in-out infinite;
 }
 
-.splash::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10;
-}
-
+/* 退场不做任何全屏闪光（此前的 splashFlashBurst 就是"闪一下"的来源），
+   只保留一次轻快的上浮淡出，时长需与 main.js 的节点移除延时一致 */
 .splash.hide {
-    animation: splashBubblePop 0.85s cubic-bezier(0.5, 0, 0.4, 1) forwards;
-}
-
-.splash.hide::after {
-    animation: splashFlashBurst 0.55s ease-out forwards;
+    animation: splashBubblePop 0.45s cubic-bezier(0.5, 0, 0.4, 1) forwards;
 }
 
 .splash.hide .splash-content {
-    animation: logoFlashZoom 0.55s cubic-bezier(0.5, 0, 0.4, 1) forwards;
-}
-
-@keyframes splashFlashBurst {
-    0%   { opacity: 0;  }
-    25%  { opacity: 1;  }
-    55%  { opacity: 0.7;  }
-    100% { opacity: 0;  }
+    animation: logoFlashZoom 0.4s cubic-bezier(0.5, 0, 0.4, 1) forwards;
 }
 
 @keyframes splashBubblePop {
     0% {
         opacity: 1;
-        
+
         visibility: visible;
-    }
-    40% {
-        opacity: 1;
-        
     }
     100% {
         opacity: 0;
-        transform: scale(1.08) translateY(-12px);
+        transform: scale(1.04) translateY(-10px);
         visibility: hidden;
         pointer-events: none;
     }
@@ -479,34 +456,19 @@ select:hover:not(:disabled) {
 
 @keyframes logoFlashZoom {
     0% {
-        
         opacity: 1;
     }
     100% {
-        transform: scale(1.15) translateY(-8px);
+        transform: scale(1.08) translateY(-6px);
         opacity: 0;
     }
 }
 
-/* App 首次揭示 */
+/* App 首次揭示：不再做自身 0→1 淡入。
+   开屏浮层/登录浮层淡出时应用保持完全不透明，
+   单层淡出即可完成揭示，避免双层半透明叠加时的全局闪烁。 */
 .app.authed {
-    animation: appBlurReveal 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
-}
-
-@keyframes appBlurReveal {
-    0% {
-        opacity: 0;
-        
-        filter: none;
-    }
-    60% {
-        filter: none;
-    }
-    100% {
-        opacity: 1;
-        
-        filter: none;
-    }
+    opacity: 1;
 }
 
 /* 页面切换 */

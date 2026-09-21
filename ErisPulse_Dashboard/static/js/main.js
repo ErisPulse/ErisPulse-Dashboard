@@ -107,12 +107,14 @@ for (const ns of __namespaces) Object.assign(window, ns);
   var splashEl = document.getElementById("splash");
   var _splashReady = false;
   var _splashDismissed = false;
-  setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1750);
+  // 保底时长与 splash 文字编排（dots 于 0.85s+0.4s 完成）对齐，此后即可揭示
+  setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1200);
   function dismissSplash() {
     _splashDismissed = true;
     if (!_splashReady || !splashEl) return;
     splashEl.classList.add("hide");
-    setTimeout(function () { if (splashEl) splashEl.remove(); }, 950);
+    // 与 overrides.css 的 splashBubblePop 0.45s 对齐：动画播完再移除节点
+    setTimeout(function () { if (splashEl) splashEl.remove(); }, 600);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {
