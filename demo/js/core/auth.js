@@ -37,6 +37,8 @@ export async function doLogin() {
     document.querySelector(".app").classList.add("authed");
      
     loadAll();
+     
+    restoreUpdateHint();
     wsConnect();
     restartRefreshTimer();
     loadClusterNodes();

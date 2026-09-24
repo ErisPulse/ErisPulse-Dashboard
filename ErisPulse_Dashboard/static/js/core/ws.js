@@ -5,7 +5,14 @@ function isDashboardPkg(s) {
   return /erispulse[-_]dashboard/i.test(s || "");
 }
  
+function isFrameworkPkg(s) {
+  var v = (s || "").trim().toLowerCase();
+  return v === "erispulse" || v.indexOf("erispulse==") === 0;
+}
+ 
 function reloadAfterDashboardUpdate() {
+   
+  try { showUpdateHint("dashboard", ""); } catch (e) {}
   toast(t("dashboard_updated_reload"), "ok");
   setTimeout(function () {
     location.href =
@@ -112,6 +119,14 @@ export function wsConnect() {
             (m.packages || []).some((p) => isDashboardPkg(p))
           ) {
             reloadAfterDashboardUpdate();
+          } else if (
+            isFrameworkPkg(pkg) ||
+            (m.packages || []).some((p) => isFrameworkPkg(p))
+          ) {
+             
+            var fwSpec =
+              (m.packages || []).find((p) => isFrameworkPkg(p)) || pkg;
+            onFrameworkUpdateSuccess(fwSpec.split("==")[1] || "");
           } else {
             loadModules();
             loadPackages(true);

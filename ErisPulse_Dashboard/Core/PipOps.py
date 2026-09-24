@@ -315,6 +315,10 @@ class PipOpsMixin:
                 self._get_pkg_manager().invalidate_caches()
                  
                 self._reload_upgraded_registered_modules(packages)
+                 
+                 
+                if _CoreHelpers._packages_contain_dashboard(packages):
+                    self._schedule_dashboard_self_reload()
                 self._safe_broadcast(
                     {"type": "module_changed", "data": {"action": "upgraded"}}
                 )

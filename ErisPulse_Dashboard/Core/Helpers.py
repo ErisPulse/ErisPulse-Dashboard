@@ -85,10 +85,13 @@ class _CoreHelpers:
 
     @staticmethod
     def _packages_contain_dashboard(packages: list[str]) -> bool:
-        """判断升级包列表是否包含 Dashboard 自身（兼容 wheel 文件名/带版本号形式）"""
+        """判断升级包列表是否包含 Dashboard 自身（兼容 wheel 文件名/带版本号/git URL 形式）"""
         for p in packages or []:
             name = p.split("==", 1)[0].strip().lower().replace("_", "-")
             if name == "erispulse-dashboard" or name.startswith("erispulse-dashboard-"):
+                return True
+             
+            if name.startswith("git+") and "erispulse-dashboard" in name:
                 return True
         return False
 
