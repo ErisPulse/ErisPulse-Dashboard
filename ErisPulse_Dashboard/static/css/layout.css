@@ -341,6 +341,7 @@ code.ws-insp-val {
 .sidebar {
     width: 232px;
     background: var(--bg-s);
+    border-right: 1px solid var(--bd);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -505,20 +506,26 @@ code.ws-insp-val {
     position: relative;
 }
 
-/* 导航项小圆点装饰已移除（active 态已有 pill 背景区分） */
+/* 展开态激活项：左侧 accent 指示条 + tint 药丸底色双重标识 */
 .nav-item::before {
-    display: none;
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition:
+        height 0.2s ease,
+        opacity 0.2s ease;
 }
 
 .nav-item:hover {
     background: var(--bg-t);
     color: var(--tx-p);
-}
-
-.nav-item:hover::before {
-    background: var(--accent);
-    opacity: 0.5;
-    
 }
 
 .nav-item.active {
@@ -530,8 +537,8 @@ code.ws-insp-val {
 }
 
 .nav-item.active::before {
-    background: var(--accent);
-    
+    height: 55%;
+    opacity: 1;
 }
 
 .nav-item svg {
@@ -610,8 +617,13 @@ code.ws-insp-val {
 
 .sidebar.collapsed .nav-group + .nav-group {
     border-top: none;
-    margin-top: 0;
+    margin-top: 10px;
     padding-top: 0;
+}
+
+/* 折叠态隐藏组分隔线：光杆图标间只保留留白 */
+.sidebar.collapsed .nav-group + .nav-group::before {
+    display: none;
 }
 
 .nav-group + .nav-group {
@@ -631,17 +643,15 @@ code.ws-insp-val {
     display: none;
 }
 
-.sidebar.collapsed .nav-item.active::after {
-    content: "";
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    
-    width: 14px;
-    height: 3px;
-    border-radius: 3px;
-    background: var(--accent);
+/* 折叠态激活项：不画下划线，用药丸底色 + 图标着色标识（与展开态视觉语言一致） */
+.sidebar.collapsed .nav-item.active {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.sidebar.collapsed .nav-item.active svg {
+    color: var(--accent);
+    opacity: 1;
 }
 
 .sidebar.collapsed .nav-item svg {
@@ -670,6 +680,9 @@ code.ws-insp-val {
 
 .sidebar.collapsed .node-selector-header {
     padding: 8px;
+    /* 折叠态仅剩节点圆点：加边框使其读作可点按钮 */
+    border: 1px solid var(--bd);
+    border-radius: 8px;
 }
 
 .sidebar.collapsed .node-selector-current {

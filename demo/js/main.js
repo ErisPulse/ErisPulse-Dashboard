@@ -12,6 +12,7 @@ import * as m_components_ep_select from "./components/ep-select.js";
 import * as m_components_tabs from "./components/tabs.js";
 import * as m_components_kv from "./components/kv.js";
 import * as m_components_tasks from "./components/tasks.js";
+import * as m_components_update_hint from "./components/update-hint.js";
 import * as m_components_status_icon from "./components/status-icon.js";
 import * as m_components_ws_inspector from "./components/ws-inspector.js";
 import * as m_core_router from "./core/router.js";
@@ -49,6 +50,7 @@ const __namespaces = [
   m_components_tabs,
   m_components_kv,
   m_components_tasks,
+  m_components_update_hint,
   m_components_status_icon,
   m_components_ws_inspector,
   m_core_router,
@@ -129,6 +131,8 @@ for (const ns of __namespaces) Object.assign(window, ns);
           dismissSplash();
           // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
           loadAll();
+          // 恢复上次更新遗留的重载引导（如更新后刷新了页面）
+          restoreUpdateHint();
           wsConnect();
           restartRefreshTimer();
           loadClusterNodes();

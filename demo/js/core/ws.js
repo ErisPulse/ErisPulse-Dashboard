@@ -4,8 +4,15 @@
 function isDashboardPkg(s) {
   return /erispulse[-_]dashboard/i.test(s || "");
 }
+// 是否为框架自身的包名（erispulse，精确匹配，不含 dashboard 等衍生包）
+function isFrameworkPkg(s) {
+  var v = (s || "").trim().toLowerCase();
+  return v === "erispulse" || v.indexOf("erispulse==") === 0;
+}
 // Dashboard 更新完成后强制刷新（带时间戳绕过 HTML 缓存）
 function reloadAfterDashboardUpdate() {
+  // 埋下持久化提示：刷新后展示"已自动重载模块，异常可重启"引导
+  try { showUpdateHint("dashboard", ""); } catch (e) {}
   toast(t("dashboard_updated_reload"), "ok");
   setTimeout(function () {
     location.href =
@@ -112,6 +119,14 @@ export function wsConnect() {
             (m.packages || []).some((p) => isDashboardPkg(p))
           ) {
             reloadAfterDashboardUpdate();
+          } else if (
+            isFrameworkPkg(pkg) ||
+            (m.packages || []).some((p) => isFrameworkPkg(p))
+          ) {
+            // 升级的是框架：新代码需重启才能生效，给出重启引导
+            var fwSpec =
+              (m.packages || []).find((p) => isFrameworkPkg(p)) || pkg;
+            onFrameworkUpdateSuccess(fwSpec.split("==")[1] || "");
           } else {
             loadModules();
             loadPackages(true);

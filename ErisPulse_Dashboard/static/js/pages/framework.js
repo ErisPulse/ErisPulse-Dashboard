@@ -1064,6 +1064,22 @@ export async function loadFwReleaseNotes() {
     esc(releaseUrl) + "</a></div>";
 }
 
+// 框架更新任务成功后（WS install_progress success）调用：
+// 复位更新按钮、刷新版本显示，并给出"建议重启框架"引导
+export function onFrameworkUpdateSuccess(version) {
+  var btn = document.getElementById("fwUpdateBtn");
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML =
+      '<span data-i18n="fw_install_update">' +
+      t("fw_install_update") +
+      "</span>";
+  }
+  loadFrameworkVersions();
+  showUpdateHint("framework", version);
+  toast(t("fw_update_done"), "ok");
+}
+
 export async function doFrameworkUpdate() {
   const sel = document.getElementById("fwVersionSelect");
   const version = sel?.value;

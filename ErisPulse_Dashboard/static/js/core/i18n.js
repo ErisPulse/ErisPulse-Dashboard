@@ -101,6 +101,16 @@ export function applyI18n() {
   document.title = titles[lang] || "ErisPulse Dashboard";
   const htmlLangMap = { zh: "zh-CN", "zh-TW": "zh-TW", ja: "ja", ru: "ru" };
   document.documentElement.lang = htmlLangMap[lang] || "en";
+  // 侧边栏折叠态无文字，用本地化页面名做悬浮提示（跟随语言切换）
+  document.querySelectorAll(".nav-item").forEach((el) => {
+    const label = el.querySelector("span[data-i18n]");
+    if (label) el.title = label.textContent || "";
+  });
+  var nodeLabel = document.getElementById("nodeSelectorLabel");
+  if (nodeLabel) {
+    var nodeHeader = nodeLabel.closest(".node-selector-header");
+    if (nodeHeader) nodeHeader.title = nodeLabel.textContent || "";
+  }
   refreshConnBadgeText();
 }
 

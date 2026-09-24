@@ -315,6 +315,10 @@ class PipOpsMixin:
                 self._get_pkg_manager().invalidate_caches()
                 # 重载受升级影响的已注册模块（遵守 enabled 状态）
                 self._reload_upgraded_registered_modules(packages)
+                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
+                # （_reload_upgraded_registered_modules 会跳过 Dashboard，需单独处理）
+                if _CoreHelpers._packages_contain_dashboard(packages):
+                    self._schedule_dashboard_self_reload()
                 self._safe_broadcast(
                     {"type": "module_changed", "data": {"action": "upgraded"}}
                 )

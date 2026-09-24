@@ -419,15 +419,38 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         });
     };
 
-    API_MAP['/api/packages/upgrade'] = function () { return _json({ success: true, task_id: 'mock_upgrade_' + _r(1000, 9999) }); };
+    API_MAP['/api/packages/upgrade'] = function (opts) {
+        var packages = [];
+        try { packages = JSON.parse(opts.body).packages || []; } catch (e) { }
+        var taskId = 'mock_upgrade_' + _r(1000, 9999);
+        setTimeout(function () { window._mockEmitInstall(taskId, packages); }, 200);
+        return _json({ success: true, task_id: taskId });
+    };
     API_MAP['/api/packages/install'] = function () { return _json({ success: true, task_id: 'mock_install_' + _r(1000, 9999) }); };
     API_MAP['/api/packages/uninstall'] = function () { return _json({ success: true }); };
+
+    // 模拟安装任务：向当前 WS 推送 install_progress running → success
+    window._mockEmitInstall = function (taskId, packages) {
+        var emit = function (status, extra) {
+            var ws = window._mockWsLast;
+            if (!ws || ws.readyState !== 1 || !ws.onmessage) return;
+            var msg = Object.assign({ type: 'install_progress', task_id: taskId, status: status, packages: packages, output: [status + ': ' + packages.join(', ')] }, extra || {});
+            ws.onmessage({ data: JSON.stringify(msg) });
+        };
+        setTimeout(function () { emit('running'); }, 600);
+        setTimeout(function () { emit('success'); }, 2200);
+    };
 
     API_MAP['/api/framework/versions'] = function () {
         return _json({ current: '2.8.3', latest: '2.8.3', versions: _FRAMEWORK_VERSIONS });
     };
 
-    API_MAP['/api/framework/update'] = function () { return _json({ success: true, task_id: 'mock_fw_update' }); };
+    API_MAP['/api/framework/update'] = function (opts) {
+        var version = '2.8.4';
+        try { version = JSON.parse(opts.body).version || version; } catch (e) { }
+        setTimeout(function () { window._mockEmitInstall('mock_fw_update', ['ErisPulse==' + version]); }, 200);
+        return _json({ success: true, task_id: 'mock_fw_update' });
+    };
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };
     API_MAP['/api/modules/action'] = function () { return _json({ success: true }); };
 
@@ -922,6 +945,7 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         this.onclose = null;
         this.onerror = null;
         this.onmessage = null;
+        window._mockWsLast = self;
 
         setTimeout(function () {
             if (self.onopen) self.onopen({ type: 'open' });

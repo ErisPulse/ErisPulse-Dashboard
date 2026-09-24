@@ -849,3 +849,67 @@ select.form-select::-ms-expand {
 .ux-row:hover {
     border-color: var(--bd-h, var(--bd));
 }
+
+/* ════════════════ 更新重载引导条 ════════════════ */
+/* 框架/Dashboard 更新完成后浮动于顶栏下方，提示本次更新建议的重载方式 */
+.update-hint-bar {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translate(-50%, -12px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(92vw, 560px);
+    padding: 10px 12px 10px 16px;
+    border-radius: 12px;
+    background: var(--bg-t);
+    border: 1px solid var(--wr-bd);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.update-hint-bar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+}
+
+.update-hint-bar .update-hint-icon {
+    display: flex;
+    flex: none;
+    color: var(--wr-c);
+}
+
+.update-hint-bar .update-hint-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--tx-p);
+}
+
+.update-hint-bar .update-hint-restart {
+    flex: none;
+}
+
+.update-hint-bar .update-hint-close {
+    flex: none;
+    color: var(--tx-t);
+}
+
+@media (max-width: 768px) {
+    .update-hint-bar {
+        top: 60px;
+        width: calc(100vw - 24px);
+        max-width: none;
+        flex-wrap: wrap;
+        padding: 10px 12px;
+    }
+
+    .update-hint-bar .update-hint-text {
+        min-width: 0;
+    }
+}

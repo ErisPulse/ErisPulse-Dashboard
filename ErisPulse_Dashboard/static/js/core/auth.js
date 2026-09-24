@@ -37,6 +37,8 @@ export async function doLogin() {
     document.querySelector(".app").classList.add("authed");
     // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
     loadAll();
+    // 恢复上次更新遗留的重载引导（如更新后刷新了页面）
+    restoreUpdateHint();
     wsConnect();
     restartRefreshTimer();
     loadClusterNodes();
