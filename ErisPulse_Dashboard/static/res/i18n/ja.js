@@ -1054,5 +1054,28 @@ settings_tab_colorfont: "色とフォント",
     onboarding_hidden: "はじめにを非表示にしました",
     onboarding_never: "今後表示しない",
 
+
+    category_tool: "ツール",
+    category_fun: "エンタメ",
+    category_admin: "管理",
+    category_notify: "通知",
+    category_ai: "AI",
+    category_platform: "プラットフォーム",
+    category_analytics: "データ分析",
+    store_category_all: "すべて",
+    store_category_uncategorized: "未分類",
+    store_sort: "並べ替え",
+    store_sort_default: "デフォルト",
+    store_sort_name: "名前順",
+    store_sort_newest: "新着",
+
+    fm_unsaved_confirm: "エディターを閉じると未保存の変更は失われます。閉じますか？",
+
+    settings_anim_subtle: "標準",
+    settings_anim_smooth: "スムース",
+    settings_anim_zoom: "ズーム",
+    settings_anim_playful: "プレイフル",
+    settings_anim_off: "オフ",
+
   };
 })();

@@ -1049,5 +1049,28 @@ settings_tab_colorfont: "颜色与字体",
     onboarding_hidden: "已隐藏快速开始",
     onboarding_never: "不再显示",
 
+
+    category_tool: "工具",
+    category_fun: "娱乐",
+    category_admin: "管理",
+    category_notify: "通知",
+    category_ai: "AI",
+    category_platform: "平台对接",
+    category_analytics: "数据分析",
+    store_category_all: "全部",
+    store_category_uncategorized: "未分类",
+    store_sort: "排序",
+    store_sort_default: "默认排序",
+    store_sort_name: "按名称",
+    store_sort_newest: "最新提交",
+
+    fm_unsaved_confirm: "关闭编辑器将丢失未保存的修改，确定要关闭吗？",
+
+    settings_anim_subtle: "标准",
+    settings_anim_smooth: "流畅",
+    settings_anim_zoom: "缩放",
+    settings_anim_playful: "活泼",
+    settings_anim_off: "关闭",
+
   };
 })();

@@ -1059,5 +1059,28 @@ settings_tab_colorfont: "Цвет и шрифт",
     onboarding_hidden: "Быстрый старт скрыт",
     onboarding_never: "Больше не показывать",
 
+
+    category_tool: "Инструменты",
+    category_fun: "Развлечения",
+    category_admin: "Управление",
+    category_notify: "Уведомления",
+    category_ai: "ИИ",
+    category_platform: "Платформы",
+    category_analytics: "Аналитика",
+    store_category_all: "Все",
+    store_category_uncategorized: "Без категории",
+    store_sort: "Сортировка",
+    store_sort_default: "По умолчанию",
+    store_sort_name: "По имени",
+    store_sort_newest: "Новые",
+
+    fm_unsaved_confirm: "Закрытие редактора приведёт к потере несохранённых изменений. Закрыть?",
+
+    settings_anim_subtle: "Стандартная",
+    settings_anim_smooth: "Плавная",
+    settings_anim_zoom: "Масштаб",
+    settings_anim_playful: "Игривая",
+    settings_anim_off: "Выкл.",
+
   };
 })();
