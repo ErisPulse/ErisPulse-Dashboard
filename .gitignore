@@ -29,8 +29,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -206,9 +206,9 @@ cython_debug/
 .DS_Store
 
 # pyvenv
-bin
-include
-lib
+/bin/
+/include/
+/lib/
 pyvenv.cfg
 
 # i18n 翻译文档（自动生成）
