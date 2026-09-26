@@ -1095,5 +1095,13 @@ settings_tab_colorfont: "颜色与字体",
     users_token_created_hint: "令牌已创建，请立即复制保存（仅显示一次）：",
     forbidden: "无权限执行此操作",
 
+
+    settings_perms_tab: "权限",
+    users_perm_advanced: "高级 API 权限",
+    users_perm_advanced_desc: "精细控制单个 API 能力（勾选会覆盖页面级选择）",
+
+
+    users_perm_no_view: "当前令牌无权访问该模块视图",
+
   };
 })();

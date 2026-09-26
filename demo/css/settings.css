@@ -1456,3 +1456,18 @@
     font-family: Consolas, Monaco, monospace;
     user-select: all;
 }
+
+
+.user-token-adv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.user-token-cap-page {
+    font-size: 10px;
+    color: var(--tx-t);
+    margin-left: 4px;
+}

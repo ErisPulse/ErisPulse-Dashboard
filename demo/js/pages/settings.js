@@ -163,6 +163,7 @@ export function switchSettingsTab(tab, btn) {
   var loaders = {
     "settings-update": loadFrameworkVersions,
     "settings-about": loadAbout,
+    "settings-perms": renderUserTokens,
   };
   if (loaders[tab]) loaders[tab]();
   if (tab === "settings-update") {
@@ -173,33 +174,201 @@ export function switchSettingsTab(tab, btn) {
 export function renderUserTokens() {
   var host = document.getElementById("userTokensList");
   if (!host) return;
-  // 仅管理员可见令牌管理
   var sc = window.sessionCaps;
   var card = document.getElementById("userTokensCard");
   if (!card) return;
   card.style.display = sc && !sc.admin ? "none" : "";
   if (!sc || !sc.admin) return;
+  _renderPermGroups();
   api("/api/users/tokens").then(function (d) {
     if (!d || !d.tokens) return;
     var rows = d.tokens
       .map(function (t) {
-        return (
-          '<div class="ux-row"><span class="user-token-name">' +
-          esc(t.name) +
-          '</span><span class="user-token-caps">' +
-          esc((t.caps || []).length ? t.caps.join("、") : t("users_token_caps_none")) +
-          '</span><span class="user-token-masked">' +
-          esc(t.masked || "") +
-          '</span><button class="btn btn-danger btn-sm" onclick="deleteUserToken(\'' +
-          esc(t.name) +
-          '\')">' +
-          esc(t("users_token_revoke")) +
-          "</button></div>"
-        );
+        var delBtn = document.createElement("button");
+        var rowWrap = document.createElement("div");
+        rowWrap.className = "ux-row";
+        var nameEl = document.createElement("span");
+        nameEl.className = "user-token-name";
+        nameEl.textContent = t.name;
+        var capsEl = document.createElement("span");
+        capsEl.className = "user-token-caps";
+        capsEl.textContent = _capsSummary(t.caps || []);
+        var maskedEl = document.createElement("span");
+        maskedEl.className = "user-token-masked";
+        maskedEl.textContent = t.masked || "";
+        delBtn.className = "btn btn-danger btn-sm";
+        delBtn.textContent = t("users_token_revoke");
+        delBtn.onclick = function () {
+          deleteUserToken(t.name);
+        };
+        rowWrap.appendChild(nameEl);
+        rowWrap.appendChild(capsEl);
+        rowWrap.appendChild(maskedEl);
+        rowWrap.appendChild(delBtn);
+        return rowWrap;
+      })
+      .map(function (rowWrap) {
+        var wrap = document.createElement("div");
+        wrap.appendChild(rowWrap);
+        return wrap.innerHTML;
       })
       .join("");
     host.innerHTML = rows || '<div class="dp-empty">' + esc(t("users_tokens_empty")) + "</div>";
   });
+}
+
+// ── 能力分组（页面级 + 高级 API 级）──
+var _permSel = new Set();
+var _apiCapMap = null;
+
+function _moduleViewGroups() {
+  // 外部模块注册的视图：独立能力 view:<id>
+  return Array.prototype.map.call(
+    document.querySelectorAll('.sidebar .nav-item[data-module-view]'),
+    function (a) {
+      var viewId = a.getAttribute("data-module-view");
+      var label = a.querySelector("span") ? a.querySelector("span").textContent : viewId;
+      return { page: "ext-" + viewId, label: label, caps: ["view:" + viewId] };
+    },
+  );
+}
+
+function _pageCapGroups() {
+  return [
+    { page: "dashboard", label: t("dashboard"), caps: ["status", "system"] },
+    { page: "bots", label: t("bots"), caps: ["bots"] },
+    { page: "topology", label: t("topology"), caps: ["topology"] },
+    { page: "event-stream", label: t("event_stream"), caps: ["events", "event_builder"] },
+    { page: "commands", label: t("cmd_management"), caps: ["commands"] },
+    { page: "module-mgmt", label: t("module_mgmt"), caps: ["modules"] },
+    { page: "store", label: t("store"), caps: ["store", "store_install_status", "store_package_detail", "packages", "packages_updates", "packages_git"] },
+    { page: "master", label: t("perm_control"), caps: ["master"] },
+    { page: "adapter", label: t("components_config"), caps: ["adapters", "appearance"] },
+    { page: "config", label: t("config"), caps: ["config", "config_source"] },
+    { page: "logs", label: t("sys_logs"), caps: ["logs", "lifecycle", "performance", "routes", "message_stats", "audit"] },
+    { page: "files", label: t("files"), caps: ["files", "files_read", "files_download", "files_stat", "files_search"] },
+    { page: "api-routes", label: t("api_routes"), caps: ["routes"] },
+    { page: "cluster", label: t("cluster_management"), caps: ["cluster_nodes", "cluster_overview"] },
+  ].concat(_moduleViewGroups());
+}
+
+function _allCapIds() {
+  var ids = [];
+  _pageCapGroups().forEach(function (g) {
+    g.caps.forEach(function (c) {
+      ids.push(c);
+    });
+  });
+  if (_apiCapMap) {
+    Object.keys(_apiCapMap).forEach(function (route) {
+      var cap = _apiCapMap[route];
+      if (cap && ids.indexOf(cap) === -1 && cap !== "auth_status") ids.push(cap);
+    });
+  }
+  return ids;
+}
+
+function _capPageLabel(cap) {
+  var g = _pageCapGroups().find(function (g2) {
+    return g2.caps.indexOf(cap) !== -1;
+  });
+  return g ? g.label : cap;
+}
+
+function _capsSummary(caps) {
+  var labels = [];
+  var seen = {};
+  caps.forEach(function (c) {
+    var lbl = _capPageLabel(c);
+    if (lbl && seen[lbl] === undefined) {
+      seen[lbl] = 1;
+      labels.push(lbl);
+    }
+  });
+  return labels.join("、") || t("users_token_caps_none");
+}
+
+function _renderPermGroups() {
+  var host = document.getElementById("userTokenCaps");
+  if (!host) return;
+  host.textContent = "";
+  _pageCapGroups().forEach(function (g) {
+    var allOn = g.caps.every(function (c) {
+      return _permSel.has(c);
+    });
+    var item = document.createElement("label");
+    item.className = "user-token-cap-item";
+    var chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = allOn;
+    chk.dataset.page = g.page;
+    chk.onchange = function () {
+      _togglePermGroup(g.page, chk.checked);
+    };
+    item.appendChild(chk);
+    item.appendChild(document.createTextNode(" " + g.label));
+    host.appendChild(item);
+  });
+}
+
+function _togglePermGroup(page, on) {
+  var g = _pageCapGroups().find(function (g2) {
+    return g2.page === page;
+  });
+  if (!g) return;
+  g.caps.forEach(function (c) {
+    if (on) _permSel.add(c);
+    else _permSel.delete(c);
+  });
+}
+
+export function toggleUserTokenAdv() {
+  var adv = document.getElementById("userTokenAdv");
+  if (!adv) return;
+  var show = adv.style.display !== "block";
+  adv.style.display = show ? "block" : "none";
+  if (show) {
+    _loadApiCapMap().then(function () {
+      _renderAdvCaps();
+    });
+  }
+}
+
+function _loadApiCapMap() {
+  if (_apiCapMap) return Promise.resolve();
+  return api("/api/users/caps").then(function (d) {
+    _apiCapMap = d && d.map ? d.map : {};
+  });
+}
+
+function _renderAdvCaps() {
+  var host = document.getElementById("userTokenAdvList");
+  if (!host) return;
+  host.textContent = "";
+  var pageCaps = {};
+  _pageCapGroups().forEach(function (g) {
+    g.caps.forEach(function (c) {
+      pageCaps[c] = g.label;
+    });
+  });
+  _allCapIds().forEach(function (cap) {
+    var item = document.createElement("label");
+    item.className = "user-token-cap-item";
+    var chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = _permSel.has(cap);
+    chk.onchange = function () {
+      if (chk.checked) _permSel.add(cap);
+      else _permSel.delete(cap);
+    };
+    item.appendChild(chk);
+    item.appendChild(document.createTextNode(" " + cap + (pageCaps[cap] ? " · " + pageCaps[cap] : "")));
+    host.appendChild(item);
+  });
+}
+
+export function _getSelectedCaps() {
+  return Array.from(_permSel);
 }
 
 export async function createUserToken() {
@@ -207,12 +376,7 @@ export async function createUserToken() {
   if (!nameInput) return;
   var name = nameInput.value.trim();
   if (!name) return toast(t("users_token_name_required"), "wr");
-  var caps = [];
-  document
-    .querySelectorAll("#userTokenCaps input[type=checkbox]:checked")
-    .forEach(function (c) {
-      caps.push(c.dataset.cap);
-    });
+  var caps = _getSelectedCaps();
   var d = await api("/api/users/tokens", {
     method: "POST",
     body: JSON.stringify({ name: name, caps: caps }),

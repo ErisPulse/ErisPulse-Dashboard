@@ -32,27 +32,27 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=97" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=97" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=99" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=99" />
         <script src="/Dashboard/static/res/vendor/marked/marked.min.js"></script>
     </head>
 
@@ -4751,6 +4751,15 @@
                                 ></span>
                             </button>
                             <button
+                                class="view-btn pkg-tab"
+                                data-tab="settings-perms"
+                                onclick="
+                                    switchSettingsTab('settings-perms', this)
+                                "
+                            >
+                                <span data-i18n="settings_perms_tab"></span>
+                            </button>
+                            <button
                                 class="view-btn pkg-tab has-update-dot"
                                 id="settingsUpdateTab"
                                 data-tab="settings-update"
@@ -4946,27 +4955,7 @@
                                                 <div class="lang-card" data-lang="ja" onclick="applySettingLang('ja')"><span class="lang-name">日本語</span></div>
                                                 <div class="lang-card" data-lang="ru" onclick="applySettingLang('ru')"><span class="lang-name">Русский</span></div>
                                             </div>
-                                            <div class="card settings-card" id="userTokensCard" style="margin-top:16px">
-                                        <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                            <span data-i18n="users_tokens_title"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="settings-item settings-item-block">
-                                                <div class="settings-item-label" data-i18n="users_token_create"></div>
-                                                <div style="display:flex;gap:8px;margin-top:8px">
-                                                    <input type="text" class="fw-input" id="userTokenName" data-i18n-placeholder="users_token_name_ph" style="flex:1" />
-                                                    <button class="btn btn-primary btn-sm" onclick="createUserToken()" data-i18n="users_token_create"></button>
-                                                </div>
-                                                <div class="user-token-caps-grid" id="userTokenCaps"></div>
-                                                <div id="userTokenCreated" class="user-token-created" style="display:none"></div>
-                                            </div>
-                                            <div class="settings-item settings-item-block">
-                                                <div class="settings-item-label" data-i18n="users_tokens_list"></div>
-                                                <div id="userTokensList" class="ux-rows" style="margin-top:8px"></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                            
 
                                     <div class="settings-item" style="margin-top:12px">
                                                 <div>
@@ -5060,6 +5049,38 @@
                                     </div>
 
                                     
+                                </div>
+                            </div>
+                        </div>
+                        <div id="settings-perms-tab" class="tab-section" style="display: none">
+                            <div class="settings-grid">
+                                <div class="settings-col">
+<div class="card settings-card" id="userTokensCard" style="margin-top:16px">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                            <span data-i18n="users_tokens_title"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item settings-item-block">
+                                                <div class="settings-item-label" data-i18n="users_token_create"></div>
+                                                <div style="display:flex;gap:8px;margin-top:8px">
+                                                    <input type="text" class="fw-input" id="userTokenName" data-i18n-placeholder="users_token_name_ph" style="flex:1" />
+                                                    <button class="btn btn-primary btn-sm" onclick="createUserToken()" data-i18n="users_token_create"></button>
+                                                </div>
+                                                <div class="user-token-caps-grid" id="userTokenCaps"></div>
+                                                <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="toggleUserTokenAdv()" data-i18n="users_perm_advanced"></button>
+                                                <div id="userTokenAdv" style="display:none;margin-top:10px">
+                                                    <div class="settings-item-desc" data-i18n="users_perm_advanced_desc" style="margin-bottom:6px"></div>
+                                                    <div id="userTokenAdvList" class="user-token-adv-list"></div>
+                                                </div>
+                                                <div id="userTokenCreated" class="user-token-created" style="display:none"></div>
+                                            </div>
+                                            <div class="settings-item settings-item-block">
+                                                <div class="settings-item-label" data-i18n="users_tokens_list"></div>
+                                                <div id="userTokensList" class="ux-rows" style="margin-top:8px"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -6937,11 +6958,11 @@
         <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=97"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=97"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=97"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=97"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=97"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=97"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=99"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=99"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=99"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=99"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=99"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=99"></script>
     </body>
 </html>

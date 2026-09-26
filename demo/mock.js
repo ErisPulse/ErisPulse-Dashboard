@@ -477,6 +477,9 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         } catch (e) { }
         return _json({ success: true });
     };
+    API_MAP['/api/users/caps'] = function () {
+        return _json({ map: { '/api/status': 'status', '/api/files/browse': 'files', '/api/modules': 'modules', '/api/store/remote': 'store' } });
+    };
     API_MAP['/api/auth/permissions'] = function () {
         return _json({ admin: true, name: 'admin', caps: [] });
     };
