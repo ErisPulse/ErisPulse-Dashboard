@@ -1351,3 +1351,51 @@
     flex: none;
 }
 
+
+
+/* ════════════════ 字体上传 / 删除 ════════════════ */
+
+.font-card {
+    position: relative;
+}
+
+.font-card-del {
+    display: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--tx-t);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.font-card:hover .font-card-del {
+    display: block;
+}
+
+.font-card-del:hover {
+    color: var(--er-c);
+    background: var(--bg-s);
+}
+
+.font-card-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--bd);
+    color: var(--tx-t);
+    font-size: 20px;
+    min-height: 74px;
+    cursor: pointer;
+}
+
+.font-card-upload:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}

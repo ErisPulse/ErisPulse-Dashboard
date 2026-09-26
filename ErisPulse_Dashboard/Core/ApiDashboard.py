@@ -1,6 +1,7 @@
 """ApiDashboardMixin：机器人 / 事件 / 配置 / 外观 / 存储 API"""
 
 import asyncio
+import os
 from pathlib import Path
 
 from fastapi import Request
@@ -114,6 +115,58 @@ class ApiDashboardMixin:
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})
+
+    async def _api_fonts_upload(self, request: Request) -> JSONResponse:
+        """上传自定义字体文件（ttf/otf/woff/woff2），保存后返回引用 URL"""
+        import uuid as _uuid
+
+        try:
+            form = await request.form()
+            file = form.get("file")
+            if file is None:
+                return JSONResponse({"error": "file is required"}, status_code=400)
+            name = getattr(file, "filename", "") or "font"
+            ext = os.path.splitext(name)[1].lower()
+            if ext not in (".ttf", ".otf", ".woff", ".woff2"):
+                return JSONResponse(
+                    {"error": "only font files (.ttf/.otf/.woff/.woff2) are allowed"},
+                    status_code=400,
+                )
+            data = await file.read()
+            if len(data) > 15 * 1024 * 1024:
+                return JSONResponse(
+                    {"error": "font too large (max 15MB)"}, status_code=400
+                )
+            upload_dir = Path(__file__).parent.parent / "static" / "res" / "fonts_upload"
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            filename = f"font_{_uuid.uuid4().hex}{ext}"
+            (upload_dir / filename).write_bytes(data)
+            url = f"/Dashboard/static/res/fonts_upload/{filename}"
+            self._add_audit_log("font_upload", url, request)
+            return JSONResponse({"success": True, "url": url, "name": name})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+    async def _api_fonts_delete(self, request: Request) -> JSONResponse:
+        """删除已上传的字体文件（仅限 fonts_upload 目录内）"""
+        try:
+            body = await request.json()
+            url = body.get("url", "")
+            if not url:
+                return JSONResponse({"error": "url is required"}, status_code=400)
+            marker = "res/fonts_upload/"
+            if marker not in url:
+                return JSONResponse({"error": "invalid url"}, status_code=400)
+            filename = url.split(marker)[-1]
+            if "/" in filename or ".." in filename or "\\" in filename:
+                return JSONResponse({"error": "invalid url"}, status_code=400)
+            target = Path(__file__).parent.parent / "static" / "res" / "fonts_upload" / filename
+            if target.exists():
+                target.unlink()
+            self._add_audit_log("font_delete", url, request)
+            return JSONResponse({"success": True})
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
 
     async def _api_i18n_sync(self, request: Request) -> JSONResponse:
         """将 Dashboard 前端语言同步到框架 i18n"""

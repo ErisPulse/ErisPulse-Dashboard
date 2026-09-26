@@ -1102,5 +1102,16 @@ settings_tab_colorfont: "Colors & Font",
     settings_anim_playful: "Playful",
     settings_anim_off: "Off",
 
+
+    font_system: "System default",
+    font_upload: "Upload font",
+    font_delete: "Delete font",
+    font_uploaded: "Font uploaded and applied",
+    font_upload_failed: "Font upload failed",
+    settings_global_scope_desc: "When on, ALL devices automatically stay in sync on every setting below (appearance, behavior, language, layout); when off, each device uses its local settings",
+    settings_upload_global: "Push all settings",
+    settings_upload_global_desc: "Push this device's full settings as the global settings; all devices with sync enabled will apply them",
+    settings_upload_confirm: "This overwrites the global settings with this device's settings and updates every synced device. Continue?",
+
   };
 })();

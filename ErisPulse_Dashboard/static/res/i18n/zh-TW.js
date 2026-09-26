@@ -1054,5 +1054,16 @@ settings_tab_colorfont: "顏色與字體",
     settings_anim_playful: "活潑",
     settings_anim_off: "關閉",
 
+
+    font_system: "系統預設",
+    font_upload: "上傳字體",
+    font_delete: "刪除字體",
+    font_uploaded: "字體已上傳並套用",
+    font_upload_failed: "字體上傳失敗",
+    settings_global_scope_desc: "開啟後，全部裝置自動同步以下全部設定（外觀、行為、語言、版面）；關閉後各裝置恢復本機設定",
+    settings_upload_global: "推送全部設定",
+    settings_upload_global_desc: "將目前裝置的全部設定推送為全域設定，所有開啟同步的裝置會自動套用",
+    settings_upload_confirm: "將以目前裝置的設定覆蓋全域設定，所有開啟同步的裝置都會更新。確定繼續？",
+
   };
 })();

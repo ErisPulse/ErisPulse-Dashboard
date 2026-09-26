@@ -15,25 +15,105 @@ export function initFontSelector() {
   var container = document.getElementById("fontSelector");
   if (!container) return;
   container.innerHTML = "";
-  FONT_PRESETS.forEach(function(f) {
+
+  // 系统默认卡片
+  var sys = document.createElement("div");
+  sys.className = "font-card";
+  sys.dataset.font = "system";
+  sys.onclick = function() { applySettingFont("system"); };
+  var sysPreview = document.createElement("div");
+  sysPreview.className = "font-card-preview";
+  sysPreview.style.fontWeight = "600";
+  sysPreview.textContent = "Aa";
+  var sysLabel = document.createElement("div");
+  sysLabel.className = "font-card-label";
+  sysLabel.textContent = t("font_system");
+  sys.appendChild(sysPreview);
+  sys.appendChild(sysLabel);
+  container.appendChild(sys);
+
+  // 用户上传的字体卡片（可删除）
+  (window._customFonts || []).forEach(function(f) {
     var card = document.createElement("div");
     card.className = "font-card";
-    card.dataset.font = f.id;
-    card.onclick = function() { applySettingFont(f.id); };
+    card.dataset.font = f.url;
+    card.onclick = function() { applySettingFont(f.url); };
     var preview = document.createElement("div");
     preview.className = "font-card-preview";
-    preview.style.fontFamily = f.display;
-    preview.style.fontWeight = f.weight;
-    preview.textContent = f.preview;
+    preview.style.fontFamily = '"' + f.name + '"';
+    preview.textContent = "Aa";
     var label = document.createElement("div");
     label.className = "font-card-label";
     label.textContent = f.name;
-    label.style.fontFamily = f.body;
+    label.style.fontFamily = '"' + f.name + '"';
+    var del = document.createElement("button");
+    del.className = "font-card-del";
+    del.title = t("font_delete");
+    del.textContent = "×";
+    del.onclick = function(e) {
+      e.stopPropagation();
+      _deleteCustomFont(f.url);
+    };
     card.appendChild(preview);
     card.appendChild(label);
+    card.appendChild(del);
     container.appendChild(card);
   });
+
+  // 上传入口卡片
+  var up = document.createElement("div");
+  up.className = "font-card font-card-upload";
+  up.title = t("font_upload");
+  up.onclick = function() {
+    document.getElementById("fontUploadInput").click();
+  };
+  up.textContent = "＋";
+  container.appendChild(up);
   syncFontCards();
+}
+
+// 上传字体：保存到服务端 → 记入外观 custom_fonts → 应用
+export async function _uploadFontFile(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var fd = new FormData();
+  fd.append("file", file);
+  var d = await api("/api/fonts/upload", { method: "POST", body: fd });
+  if (d && d.success) {
+    var entry = { name: file.name.replace(/\.[^.]+$/, ""), url: d.url };
+    var list = (window._customFonts || []).slice();
+    if (!list.some(function(f) { return f.url === entry.url; })) list.push(entry);
+    window._customFonts = list;
+    await api("/api/appearance", {
+      method: "PUT",
+      body: JSON.stringify({ custom_fonts: list }),
+    });
+    initFontSelector();
+    applySettingFont(entry.url);
+    toast(t("font_uploaded"), "ok");
+  } else {
+    toast((d && d.error) || t("font_upload_failed"), "er");
+  }
+  input.value = "";
+}
+
+export async function _deleteCustomFont(url) {
+  var ok = await confirm2(t("font_delete"), url.split("/").pop());
+  if (!ok) return;
+  await api("/api/fonts/delete", {
+    method: "POST",
+    body: JSON.stringify({ url: url }),
+  });
+  var list = (window._customFonts || []).filter(function(f) {
+    return f.url !== url;
+  });
+  window._customFonts = list;
+  await api("/api/appearance", {
+    method: "PUT",
+    body: JSON.stringify({ custom_fonts: list }),
+  });
+  if (getFont() === url) applySettingFont("system");
+  initFontSelector();
 }
 
 export function syncFontCards() {
@@ -106,9 +186,22 @@ export async function loadGlobalAppearance() {
     var app = d.appearance;
     var scopeEl = document.getElementById("settingsGlobalScope");
     if (scopeEl) scopeEl.checked = !!app._global_enabled;
-    // 全局同步开启时，其它端自动套用全局外观
-    if (app._global_enabled) {
+    window._globalSyncEnabled = !!app._global_enabled;
+    // 用户上传的自定义字体清单（先注册 @font-face 再应用字体）
+    window._customFonts = Array.isArray(app.custom_fonts) ? app.custom_fonts : [];
+    (window._customFonts || []).forEach(function (f) {
+      _ensureFontFace(f.name, f.url);
+    });
+    if (window._globalSyncEnabled) {
+      // 全局同步开启：本机静音，应用远端快照（设置 + 字体），并同步开关 UI
+      window._syncMuted = true;
+      if (app.font) {
+        localStorage.setItem("ep_font", app.font);
+        applyFont(app.font);
+      }
+      await _applySyncedSettings(app.settings || {});
       applyGlobalAppearanceData(app);
+      setTimeout(function () { window._syncMuted = false; }, 800);
     }
   } catch (e) {
     console.debug("Appearance API unavailable, using local settings");
@@ -130,6 +223,7 @@ export async function onSettingsScopeChange(checked) {
       body: JSON.stringify({ _global_enabled: checked }),
     });
     if (d && d.success) {
+      window._globalSyncEnabled = checked;
       if (checked) {
         await loadGlobalAppearance(); // 立即套用全局外观，而非等下次加载
         toast(t("settings_sync_on_applied"), "ok");
@@ -231,20 +325,8 @@ export function collectAppearanceData() {
 export async function uploadGlobalAppearance() {
   var ok = await confirm2(t("settings_upload_global"), t("settings_upload_confirm"));
   if (!ok) return;
-  var data = collectAppearanceData();
-  try {
-    var d = await api("/api/appearance", {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-    if (d && d.success) {
-      toast(t("settings_upload_global_ok"), "ok");
-    } else {
-      toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
-    }
-  } catch (e) {
-    toast(t("save_failed"), "er");
-  }
+  await _pushSyncSnapshot();
+  toast(t("settings_upload_global_ok"), "ok");
 }
 
 export function _availableNavPages() {
@@ -878,3 +960,109 @@ export async function importBackup(input) {
   input.value = "";
 }
 
+// ════════════════ 全局同步（一开全开，全量同步）════════════════
+// 同步范围：外观 + 行为 + 语言 + 布局（下列 localStorage 键）
+var SYNC_LOCAL_KEYS = [
+  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style",
+  "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
+  "ep_show_node_selector", "ep_remember_groups",
+  "ep_setting_dash_title", "ep_setting_bg_color", "ep_setting_bg_image",
+  "ep_setting_accent_color", "ep_setting_bg_auto_theme", "ep_setting_custom_css",
+  "ep_setting_privacy_mode", "ep_setting_density", "ep_setting_default_page",
+  "ep_setting_editor_tab_size", "ep_setting_editor_line_wrap",
+  "ep_setting_refresh_interval", "ep_setting_event_limit",
+  "ep_setting_event_density", "ep_setting_event_auto_top",
+];
+var _syncPushTimer = null;
+
+export function _globalSyncEnabled() {
+  return !!window._globalSyncEnabled;
+}
+
+// 同步快照推送（同步开启时，任意同步设置变更 → 推送 → 广播到全部设备）
+export async function _pushSyncSnapshot() {
+  if (!_globalSyncEnabled() || !authed) return;
+  var settings = {};
+  SYNC_LOCAL_KEYS.forEach(function (k) {
+    settings[k] = localStorage.getItem(k) || "";
+  });
+  var payload = {
+    _global_enabled: true,
+    settings: settings,
+    custom_fonts: window._customFonts || [],
+    font: getFont(),
+  };
+  await api("/api/appearance", { method: "PUT", body: JSON.stringify(payload) });
+}
+
+// 拦截同步键的写入（同步开启时自动推送；应用远端快照期间静音）
+var _origSetItem = Storage.prototype.setItem;
+Storage.prototype.setItem = function (k, v) {
+  _origSetItem.call(this, k, v);
+  try {
+    if (
+      window._globalSyncEnabled &&
+      !window._syncMuted &&
+      typeof k === "string" &&
+      (k.indexOf("ep_setting_") === 0 || SYNC_LOCAL_KEYS.indexOf(k) !== -1)
+    ) {
+      if (_syncPushTimer) clearTimeout(_syncPushTimer);
+      _syncPushTimer = setTimeout(_pushSyncSnapshot, 2000);
+    }
+  } catch (e) {}
+};
+
+// 同步键 → 应用函数（收到广播/快照后恢复到本机）
+var SYNC_APPLIERS = {
+  ep_theme: function (v) { applyTheme(v); },
+  ep_oled: function (v) { applyOled(v === "on"); },
+  ep_font: function (v) { applyFont(v); },
+  ep_lang: function (v) { applySettingLang(v); },
+  ep_anim_style: function (v) { applyAnimStyle(v); },
+  ep_home_pins: function () { renderHomePins(); },
+  ep_nav_group_states: function () { restoreNavGroupStates(); },
+  ep_sidebar_collapsed: function (v) {
+    if (window.innerWidth > 768)
+      document.getElementById("sidebar").classList.toggle("collapsed", v === "true");
+  },
+  ep_show_node_selector: function () { updateNodeSelectorVisibility(); },
+  ep_remember_groups: function () { restoreNavGroupStates(); },
+  ep_setting_dash_title: function (v) { applyDashTitle(v); },
+  ep_setting_bg_color: function (v) { applyBgColor(v); },
+  ep_setting_bg_image: function (v) { v ? applyBgImage(v) : clearBgImage(); },
+  ep_setting_accent_color: function (v) { applyAccentColor(v); },
+  ep_setting_bg_auto_theme: function (v) {
+    localStorage.setItem("ep_setting_bg_auto_theme", v);
+    onThemeChanged();
+  },
+  ep_setting_custom_css: function () {
+    var ta = document.getElementById("settingsCustomCss");
+    if (ta) applySettingCustomCss();
+  },
+  ep_setting_privacy_mode: function (v) { applyPrivacyMode(v === "1"); },
+  ep_setting_density: function (v) { applySettingDensity(v); },
+  ep_setting_default_page: function (v) { setSetting("default_page", v); },
+  ep_setting_editor_tab_size: function (v) { applySettingTabSize(parseInt(v, 10) || 4); },
+  ep_setting_editor_line_wrap: function (v) { applySettingLineWrap(v === "1"); },
+  ep_setting_refresh_interval: function (v) { applySettingRefresh(v); },
+  ep_setting_event_limit: function (v) { applySettingEventLimit(v); },
+  ep_setting_event_density: function (v) { applySettingEventDensity(v); },
+  ep_setting_event_auto_top: function (v) { applySettingEventAutoTop(v === "1"); },
+};
+
+// 应用远端设置快照（静音本机推送，避免回环）
+export async function _applySyncedSettings(st) {
+  window._syncMuted = true;
+  try {
+    Object.keys(st).forEach(function (k) {
+      localStorage.setItem(k, st[k]);
+      var fn = SYNC_APPLIERS[k];
+      if (fn) {
+        try { fn(st[k]); } catch (e) {}
+      }
+    });
+    syncSettingsUI();
+  } finally {
+    setTimeout(function () { window._syncMuted = false; }, 800);
+  }
+}

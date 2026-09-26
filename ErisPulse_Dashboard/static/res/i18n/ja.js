@@ -1077,5 +1077,16 @@ settings_tab_colorfont: "色とフォント",
     settings_anim_playful: "プレイフル",
     settings_anim_off: "オフ",
 
+
+    font_system: "システムデフォルト",
+    font_upload: "フォントをアップロード",
+    font_delete: "フォントを削除",
+    font_uploaded: "フォントをアップロードして適用しました",
+    font_upload_failed: "フォントのアップロードに失敗しました",
+    settings_global_scope_desc: "オンにすると、すべてのデバイスが以下の全設定を自動同期します（外観・動作・言語・レイアウト）。オフにすると各デバイスのローカル設定に戻ります",
+    settings_upload_global: "全設定を送信",
+    settings_upload_global_desc: "このデバイスの全設定をグローバル設定として送信し、同期が有効なすべてのデバイスに適用します",
+    settings_upload_confirm: "現在のデバイスの設定でグローバル設定を上書きし、同期が有効なすべてのデバイスを更新します。続行しますか？",
+
   };
 })();

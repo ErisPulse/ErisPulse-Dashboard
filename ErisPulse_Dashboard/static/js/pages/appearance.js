@@ -59,10 +59,56 @@ export function getFont() {
   return localStorage.getItem("ep_font") || "sora";
 }
 
+function _ensureFontFace(name, url) {
+  var el = document.getElementById("customFontFaces");
+  if (!el) {
+    el = document.createElement("style");
+    el.id = "customFontFaces";
+    document.head.appendChild(el);
+  }
+  var marker = 'font-family: "' + name + '"';
+  if (el.textContent.indexOf(marker) === -1) {
+    var fmt = /\.woff2$/.test(url)
+      ? 'format("woff2")'
+      : /\.woff$/.test(url)
+        ? 'format("woff")'
+        : /\.otf$/.test(url)
+          ? 'format("opentype")'
+          : 'format("truetype")';
+    el.textContent +=
+      '\n@font-face {\n  font-family: "' + name + '";\n  src: url("' + url + '") ' + fmt + ';\n  font-display: swap;\n}';
+  }
+}
+
 export function applyFont(id) {
-  var preset = FONT_PRESETS.find(function(f) { return f.id === id; });
-  if (!preset) return;
   var root = document.documentElement;
+  // 用户上传的自定义字体（id = "custom:<url>"，清单在 window._customFonts）
+  if (id && id.indexOf("custom:") === 0) {
+    var url = id.slice(7);
+    var hit = (window._customFonts || []).find(function (f) {
+      return f.url === url;
+    });
+    if (hit) {
+      _ensureFontFace(hit.name, hit.url);
+      var stack =
+        '"' + hit.name + '", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+      root.style.setProperty("--font-body", stack);
+      root.style.setProperty("--font-display", stack);
+      return;
+    }
+  }
+  // 系统默认：移除内联覆盖，回落到 CSS 默认系统字体栈
+  if (!id || id === "system") {
+    root.style.removeProperty("--font-body");
+    root.style.removeProperty("--font-display");
+    return;
+  }
+  var preset = FONT_PRESETS.find(function(f) { return f.id === id; });
+  if (!preset) {
+    root.style.removeProperty("--font-body");
+    root.style.removeProperty("--font-display");
+    return;
+  }
   var bodyStack = preset.body.replace(/"(.*?)"/, function(_, n) {
     return '"' + n + '", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
   });
