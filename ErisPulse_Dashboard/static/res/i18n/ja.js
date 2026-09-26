@@ -1100,13 +1100,5 @@ settings_tab_colorfont: "色とフォント",
     users_token_created_hint: "トークンを作成しました。今すぐコピーして保存してください（一度のみ表示）：",
     forbidden: "この操作を行う権限がありません",
 
-
-    settings_perms_tab: "権限",
-    users_perm_advanced: "高度なAPI権限",
-    users_perm_advanced_desc: "API単位のきめ細かな制御（ページ単位の選択を上書きします）",
-
-
-    users_perm_no_view: "このトークンにはそのモジュールビューへのアクセス権がありません",
-
   };
 })();

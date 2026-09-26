@@ -617,30 +617,11 @@ export function _colorForUsage(val, warn, danger) {
 // ── 按会话能力隐藏侧边栏未授权页面 ──
 export function updateSidebarForCaps() {
   var sc = window.sessionCaps;
-  if (!sc || sc.admin) return; // 管理员/默认态：全部可见
-  document
-    .querySelectorAll(".sidebar .nav-item[data-page]")
-    .forEach(function (a) {
-      var page = a.getAttribute("data-page");
-      var visible;
-      if (page && page.indexOf("ext-") === 0) {
-        // 模块视图：view:<id> 能力
-        visible = (sc.caps || []).indexOf("view:" + page.slice(4)) !== -1;
-      } else {
-        var cap = window._PAGE_CAPABILITY_MAP
-          ? window._PAGE_CAPABILITY_MAP[page]
-          : null;
-        visible = !cap || (sc.caps || []).indexOf(cap) !== -1;
-      }
-      a.style.display = visible ? "" : "none";
-    });
-  // 无可见项的分组整组隐藏
-  document.querySelectorAll(".sidebar .nav-group").forEach(function (g) {
-    var items = g.querySelectorAll(".nav-item[data-page]");
-    if (!items.length) return;
-    var anyVisible = Array.prototype.some.call(items, function (n) {
-      return n.style.display !== "none";
-    });
-    g.style.display = anyVisible ? "" : "none";
+  document.querySelectorAll(".sidebar .nav-item[data-page]").forEach(function (a) {
+    var page = a.getAttribute("data-page");
+    var cap = window._PAGE_CAPABILITY_MAP ? window._PAGE_CAPABILITY_MAP[page] : null;
+    var visible = true;
+    if (sc && !sc.admin && cap) visible = (sc.caps || []).indexOf(cap) !== -1;
+    a.style.display = visible ? "" : "none";
   });
 }

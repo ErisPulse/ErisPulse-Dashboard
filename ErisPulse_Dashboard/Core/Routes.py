@@ -109,10 +109,7 @@ class RoutesMixin:
             token = self._get_token_from_request(request)
             if not self._verify_token(token):
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
-            # 多令牌权限：受限令牌按能力集放行
-            # - 已映射端点：按能力 ID 校验
-            # - 模块视图数据端点：按 "view:<id>" 校验（外部注册页面独立授权）
-            # - 未映射端点：默认放行（兼容第三方模块自有 API）
+            # 多令牌权限：受限令牌按能力集放行（未映射端点默认放行，兼容模块视图）
             info = self._get_token_info(token)
             if info and not info.get("admin"):
                 caps = set(info.get("caps") or [])
@@ -120,10 +117,6 @@ class RoutesMixin:
                 cap = self._resolve_api_capability(api_path)
                 if cap and cap not in caps:
                     return JSONResponse({"error": "forbidden"}, status_code=403)
-                if api_path.startswith("/api/views/data/"):
-                    view_id = api_path[len("/api/views/data/"):]
-                    if ("view:" + view_id) not in caps:
-                        return JSONResponse({"error": "forbidden"}, status_code=403)
             return request
 
         r.middleware("/Dashboard/api/*")(_auth_middleware)
@@ -137,12 +130,6 @@ class RoutesMixin:
             "/api/auth/permissions",
             handler=self._api_auth_permissions,
             methods=["GET"],
-        )
-        r.register_http_route(
-            mn, "/api/users/caps", handler=self._api_users_caps, methods=["GET"]
-        )
-        r.register_http_route(
-            mn, "/api/users/caps", handler=self._api_users_caps, methods=["GET"]
         )
         r.register_http_route(
             mn, "/api/users/tokens", handler=self._api_users_tokens, methods=["GET"]

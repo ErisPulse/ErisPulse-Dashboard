@@ -388,21 +388,5 @@ class StatusMixin:
         self._add_audit_log("user_token_delete", name, request)
         return JSONResponse({"success": True})
 
-    async def _api_users_caps(self, request: Request) -> JSONResponse:
-        """完整 API → 能力映射（令牌管理界面用，仅管理员）"""
-        if not self._require_admin(request):
-            return JSONResponse({"error": "forbidden"}, status_code=403)
-        from .Cluster import API_TO_CAPABILITY_MAP
-
-        return JSONResponse({"map": API_TO_CAPABILITY_MAP})
-
-    async def _api_users_caps(self, request: Request) -> JSONResponse:
-        """完整 API → 能力映射（令牌管理界面用，仅管理员）"""
-        if not self._require_admin(request):
-            return JSONResponse({"error": "forbidden"}, status_code=403)
-        from .Cluster import API_TO_CAPABILITY_MAP
-
-        return JSONResponse({"map": API_TO_CAPABILITY_MAP})
-
     async def _api_system(self, request: Request) -> JSONResponse:
         return JSONResponse(await self._get_system_status())

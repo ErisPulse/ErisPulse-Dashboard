@@ -1077,13 +1077,5 @@ settings_tab_colorfont: "顏色與字體",
     users_token_created_hint: "權杖已建立，請立即複製保存（僅顯示一次）：",
     forbidden: "無權限執行此操作",
 
-
-    settings_perms_tab: "權限",
-    users_perm_advanced: "進階 API 權限",
-    users_perm_advanced_desc: "精細控制單一 API 能力（勾選會覆蓋頁面級選擇）",
-
-
-    users_perm_no_view: "目前權杖無權存取該模組視圖",
-
   };
 })();

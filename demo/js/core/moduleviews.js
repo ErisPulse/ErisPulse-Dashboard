@@ -213,17 +213,9 @@ export function _renderModuleViews(views) {
       }
     }
 
-    const sc = window.sessionCaps;
     groups[groupKey].forEach(function (v) {
-      // 受限令牌：未授予 view:<id> 能力的模块视图不渲染入口
-      if (sc && !sc.admin && (sc.caps || []).indexOf("view:" + v.id) === -1) {
-        return;
-      }
       const pageId = "ext-" + v.id;
       const navItem = document.createElement("a");
-      navItem.className = "nav-item";
-      navItem.setAttribute("data-page", pageId);
-      navItem.setAttribute("data-module-view", v.id);
       navItem.className = "nav-item";
       navItem.setAttribute("data-page", pageId);
       navItem.setAttribute("data-module-view", v.id);

@@ -1125,13 +1125,5 @@ settings_tab_colorfont: "Colors & Font",
     users_token_created_hint: "Token created — copy and store it now (shown only once):",
     forbidden: "You do not have permission for this action",
 
-
-    settings_perms_tab: "Perms",
-    users_perm_advanced: "Advanced API permissions",
-    users_perm_advanced_desc: "Fine-grained per-API capability control (overrides page-level selection)",
-
-
-    users_perm_no_view: "This token has no access to that module view",
-
   };
 })();
