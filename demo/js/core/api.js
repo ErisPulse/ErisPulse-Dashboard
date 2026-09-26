@@ -33,14 +33,6 @@ export function api(path, opts) {
         showLogin();
         return null;
       }
-      if (r.status === 403) {
-        var now403 = Date.now();
-        if (now403 - _lastErrorToast > 5000) {
-          _lastErrorToast = now403;
-          toast(t("forbidden"), "er");
-        }
-        return null;
-      }
       if (r.status === 502) {
         return r.json().then((d) => {
           if (

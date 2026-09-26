@@ -170,91 +170,12 @@ export function switchSettingsTab(tab, btn) {
   }
 }
 
-export function renderUserTokens() {
-  var host = document.getElementById("userTokensList");
-  if (!host) return;
-  // 仅管理员可见令牌管理
-  var sc = window.sessionCaps;
-  var card = document.getElementById("userTokensCard");
-  if (!card) return;
-  card.style.display = sc && !sc.admin ? "none" : "";
-  if (!sc || !sc.admin) return;
-  api("/api/users/tokens").then(function (d) {
-    if (!d || !d.tokens) return;
-    var rows = d.tokens
-      .map(function (t) {
-        return (
-          '<div class="ux-row"><span class="user-token-name">' +
-          esc(t.name) +
-          '</span><span class="user-token-caps">' +
-          esc((t.caps || []).length ? t.caps.join("、") : t("users_token_caps_none")) +
-          '</span><span class="user-token-masked">' +
-          esc(t.masked || "") +
-          '</span><button class="btn btn-danger btn-sm" onclick="deleteUserToken(\'' +
-          esc(t.name) +
-          '\')">' +
-          esc(t("users_token_revoke")) +
-          "</button></div>"
-        );
-      })
-      .join("");
-    host.innerHTML = rows || '<div class="dp-empty">' + esc(t("users_tokens_empty")) + "</div>";
-  });
-}
-
-export async function createUserToken() {
-  var nameInput = document.getElementById("userTokenName");
-  if (!nameInput) return;
-  var name = nameInput.value.trim();
-  if (!name) return toast(t("users_token_name_required"), "wr");
-  var caps = [];
-  document
-    .querySelectorAll("#userTokenCaps input[type=checkbox]:checked")
-    .forEach(function (c) {
-      caps.push(c.dataset.cap);
-    });
-  var d = await api("/api/users/tokens", {
-    method: "POST",
-    body: JSON.stringify({ name: name, caps: caps }),
-  });
-  if (d && d.success) {
-    nameInput.value = "";
-    document
-      .querySelectorAll("#userTokenCaps input[type=checkbox]")
-      .forEach(function (c) {
-        c.checked = false;
-      });
-    var show = document.getElementById("userTokenCreated");
-    show.innerHTML =
-      esc(t("users_token_created_hint")) +
-      ' <code class="user-token-new">' +
-      esc(d.token) +
-      "</code>";
-    show.style.display = "block";
-    renderUserTokens();
-  } else {
-    toast((d && d.error) || t("save_failed"), "er");
-  }
-}
-
-export async function deleteUserToken(name) {
-  var ok = await confirm2(t("users_token_revoke"), name);
-  if (!ok) return;
-  var d = await api("/api/users/tokens/delete", {
-    method: "POST",
-    body: JSON.stringify({ name: name }),
-  });
-  if (d && d.success) renderUserTokens();
-  else toast((d && d.error) || t("save_failed"), "er");
-}
-
 export async function loadSettings() {
   updateAboutCard();
   syncSettingsUI();
   initAccentSwatches();
   initCustomThemeEditor();
   initFontSelector();
-  renderUserTokens();
   await loadGlobalAppearance();
 }
 

@@ -1088,17 +1088,5 @@ settings_tab_colorfont: "色とフォント",
     settings_upload_global_desc: "このデバイスの全設定をグローバル設定として送信し、同期が有効なすべてのデバイスに適用します",
     settings_upload_confirm: "現在のデバイスの設定でグローバル設定を上書きし、同期が有効なすべてのデバイスを更新します。続行しますか？",
 
-
-    users_tokens_title: "ユーザーとトークン",
-    users_token_create: "トークンを作成",
-    users_token_name_ph: "トークン名（例：デスクトップ）",
-    users_tokens_list: "作成済みトークン",
-    users_token_caps_none: "許可されたページなし",
-    users_token_revoke: "失効",
-    users_tokens_empty: "他のトークンはありません",
-    users_token_name_required: "トークン名を入力してください",
-    users_token_created_hint: "トークンを作成しました。今すぐコピーして保存してください（一度のみ表示）：",
-    forbidden: "この操作を行う権限がありません",
-
   };
 })();

@@ -1113,17 +1113,5 @@ settings_tab_colorfont: "Colors & Font",
     settings_upload_global_desc: "Push this device's full settings as the global settings; all devices with sync enabled will apply them",
     settings_upload_confirm: "This overwrites the global settings with this device's settings and updates every synced device. Continue?",
 
-
-    users_tokens_title: "Users & Tokens",
-    users_token_create: "Create token",
-    users_token_name_ph: "Token name (e.g. Desktop)",
-    users_tokens_list: "Created tokens",
-    users_token_caps_none: "No pages granted",
-    users_token_revoke: "Revoke",
-    users_tokens_empty: "No other tokens",
-    users_token_name_required: "Token name is required",
-    users_token_created_hint: "Token created — copy and store it now (shown only once):",
-    forbidden: "You do not have permission for this action",
-
   };
 })();

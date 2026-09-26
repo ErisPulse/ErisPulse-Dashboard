@@ -1083,17 +1083,5 @@ settings_tab_colorfont: "颜色与字体",
     settings_upload_global_desc: "将当前设备的全部设置推送为全局设置，所有开启同步的设备会自动套用",
     settings_upload_confirm: "将用当前设备的设置覆盖全局设置，所有开启同步的设备都会更新。确定继续？",
 
-
-    users_tokens_title: "用户与令牌",
-    users_token_create: "创建令牌",
-    users_token_name_ph: "令牌名称（如：台式机）",
-    users_tokens_list: "已创建的令牌",
-    users_token_caps_none: "未授予任何页面",
-    users_token_revoke: "吊销",
-    users_tokens_empty: "暂无其他令牌",
-    users_token_name_required: "请输入令牌名称",
-    users_token_created_hint: "令牌已创建，请立即复制保存（仅显示一次）：",
-    forbidden: "无权限执行此操作",
-
   };
 })();
