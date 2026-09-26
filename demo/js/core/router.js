@@ -10,10 +10,31 @@ export function closeSidebar() {
   document.getElementById("overlay").classList.remove("show");
 }
 
-export function go(name, el) {
+export function go(name, el, opts) {
   if (!authed) {
     showLogin();
     return;
+  }
+   
+  if (
+    !(opts && opts.force) &&
+    window._cfgDirtyKeys &&
+    _cfgDirtyKeys.size > 0
+  ) {
+    var adapterPage = document.getElementById("p-adapter");
+    var onAdapter = adapterPage && adapterPage.classList.contains("active");
+     
+    if (name !== "adapter" || onAdapter) {
+      confirm2(t("unsaved_confirm_title"), t("unsaved_confirm_text")).then(
+        function (ok) {
+          if (!ok) return;
+          _cfgDirtyKeys.clear();
+          if (typeof _cfgUpdateSaveDot === "function") _cfgUpdateSaveDot();
+          go(name, el, { force: true });
+        },
+      );
+      return;
+    }
   }
    
   var redirect = PAGE_REDIRECTS[name];
@@ -26,7 +47,7 @@ export function go(name, el) {
       );
       if (hostNav) targetEl = hostNav;
     }
-    go(redirect.page, targetEl);
+    go(redirect.page, targetEl, opts);
      
     var tabBtn = document.querySelector(
       "#" +
@@ -111,7 +132,6 @@ export function go(name, el) {
     config: loadConfig,
     settings: loadSettings,
     cluster: loadClusterPage,
-    about: loadAbout,
   };
   if (loaders[name]) {
     var result = loaders[name]();
@@ -363,10 +383,13 @@ export function toggleHomePinPicker() {
         var tabs = MERGED_PAGE_TABS[page];
         if (tabs) {
           tabs.forEach(function (tabInfo) {
+            var tabLabel = t(tabInfo.i18n) || tabInfo.label;
+             
+            if (tabLabel === c.title) return;
             var pinId = page + ":" + tabInfo.id;
             if (pinned.indexOf(pinId) !== -1) return;
             addOption(
-              t(tabInfo.i18n) || tabInfo.label,
+              tabLabel,
               c.svg,
               function () {
                 addHomePin(pinId);

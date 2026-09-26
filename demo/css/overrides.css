@@ -85,7 +85,7 @@
 
     .sidebar.collapsed .nav-item {
         justify-content: revert;
-        padding: 9px 12px;
+        padding: 8px 12px 8px 24px;  
     }
 
     .sidebar.collapsed .sidebar-footer {
@@ -1338,5 +1338,13 @@ input, textarea, select, button,
     .btn-danger {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
+    }
+}
+
+ 
+@media (max-width: 720px) {
+    .sidebar {
+        background: var(--bg-s) !important;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
     }
 }

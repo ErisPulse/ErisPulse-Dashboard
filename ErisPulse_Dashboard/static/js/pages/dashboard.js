@@ -49,6 +49,8 @@ export async function refreshDashboard() {
   if (window.EP && EP.animateStatVals)
     EP.animateStatVals(document.getElementById("statGrid"), "statGrid");
 
+  updateOnboardingCard(ad);
+
   renderHomePins();
 
   let aH = "";

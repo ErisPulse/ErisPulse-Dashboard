@@ -13,7 +13,9 @@ import * as m_components_tabs from "./components/tabs.js";
 import * as m_components_kv from "./components/kv.js";
 import * as m_components_tasks from "./components/tasks.js";
 import * as m_components_update_hint from "./components/update-hint.js";
-import * as m_components_status_icon from "./components/status-icon.js";
+import * as m_components_install_guide from "./components/install-guide.js";
+import * as m_components_search_palette from "./components/search-palette.js";
+import * as m_components_onboarding_card from "./components/onboarding-card.js";import * as m_components_status_icon from "./components/status-icon.js";
 import * as m_components_ws_inspector from "./components/ws-inspector.js";
 import * as m_core_router from "./core/router.js";
 import * as m_core_moduleviews from "./core/moduleviews.js";
@@ -51,6 +53,9 @@ const __namespaces = [
   m_components_kv,
   m_components_tasks,
   m_components_update_hint,
+  m_components_install_guide,
+  m_components_search_palette,
+  m_components_onboarding_card,
   m_components_status_icon,
   m_components_ws_inspector,
   m_core_router,

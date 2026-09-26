@@ -106,6 +106,18 @@ export function renderPluginRow(m, isAd) {
 
    
   let acts = "";
+   
+  var canCfg = isAd ? m.has_config || m.has_accounts : m.has_config;
+  if (canCfg) {
+    acts +=
+      '<button class="btn btn-secondary btn-xs" onclick="gotoComponentConfig(\'' +
+      (isAd ? "adapter" : "module") +
+      "','" +
+      _jsq(m.name) +
+      "')\">" +
+      t("goto_config") +
+      "</button> ";
+  }
   if (m.loaded) {
     acts +=
       '<button class="btn btn-secondary btn-xs module-primary-btn" onclick="moduleAction(\'' +

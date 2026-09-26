@@ -145,6 +145,12 @@ export function wsConnect() {
       } else if (m.type === "module_changed") {
         if (m.data && m.data.action === "installed") {
           toast(m.data.name + ": " + t("module_loaded_dynamic"), "ok");
+           
+          queueInstallGuide(m.data.name, "module");
+        }
+        if (m.data && m.data.action === "installed_adapter") {
+           
+          queueInstallGuide(m.data.name, "adapter");
         }
         if (m.data && m.data.action === "upgraded") {
           toast(t("pkg_upgrade_success"), "ok");
