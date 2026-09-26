@@ -176,6 +176,37 @@ class MainBase:
     def _verify_token(self, provided: str | None) -> bool:
         if not provided:
             return False
-        return secrets.compare_digest(
+        if secrets.compare_digest(
             str(provided).encode("utf-8"), self._token.encode("utf-8")
-        )
+        ):
+            return True
+        # 多令牌：Dashboard.tokens 中的受限令牌同样通过认证
+        for t in self.sdk.config.getConfig("Dashboard.tokens") or []:
+            if not isinstance(t, dict):
+                continue
+            if secrets.compare_digest(
+                str(provided).encode("utf-8"), str(t.get("token", "")).encode("utf-8")
+            ):
+                return True
+        return False
+
+    def _get_token_info(self, provided: str | None) -> dict | None:
+        """解析令牌身份：主令牌为全局管理员；其余令牌按 Dashboard.tokens 的能力集"""
+        if not provided:
+            return None
+        if secrets.compare_digest(
+            str(provided).encode("utf-8"), self._token.encode("utf-8")
+        ):
+            return {"admin": True, "name": "admin", "caps": None}
+        for t in self.sdk.config.getConfig("Dashboard.tokens") or []:
+            if not isinstance(t, dict):
+                continue
+            if secrets.compare_digest(
+                str(provided).encode("utf-8"), str(t.get("token", "")).encode("utf-8")
+            ):
+                return {
+                    "admin": False,
+                    "name": t.get("name", ""),
+                    "caps": t.get("caps") or [],
+                }
+        return None

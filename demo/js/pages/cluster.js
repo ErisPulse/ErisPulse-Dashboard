@@ -1,7 +1,12 @@
 // ErisPulse Dashboard – pages/cluster (auto-split from dash.js)
 
 export function isCapabilitySupported(capId) {
-  if (currentNode === "local") return true;
+  if (currentNode === "local") {
+    // 本机会话：受限令牌按能力集判定（管理员全量放行）
+    var sc = window.sessionCaps;
+    if (sc && !sc.admin) return (sc.caps || []).indexOf(capId) !== -1;
+    return true;
+  }
   var caps = nodeCapabilities[currentNode];
   if (!caps) return true;
   if (!caps[capId]) return true;
@@ -609,3 +614,14 @@ export function _colorForUsage(val, warn, danger) {
   return "var(--ok-c)";
 }
 
+// ── 按会话能力隐藏侧边栏未授权页面 ──
+export function updateSidebarForCaps() {
+  var sc = window.sessionCaps;
+  document.querySelectorAll(".sidebar .nav-item[data-page]").forEach(function (a) {
+    var page = a.getAttribute("data-page");
+    var cap = window._PAGE_CAPABILITY_MAP ? window._PAGE_CAPABILITY_MAP[page] : null;
+    var visible = true;
+    if (sc && !sc.admin && cap) visible = (sc.caps || []).indexOf(cap) !== -1;
+    a.style.display = visible ? "" : "none";
+  });
+}

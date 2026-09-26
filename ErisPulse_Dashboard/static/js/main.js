@@ -128,12 +128,12 @@ for (const ns of __namespaces) Object.assign(window, ns);
     fetch(API + "/api/auth/status", {
       headers: { Authorization: "Bearer " + tk },
     })
-      .then((r) => r.json())
-      .then((d) => {
+      .then(async (d) => {
         if (d && d.authenticated) {
           authed = true;
           document.querySelector(".app").classList.add("authed");
           dismissSplash();
+          await loadSessionCaps(); // 会话能力：按令牌隐藏未授权页面
           // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
           loadAll();
           // 恢复上次更新遗留的重载引导（如更新后刷新了页面）

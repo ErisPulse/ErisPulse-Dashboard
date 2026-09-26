@@ -477,6 +477,30 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         } catch (e) { }
         return _json({ success: true });
     };
+    API_MAP['/api/auth/permissions'] = function () {
+        return _json({ admin: true, name: 'admin', caps: [] });
+    };
+    var _mockUserTokens = [
+        { name: '笔记本', caps: ['status', 'bots', 'events', 'logs'], created: '2026-09-20 10:00:00', masked: 'G-xk3b…' }
+    ];
+    API_MAP['/api/users/tokens'] = function (opts) {
+        if (opts && opts.method === 'POST') {
+            try {
+                var b = JSON.parse(opts.body || '{}');
+                _mockUserTokens.push({ name: b.name || 'token', caps: b.caps || [], created: '刚刚', masked: 'N-' + Math.random().toString(36).slice(2, 6) + '…' });
+                return _json({ success: true, token: 'mock-' + Math.random().toString(36).slice(2), name: b.name });
+            } catch (e) { }
+            return _json({ success: true, token: 'mock' });
+        }
+        return _json({ tokens: _mockUserTokens });
+    };
+    API_MAP['/api/users/tokens/delete'] = function (opts) {
+        try {
+            var u = JSON.parse(opts.body || '{}').name;
+            _mockUserTokens = _mockUserTokens.filter(function (t) { return t.name !== u; });
+        } catch (e) { }
+        return _json({ success: true });
+    };
     API_MAP['/api/i18n/language'] = function (opts) { return _json({ success: true }); };
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };
     API_MAP['/api/modules/action'] = function () { return _json({ success: true }); };

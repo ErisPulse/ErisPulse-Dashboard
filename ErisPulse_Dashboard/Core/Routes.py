@@ -109,6 +109,14 @@ class RoutesMixin:
             token = self._get_token_from_request(request)
             if not self._verify_token(token):
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            # 多令牌权限：受限令牌按能力集放行（未映射端点默认放行，兼容模块视图）
+            info = self._get_token_info(token)
+            if info and not info.get("admin"):
+                caps = set(info.get("caps") or [])
+                api_path = p[len("/Dashboard"):] if p.startswith("/Dashboard") else p
+                cap = self._resolve_api_capability(api_path)
+                if cap and cap not in caps:
+                    return JSONResponse({"error": "forbidden"}, status_code=403)
             return request
 
         r.middleware("/Dashboard/api/*")(_auth_middleware)
@@ -116,6 +124,27 @@ class RoutesMixin:
         r.register_http_route(mn, "/api/auth", handler=self._api_auth, methods=["POST"])
         r.register_http_route(
             mn, "/api/auth/status", handler=self._api_auth_status, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/auth/permissions",
+            handler=self._api_auth_permissions,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn, "/api/users/tokens", handler=self._api_users_tokens, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/users/tokens",
+            handler=self._api_users_tokens_create,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/users/tokens/delete",
+            handler=self._api_users_tokens_delete,
+            methods=["POST"],
         )
         r.register_http_route(
             mn, "/api/status", handler=self._api_status, methods=["GET"]
@@ -620,6 +649,19 @@ class RoutesMixin:
         if auth.startswith("Bearer "):
             return auth[7:]
         return request.query_params.get("token")
+
+
+    def _resolve_api_capability(self, path: str) -> str | None:
+        """API 路径 → 能力 ID：先精确匹配，再按最长前缀匹配；未映射返回 None（放行）"""
+        from .Cluster import API_TO_CAPABILITY_MAP
+
+        if path in API_TO_CAPABILITY_MAP:
+            return API_TO_CAPABILITY_MAP[path]
+        best, best_len = None, 0
+        for route, cap in API_TO_CAPABILITY_MAP.items():
+            if path.startswith(route) and len(route) > best_len:
+                best, best_len = cap, len(route)
+        return best
 
     # ════════════════ WebSocket 实时通道 ════════════════
 

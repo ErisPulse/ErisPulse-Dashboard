@@ -1065,5 +1065,17 @@ settings_tab_colorfont: "顏色與字體",
     settings_upload_global_desc: "將目前裝置的全部設定推送為全域設定，所有開啟同步的裝置會自動套用",
     settings_upload_confirm: "將以目前裝置的設定覆蓋全域設定，所有開啟同步的裝置都會更新。確定繼續？",
 
+
+    users_tokens_title: "使用者與權杖",
+    users_token_create: "建立權杖",
+    users_token_name_ph: "權杖名稱（如：桌上型電腦）",
+    users_tokens_list: "已建立的權杖",
+    users_token_caps_none: "未授予任何頁面",
+    users_token_revoke: "撤銷",
+    users_tokens_empty: "尚無其他權杖",
+    users_token_name_required: "請輸入權杖名稱",
+    users_token_created_hint: "權杖已建立，請立即複製保存（僅顯示一次）：",
+    forbidden: "無權限執行此操作",
+
   };
 })();

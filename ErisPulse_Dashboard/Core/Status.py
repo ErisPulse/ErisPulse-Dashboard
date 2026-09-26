@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import secrets
 import sys
 import time
 
@@ -310,6 +311,82 @@ class StatusMixin:
                 },
             }
         )
+
+    async def _api_auth_permissions(self, request: Request) -> JSONResponse:
+        """返回当前令牌的身份与能力集（前端据此隐藏未授权页面/功能）"""
+        token = self._get_token_from_request(request)
+        info = self._get_token_info(token)
+        if not info:
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        return JSONResponse(
+            {
+                "admin": info.get("admin", False),
+                "name": info.get("name", ""),
+                "caps": info.get("caps") or [],
+            }
+        )
+
+    def _require_admin(self, request: Request) -> bool:
+        """令牌管理仅限全局管理员（主令牌）"""
+        token = self._get_token_from_request(request)
+        info = self._get_token_info(token)
+        return bool(info and info.get("admin"))
+
+    async def _api_users_tokens(self, request: Request) -> JSONResponse:
+        """列出受限令牌（脱敏，不含完整 token）"""
+        if not self._require_admin(request):
+            return JSONResponse({"error": "forbidden"}, status_code=403)
+        tokens = self.sdk.config.getConfig("Dashboard.tokens") or []
+        safe = [
+            {
+                "name": t.get("name", ""),
+                "caps": t.get("caps") or [],
+                "created": t.get("created", ""),
+                "masked": str(t.get("token", ""))[:6] + "…" if t.get("token") else "",
+            }
+            for t in tokens
+            if isinstance(t, dict)
+        ]
+        return JSONResponse({"tokens": safe})
+
+    async def _api_users_tokens_create(self, request: Request) -> JSONResponse:
+        """创建受限令牌：完整 token 仅在创建响应中返回一次"""
+        if not self._require_admin(request):
+            return JSONResponse({"error": "forbidden"}, status_code=403)
+        body = await request.json()
+        name = str(body.get("name", "")).strip()
+        caps = body.get("caps") or []
+        if not name:
+            return JSONResponse({"error": "name is required"}, status_code=400)
+        if not isinstance(caps, list):
+            return JSONResponse({"error": "caps must be a list"}, status_code=400)
+        tokens = self.sdk.config.getConfig("Dashboard.tokens") or []
+        if any(isinstance(t, dict) and t.get("name") == name for t in tokens):
+            return JSONResponse({"error": "name already exists"}, status_code=400)
+        token = secrets.token_urlsafe(24)
+        entry = {
+            "name": name,
+            "token": token,
+            "caps": [str(c) for c in caps],
+            "created": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        tokens.append(entry)
+        self.sdk.config.setConfig("Dashboard.tokens", tokens, immediate=True)
+        self._add_audit_log("user_token_create", name, request)
+        return JSONResponse({"success": True, "token": token, "name": name})
+
+    async def _api_users_tokens_delete(self, request: Request) -> JSONResponse:
+        if not self._require_admin(request):
+            return JSONResponse({"error": "forbidden"}, status_code=403)
+        body = await request.json()
+        name = str(body.get("name", ""))
+        tokens = self.sdk.config.getConfig("Dashboard.tokens") or []
+        remaining = [t for t in tokens if not (isinstance(t, dict) and t.get("name") == name)]
+        if len(remaining) == len(tokens):
+            return JSONResponse({"error": "not found"}, status_code=404)
+        self.sdk.config.setConfig("Dashboard.tokens", remaining, immediate=True)
+        self._add_audit_log("user_token_delete", name, request)
+        return JSONResponse({"success": True})
 
     async def _api_system(self, request: Request) -> JSONResponse:
         return JSONResponse(await self._get_system_status())

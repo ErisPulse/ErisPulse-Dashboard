@@ -35,6 +35,7 @@ export async function doLogin() {
     authed = true;
     closeLogin();
     document.querySelector(".app").classList.add("authed");
+    await loadSessionCaps();
     // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
     loadAll();
     // 恢复上次更新遗留的重载引导（如更新后刷新了页面）
@@ -63,3 +64,17 @@ export function doLogout() {
   showLogin();
 }
 
+// ── 会话能力：当前令牌的身份与可访问页面（用户系统） ──
+export async function loadSessionCaps() {
+  try {
+    const d = await api("/api/auth/permissions");
+    if (d && typeof d.admin === "boolean") {
+      window.sessionCaps = { admin: d.admin, name: d.name, caps: d.caps || [] };
+    } else {
+      window.sessionCaps = { admin: true, name: "admin", caps: [] };
+    }
+  } catch (e) {
+    window.sessionCaps = { admin: true, name: "admin", caps: [] };
+  }
+  if (typeof updateSidebarForCaps === "function") updateSidebarForCaps();
+}
