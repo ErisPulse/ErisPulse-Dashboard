@@ -1348,3 +1348,66 @@ input, textarea, select, button,
         box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
     }
 }
+
+
+/* ════════════════ 动画风格：smooth（流畅）════════════════ */
+@keyframes smoothUp {
+    0%   { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes smoothLeft {
+    0%   { opacity: 0; transform: translateX(-14px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+[data-anim="smooth"] .page.active { animation: smoothUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1); }
+
+[data-anim="smooth"] .anim-enter .stat-card,
+[data-anim="smooth"] .anim-enter .card {
+    opacity: 0;
+    animation: smoothUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+[data-anim="smooth"] .anim-enter .stat-card:nth-child(even),
+[data-anim="smooth"] .anim-enter .card:nth-child(even) {
+    animation-name: smoothLeft;
+}
+[data-anim="smooth"] .anim-enter .list-row,
+[data-anim="smooth"] .anim-enter .ev-item {
+    opacity: 0;
+    animation: smoothUp 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+/* ════════════════ 动画风格：zoom（缩放）════════════════ */
+@keyframes zoomInSoft {
+    0%   { opacity: 0; transform: scale(0.94); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes zoomInRow {
+    0%   { opacity: 0; transform: scale(0.97) translateY(4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+[data-anim="zoom"] .page.active { animation: zoomInSoft 0.3s ease-out; }
+
+[data-anim="zoom"] .anim-enter .stat-card,
+[data-anim="zoom"] .anim-enter .card {
+    opacity: 0;
+    animation: zoomInSoft 0.32s ease-out forwards;
+}
+[data-anim="zoom"] .anim-enter .list-row,
+[data-anim="zoom"] .anim-enter .ev-item {
+    opacity: 0;
+    animation: zoomInRow 0.28s ease-out forwards;
+}
+
+/* ════════════════ 动画风格：off（关闭）════════════════ */
+[data-anim="off"] .page.active,
+[data-anim="off"] .anim-enter .stat-card,
+[data-anim="off"] .anim-enter .card,
+[data-anim="off"] .anim-enter .list-row,
+[data-anim="off"] .anim-enter .ev-item,
+[data-anim="off"] .anim-enter .about-feature {
+    animation: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+}

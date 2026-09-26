@@ -882,3 +882,63 @@
     color: var(--tx-t);
     margin-top: 2px;
 }
+
+
+/* ════════════════ 模块商店分类筛选 ════════════════ */
+
+.store-category-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.store-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    background: var(--bg-t);
+    color: var(--tx-s);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease,
+        background 0.15s ease;
+}
+
+.store-cat-chip:hover {
+    border-color: var(--accent);
+    color: var(--tx-p);
+}
+
+.store-cat-chip.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.store-cat-count {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--bg-s);
+    color: var(--tx-t);
+}
+
+.store-cat-chip.active .store-cat-count {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+}
+
+.chip.chip-cat {
+    font-size: 10px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: color-mix(in srgb, var(--accent) 75%, var(--tx-p));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}

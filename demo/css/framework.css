@@ -700,3 +700,36 @@
     margin-bottom: 8px;
     border-bottom: 1px solid var(--bd);
 }
+
+
+/* ════════════════ 移动端：字段名+介绍在上、控件在下 ════════════════ */
+/* 框架配置/组件配置共用的 .fw-row 横向布局在窄屏会把标签列挤成一字一行竖排 */
+@media (max-width: 768px) {
+    .fw-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .fw-label {
+        flex: none;
+        width: 100%;
+    }
+
+    .fw-desc {
+        white-space: normal;
+    }
+
+    .fw-control {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .fw-control .fw-input {
+        flex: 1 1 140px;
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+}

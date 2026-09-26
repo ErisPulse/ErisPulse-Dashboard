@@ -5,7 +5,7 @@ export function debounceStore() {
   _storeTimer = setTimeout(loadStore, 300);
 }
 
-const STORE_CACHE_KEY = "__ep_store__",
+const STORE_CACHE_KEY = "__ep_store_v2__",
   STORE_CACHE_TTL = 4 * 3600 * 1000;;
 
 export function mirrorOptionsHtml() {
@@ -22,6 +22,80 @@ export function initMirrorSelects() {
   ["uploadMirrorSelect", "detailMirrorSelect"].forEach((id) => {
     const el = document.getElementById(id);
     if (el && !el.children.length) el.innerHTML = mirrorOptionsHtml();
+  });
+}
+
+// 分类体系：与官方市场 packages.json 的 category 编号契约一致
+// （编号表见 erisdev.com 前端 config.js 的 MODULE_CATEGORIES）
+const STORE_CATEGORIES = [
+  { id: 1, key: "tool" },
+  { id: 2, key: "fun" },
+  { id: 3, key: "admin" },
+  { id: 4, key: "notify" },
+  { id: 5, key: "ai" },
+  { id: 6, key: "platform" },
+  { id: 7, key: "analytics" },
+];
+
+function _categoryName(item) {
+  var id = parseInt(item.category, 10);
+  for (var i = 0; i < STORE_CATEGORIES.length; i++) {
+    if (STORE_CATEGORIES[i].id === id) return t("category_" + STORE_CATEGORIES[i].key);
+  }
+  return "";
+}
+
+// 分类 chips 行：全部 + 有条目的分类（带计数）+ 未分类（仅有未分类条目时）
+export function _renderStoreCategories(pk) {
+  var host = document.getElementById("storeCategoryChips");
+  if (!host) return;
+  var counts = {};
+  var uncategorized = 0;
+  var total = 0;
+  ["modules", "adapters"].forEach(function (kind) {
+    Object.keys(pk[kind] || {}).forEach(function (n) {
+      var item = pk[kind][n];
+      total++;
+      var id = parseInt(item.category, 10);
+      var known = STORE_CATEGORIES.some(function (c) {
+        return c.id === id;
+      });
+      if (known) counts[id] = (counts[id] || 0) + 1;
+      else uncategorized++;
+    });
+  });
+  var chips = [
+    { id: "all", label: t("store_category_all"), count: total },
+  ];
+  STORE_CATEGORIES.forEach(function (c) {
+    if (counts[c.id]) chips.push({ id: c.id, label: t("category_" + c.key), count: counts[c.id] });
+  });
+  if (uncategorized) chips.push({ id: "none", label: t("store_category_uncategorized"), count: uncategorized });
+
+  host.innerHTML = chips
+    .map(function (c) {
+      return (
+        '<button class="store-cat-chip' +
+        (_selectedStoreCategory == c.id ? " active" : "") +
+        '" data-cat="' +
+        c.id +
+        '">' +
+        esc(c.label) +
+        '<span class="store-cat-count">' +
+        c.count +
+        "</span></button>"
+      );
+    })
+    .join("");
+  host.style.display = "flex";
+  host.querySelectorAll(".store-cat-chip").forEach(function (btn) {
+    btn.onclick = function () {
+      _selectedStoreCategory = btn.getAttribute("data-cat");
+      host.querySelectorAll(".store-cat-chip").forEach(function (b) {
+        b.classList.toggle("active", b === btn);
+      });
+      loadStore();
+    };
   });
 }
 
@@ -112,7 +186,8 @@ export async function loadStore(forceRefresh) {
   }
   const pk = d.packages;
 
-  // 渲染标签筛选项
+  // 渲染分类 chips 与标签筛选项
+  _renderStoreCategories(pk);
   _renderStoreTags(pk);
 
   const all = [
@@ -147,6 +222,23 @@ export async function loadStore(forceRefresh) {
         if (_selectedStoreTags.has(tags[ti])) return true;
       }
       return false;
+    });
+  }
+  if (_selectedStoreCategory !== "all") {
+    f = f.filter(function (i) {
+      var cid = parseInt(i.category, 10);
+      if (_selectedStoreCategory === "none") return !cid;
+      return cid === Number(_selectedStoreCategory);
+    });
+  }
+  var sortMode = document.getElementById("storeSort")?.value || "default";
+  if (sortMode === "name") {
+    f.sort(function (a, b) {
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  } else if (sortMode === "newest") {
+    f.sort(function (a, b) {
+      return (b.submitted_at || "").localeCompare(a.submitted_at || "");
     });
   }
   document.getElementById("storeGrid").innerHTML = f.length
@@ -186,6 +278,11 @@ export async function loadStore(forceRefresh) {
               t("install") +
               "</button>";
           }
+          // 分类徽章
+          var catName = _categoryName(i);
+          var catBadge = catName
+            ? '<span class="chip chip-cat">' + esc(catName) + "</span>"
+            : "";
           // 标签徽章
           var tagBadges = "";
           if (Array.isArray(i.tags) && i.tags.length) {
@@ -214,6 +311,7 @@ export async function loadStore(forceRefresh) {
             '</span><span class="chip chip-pr">' +
             esc(i.type) +
             "</span>" +
+            catBadge +
             statusBadge +
             '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' +
             esc(i.package) +

@@ -1031,5 +1031,28 @@ settings_tab_colorfont: "顏色與字體",
     onboarding_hidden: "已隱藏快速開始",
     onboarding_never: "不再顯示",
 
+
+    category_tool: "工具",
+    category_fun: "娛樂",
+    category_admin: "管理",
+    category_notify: "通知",
+    category_ai: "AI",
+    category_platform: "平台對接",
+    category_analytics: "數據分析",
+    store_category_all: "全部",
+    store_category_uncategorized: "未分類",
+    store_sort: "排序",
+    store_sort_default: "預設排序",
+    store_sort_name: "按名稱",
+    store_sort_newest: "最新提交",
+
+    fm_unsaved_confirm: "關閉編輯器將遺失未儲存的修改，確定要關閉嗎？",
+
+    settings_anim_subtle: "標準",
+    settings_anim_smooth: "流暢",
+    settings_anim_zoom: "縮放",
+    settings_anim_playful: "活潑",
+    settings_anim_off: "關閉",
+
   };
 })();

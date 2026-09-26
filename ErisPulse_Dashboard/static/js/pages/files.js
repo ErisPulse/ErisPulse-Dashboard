@@ -320,6 +320,11 @@ export async function fmEditFile(path) {
       '<textarea id="fmFallbackEditor" class="code-editor" style="width:100%;height:100%;box-sizing:border-box" spellcheck="false">' +
       esc(d.content) +
       "</textarea>";
+    document.getElementById("fmFallbackEditor").addEventListener("input", () => {
+      _fmDirty = true;
+      document.getElementById("fmEditorStatus").textContent = "●";
+      document.getElementById("fmEditorStatus").style.color = "var(--wr-c)";
+    });
   }
   overlay.classList.add("show");
   setTimeout(() => { if (_fmEditor) _fmEditor.refresh(); }, 100);
@@ -348,7 +353,15 @@ export async function fmSaveFile() {
   }
 }
 
-export function fmCloseEditor() {
+export async function fmCloseEditor(force) {
+  // 有未保存修改时先确认（Esc/遮罩/× 都走这里）
+  if (_fmDirty && !force) {
+    const ok = await confirm2(
+      t("unsaved_confirm_title"),
+      t("fm_unsaved_confirm"),
+    );
+    if (!ok) return;
+  }
   document.getElementById("fmEditorOv").classList.remove("show");
   if (_fmEditor) {
     _fmEditor.toTextArea();
@@ -600,3 +613,22 @@ export async function fmDecompress(path) {
   }
 }
 
+
+
+// ── 文件编辑器：Esc / 点击遮罩关闭（含未保存确认）──
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Escape") return;
+  const ov = document.getElementById("fmEditorOv");
+  if (ov && ov.classList.contains("show")) {
+    e.preventDefault();
+    e.stopPropagation();
+    fmCloseEditor();
+  }
+});
+document.addEventListener("DOMContentLoaded", function () {
+  const ov = document.getElementById("fmEditorOv");
+  if (!ov) return;
+  ov.addEventListener("mousedown", function (e) {
+    if (e.target === ov) fmCloseEditor();
+  });
+});

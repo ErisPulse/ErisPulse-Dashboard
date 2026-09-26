@@ -1079,5 +1079,28 @@ settings_tab_colorfont: "Colors & Font",
     onboarding_hidden: "Quick Start hidden",
     onboarding_never: "Don't show again",
 
+
+    category_tool: "Tools",
+    category_fun: "Entertainment",
+    category_admin: "Management",
+    category_notify: "Notifications",
+    category_ai: "AI",
+    category_platform: "Platform",
+    category_analytics: "Analytics",
+    store_category_all: "All",
+    store_category_uncategorized: "Uncategorized",
+    store_sort: "Sort",
+    store_sort_default: "Default",
+    store_sort_name: "By name",
+    store_sort_newest: "Newest",
+
+    fm_unsaved_confirm: "Closing the editor will discard unsaved changes. Close anyway?",
+
+    settings_anim_subtle: "Standard",
+    settings_anim_smooth: "Smooth",
+    settings_anim_zoom: "Zoom",
+    settings_anim_playful: "Playful",
+    settings_anim_off: "Off",
+
   };
 })();

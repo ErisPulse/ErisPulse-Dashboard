@@ -63,6 +63,7 @@ window.EV_TYPE_ICONS = {
 window._storeTimer = undefined;
 window._epAutoTimer = null;
 window._selectedStoreTags = new Set();
+window._selectedStoreCategory = "all";
 window._storeTagMulti = null;
 window._installTaskIds = new Map();
 window._uploadState = { file: null, taskId: null, uploaded: false };

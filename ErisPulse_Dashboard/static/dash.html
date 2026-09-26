@@ -26,33 +26,33 @@
         />
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css"
+            href="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.css"
         />
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
+            href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=84" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=92" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=92" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -2772,6 +2772,27 @@
                                         data-i18n-option="adapter"
                                     ></option>
                                 </select>
+                                <select
+                                    id="storeSort"
+                                    class="ep-select"
+                                    onchange="debounceStore()"
+                                    style="width: auto; min-width: 100px"
+                                    data-i18n-title="store_sort"
+                                    title="排序"
+                                >
+                                    <option
+                                        value="default"
+                                        data-i18n-option="store_sort_default"
+                                    ></option>
+                                    <option
+                                        value="name"
+                                        data-i18n-option="store_sort_name"
+                                    ></option>
+                                    <option
+                                        value="newest"
+                                        data-i18n-option="store_sort_newest"
+                                    ></option>
+                                </select>
                                 <button
                                     class="btn btn-secondary btn-sm"
                                     onclick="loadStore(true)"
@@ -2793,6 +2814,11 @@
                                     </svg>
                                 </button>
                             </div>
+                            <div
+                                class="store-category-chips"
+                                id="storeCategoryChips"
+                                style="display: none; margin-top: 8px"
+                            ></div>
                             <div
                                 class="store-tags"
                                 id="storeTags"
@@ -4766,6 +4792,7 @@
                                                     <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
                                                     <div class="theme-card-label" data-i18n="settings_theme_dark">Dark</div>
                                                 </div>
+
                                                 <div class="theme-card" data-theme-card="auto" onclick="applySettingTheme('auto')">
                                                     <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
                                                     <div class="theme-card-label" data-i18n="settings_theme_auto">System</div>
@@ -5249,12 +5276,26 @@
                                                         id="settingsAnimStyle"
                                                         onchange="applySettingAnimStyle(this.value)"
                                                     >
-                                                        <option value="subtle">
-                                                            Standard
-                                                        </option>
-                                                        <option value="playful">
-                                                            Playful
-                                                        </option>
+                                                        <option
+                                                            value="subtle"
+                                                            data-i18n-option="settings_anim_subtle"
+                                                        ></option>
+                                                        <option
+                                                            value="smooth"
+                                                            data-i18n-option="settings_anim_smooth"
+                                                        ></option>
+                                                        <option
+                                                            value="zoom"
+                                                            data-i18n-option="settings_anim_zoom"
+                                                        ></option>
+                                                        <option
+                                                            value="playful"
+                                                            data-i18n-option="settings_anim_playful"
+                                                        ></option>
+                                                        <option
+                                                            value="off"
+                                                            data-i18n-option="settings_anim_off"
+                                                        ></option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -6848,23 +6889,23 @@
                 </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/python/python.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/xml/xml.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/css/css.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/markdown/markdown.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/toml/toml.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/yaml/yaml.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=84"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=84"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=84"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=84"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=84"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=84"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/javascript/javascript.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/python/python.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/xml/xml.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/htmlmixed/htmlmixed.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/css/css.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/markdown/markdown.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/toml/toml.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/yaml/yaml.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=92"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=92"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=92"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=92"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=92"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=92"></script>
     </body>
 </html>

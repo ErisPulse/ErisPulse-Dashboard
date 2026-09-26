@@ -432,12 +432,14 @@ export function renderFwSection(s) {
       } else {
         ctrl =
           '<input class="fw-input" type="text" value="' +
-          esc(String(val)) +
+          esc(val === null ? "" : String(val)) +
           '" data-fk="' +
           esc(fk) +
           '" data-tp="' +
           tp +
-          '">';
+          '"' +
+          (val === null ? ' placeholder="null"' : "") +
+          ">";
       }
       var saveBtn =
         tp === "boolean" || tp === "list"
