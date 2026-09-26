@@ -21,16 +21,8 @@ window._wsMeta = { connectedAt: 0, reconnects: 0, frames: 0, events: 0, url: "" 
 window._wsInspTimer = null;
 window.FIXED_UI_STYLE = "eris";
 window.FONT_PRESETS = [
-  { id: "sora", name: "Sora", display: '"Sora", sans-serif', body: '"Sora", sans-serif',
+  { id: "system", name: "", display: "", body: "",
     preview: "Aa", weight: "600" },
-  { id: "editorial", name: "Editorial", display: '"Instrument Serif", serif', body: '"Outfit", sans-serif',
-    preview: "Aa", weight: "400" },
-  { id: "spectral", name: "Spectral", display: '"Spectral", serif', body: '"DM Sans", sans-serif',
-    preview: "Aa", weight: "500" },
-  { id: "newsreader", name: "Newsreader", display: '"Newsreader", serif', body: '"Schibsted Grotesk", sans-serif',
-    preview: "Aa", weight: "500" },
-  { id: "mono", name: "Mono", display: '"JetBrains Mono", monospace', body: '"Outfit", sans-serif',
-    preview: "Aa", weight: "500" },
 ];
 window._remoteAuthToastTs = 0;
 window._lastErrorToast = 0;

@@ -461,7 +461,21 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
             } catch (e) { }
             return _json({ success: true });
         }
-        return _json({ appearance: _mockAppearance });
+        return _json({ appearance: Object.assign({}, _mockAppearance, { custom_fonts: _mockFonts }) });
+    };
+    var _mockFonts = [];
+    API_MAP['/api/fonts/upload'] = function (opts) {
+        var name = 'custom-' + Math.random().toString(36).slice(2, 8) + '.ttf';
+        var url = '/Dashboard/static/res/fonts_upload/font_' + Math.random().toString(36).slice(2, 10);
+        _mockFonts.push({ name: name.replace(/\.[^.]+$/, ''), url: url });
+        return _json({ success: true, url: url, name: name });
+    };
+    API_MAP['/api/fonts/delete'] = function (opts) {
+        try {
+            var u = JSON.parse(opts.body || '{}').url;
+            _mockFonts = _mockFonts.filter(function (f) { return f.url !== u; });
+        } catch (e) { }
+        return _json({ success: true });
     };
     API_MAP['/api/i18n/language'] = function (opts) { return _json({ success: true }); };
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };

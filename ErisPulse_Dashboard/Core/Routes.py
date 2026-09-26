@@ -174,6 +174,18 @@ class RoutesMixin:
         )
         r.register_http_route(
             mn,
+            "/api/fonts/upload",
+            handler=self._api_fonts_upload,
+            methods=["POST"],
+        )
+        self._register_route(
+            mn,
+            "/api/fonts/delete",
+            handler=self._api_fonts_delete,
+            methods=["POST"],
+        )
+        self._register_route(
+            mn,
             "/api/appearance/upload",
             handler=self._api_appearance_upload,
             methods=["POST"],

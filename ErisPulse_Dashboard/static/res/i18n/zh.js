@@ -1072,5 +1072,16 @@ settings_tab_colorfont: "颜色与字体",
     settings_anim_playful: "活泼",
     settings_anim_off: "关闭",
 
+
+    font_system: "系统默认",
+    font_upload: "上传字体",
+    font_delete: "删除字体",
+    font_uploaded: "字体已上传并应用",
+    font_upload_failed: "字体上传失败",
+    settings_global_scope_desc: "开启后，全部设备自动同步以下全部设置（外观、行为、语言、布局）；关闭后各设备恢复本地设置",
+    settings_upload_global: "推送全部设置",
+    settings_upload_global_desc: "将当前设备的全部设置推送为全局设置，所有开启同步的设备会自动套用",
+    settings_upload_confirm: "将用当前设备的设置覆盖全局设置，所有开启同步的设备都会更新。确定继续？",
+
   };
 })();
