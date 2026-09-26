@@ -1280,3 +1280,73 @@
     }
 }
 
+
+/* ════════════════ 默认起始页选择器（主页 pin 选择器同款） ════════════════ */
+
+.default-page-picker {
+    position: relative;
+}
+
+.dp-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 180px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.dp-toggle-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dp-toggle svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    color: var(--tx-t);
+}
+
+/* 定位/宽高/翻转由 EP.positionList 接管（fixed，逃出卡片 overflow 裁剪） */
+.dp-panel {
+    z-index: 1300;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    background: var(--bg-t);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+}
+
+.dp-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dp-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dp-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dp-check {
+    margin-left: auto;
+    color: var(--accent);
+    display: flex;
+    flex: none;
+}

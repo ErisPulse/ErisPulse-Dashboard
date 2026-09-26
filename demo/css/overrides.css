@@ -85,7 +85,7 @@
 
     .sidebar.collapsed .nav-item {
         justify-content: revert;
-        padding: 9px 12px;
+        padding: 8px 12px 8px 24px; /* 与 PC 展开态同款左距，图标纵向对齐 */
     }
 
     .sidebar.collapsed .sidebar-footer {
@@ -1338,5 +1338,13 @@ input, textarea, select, button,
     .btn-danger {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
+    }
+}
+
+/* ── 移动端抽屉：必须完全不透明（浮在页面内容之上），并加强投影 ── */
+@media (max-width: 720px) {
+    .sidebar {
+        background: var(--bg-s) !important;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
     }
 }

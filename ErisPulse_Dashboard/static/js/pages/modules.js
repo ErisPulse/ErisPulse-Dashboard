@@ -106,6 +106,18 @@ export function renderPluginRow(m, isAd) {
 
   // 主操作按钮：加载/启用（实心）、停止加载（描边）；低频与危险操作收进 ⋯ 菜单
   let acts = "";
+  // 声明了配置的组件提供"去配置"直达入口（适配器含账户配置）
+  var canCfg = isAd ? m.has_config || m.has_accounts : m.has_config;
+  if (canCfg) {
+    acts +=
+      '<button class="btn btn-secondary btn-xs" onclick="gotoComponentConfig(\'' +
+      (isAd ? "adapter" : "module") +
+      "','" +
+      _jsq(m.name) +
+      "')\">" +
+      t("goto_config") +
+      "</button> ";
+  }
   if (m.loaded) {
     acts +=
       '<button class="btn btn-secondary btn-xs module-primary-btn" onclick="moduleAction(\'' +

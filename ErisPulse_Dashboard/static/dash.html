@@ -32,26 +32,27 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=64" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=64" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=84" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=84" />
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 
@@ -146,8 +147,10 @@
                     </div>
                     <button
                         class="btn-icon"
-                        onclick="go('about')"
-                        title="About"
+                        id="paletteBtn"
+                        onclick="openPalette()"
+                        data-i18n-title="kb_focus_search"
+                        title="全局搜索"
                     >
                         <svg
                             viewBox="0 0 24 24"
@@ -157,9 +160,8 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         >
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="16" x2="12" y2="12" />
-                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                     </button>
                     <div class="settings-btn-wrapper">
@@ -718,6 +720,8 @@
                         <h1 class="page-title" data-i18n="dashboard"></h1>
                         <p class="page-desc" id="fwDesc"></p>
                         <div id="statGrid" style="margin-bottom: 20px"></div>
+                        <!-- 新手引导清单（完成后或关闭后不再显示） -->
+                        <div id="onboardingCard"></div>
                         <!-- 主页快捷导航（可自定义 pin） -->
                         <div class="home-section-hd">
                             <span data-i18n="home_quick"></span>
@@ -4731,6 +4735,15 @@
                                 <span data-i18n="fw_update_title"></span>
                                 <span class="update-dot"></span>
                             </button>
+                            <button
+                                class="view-btn pkg-tab"
+                                data-tab="settings-about"
+                                onclick="
+                                    switchSettingsTab('settings-about', this)
+                                "
+                            >
+                                <span data-i18n="about"></span>
+                            </button>
                         </div>
 
                         <div id="settings-appearance-tab" class="tab-section" style="display: block">
@@ -4892,14 +4905,20 @@
                                                 <div class="lang-card" data-lang="ja" onclick="applySettingLang('ja')"><span class="lang-name">日本語</span></div>
                                                 <div class="lang-card" data-lang="ru" onclick="applySettingLang('ru')"><span class="lang-name">Русский</span></div>
                                             </div>
-                                            <button
-                                                class="btn btn-secondary btn-sm"
-                                                style="margin-top: 12px"
-                                                onclick="syncFrameworkLang()"
-                                            >
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
-                                                <span data-i18n="settings_sync_framework_lang"></span>
-                                            </button>
+                                            <div class="settings-item" style="margin-top:12px">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="settings_sync_framework_label"></div>
+                                                    <div class="settings-item-desc" data-i18n="settings_sync_framework_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <button class="btn btn-secondary btn-sm" onclick="syncFrameworkLang()">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.5 8a8.5 8.5 0 0 1 15.7-2"/><path d="M20.5 16a8.5 8.5 0 0 1-15.7 2"/></svg>
+                                                        <span data-i18n="settings_sync_framework_lang"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            
                                         </div>
                                     </div>
 
@@ -4996,7 +5015,7 @@
                                                     <div class="settings-item-desc" data-i18n="settings_default_page_desc"></div>
                                                 </div>
                                                 <div class="settings-item-control">
-                                                    <select class="settings-select" id="settingsDefaultPage" onchange="applySettingDefaultPage(this.value)" style="min-width:170px"></select>
+                                                    <div class="default-page-picker" id="defaultPagePicker"></div>
                                                 </div>
                                             </div>
                                             <div class="settings-item">
@@ -5517,10 +5536,11 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    
+                    <!-- 关于（自独立页迁入设置标签） -->
+                    <div id="settings-about-tab" class="tab-section" style="display: none">
 
-                    <div class="page" id="p-about">
-                        <h1 class="page-title" data-i18n="about"></h1>
+                       
                         <div class="about-hero">
                             <img
                                 src="/Dashboard/static/res/about/mascot-hero.png"
@@ -5789,7 +5809,46 @@
                             </a>
                         </div>
                     </div>
+</div>
+
+                    
                 </div>
+            </div>
+        </div>
+
+        <div class="palette-overlay" id="paletteOv">
+            <div class="palette-box">
+                <div class="palette-input-row">
+                    <span class="palette-search-icon">
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="17"
+                            height="17"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </span>
+                    <input
+                        id="paletteInput"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        data-i18n-placeholder="palette_placeholder"
+                    />
+                    <span class="palette-esc">Esc</span>
+                </div>
+                <div
+                    class="palette-list"
+                    id="paletteList"
+                    role="listbox"
+                ></div>
+                <div class="palette-foot" id="paletteFoot"></div>
             </div>
         </div>
 
@@ -6801,11 +6860,11 @@
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/shell/shell.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/closebrackets.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js"></script>
-        <script src="/Dashboard/static/res/i18n/en.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=64"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=84"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=84"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=84"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=84"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=84"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=84"></script>
     </body>
 </html>

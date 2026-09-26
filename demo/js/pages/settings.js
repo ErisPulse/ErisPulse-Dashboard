@@ -80,8 +80,12 @@ export function switchSettingsTab(tab, btn) {
   });
   var target = document.getElementById(tab + "-tab");
   if (target) target.style.display = "block";
+  var loaders = {
+    "settings-update": loadFrameworkVersions,
+    "settings-about": loadAbout,
+  };
+  if (loaders[tab]) loaders[tab]();
   if (tab === "settings-update") {
-    loadFrameworkVersions();
     document.getElementById("settingsUpdateTab")?.classList.remove("show-update");
   }
 }
@@ -111,12 +115,47 @@ export async function loadGlobalAppearance() {
   }
 }
 
+var APPEARANCE_BACKUP_KEY = "ep_appearance_backup";
+
 export async function onSettingsScopeChange(checked) {
   try {
-    await api("/api/appearance", {
+    if (checked) {
+      // 开启前快照本地外观，关闭时可恢复到开启前的样子
+      try {
+        localStorage.setItem(APPEARANCE_BACKUP_KEY, JSON.stringify(collectAppearanceData()));
+      } catch (e) {}
+    }
+    var d = await api("/api/appearance", {
       method: "PUT",
       body: JSON.stringify({ _global_enabled: checked }),
     });
+    if (d && d.success) {
+      if (checked) {
+        await loadGlobalAppearance(); // 立即套用全局外观，而非等下次加载
+        toast(t("settings_sync_on_applied"), "ok");
+      } else {
+        _restoreAppearanceBackup();
+        toast(t("settings_sync_off_restored"), "ok");
+      }
+    } else {
+      toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+    }
+  } catch (e) {
+    toast(t("save_failed"), "er");
+  }
+}
+
+function _restoreAppearanceBackup() {
+  var raw = null;
+  try {
+    raw = localStorage.getItem(APPEARANCE_BACKUP_KEY);
+  } catch (e) {}
+  if (!raw) return;
+  try {
+    applyGlobalAppearanceData(JSON.parse(raw));
+  } catch (e) {}
+  try {
+    localStorage.removeItem(APPEARANCE_BACKUP_KEY);
   } catch (e) {}
 }
 
@@ -190,6 +229,8 @@ export function collectAppearanceData() {
 }
 
 export async function uploadGlobalAppearance() {
+  var ok = await confirm2(t("settings_upload_global"), t("settings_upload_confirm"));
+  if (!ok) return;
   var data = collectAppearanceData();
   try {
     var d = await api("/api/appearance", {
@@ -216,14 +257,19 @@ export function _availableNavPages() {
       if (!page || seen[page]) return;
       seen[page] = 1;
       var c = navItemContent(page);
-      out.push({ value: page, label: (c && c.title) || page });
-      // 子 tab 变体（同主页 pin 逻辑）
+      var pageLabel = (c && c.title) || page;
+      out.push({ value: page, label: pageLabel, icon: (c && c.svg) || "", isSub: false });
+      // 子 tab 变体（同主页 pin 逻辑；与页面同名的 tab 跳过，避免重复项）
       var tabs = MERGED_PAGE_TABS[page];
       if (tabs) {
         tabs.forEach(function (tabInfo) {
+          var tabLabel = t(tabInfo.i18n) || tabInfo.label;
+          if (tabLabel === pageLabel) return;
           out.push({
             value: page + ":" + tabInfo.id,
-            label: "↳ " + (t(tabInfo.i18n) || tabInfo.label),
+            label: tabLabel,
+            icon: (c && c.svg) || "",
+            isSub: true,
           });
         });
       }
@@ -232,49 +278,117 @@ export function _availableNavPages() {
   return out;
 }
 
-export function _fillDefaultPageSelect() {
-  var el = document.getElementById("settingsDefaultPage");
-  if (!el) return;
+const DP_CHECK_SVG =
+  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+export function _dpClosePanel() {
+  var panel = document.getElementById("dpPanel");
+  if (panel) panel.style.display = "none";
+}
+
+// 默认起始页选择器：主页 pin 选择器同款交互（图标 + 页面/子 tab 层级）
+export function _renderDefaultPagePicker() {
+  var host = document.getElementById("defaultPagePicker");
+  if (!host) return;
   var cur = getDefaultPage();
   var pages = _availableNavPages();
-  var opts = "";
-  pages.forEach(function (p) {
-    opts +=
-      '<option value="' +
-      esc(p.value) +
-      '"' +
-      (p.value === cur ? " selected" : "") +
-      ">" +
-      esc(p.label) +
-      "</option>";
-  });
   var known = pages.some(function (p) {
     return p.value === cur;
   });
-  opts +=
-    '<option value="__custom__"' +
-    (cur && !known ? " selected" : "") +
-    ">" +
+  var curLabel =
+    known || !cur
+      ? (pages.find(function (p) {
+            return p.value === cur;
+          }) || { label: t("dashboard") }).label
+      : cur;
+  if (known && !pages.some(function (p) { return p.value === cur; })) curLabel = t("dashboard");
+
+  var rows = pages
+    .map(function (p) {
+      return (
+        '<div class="' +
+        (p.isSub ? "home-pin-suboption" : "home-pin-option") +
+        '" data-value="' +
+        esc(p.value) +
+        '">' +
+        '<span class="dp-icon">' +
+        (p.icon || "") +
+        "</span>" +
+        '<span class="dp-label">' +
+        esc(p.label) +
+        "</span>" +
+        (p.value === cur ? '<span class="dp-check">' + DP_CHECK_SVG + "</span>" : "") +
+        "</div>"
+      );
+    })
+    .join("");
+  rows +=
+    '<div class="home-pin-option" data-value="__custom__">' +
+    '<span class="dp-icon"></span>' +
+    '<span class="dp-label">' +
     esc(t("settings_default_custom")) +
-    "</option>";
-  el.innerHTML = opts;
-  el.value = known ? cur : "__custom__";
+    "</span>" +
+    (known ? "" : '<span class="dp-check">' + DP_CHECK_SVG + "</span>") +
+    "</div>";
+
+  host.innerHTML =
+    '<button type="button" class="settings-select dp-toggle" id="dpToggle">' +
+    '<span class="dp-toggle-label">' +
+    esc(curLabel) +
+    "</span>" +
+    "</button>" +
+    '<div class="dp-panel" id="dpPanel" style="display:none">' +
+    rows +
+    "</div>";
+
+  document.getElementById("dpToggle").onclick = function () {
+    var panel = document.getElementById("dpPanel");
+    var toggle = document.getElementById("dpToggle");
+    if (panel.style.display !== "none") {
+      panel.style.display = "none";
+      return;
+    }
+    // 复用 EP 组件库的定位逻辑：fixed 定位逃出卡片 overflow 裁剪，空间不足自动上翻
+    panel.style.display = "block";
+    if (window.EP && EP.positionList) {
+      EP.positionList(panel, toggle, 300);
+      panel.style.display = "grid"; // 定位测量用 block，展示恢复 grid 行距
+    }
+  };
+  host.querySelectorAll("[data-value]").forEach(function (row) {
+    row.onclick = function () {
+      _dpClosePanel();
+      applySettingDefaultPage(row.getAttribute("data-value"));
+    };
+  });
 }
+
+// 点击选择器外部或页面滚动时收起面板（fixed 面板不随卡片滚动）
+document.addEventListener("click", function (e) {
+  var picker = document.getElementById("defaultPagePicker");
+  if (!picker || !e.target.closest) return;
+  if (!picker.contains(e.target)) _dpClosePanel();
+});
+window.addEventListener("scroll", function (e) {
+  // 面板自身列表的滚动不关闭；只有页面/容器滚动时才收起
+  if (e.target && e.target.closest && e.target.closest(".default-page-picker")) return;
+  _dpClosePanel();
+}, true);
 
 export function applySettingDefaultPage(val) {
   if (val === "__custom__") {
     var cur = getDefaultPage();
     prompt2(t("settings_default_custom"), t("settings_default_custom_desc"), cur && cur !== "dashboard" ? cur : "dashboard").then(function (id) {
       if (!id) {
-        _fillDefaultPageSelect();
+        _renderDefaultPagePicker();
         return;
       }
       setSetting("default_page", id);
-      _fillDefaultPageSelect();
+      _renderDefaultPagePicker();
     });
     return;
   }
   setSetting("default_page", val);
+  _renderDefaultPagePicker();
 }
 
 export function getDefaultPage() {
@@ -284,16 +398,27 @@ export function getDefaultPage() {
 export function applyDefaultPageOnLogin() {
   var p = getDefaultPage();
   if (!p || p === "dashboard") return;
+  // "page:tab" 形式：先切页再点 tab（nav-item 上没有 tab 后缀，直接查会永远找不到）
+  var parts = p.split(":");
+  var page = parts[0];
+  var tab = parts[1];
+  var openTarget = function () {
+    go(page);
+    if (tab) {
+      var tabBtn = document.querySelector('[data-tab="' + tab + '"]');
+      if (tabBtn) tabBtn.click();
+    }
+  };
   // 模块视图异步渲染，轮询等待 nav-item 出现后跳转
   var attempts = 0;
   var timer = setInterval(function () {
     attempts++;
-    if (document.querySelector('.nav-item[data-page="' + p + '"]')) {
+    if (document.querySelector('.nav-item[data-page="' + page + '"]')) {
       clearInterval(timer);
-      go(p);
+      openTarget();
     } else if (attempts > 30) {
       clearInterval(timer);
-      go(p);
+      openTarget();
     }
   }, 100);
 }
@@ -447,7 +572,7 @@ export function showShortcutsHelp() {
   var rows =
     '<div class="list-row" style="font-size:13px"><span style="flex:1">' +
     esc(t("kb_focus_search")) +
-    '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">/</code></div>' +
+    '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">Ctrl K / /</code></div>' +
     '<div class="list-row" style="font-size:13px"><span style="flex:1">' +
     esc(t("kb_close_modal")) +
     '</span><code style="background:var(--bg-s);padding:2px 8px;border-radius:4px;border:1px solid var(--bd)">Esc</code></div>' +
@@ -541,7 +666,7 @@ export function syncSettingsUI() {
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
   // 偏好设置回显
-  _fillDefaultPageSelect();
+  _renderDefaultPagePicker();
   var dnEl = document.getElementById("settingsDensity");
   if (dnEl) dnEl.value = getDensity();
   var tsEl = document.getElementById("settingsTabSize");

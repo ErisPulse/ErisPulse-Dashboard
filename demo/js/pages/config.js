@@ -198,10 +198,13 @@ document.addEventListener("keydown", function (e) {
     tag !== "textarea" &&
     !e.target.isContentEditable
   ) {
-    var s = document.getElementById("storeSearch");
-    if (s) {
-      e.preventDefault();
-      s.focus();
+    e.preventDefault();
+    // 商店页内保留原语义（聚焦商店搜索框），其他页面打开全局搜索
+    if (document.querySelector(".page.active#p-store")) {
+      var s = document.getElementById("storeSearch");
+      if (s) s.focus();
+    } else if (typeof openPalette === "function") {
+      openPalette();
     }
   } else if (e.key === "Escape") {
     closeSidebar();

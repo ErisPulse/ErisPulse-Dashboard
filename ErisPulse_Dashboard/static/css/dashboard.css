@@ -649,7 +649,7 @@
 .home-pin-add {
     position: absolute;
     left: 50%;
-    
+    transform: translateX(-50%); /* 居中（属性曾被剥落导致按钮偏右） */
     bottom: -18px;
     z-index: 10;
     margin-top: 0;
@@ -657,18 +657,19 @@
 .home-pin-picker {
     position: absolute;
     left: 50%;
-    
+    transform: translateX(-50%);
     bottom: calc(100% + 8px);
+    max-width: calc(100vw - 24px);
     padding: 8px;
     border: 1px solid var(--bd);
     border-radius: 10px;
     background: var(--bg-t);
     box-shadow: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 6px;
-    max-height: 240px;
-    min-width: 300px;
+    grid-template-columns: 1fr; /* 单列列表：页面/子 tab 层级用缩进表达 */
+    gap: 2px;
+    max-height: 260px;
+    min-width: 230px;
     overflow-y: auto;
 }
 .home-pin-option {

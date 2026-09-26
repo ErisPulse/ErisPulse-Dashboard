@@ -294,8 +294,21 @@ export function showInstallConfirm(pkg, isBatch) {
   });
 }
 
+function _isInstallBusy(pkg) {
+  var busy = false;
+  _installTaskIds.forEach(function (p) {
+    if (p === pkg) busy = true;
+  });
+  return busy;
+}
+
 export async function installPkg(pkg) {
   if (!authed) return showLogin();
+  // 同包已在安装中：不重复起任务（pip 并发装同包会互相干扰）
+  if (_isInstallBusy(pkg)) {
+    toast(pkg + ": " + t("installing"), "wr");
+    return;
+  }
   const opts = await showInstallConfirm(pkg);
   if (!opts) return;
   const body = { packages: [pkg] };
@@ -596,6 +609,10 @@ export function closePkgDetail() {
 }
 
 export async function doInstallWithOptions(pkg, defaultForce, isUpgrade) {
+  if (_isInstallBusy(pkg)) {
+    toast(pkg + ": " + t("installing"), "wr");
+    return;
+  }
   const force =
     defaultForce !== undefined
       ? defaultForce

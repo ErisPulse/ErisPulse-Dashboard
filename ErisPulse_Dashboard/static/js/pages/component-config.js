@@ -1,5 +1,53 @@
 // ErisPulse Dashboard – pages/component-config (auto-split from dash.js)
 
+// ── 未保存修改跟踪 ──
+// [data-ackey] 控件输入/变更即记入脏 key；各保存点按前缀清除；router.go 借此拦截意外丢失
+document.addEventListener("input", _cfgMarkDirty);
+document.addEventListener("change", _cfgMarkDirty);
+
+function _cfgMarkDirty(e) {
+  var el = e.target;
+  if (!el || !el.matches || !el.matches("[data-ackey]")) return;
+  var key = el.dataset && el.dataset.ackey;
+  if (!key) return;
+  _cfgDirtyKeys.add(key);
+  _cfgUpdateSaveDot();
+}
+
+function _cfgClearDirtyPrefix(prefix) {
+  var keys = [];
+  _cfgDirtyKeys.forEach(function (k) {
+    if (k === prefix || k.startsWith(prefix)) keys.push(k);
+  });
+  keys.forEach(function (k) {
+    _cfgDirtyKeys.delete(k);
+  });
+  if (keys.length) _cfgUpdateSaveDot();
+}
+
+// 保存按钮脏点：该按钮负责的前缀下仍有未保存字段时点亮
+export function _cfgUpdateSaveDot() {
+  document.querySelectorAll(".cfg-save-btn").forEach(function (btn) {
+    var prefix = btn.dataset.cfgPrefix;
+    if (prefix == null) {
+      var host = btn.closest("[data-cfg-prefix]");
+      prefix = host ? host.dataset.cfgPrefix : "";
+    }
+    var dirty = false;
+    _cfgDirtyKeys.forEach(function (k) {
+      if (!dirty && k.startsWith(prefix)) dirty = true;
+    });
+    btn.classList.toggle("dirty", dirty);
+  });
+}
+
+window.addEventListener("beforeunload", function (e) {
+  if (_cfgDirtyKeys && _cfgDirtyKeys.size > 0) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
 export async function loadAdapterConfigPage() {
   const d = await api("/api/adapters");
   if (!d) return;
@@ -116,17 +164,27 @@ export async function loadAdapterConfigDetail(platform) {
 
   var html = '<div class="adapter-config-detail">';
 
+  html +=
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px">' +
+    '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
+    t("view_docs") +
+    ' ↗</a></div>';
+
   if (d.has_config && d.schema) {
     html +=
       '<div class="fw-section"><div class="fw-section-title">' +
       t("adapter_global_config") +
       '</div><div class="fw-section-body">';
     html +=
-      '<div id="adapterGlobalConfigFields">' +
+      '<div id="adapterGlobalConfigFields" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '.">' +
       renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key) +
       "</div>";
     html +=
-      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveAdapterConfigAll(\'' +
+      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '." onclick="saveAdapterConfigAll(\'' +
       esc(platform) +
       "')\">" +
       t("save_adapter_config") +
@@ -379,6 +437,8 @@ export async function saveAdapterConfigField(el) {
     body: JSON.stringify({ key: ackey, value: val }),
   });
   if (d && d.success) {
+    _cfgDirtyKeys.delete(ackey);
+    _cfgUpdateSaveDot();
     el.style.border = "2px solid var(--ok-c)";
     setTimeout(function () {
       el.style.border = "";
@@ -407,6 +467,8 @@ export async function saveModuleConfigField(el) {
     body: JSON.stringify({ key: ackey, value: val }),
   });
   if (d && d.success) {
+    _cfgDirtyKeys.delete(ackey);
+    _cfgUpdateSaveDot();
     el.style.border = "2px solid var(--ok-c)";
     setTimeout(function () {
       el.style.border = "";
@@ -453,6 +515,7 @@ export async function saveAdapterConfigAll(platform) {
   );
 
   if (result && result.success) {
+    _cfgClearDirtyPrefix(d.config_key + ".");
     toast(t("adapter_config_saved"), "ok");
     if (result.errors && result.errors.length > 0) {
       toast(
@@ -497,12 +560,34 @@ export async function loadAdapterAccounts(platform) {
   }
 
   html += "</div>";
-  html +=
-    '<button class="btn btn-primary btn-sm adapter-add-account-btn" onclick="addAdapterAccount(\'' +
-    esc(platform) +
-    "')\">+ " +
-    t("add_account") +
-    "</button>";
+
+  if (Object.keys(accounts).length === 0) {
+    // 账户空状态引导：说明账户的作用并引导添加第一个账户
+    html +=
+      '<div class="account-empty-guide">' +
+      '<div class="account-empty-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>' +
+      '<div class="account-empty-texts">' +
+      '<div class="account-empty-title">' +
+      t("accounts_empty_title") +
+      "</div>" +
+      '<div class="account-empty-desc">' +
+      t("accounts_empty_desc") +
+      "</div>" +
+      "</div>" +
+      '<button class="btn btn-primary btn-sm" onclick="addAdapterAccount(\'' +
+      esc(platform) +
+      "')\">" +
+      t("add_first_account") +
+      "</button>" +
+      "</div>";
+  } else {
+    html +=
+      '<button class="btn btn-primary btn-sm adapter-add-account-btn" onclick="addAdapterAccount(\'' +
+      esc(platform) +
+      "')\">+ " +
+      t("add_account") +
+      "</button>";
+  }
   html += "</div>";
 
   // 追加到内容区
@@ -511,6 +596,22 @@ export async function loadAdapterAccounts(platform) {
     container.insertAdjacentHTML("beforeend", html);
   } else {
     panel.innerHTML += html;
+  }
+
+  // 新增账户后自动定位并高亮新卡片，引导用户"去填这里"
+  if (window._cfgNewAccountFlash) {
+    _cfgNewAccountFlash = false;
+    var cards = document.querySelectorAll(
+      "#adapterAccountsSection .account-card",
+    );
+    var card = cards[cards.length - 1];
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("account-card-new");
+      setTimeout(function () {
+        card.classList.remove("account-card-new");
+      }, 2600);
+    }
   }
 }
 
@@ -563,7 +664,11 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '<div class="account-card-body">' +
     fieldsHtml +
     "</div>" +
-    '<div class="account-card-footer"><button class="btn btn-primary btn-sm" onclick="saveAdapterAccount(\'' +
+    '<div class="account-card-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="accounts.' +
+    esc(accountName) +
+    "." +
+    esc(platform) +
+    '." onclick="saveAdapterAccount(\'' +
     esc(platform) +
     "','" +
     esc(accountName) +
@@ -595,6 +700,8 @@ export async function saveAdapterAccountField(
     },
   );
   if (result && result.success) {
+    _cfgDirtyKeys.delete("accounts." + accountName + "." + platform + "." + fieldName);
+    _cfgUpdateSaveDot();
     toast(t("adapter_config_saved"), "ok");
   } else {
     toast(t("save_failed"), "er");
@@ -639,6 +746,7 @@ export async function saveAdapterAccount(platform, accountName) {
     },
   );
   if (result && result.success) {
+    _cfgClearDirtyPrefix("accounts." + accountName + "." + platform + ".");
     toast(t("adapter_config_saved"), "ok");
     if (result.message) {
       toast(result.message);
@@ -676,6 +784,8 @@ export async function addAdapterAccount(platform) {
   if (result && result.success) {
     toast(t("account_added"), "ok");
     if (result.message) toast(result.message);
+    // 重渲后自动滚动到新账户卡片
+    window._cfgNewAccountFlash = true;
     loadAdapterConfigDetail(platform);
   } else {
     toast(
@@ -833,17 +943,27 @@ export async function loadModuleConfigDetail(moduleName) {
 
   var html = '<div class="adapter-config-detail">';
 
+  html +=
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px">' +
+    '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
+    t("view_docs") +
+    ' ↗</a></div>';
+
   if (d.has_config && d.schema) {
     html +=
       '<div class="fw-section"><div class="fw-section-title">' +
       esc(moduleName) +
       '</div><div class="fw-section-body">';
     html +=
-      '<div id="moduleConfigFields">' +
+      '<div id="moduleConfigFields" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '.">' +
       renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key, { saveFn: "saveModuleConfigField", saveTitle: t("save_module_config") }) +
       "</div>";
     html +=
-      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="saveModuleConfigAll(\'' +
+      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '." onclick="saveModuleConfigAll(\'' +
       esc(moduleName) +
       '\')">' +
       t("save_module_config") +
@@ -898,6 +1018,7 @@ export async function saveModuleConfigAll(moduleName) {
   );
 
   if (result && result.success) {
+    _cfgClearDirtyPrefix(d.config_key + ".");
     toast(t("module_config_saved"), "ok");
   } else {
     toast(

@@ -38,6 +38,7 @@ window.PAGE_REDIRECTS = {
   "framework-config": { page: "config", tab: "cfg-framework" },
   "adapter-config": { page: "adapter", tab: "cfg-adapter" },
   "module-config": { page: "adapter", tab: "cfg-module" },
+  about: { page: "settings", tab: "settings-about" },
   "event-builder": { page: "event-stream", tab: "ev-builder" },
   modules: { page: "module-mgmt", tab: "mm-adapters" },
   "ext-modules": { page: "module-mgmt", tab: "mm-adapters" },
@@ -175,6 +176,8 @@ window._wsEventBuffer = [];
 window._wsFlushTimer = null;
 window._moduleConfigNames = [];
 window._moduleConfigCurrent = "";
+window._paletteModules = null; // 全局搜索用的懒加载模块缓存（仅含声明了配置的模块）
+window._cfgDirtyKeys = new Set(); // 组件配置表单的未保存字段 key（ackey）
 window.builderState = {
   eventType: "message",
   detailType: "",

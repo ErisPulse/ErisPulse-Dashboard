@@ -548,7 +548,7 @@ select.form-select::-ms-expand {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 99;
+    z-index: 998; /* 高于头部(z:100)，移动端抽屉打开时连头部一起压暗 */
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -912,4 +912,283 @@ select.form-select::-ms-expand {
     .update-hint-bar .update-hint-text {
         min-width: 0;
     }
+}
+
+
+/* ════════════════ 首页新手引导清单 ════════════════ */
+
+.onboarding-card {
+    margin-bottom: 20px;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--bd));
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--accent) 7%, var(--bg-t)),
+            var(--bg-t) 55%
+        );
+    padding: 14px 16px;
+}
+
+.onboarding-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.onboarding-head-texts {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.onboarding-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tx-p);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.onboarding-sub {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 2px;
+}
+
+.onboarding-close {
+    color: var(--tx-t);
+}
+
+.onboarding-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.onboarding-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--tx-s);
+}
+
+.onboarding-step .onboarding-check {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1.5px solid var(--bd);
+    color: var(--tx-t);
+    background: var(--bg-t);
+}
+
+.onboarding-step.done .onboarding-check {
+    border-color: transparent;
+    background: var(--ok-c);
+    color: #fff;
+}
+
+.onboarding-step.done .onboarding-step-label {
+    color: var(--tx-t);
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--tx-t) 50%, transparent);
+}
+
+.onboarding-step .btn {
+    flex: none;
+    margin-left: 2px;
+}
+
+.onboarding-step-label {
+    flex: 1;
+    min-width: 0;
+}
+
+.onboarding-foot {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed color-mix(in srgb, var(--bd) 60%, transparent);
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+@media (max-width: 768px) {
+    .onboarding-card {
+        padding: 12px;
+    }
+
+    .onboarding-step {
+        flex-wrap: wrap;
+    }
+}
+
+/* ════════════════ 账户空状态引导 / 配置页文档链接 ════════════════ */
+
+.account-empty-guide {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 14px 16px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--bd));
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.account-empty-icon {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent) 16%, transparent),
+        color-mix(in srgb, var(--accent) 5%, transparent)
+    );
+    color: var(--accent);
+}
+
+.account-empty-texts {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-empty-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-s);
+    margin-bottom: 2px;
+}
+
+.account-empty-desc {
+    font-size: 12px;
+    color: var(--tx-t);
+    line-height: 1.5;
+}
+
+.cfg-docs-link {
+    font-size: 12px;
+    color: var(--lk, var(--accent));
+    text-decoration: none;
+}
+
+.cfg-docs-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .account-empty-guide {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+/* ── 配置表单保存按钮脏点 ── */
+
+.cfg-save-btn {
+    position: relative;
+}
+
+.cfg-save-btn.dirty::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wr-c);
+    border: 1.5px solid var(--bg-t);
+}
+
+/* ── 新增账户卡片定位脉冲 ── */
+
+@keyframes accountCardPulse {
+    0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+    }
+    100% {
+        box-shadow: 0 0 0 12px transparent;
+    }
+}
+
+.account-card-new {
+    animation: accountCardPulse 1.2s ease-out 2;
+    border-color: var(--accent) !important;
+}
+
+
+/* ════════════════ 首次启动功能导览 ════════════════ */
+
+.intro-hint {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-bottom: 10px;
+}
+
+.intro-list {
+    max-height: 46vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-right: 4px;
+}
+
+.intro-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 8px;
+}
+
+.intro-row:hover {
+    background: var(--bg-s);
+}
+
+.intro-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tx-t);
+}
+
+.intro-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.intro-texts {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.intro-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.intro-desc {
+    font-size: 12px;
+    color: var(--tx-t);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

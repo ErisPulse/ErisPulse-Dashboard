@@ -145,6 +145,12 @@ export function wsConnect() {
       } else if (m.type === "module_changed") {
         if (m.data && m.data.action === "installed") {
           toast(m.data.name + ": " + t("module_loaded_dynamic"), "ok");
+          // 新装模块若声明了配置，稍后聚合弹窗引导配置
+          queueInstallGuide(m.data.name, "module");
+        }
+        if (m.data && m.data.action === "installed_adapter") {
+          // 新适配器注册并启动完成：有配置则弹窗引导，无配置补安装成功 toast
+          queueInstallGuide(m.data.name, "adapter");
         }
         if (m.data && m.data.action === "upgraded") {
           toast(t("pkg_upgrade_success"), "ok");

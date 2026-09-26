@@ -2,21 +2,36 @@
 
 export function showModal(title, text, actions) {
   return new Promise((r) => {
+    const ov = document.getElementById("modalOv");
     document.getElementById("modalTitle").textContent = title;
     document.getElementById("modalText").innerHTML = text;
     const ac = document.getElementById("modalActions");
     ac.innerHTML = "";
+    function finish(value) {
+      document.removeEventListener("keydown", onKey, true);
+      ov.onclick = null;
+      ov.classList.remove("show");
+      r(value);
+    }
+    // Esc 与点击遮罩空白处都视为取消；捕获阶段拦截，避免其他全局 Esc 处理器抢先关闭
+    function onKey(e) {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      finish(null);
+    }
     actions.forEach((a) => {
       const b = document.createElement("button");
       b.className = "btn " + (a.primary ? "btn-primary" : "btn-secondary");
       b.textContent = a.label;
-      b.onclick = () => {
-        document.getElementById("modalOv").classList.remove("show");
-        r(a.value);
-      };
+      b.onclick = () => finish(a.value);
       ac.appendChild(b);
     });
-    document.getElementById("modalOv").classList.add("show");
+    ov.onclick = (e) => {
+      if (e.target === ov) finish(null);
+    };
+    document.addEventListener("keydown", onKey, true);
+    ov.classList.add("show");
   });
 }
 
@@ -29,6 +44,7 @@ export function confirm2(title, text) {
 
 export function prompt2(title, text, defaultValue) {
   return new Promise(function (r) {
+    var ov = document.getElementById("modalOv");
     var input = document.createElement("input");
     input.className = "fw-input modal-input";
     input.type = "text";
@@ -47,22 +63,45 @@ export function prompt2(title, text, defaultValue) {
     var cancelBtn = document.createElement("button");
     cancelBtn.className = "btn btn-secondary";
     cancelBtn.textContent = t("cancel");
-    cancelBtn.onclick = function () {
-      document.getElementById("modalOv").classList.remove("show");
-      r(null);
-    };
     ac.appendChild(cancelBtn);
 
     var okBtn = document.createElement("button");
     okBtn.className = "btn btn-primary";
     okBtn.textContent = t("ok");
-    okBtn.onclick = function () {
-      document.getElementById("modalOv").classList.remove("show");
-      r(input.value);
-    };
     ac.appendChild(okBtn);
 
-    document.getElementById("modalOv").classList.add("show");
+    function finish(value) {
+      document.removeEventListener("keydown", onKey, true);
+      ov.onclick = null;
+      ov.classList.remove("show");
+      r(value);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        finish(null);
+      }
+    }
+    cancelBtn.onclick = function () {
+      finish(null);
+    };
+    okBtn.onclick = function () {
+      finish(input.value);
+    };
+    // Enter 直接确认；遮罩空白处点击取消
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        finish(input.value);
+      }
+    });
+    ov.onclick = function (e) {
+      if (e.target === ov) finish(null);
+    };
+    document.addEventListener("keydown", onKey, true);
+
+    ov.classList.add("show");
     setTimeout(function () {
       input.focus();
       input.select();
