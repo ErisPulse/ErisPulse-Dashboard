@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import secrets
 from pathlib import Path
 
 from fastapi import Request
@@ -92,6 +93,20 @@ class ApiDashboardMixin:
         config = dict(self.sdk.config._cache)
         # 移除可能包含大型 base64 图片的外观配置，避免响应过大卡死前端
         config.pop("Dashboard", None)
+        # 内联 SSL PEM 内容脱敏（与 PUT 侧 "******" 视为未修改的约定配套）
+        ep_cfg = config.get("ErisPulse")
+        if isinstance(ep_cfg, dict) and isinstance(ep_cfg.get("server"), dict):
+            server_sec = dict(ep_cfg["server"])
+            masked = {
+                k: "******"
+                for k in ("ssl_cert", "ssl_key")
+                if server_sec.get(k)
+            }
+            if masked:
+                server_sec.update(masked)
+                ep_copy = dict(ep_cfg)
+                ep_copy["server"] = server_sec
+                config["ErisPulse"] = ep_copy
         # 单独返回 Dashboard 配置（脱敏 token、移除 base64）
         dash_cfg = self.sdk.config.getConfig("Dashboard") or {}
         if isinstance(dash_cfg, dict):
@@ -115,6 +130,14 @@ class ApiDashboardMixin:
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})
+
+    async def _api_token_regenerate(self, request: Request) -> JSONResponse:
+        """重新生成 Dashboard 访问令牌；旧令牌立即失效，所有已登录会话需重新登录"""
+        new_token = secrets.token_urlsafe(32)
+        self.sdk.config.setConfig("Dashboard.token", new_token, immediate=True)
+        self._token = new_token
+        self._add_audit_log("token_regenerate", "", request)
+        return JSONResponse({"success": True, "token": new_token})
 
     async def _api_fonts_upload(self, request: Request) -> JSONResponse:
         """上传自定义字体文件（ttf/otf/woff/woff2），保存后返回引用 URL"""

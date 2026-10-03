@@ -45,6 +45,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
+        # 内联 PEM（优先于文件路径，容器场景友好）；与前端 framework.js _fwDefaults 保持一致
+        "ssl_cert": None,
+        "ssl_key": None,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,
@@ -110,3 +113,7 @@ MAX_READ_SIZE = 2 * 1024 * 1024
 # 单文件上传大小上限（字节），超过拒绝。
 # 修改影响: 文件管理上传的大小限制。
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+
+# SSL 证书/私钥单文件上传大小上限（字节），超过拒绝。
+# 修改影响: 安全页证书上传的大小限制（证书文件通常远小于此值）。
+MAX_SSL_UPLOAD_SIZE = 1024 * 1024

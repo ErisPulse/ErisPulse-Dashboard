@@ -279,6 +279,27 @@ class RoutesMixin:
             mn, "/api/restart", handler=self._api_restart, methods=["POST"]
         )
 
+        r.register_http_route(
+            mn,
+            "/api/security/token/regenerate",
+            handler=self._api_token_regenerate,
+            methods=["POST"],
+        )
+
+        # SSL 证书管理相关 API
+        r.register_http_route(
+            mn, "/api/framework/ssl/status", handler=self._api_ssl_status, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/framework/ssl/apply", handler=self._api_ssl_apply, methods=["POST"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/framework/ssl/upload",
+            handler=self._api_ssl_upload,
+            methods=["POST"],
+        )
+
         # 事件构建器相关 API
         r.register_http_route(
             mn,
