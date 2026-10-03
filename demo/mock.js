@@ -481,6 +481,31 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };
     API_MAP['/api/modules/action'] = function () { return _json({ success: true }); };
 
+    // ── 安全页 ──
+    API_MAP['/api/framework/ssl/status'] = function () {
+        return _json({
+            success: true,
+            enabled: false,
+            mode: 'none',
+            certfile: null,
+            keyfile: null,
+            has_inline_cert: false,
+            has_inline_key: false,
+            cert_info: null,
+            https_active: false,
+            can_reload: true
+        });
+    };
+    API_MAP['/api/framework/ssl/apply'] = function () {
+        return _json({ success: true, reloaded: true, message: null });
+    };
+    API_MAP['/api/framework/ssl/upload'] = function () {
+        return _json({ success: true, cert_path: 'config/ssl/cert.pem', key_path: 'config/ssl/key.pem' });
+    };
+    API_MAP['/api/security/token/regenerate'] = function () {
+        return _json({ success: true, token: 'demo' });
+    };
+
     API_MAP['/api/builder/validate'] = function () { return _json({ valid: true }); };
     API_MAP['/api/builder/submit'] = function () { return _json({ success: true }); };
     API_MAP['/api/builder/segments'] = function () {

@@ -1,0 +1,233 @@
+/* ErisPulse Dashboard – 安全页（settings-security 标签） */
+
+/* 瀑布流容器：卡片由 core/masonry.js 绝对定位排布 */
+.sec-masonry {
+  position: relative;
+  margin-top: 20px;
+}
+.sec-item {
+  transition: transform 0.35s var(--ease);
+  will-change: transform;
+}
+.sec-item > .settings-card {
+  height: 100%;
+}
+
+/* 提示条 */
+.sec-hint {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--tx-s);
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-s));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* 模式切换（路径 / 内联 PEM） */
+.sec-mode-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-s);
+  border: 1px solid var(--bd);
+  margin: 4px 0 14px;
+}
+.sec-mode-tab {
+  border: none;
+  background: transparent;
+  color: var(--tx-s);
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+.sec-mode-tab:hover {
+  color: var(--tx-p);
+}
+.sec-mode-tab.active {
+  background: var(--bg-t);
+  color: var(--tx-p);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+/* 路径输入 + 上传按钮 */
+.sec-path-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.sec-path-row .form-input {
+  flex: 1;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+}
+
+/* 内联 PEM / 路由安全 JSON 文本域 */
+.sec-ssl-textarea {
+  width: 100%;
+  margin-top: 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+/* 操作按钮行 */
+.sec-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+}
+
+/* 证书信息附加行 */
+#secSslCertExtra .chip {
+  margin-right: 6px;
+}
+
+/* 反代方案块（模态窗内） */
+.sec-proxy-modal {
+  max-height: 62vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.sec-proxy-block {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed color-mix(in srgb, var(--bd) 70%, transparent);
+}
+.sec-proxy-block:first-of-type {
+  margin-top: 4px;
+}
+.sec-proxy-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13.5px;
+}
+
+/* 紧凑反代卡 */
+.sec-proxy-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* 代码片段 */
+.sec-code-wrap {
+  margin: 8px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--bd);
+  background: var(--bg-s);
+}
+.sec-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--bg-p) 55%, var(--bg-s));
+  border-bottom: 1px solid var(--bd);
+}
+.sec-code-lang {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tx-t);
+}
+.sec-code {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: var(--tx-p);
+  white-space: pre;
+}
+
+/* 路由清单 */
+.sec-routes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.sec-route-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s var(--ease);
+}
+.sec-route-row:hover {
+  background: var(--bg-s);
+}
+.sec-route-prefix {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+/* 审计日志表格 */
+.sec-audit-wrap {
+  max-height: 55vh;
+  overflow: auto;
+}
+.sec-audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.sec-audit-table th,
+.sec-audit-table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+  vertical-align: top;
+}
+.sec-audit-table th {
+  font-weight: 600;
+  color: var(--tx-s);
+  position: sticky;
+  top: 0;
+  background: var(--bg-t);
+}
+.sec-audit-table tbody tr:hover {
+  background: var(--bg-s);
+}
+
+/* 访问安全卡中的 token 展示 */
+#secAccessCard .settings-item-control code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--tx-s);
+  letter-spacing: 0.04em;
+}
+
+/* 移动端：代码块与按钮换行 */
+@media (max-width: 720px) {
+  .sec-path-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sec-actions {
+    flex-wrap: wrap;
+  }
+}
