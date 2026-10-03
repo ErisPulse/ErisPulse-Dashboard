@@ -29,7 +29,7 @@ export function createStatusIcon(container, config) {
 
   frames.forEach(function (src, i) {
     var img = document.createElement("img");
-    img.src = "/Dashboard/static/res/" + group + "/" + encodeURIComponent(src);
+    img.src = "res/" + group + "/" + encodeURIComponent(src);
     img.alt = src.replace(/\.png$/, "");
     img.dataset.frame = String(i);
     if (i === 0) img.classList.add("active");
