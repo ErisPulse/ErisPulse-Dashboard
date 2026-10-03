@@ -48,14 +48,12 @@ export function toggleTheme() {
 }
 
 export function getUiStyle() {
-  var s = localStorage.getItem("ep_ui_style");
-  return s === "classic" ? "classic" : "glass";
+   
+  return "classic";
 }
 
 export function applyUiStyle(style) {
-  if (style !== "classic") style = "glass";
-  localStorage.setItem("ep_ui_style", style);
-  document.documentElement.setAttribute("data-ui-style", style);
+  document.documentElement.setAttribute("data-ui-style", "eris");
 }
 
 export function getFont() {
