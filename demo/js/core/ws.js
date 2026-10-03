@@ -182,6 +182,17 @@ export function wsConnect() {
         ) {
           loadSecuritySsl();
         }
+      } else if (m.type === "config_updated") {
+         
+        toast(t("config_changed_externally"), "");
+        const fwBody = document.getElementById("fwConfigBody");
+        if (
+          fwBody &&
+          document.querySelector("#p-settings.page.active") &&
+          typeof loadFrameworkConfig === "function"
+        ) {
+          loadFrameworkConfig();
+        }
       } else if (m.type === "log_entry") {
         _onWebSocketLog(m.data);
       }

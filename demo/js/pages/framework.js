@@ -609,12 +609,34 @@ export async function resetFwField(fk) {
     msg,
   );
   if (!ok) return;
+
+   
+  if (!isKnown) {
+    var del = await api("/api/config/delete", {
+      method: "POST",
+      body: JSON.stringify({ key: fk }),
+    });
+    if (del && del.success) {
+      toast(t("fw_delete_done"), "ok");
+      loadFrameworkConfig();
+      return;
+    }
+    if (!del || del.error !== "sdk_unsupported") {
+      toast(t("save_failed") + ": " + (del?.error || t("unknown_error")), "er");
+      return;
+    }
+  }
   var d = await api("/api/config", {
     method: "PUT",
     body: JSON.stringify({ key: fk, value: null }),
   });
   if (d && d.success) {
-    toast(isKnown ? t("fw_reset_done") : t("fw_delete_done"), "ok");
+    toast(
+      isKnown
+        ? t("fw_reset_done")
+        : t("fw_delete_fallback") || t("fw_delete_done"),
+      "ok",
+    );
     loadFrameworkConfig();
   } else {
     toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
