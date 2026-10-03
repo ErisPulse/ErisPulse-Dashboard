@@ -14,6 +14,8 @@ export async function refreshDashboard() {
   document.getElementById("fwInfo").textContent = "ErisPulse v" + fw.version;
   const ad = d.adapters || {},
     mo = d.modules || {};
+   
+  window._adapterConfigStatus = d.adapter_config_status || {};
   let ob = 0;
   Object.values(ad).forEach((a) =>
     Object.values(a.bots || {}).forEach((b) => {

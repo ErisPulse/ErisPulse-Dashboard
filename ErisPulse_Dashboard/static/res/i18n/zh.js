@@ -1174,6 +1174,16 @@ settings_tab_colorfont: "颜色与字体",
     sec_audit_time: "时间",
     sec_audit_action: "操作",
     sec_audit_detail: "详情",
+    adapter_status_unconfigured: "未配置",
+    adapter_status_incomplete: "配置不完整",
+    copy_connection: "复制连接地址",
+    connection_unsupported: "当前适配器或 SDK 不支持连接信息",
+    adapter_restart_title: "重启适配器",
+    adapter_restart_desc: "配置已保存。该适配器正在运行，重启后新配置才能完全生效。要立即重启吗？",
+    adapter_restart_now: "立即重启",
+    adapter_restart_later: "稍后",
+    adapter_restarted: "适配器已重启",
+    onboarding_step_cfg: "完成适配器配置",
 
   };
 })();

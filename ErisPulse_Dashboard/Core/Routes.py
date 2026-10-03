@@ -580,6 +580,12 @@ class RoutesMixin:
         )
         r.register_http_route(
             mn,
+            "/api/adapter/{platform}/connection",
+            handler=self._api_adapter_connection,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
             "/api/adapter/{platform}/accounts",
             handler=self._api_adapter_accounts_get,
             methods=["GET"],

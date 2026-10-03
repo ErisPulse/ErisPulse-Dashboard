@@ -213,6 +213,7 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                 Discord: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } } } },
                 Kook: { status: 'stopped', bots: {} }
             },
+            adapter_config_status: { Yunhu: 'ok', OneBot11: 'ok', Telegram: 'ok', Discord: 'incomplete', Kook: 'unconfigured' },
             modules: { Dashboard: true, HelpModule: true, Cron: true, Weather: false, Takumi: true, OpenAI: false }
         });
     };
@@ -235,11 +236,11 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/adapters'] = function () {
         return _json({
             adapters: [
-                { platform: 'Yunhu', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot' } }] },
-                { platform: 'OneBot11', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11' } }] },
-                { platform: 'Telegram', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot' } }] },
-                { platform: 'Discord', enabled: true, running: true, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001' } }] },
-                { platform: 'Kook', enabled: false, running: false, bots: [] }
+                { platform: 'Yunhu', enabled: true, running: true, config_status: 'ok', meta: { name: 'Yunhu', version: '1.2.0', description: '云湖适配器' }, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot' } }] },
+                { platform: 'OneBot11', enabled: true, running: true, config_status: 'ok', meta: { name: 'OneBot11', version: '2.0.1', description: 'OneBot v11 适配器' }, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11' } }] },
+                { platform: 'Telegram', enabled: true, running: true, config_status: 'ok', meta: { name: 'Telegram', version: '1.0.5', description: 'Telegram 适配器' }, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot' } }] },
+                { platform: 'Discord', enabled: true, running: true, config_status: 'incomplete', meta: { name: 'Discord', version: '0.9.2', description: 'Discord 适配器' }, bots: [{ bot_id: 'bot_001', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001' } }] },
+                { platform: 'Kook', enabled: false, running: false, config_status: 'unconfigured', meta: { name: 'Kook', version: '1.1.0', description: 'KOOK 适配器' }, bots: [] }
             ]
         });
     };
@@ -909,7 +910,11 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
             if (init && init.method === 'DELETE' && matchPath.match(/\/api\/cluster\/nodes\//)) {
                 return _json({ success: true });
             }
-            var adapterMatch = matchPath.match(/^\/api\/adapter\/([^/]+)\/(config|accounts)(\/.*)?$/);
+            if (matchPath.match(/^\/api\/adapter\/[^/]+\/connection$/)) {
+        var connPlat = decodeURIComponent(matchPath.split('/')[3]);
+        return _json({ supported: true, connection: { base_url: 'http://127.0.0.1:8000', http: ['http://127.0.0.1:8000/' + connPlat + '/webhook'], ws: ['ws://127.0.0.1:8000/' + connPlat + '/ws'] } });
+    }
+        var adapterMatch = matchPath.match(/^\/api\/adapter\/([^/]+)\/(config|accounts)(\/.*)?$/);
             if (adapterMatch) {
                 var aPlatform = adapterMatch[1];
                 var aAction = adapterMatch[2];
