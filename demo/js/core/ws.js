@@ -170,6 +170,18 @@ export function wsConnect() {
         }
       } else if (m.type === "appearance_changed") {
         loadGlobalAppearance();
+      } else if (m.type === "cert_files_changed") {
+         
+        toast(t("cert_files_changed"), "");
+        const secTab = document.getElementById("settings-security-tab");
+        if (
+          secTab &&
+          secTab.style.display !== "none" &&
+          document.querySelector("#p-settings.page.active") &&
+          typeof loadSecuritySsl === "function"
+        ) {
+          loadSecuritySsl();
+        }
       } else if (m.type === "log_entry") {
         _onWebSocketLog(m.data);
       }

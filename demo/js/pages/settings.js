@@ -163,6 +163,7 @@ export function switchSettingsTab(tab, btn) {
   var loaders = {
     "settings-update": loadFrameworkVersions,
     "settings-about": loadAbout,
+    "settings-security": loadSecurity,
   };
   if (loaders[tab]) loaders[tab]();
   if (tab === "settings-update") {
