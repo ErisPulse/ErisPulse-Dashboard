@@ -1,0 +1,310 @@
+/* ══════════════════════════════════════════════════════════════
+   ErisPulse Dashboard – 液态玻璃（默认外观）/ 经典 双分支
+   作用轴：html[data-ui-style="glass"]（默认）| "classic"（实底回退）
+   由 dash.html 内联脚本在 CSS 前设置属性（防 FOUC）；
+   本文件位于 overrides.css 之后，负责统一收口其散落的半透/毛玻璃片段。
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 玻璃旋钮（按主题取值，全部从既有 --bg/--accent 派生，冷色调）── */
+html[data-ui-style="glass"] {
+    --glass-blur: 18px;
+    --glass-sat: 1.5;
+    --glass-tint: 62%;
+    --glass-side: 66%;
+    --glass-line: rgba(255, 255, 255, 0.55);
+    --glass-shadow-a: 0.08;
+    --glass-shadow:
+        0 8px 32px -12px rgba(15, 23, 42, 0.18),
+        0 2px 8px -2px rgba(15, 23, 42, 0.08);
+    --glass-shadow-hover:
+        0 16px 44px -14px rgba(15, 23, 42, 0.26),
+        0 4px 12px -4px rgba(15, 23, 42, 0.1);
+}
+
+html[data-ui-style="glass"][data-theme="dark"],
+html[data-ui-style="glass"][data-oled="on"][data-theme="dark"] {
+    --glass-blur: 20px;
+    --glass-tint: 52%;
+    --glass-side: 56%;
+    --glass-line: rgba(255, 255, 255, 0.09);
+    --glass-shadow-a: 0.3;
+    --glass-shadow:
+        0 8px 32px -12px rgba(0, 0, 0, 0.5),
+        0 2px 8px -2px rgba(0, 0, 0, 0.3);
+    --glass-shadow-hover:
+        0 16px 44px -14px rgba(0, 0, 0, 0.6),
+        0 4px 12px -4px rgba(0, 0, 0, 0.32);
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-ui-style="glass"][data-theme="auto"] {
+        --glass-blur: 20px;
+        --glass-tint: 52%;
+        --glass-side: 56%;
+        --glass-line: rgba(255, 255, 255, 0.09);
+        --glass-shadow-a: 0.3;
+        --glass-shadow:
+            0 8px 32px -12px rgba(0, 0, 0, 0.5),
+            0 2px 8px -2px rgba(0, 0, 0, 0.3);
+        --glass-shadow-hover:
+            0 16px 44px -14px rgba(0, 0, 0, 0.6),
+            0 4px 12px -4px rgba(0, 0, 0, 0.32);
+    }
+}
+
+/* OLED：纯黑底上的玻璃以低亮度面板 + 高光边缘呈现 */
+html[data-ui-style="glass"][data-oled="on"] {
+    --glass-tint: 46%;
+    --glass-side: 50%;
+}
+
+/* ══════════════ 玻璃分支：全表面统一液态玻璃 ══════════════ */
+
+/* 卡片：透出背景 + 顶部高光边 + 分层软阴影，hover 升层 */
+html[data-ui-style="glass"] .card,
+html[data-ui-style="glass"] .stat-card {
+    background: color-mix(in srgb, var(--bg-t) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        var(--glass-shadow);
+}
+html[data-ui-style="glass"] .card:hover,
+html[data-ui-style="glass"] .stat-card:hover {
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        var(--glass-shadow-hover);
+    border-color: color-mix(in srgb, var(--bd-h) 70%, transparent);
+}
+
+/* 顶栏 / 侧栏：玻璃随内容滚动透出（overrides.css 的 backdrop-filter:none 在前，此处覆盖） */
+html[data-ui-style="glass"] .header {
+    background: color-mix(in srgb, var(--bg-s) var(--glass-side), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+html[data-ui-style="glass"] .sidebar {
+    background: color-mix(in srgb, var(--bg-s) var(--glass-side), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+/* 模态：遮罩轻微模糊，弹窗本体玻璃浮起 */
+html[data-ui-style="glass"] .modal-overlay,
+html[data-ui-style="glass"] #modalOv,
+html[data-ui-style="glass"] #outputOv,
+html[data-ui-style="glass"] #uploadOv,
+html[data-ui-style="glass"] #pkgDetailOv {
+    -webkit-backdrop-filter: blur(6px) saturate(1.2);
+    backdrop-filter: blur(6px) saturate(1.2);
+}
+html[data-ui-style="glass"] .modal-box {
+    background: color-mix(in srgb, var(--bg-t) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 6px)) saturate(var(--glass-sat));
+    backdrop-filter: blur(calc(var(--glass-blur) + 6px)) saturate(var(--glass-sat));
+    border: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        var(--glass-shadow-hover);
+}
+
+/* 浮层家族：下拉 / 菜单 / 气泡 / 提示条 / 面板 */
+html[data-ui-style="glass"] .popover,
+html[data-ui-style="glass"] .node-dropdown,
+html[data-ui-style="glass"] .home-pin-picker,
+html[data-ui-style="glass"] .fm-context-menu,
+html[data-ui-style="glass"] .ep-combobox-list,
+html[data-ui-style="glass"] .update-hint-bar,
+html[data-ui-style="glass"] .ws-inspector {
+    background: color-mix(in srgb, var(--bg-t) calc(var(--glass-tint) + 12%), transparent);
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(var(--glass-sat));
+    backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(var(--glass-sat));
+    border: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        var(--glass-shadow-hover);
+}
+
+/* 通知 toast：纳入玻璃体系（基础外观见 components.css .toast） */
+html[data-ui-style="glass"] .toast {
+    background: color-mix(in srgb, var(--bg-t) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-line), var(--glass-shadow);
+}
+html[data-ui-style="glass"] .toast-ok {
+    background: color-mix(in srgb, var(--ok-bg) 78%, transparent);
+    border-color: color-mix(in srgb, var(--ok-bd) 70%, transparent);
+    color: var(--ok-c);
+}
+html[data-ui-style="glass"] .toast-er {
+    background: color-mix(in srgb, var(--er-bg) 78%, transparent);
+    border-color: color-mix(in srgb, var(--er-bd) 70%, transparent);
+    color: var(--er-c);
+}
+
+/* 输入控件：轻透底（不加 blur，小元素上性价比低） */
+html[data-ui-style="glass"] .form-input,
+html[data-ui-style="glass"] .fw-input,
+html[data-ui-style="glass"] input[type="text"],
+html[data-ui-style="glass"] input[type="password"],
+html[data-ui-style="glass"] input[type="number"],
+html[data-ui-style="glass"] textarea {
+    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
+}
+
+/* 按钮：统一到玻璃旋钮（overrides 的 blur(14px) 在前，此处覆盖），主按钮加 accent 辉光 */
+html[data-ui-style="glass"] .btn {
+    background: color-mix(in srgb, var(--bg-t) 55%, transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+html[data-ui-style="glass"] .btn-primary {
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        0 4px 18px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+html[data-ui-style="glass"] .btn-primary:hover {
+    box-shadow:
+        inset 0 1px 0 var(--glass-line),
+        0 6px 24px -6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* 拓扑舞台 / 文件管理主卡：overrides 的 42% 透底增强为玻璃 */
+html[data-ui-style="glass"] .topo-stage,
+html[data-ui-style="glass"] .fm-main-card {
+    background: color-mix(in srgb, var(--bg-p) 42%, transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+/* 引导卡：渐变透出 */
+html[data-ui-style="glass"] .onboarding-card {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--accent) 9%, transparent),
+        color-mix(in srgb, var(--bg-t) calc(var(--glass-tint) - 8%), transparent) 55%
+    );
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+/* ══════════════ 经典分支：回退为实底（恢复无玻璃的旧观感） ══════════════ */
+
+html[data-ui-style="classic"] .card {
+    background: var(--bg-t);
+    box-shadow: none;
+}
+html[data-ui-style="classic"] .card:hover {
+    box-shadow: none;
+}
+html[data-ui-style="classic"] .sidebar {
+    background: var(--bg-s);
+}
+html[data-ui-style="classic"] .btn {
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="classic"] .btn:hover {
+    background: var(--bg-s);
+    border-color: var(--bd-h);
+}
+html[data-ui-style="classic"] .btn-primary {
+    background: var(--accent-fill);
+    color: #fff;
+    border: none;
+}
+html[data-ui-style="classic"] .btn-primary:hover {
+    background: var(--accent-fill-h);
+}
+html[data-ui-style="classic"] .btn-danger {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+}
+html[data-ui-style="classic"] [data-theme="dark"] .btn-danger,
+html[data-ui-style="classic"][data-theme="dark"] .btn-danger {
+    background: #ef5350;
+}
+html[data-ui-style="classic"] .topo-stage,
+html[data-ui-style="classic"] .fm-main-card {
+    background: var(--bg-p);
+}
+html[data-ui-style="classic"] [data-theme="dark"] .login-card {
+    background: var(--bg-s);
+    border-color: var(--bd);
+}
+
+/* ══════════════ 降级与可访问性 ══════════════ */
+
+/* 浏览器不支持 backdrop-filter：提高不透明度近似实底 */
+@supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+    html[data-ui-style="glass"] .card,
+    html[data-ui-style="glass"] .stat-card,
+    html[data-ui-style="glass"] .modal-box,
+    html[data-ui-style="glass"] .popover,
+    html[data-ui-style="glass"] .node-dropdown,
+    html[data-ui-style="glass"] .home-pin-picker,
+    html[data-ui-style="glass"] .fm-context-menu,
+    html[data-ui-style="glass"] .ep-combobox-list,
+    html[data-ui-style="glass"] .update-hint-bar,
+    html[data-ui-style="glass"] .ws-inspector,
+    html[data-ui-style="glass"] .toast {
+        background: var(--bg-t);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    html[data-ui-style="glass"] .header,
+    html[data-ui-style="glass"] .sidebar {
+        background: var(--bg-s);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+/* 用户偏好低透明度 */
+@media (prefers-reduced-transparency: reduce) {
+    html[data-ui-style="glass"] .card,
+    html[data-ui-style="glass"] .stat-card,
+    html[data-ui-style="glass"] .modal-box,
+    html[data-ui-style="glass"] .popover,
+    html[data-ui-style="glass"] .node-dropdown,
+    html[data-ui-style="glass"] .home-pin-picker,
+    html[data-ui-style="glass"] .fm-context-menu,
+    html[data-ui-style="glass"] .ep-combobox-list,
+    html[data-ui-style="glass"] .update-hint-bar,
+    html[data-ui-style="glass"] .ws-inspector,
+    html[data-ui-style="glass"] .toast,
+    html[data-ui-style="glass"] .header,
+    html[data-ui-style="glass"] .sidebar {
+        background: var(--bg-t);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    html[data-ui-style="glass"] .header,
+    html[data-ui-style="glass"] .sidebar {
+        background: var(--bg-s);
+    }
+}
+
+/* 移动端：毛玻璃开销大，全部近实底（与 overrides.css 的移动端降级一致） */
+@media (max-width: 720px) {
+    html[data-ui-style="glass"] .card,
+    html[data-ui-style="glass"] .modal-box,
+    html[data-ui-style="glass"] .toast,
+    html[data-ui-style="glass"] .header {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+    html[data-ui-style="glass"] .card {
+        background: color-mix(in srgb, var(--bg-t) 96%, transparent);
+    }
+    html[data-ui-style="glass"] .header {
+        background: color-mix(in srgb, var(--bg-s) 97%, transparent);
+    }
+}

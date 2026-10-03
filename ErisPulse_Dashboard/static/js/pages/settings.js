@@ -1,7 +1,7 @@
 // ErisPulse Dashboard – pages/settings (auto-split from dash.js)
 
 export function applySettingUiStyle(val) {
-  applyUiStyle(FIXED_UI_STYLE);
+  applyUiStyle(val);
   if (typeof syncSettingsUI === "function") syncSettingsUI();
 }
 
@@ -276,8 +276,7 @@ export function applyGlobalAppearanceData(app) {
     syncSettingsUI();
   }
   if (app.ui_style) {
-    /* 风格已固定为 eris，仅保持属性同步，不再接受外部值 */
-    applyUiStyle(FIXED_UI_STYLE);
+    applyUiStyle(app.ui_style);
   }
   if (app.font) {
     localStorage.setItem("ep_font", app.font);
@@ -617,8 +616,7 @@ export function importAppearancePrefs() {
           applyTheme(d.theme);
         }
         if (d.ui_style) {
-          /* 风格已固定，导入的旧备份值仅触发属性同步 */
-          applyUiStyle(FIXED_UI_STYLE);
+          applyUiStyle(d.ui_style);
         }
         if (d.font) {
           localStorage.setItem("ep_font", d.font);
@@ -964,7 +962,7 @@ export async function importBackup(input) {
 // ════════════════ 全局同步（一开全开，全量同步）════════════════
 // 同步范围：外观 + 行为 + 语言 + 布局（下列 localStorage 键）
 var SYNC_LOCAL_KEYS = [
-  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style",
+  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style", "ep_ui_style",
   "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
   "ep_show_node_selector", "ep_remember_groups",
   "ep_setting_dash_title", "ep_setting_bg_color", "ep_setting_bg_image",
@@ -1020,6 +1018,7 @@ var SYNC_APPLIERS = {
   ep_font: function (v) { applyFont(v); },
   ep_lang: function (v) { applySettingLang(v); },
   ep_anim_style: function (v) { applyAnimStyle(v); },
+  ep_ui_style: function (v) { applyUiStyle(v); },
   ep_home_pins: function () { renderHomePins(); },
   ep_nav_group_states: function () { restoreNavGroupStates(); },
   ep_sidebar_collapsed: function (v) {

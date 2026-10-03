@@ -4,10 +4,49 @@
     border-radius: 12px;
     box-shadow: none;
     overflow: hidden;
-    
-    box-shadow: 0.3s var(--ease),
-    border-color 0.2s ease;
+    transition:
+        box-shadow 0.25s var(--ease),
+        border-color 0.2s ease;
     border: 1px solid var(--bd);
+}
+
+/* 通知提示（toast）：JS 只切 opacity/transform，外观全部由类控制 */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--bg-t);
+    color: var(--tx-p);
+    border: 1px solid var(--bd);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.toast-ok {
+    background: var(--ok-bg);
+    color: var(--ok-c);
+    border-color: var(--ok-bd);
+}
+.toast-er {
+    background: var(--er-bg);
+    color: var(--er-c);
+    border-color: var(--er-bd);
+}
+.toast-undo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px 10px 24px;
+    pointer-events: auto;
 }
 
 .card:hover {
