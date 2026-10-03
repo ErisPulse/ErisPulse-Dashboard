@@ -27,7 +27,8 @@ find "$DEMO_DIR/js" "$DEMO_DIR/css" -type f \( -name "*.js" -o -name "*.css" \) 
   xargs -0 sed -i 's|/Dashboard/static/||g'
 
 echo "==> Generating index.html from dash.html..."
-if command -v python3 >/dev/null 2>&1; then PY=python3
+if [ -x "$STATIC_DIR/../.venv/Scripts/python.exe" ]; then PY="$STATIC_DIR/../.venv/Scripts/python.exe"
+elif command -v python3 >/dev/null 2>&1; then PY=python3
 elif command -v python >/dev/null 2>&1; then PY=python
 elif command -v python.exe >/dev/null 2>&1; then PY=python.exe
 elif command -v py >/dev/null 2>&1; then PY=py
