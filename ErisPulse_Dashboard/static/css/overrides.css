@@ -973,58 +973,12 @@ input, textarea, select, button,
     }
 }
 
-/* ========== 玻璃参数变量化 + 深色主题微调 ========== */
-
-:root {
-    --glass-line: rgba(255, 255, 255, 0.07);
-    --glass-tint: 94%;
-    --glass-shadow-a: 0.04;
-    --glass-side: 88%;
-}
-
-[data-theme="dark"],
-[data-oled="on"][data-theme="dark"] {
-    --glass-line: rgba(255, 255, 255, 0.05);
-    --glass-tint: 84%;
-    --glass-shadow-a: 0.22;
-    --glass-side: 78%;
-}
-
-@media (prefers-color-scheme: dark) {
-    [data-theme="auto"] {
-        --glass-line: rgba(255, 255, 255, 0.05);
-        --glass-tint: 84%;
-        --glass-shadow-a: 0.22;
-        --glass-side: 78%;
-    }
-}
-
-.card {
-    background: color-mix(in srgb, var(--bg-t) var(--glass-tint), transparent);
-    box-shadow:
-        inset 0 1px 0 var(--glass-line),
-        0 1px 3px rgba(0, 0, 0, var(--glass-shadow-a));
-}
-
-.card:hover {
-    box-shadow:
-        inset 0 1px 0 var(--glass-line),
-        0 4px 18px rgba(0, 0, 0, var(--glass-shadow-a));
-}
-
-.sidebar {
-    background: color-mix(in srgb, var(--bg-s) var(--glass-side), transparent);
-}
+/* ========== 深色主题微调 ========== */
 
 [data-theme="dark"] .btn-primary {
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.14),
         0 2px 8px color-mix(in srgb, var(--accent) 24%, transparent);
-}
-
-[data-theme="dark"] .login-card {
-    background: color-mix(in srgb, var(--bg-s) 58%, transparent);
-    border-color: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] .card-header > svg {
@@ -1069,31 +1023,6 @@ input, textarea, select, button,
 .btn:hover svg,
 .btn-icon:hover svg {
     color: inherit;
-}
-
-/* ========== 透图：沉浸舞台半透明 + 卡片 tint 下调 ========== */
-
-:root {
-    --glass-tint: 86%;
-    --glass-shadow-a: 0.05;
-}
-
-[data-theme="dark"],
-[data-oled="on"][data-theme="dark"] {
-    --glass-tint: 76%;
-    --glass-shadow-a: 0.26;
-}
-
-@media (prefers-color-scheme: dark) {
-    [data-theme="auto"] {
-        --glass-tint: 76%;
-        --glass-shadow-a: 0.26;
-    }
-}
-
-.topo-stage,
-.fm-main-card {
-    background: color-mix(in srgb, var(--bg-p) 42%, transparent);
 }
 
 /* ========== 移动端：性能降级 + 模块管理布局 ========== */
@@ -1291,53 +1220,6 @@ input, textarea, select, button,
     }
     .btn:active {
         transform: none;
-    }
-}
-
-/* ========== 2.1 玻璃按钮：与透白遮罩语言统一 ========== */
-/* 三层结构：blur 毛玻璃 + accent 半透明染色 + 细边框；
-   文字色 = accent 与前景色混合，任意背景/主题自适应 */
-
-.btn {
-    background: color-mix(in srgb, var(--bg-t) 55%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    backdrop-filter: blur(14px) saturate(1.4);
-    border: 1px solid color-mix(in srgb, var(--bd) 65%, transparent);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-.btn:hover {
-    background: color-mix(in srgb, var(--bg-t) 74%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 32%, var(--bd));
-}
-
-.btn-primary {
-    background: color-mix(in srgb, var(--accent) 30%, transparent);
-    color: color-mix(in srgb, var(--accent) 62%, var(--tx-p));
-    border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
-    font-weight: 700;
-}
-.btn-primary:hover {
-    background: color-mix(in srgb, var(--accent) 42%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
-}
-
-.btn-danger {
-    background: color-mix(in srgb, var(--er-c) 22%, transparent);
-    color: color-mix(in srgb, var(--er-c) 68%, var(--tx-p));
-    border: 1px solid color-mix(in srgb, var(--er-c) 45%, transparent);
-    font-weight: 600;
-}
-.btn-danger:hover {
-    background: color-mix(in srgb, var(--er-c) 34%, transparent);
-    border-color: color-mix(in srgb, var(--er-c) 60%, transparent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .btn,
-    .btn-primary,
-    .btn-danger {
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
     }
 }
 

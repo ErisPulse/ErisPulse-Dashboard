@@ -48,14 +48,12 @@ export function toggleTheme() {
 }
 
 export function getUiStyle() {
-  var s = localStorage.getItem("ep_ui_style");
-  return s === "classic" ? "classic" : "glass";
+  // 液态玻璃已移除：固定经典实底外观（保留轴位以兼容旧备份/外观同步数据）
+  return "classic";
 }
 
 export function applyUiStyle(style) {
-  if (style !== "classic") style = "glass";
-  localStorage.setItem("ep_ui_style", style);
-  document.documentElement.setAttribute("data-ui-style", style);
+  document.documentElement.setAttribute("data-ui-style", "eris");
 }
 
 export function getFont() {

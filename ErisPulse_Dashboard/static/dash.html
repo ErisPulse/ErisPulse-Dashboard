@@ -14,12 +14,7 @@
                 if (localStorage.getItem("ep_oled") === "on") {
                     document.documentElement.setAttribute("data-oled", "on");
                 }
-                // 界面风格：glass（液态玻璃，默认）/ classic（经典实底），CSS 前设置防 FOUC
-                var uiStyle = localStorage.getItem("ep_ui_style");
-                document.documentElement.setAttribute(
-                    "data-ui-style",
-                    uiStyle === "classic" ? "classic" : "glass",
-                );
+                document.documentElement.setAttribute("data-ui-style", "eris");
             })();
         </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,29 +32,28 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=108" />
-        <link rel="stylesheet" href="/Dashboard/static/css/glass.css?v=108" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=109" />
         <script src="/Dashboard/static/res/vendor/marked/marked.min.js"></script>
     </head>
 
@@ -4823,26 +4817,6 @@
 
                                     <div class="card settings-card">
                                         <div class="card-header">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
-                                            <span data-i18n="settings_ui_style"></span>
-                                        </div>
-                                        <div class="settings-card-body">
-                                            <div class="theme-selector">
-                                                <div class="theme-card style-card active" data-style="glass" onclick="applySettingUiStyle('glass')">
-                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card" style="opacity:.7;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)"></div><div class="tcp-card" style="height:8px;width:70%;opacity:.7;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm" style="opacity:.7"></div><div class="tcp-card-sm" style="opacity:.7"></div></div></div></div></div></div>
-                                                    <div class="theme-card-label" data-i18n="settings_style_glass">Liquid Glass</div>
-                                                </div>
-                                                <div class="theme-card style-card" data-style="classic" onclick="applySettingUiStyle('classic')">
-                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
-                                                    <div class="theme-card-label" data-i18n="settings_style_classic">Classic</div>
-                                                </div>
-                                            </div>
-                                            <div class="settings-item-desc" style="margin-top:10px" data-i18n="settings_ui_style_desc"></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card settings-card">
-                                        <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                                             <span data-i18n="settings_display"></span>
                                         </div>
@@ -6965,11 +6939,11 @@
         <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=108"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=108"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=108"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=108"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=108"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=108"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=109"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=109"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=109"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=109"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=109"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=109"></script>
     </body>
 </html>

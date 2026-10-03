@@ -19,7 +19,7 @@ window._panelInst = null;
 window._collapseTimer = null;
 window._wsMeta = { connectedAt: 0, reconnects: 0, frames: 0, events: 0, url: "" };
 window._wsInspTimer = null;
-window.DEFAULT_UI_STYLE = "glass";
+window.DEFAULT_UI_STYLE = "classic";
 window.FONT_PRESETS = [
   { id: "system", name: "", display: "", body: "",
     preview: "Aa", weight: "600" },
