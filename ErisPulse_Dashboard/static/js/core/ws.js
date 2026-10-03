@@ -182,6 +182,17 @@ export function wsConnect() {
         ) {
           loadSecuritySsl();
         }
+      } else if (m.type === "config_updated") {
+        // 配置文件被外部（编辑器/其他进程）修改
+        toast(t("config_changed_externally"), "");
+        const fwBody = document.getElementById("fwConfigBody");
+        if (
+          fwBody &&
+          document.querySelector("#p-settings.page.active") &&
+          typeof loadFrameworkConfig === "function"
+        ) {
+          loadFrameworkConfig();
+        }
       } else if (m.type === "log_entry") {
         _onWebSocketLog(m.data);
       }

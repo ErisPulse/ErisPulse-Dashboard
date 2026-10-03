@@ -1184,6 +1184,8 @@ settings_tab_colorfont: "颜色与字体",
     adapter_restart_later: "稍后",
     adapter_restarted: "适配器已重启",
     onboarding_step_cfg: "完成适配器配置",
+    config_changed_externally: "配置文件已被外部修改",
+    fw_delete_fallback: "已重置为空（当前 SDK 不支持删除键）",
 
   };
 })();

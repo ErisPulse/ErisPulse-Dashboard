@@ -90,7 +90,11 @@ class ApiDashboardMixin:
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
-        config = dict(self.sdk.config._cache)
+        # 优先公开 API 全量读取，旧 SDK 回退私有 _cache
+        if hasattr(self.sdk.config, "getAllConfig"):
+            config = dict(self.sdk.config.getAllConfig())
+        else:
+            config = dict(self.sdk.config._cache)
         # 移除可能包含大型 base64 图片的外观配置，避免响应过大卡死前端
         config.pop("Dashboard", None)
         # 内联 SSL PEM 内容脱敏（与 PUT 侧 "******" 视为未修改的约定配套）
@@ -130,6 +134,21 @@ class ApiDashboardMixin:
         self.sdk.config.setConfig(key, value)
         self._add_audit_log("config_update", key, request)
         return JSONResponse({"success": True})
+
+    async def _api_config_delete(self, request: Request) -> JSONResponse:
+        """真删除配置键（delConfig，SDK 2.9.0-dev.2+）；旧 SDK 返回不支持"""
+        body = await request.json()
+        key = body.get("key", "")
+        if not key:
+            return JSONResponse({"error": "key is required"}, status_code=400)
+        del_fn = getattr(self.sdk.config, "delConfig", None)
+        if del_fn is None:
+            return JSONResponse(
+                {"error": "sdk_unsupported", "success": False}, status_code=400
+            )
+        del_fn(key)
+        self._add_audit_log("config_delete", key, request)
+        return JSONResponse({"success": True, "deleted": True})
 
     async def _api_token_regenerate(self, request: Request) -> JSONResponse:
         """重新生成 Dashboard 访问令牌；旧令牌立即失效，所有已登录会话需重新登录"""

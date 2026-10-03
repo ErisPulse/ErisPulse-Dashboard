@@ -335,7 +335,11 @@ class ApiObservabilityMixin:
     # ════════════════ API · 备份 ════════════════
 
     async def _api_backup_export(self, request: Request) -> JSONResponse:
-        config_data = dict(self.sdk.config._cache)
+        # 优先公开 API 全量读取，旧 SDK 回退私有 _cache
+        if hasattr(self.sdk.config, "getAllConfig"):
+            config_data = dict(self.sdk.config.getAllConfig())
+        else:
+            config_data = dict(self.sdk.config._cache)
         storage_keys = self.storage.get_all_keys()
         storage_data = {}
         for k in storage_keys[:500]:

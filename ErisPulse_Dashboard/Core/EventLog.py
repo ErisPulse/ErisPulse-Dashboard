@@ -100,6 +100,9 @@ class EventLogMixin:
                 )
                 self._add_lifecycle_log(entry)
                 self._lifecycle_counts[_name] = self._lifecycle_counts.get(_name, 0) + 1
+                # 配置文件被外部修改时实时提醒前端
+                if _name == "config.updated":
+                    self._safe_broadcast({"type": "config_updated", "data": data})
 
         @self.sdk.lifecycle.on("*")
         async def _lifecycle_catch_all(data: dict):

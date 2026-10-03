@@ -361,6 +361,8 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         return _json(_mockConfig());
     };
 
+    API_MAP['/api/config/delete'] = function () { return _json({ success: true, deleted: true }); };
+
     API_MAP['/api/config/source'] = function () {
         return _json({ content: '# ErisPulse Configuration\n[ErisPulse.server]\nhost = "0.0.0.0"\nport = 8000\nauto_start = true\n\n[ErisPulse.logger]\nlevel = "INFO"\nformat = "rich"\nmemory_limit = 1000\n\n[ErisPulse.event.command]\nprefix = "/"\ncase_sensitive = true\nallow_space_prefix = false\nmust_at_bot = false\n\n[Dashboard]\ntitle = "ErisPulse Dashboard"\nmax_event_log = 500\n' });
     };

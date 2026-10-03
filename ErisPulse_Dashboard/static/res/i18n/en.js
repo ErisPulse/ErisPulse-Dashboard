@@ -1214,6 +1214,8 @@ settings_tab_colorfont: "Colors & Font",
     adapter_restart_later: "Later",
     adapter_restarted: "Adapter restarted",
     onboarding_step_cfg: "Finish adapter config",
+    config_changed_externally: "Config file was modified externally",
+    fw_delete_fallback: "Reset to null (this SDK version cannot delete keys)",
 
   };
 })();

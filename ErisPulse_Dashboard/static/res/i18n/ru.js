@@ -1194,6 +1194,8 @@ settings_tab_colorfont: "Цвет и шрифт",
     adapter_restart_later: "Позже",
     adapter_restarted: "Адаптер перезапущен",
     onboarding_step_cfg: "Завершите настройку адаптеров",
+    config_changed_externally: "Файл конфигурации изменён извне",
+    fw_delete_fallback: "Сброшено в null (эта версия SDK не поддерживает удаление ключей)",
 
   };
 })();

@@ -327,6 +327,12 @@ class RoutesMixin:
             handler=self._api_config_source,
             methods=["GET", "POST"],
         )
+        r.register_http_route(
+            mn,
+            "/api/config/delete",
+            handler=self._api_config_delete,
+            methods=["POST"],
+        )
 
         # 日志相关 API
         r.register_http_route(mn, "/api/logs", handler=self._api_logs, methods=["GET"])

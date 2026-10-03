@@ -1189,6 +1189,8 @@ settings_tab_colorfont: "色とフォント",
     adapter_restart_later: "後で",
     adapter_restarted: "アダプタを再起動しました",
     onboarding_step_cfg: "アダプタの設定を完了",
+    config_changed_externally: "設定ファイルが外部で変更されました",
+    fw_delete_fallback: "null にリセットしました（この SDK はキー削除に非対応）",
 
   };
 })();
