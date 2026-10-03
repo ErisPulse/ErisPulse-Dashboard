@@ -1191,6 +1191,12 @@ settings_tab_colorfont: "色とフォント",
     onboarding_step_cfg: "アダプタの設定を完了",
     config_changed_externally: "設定ファイルが外部で変更されました",
     fw_delete_fallback: "null にリセットしました（この SDK はキー削除に非対応）",
+    instance_disk: "ディスク使用量",
+    fw_version_row: "フレームワーク版本",
+    fw_update_available: "更新あり",
+    export_diagnostics: "診断情報をエクスポート",
+    export_diagnostics_failed: "診断のエクスポートに失敗しました",
+    export_diagnostics_done: "診断情報をエクスポートしました",
 
   };
 })();

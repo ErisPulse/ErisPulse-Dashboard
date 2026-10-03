@@ -202,6 +202,12 @@ export function wsConnect() {
 
 export function loadAll() {
   initMirrorSelects();
+   
+  api("/api/capabilities")
+    .then(function (c) {
+      window.CAPS = (c && c.capabilities) || {};
+    })
+    .catch(function () {});
   loadGlobalAppearance();
   initHeaderStatusIcon();
   applySettingDensity(getDensity());

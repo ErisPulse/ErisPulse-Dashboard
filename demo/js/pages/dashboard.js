@@ -213,6 +213,26 @@ export async function loadPerformance() {
       process.connections || "--",
     );
    
+  if (document.getElementById("instDisk")) {
+    const disk = system.disk;
+    document.getElementById("instDisk").textContent = disk
+      ? disk.used_gb + "/" + disk.total_gb + " GB (" + disk.percent + "%)"
+      : "--";
+  }
+   
+  _fillFwVersionRow();
+  if (!window._fwVerChecked) {
+    window._fwVerChecked = true;
+    api("/api/framework/versions")
+      .then(function (v) {
+        if (!v || !v.current || !Array.isArray(v.versions) || !v.versions.length)
+          return;
+        window._fwUpdateAvailable = v.versions[0] !== v.current;
+        _fillFwVersionRow();
+      })
+      .catch(function () {});
+  }
+   
   window._perfData = {
     vms: memory.vms_mb,
     threads: process.threads,
@@ -227,3 +247,16 @@ export async function loadPerformance() {
   };
 }
 
+
+function _fillFwVersionRow() {
+  const el = document.getElementById("instFwVer");
+  if (!el) return;
+  const fw = window._fwStatus || {};
+  let html = fw.version ? "v" + fw.version : "--";
+  if (window._fwUpdateAvailable)
+    html +=
+      ' <span class="chip chip-wr" style="padding:1px 8px;font-size:11px">' +
+      esc(t("fw_update_available")) +
+      "</span>";
+  el.innerHTML = html;
+}

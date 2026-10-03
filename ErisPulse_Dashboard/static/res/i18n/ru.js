@@ -1196,6 +1196,12 @@ settings_tab_colorfont: "Цвет и шрифт",
     onboarding_step_cfg: "Завершите настройку адаптеров",
     config_changed_externally: "Файл конфигурации изменён извне",
     fw_delete_fallback: "Сброшено в null (эта версия SDK не поддерживает удаление ключей)",
+    instance_disk: "Занято на диске",
+    fw_version_row: "Версия фреймворка",
+    fw_update_available: "Есть обновление",
+    export_diagnostics: "Экспортировать диагностику",
+    export_diagnostics_failed: "Не удалось экспортировать диагностику",
+    export_diagnostics_done: "Диагностика экспортирована",
 
   };
 })();
