@@ -46,8 +46,17 @@ function _masonryLayout(container, opts) {
 
 export function layoutMasonry(container, opts) {
   if (!container) return;
+   
+   
   _masonryLayout(container, opts || {});
   if (_masonryStates.has(container)) return;
+  if (document.documentElement.getAttribute("data-anim") !== "off") {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        container.classList.add("masonry-anim");
+      });
+    });
+  }
    
   var pending = null;
   var schedule = function () {
