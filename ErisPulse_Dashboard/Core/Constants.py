@@ -45,6 +45,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
+         
+        "ssl_cert": None,
+        "ssl_key": None,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,
@@ -110,3 +113,7 @@ MAX_READ_SIZE = 2 * 1024 * 1024
  
  
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+
+ 
+ 
+MAX_SSL_UPLOAD_SIZE = 1024 * 1024

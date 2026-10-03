@@ -56,6 +56,7 @@ class MainBase:
         self._cluster: ClusterManager | None = None
         self._lifecycle_counts: dict[str, int] = {}
         self._ghost_cache: dict = {}
+        self._ssl_watcher_task: asyncio.Task | None = None
         self._register_routes()
 
     @staticmethod
@@ -84,6 +85,7 @@ class MainBase:
         asyncio.create_task(self._events_flush_loop())
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
+        self._start_ssl_watch()
         self.logger.info("WebUI module loaded")
         asyncio.create_task(self._show_token_later())
         return True
@@ -137,6 +139,7 @@ class MainBase:
         self.logger.warning("")
 
     async def on_unload(self, event: dict) -> bool:
+        self._stop_ssl_watch()
         if self._cluster:
             await self._cluster.close()
         try:

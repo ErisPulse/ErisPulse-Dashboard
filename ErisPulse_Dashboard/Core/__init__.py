@@ -21,6 +21,7 @@ from .ApiDashboard import ApiDashboardMixin
 from .ApiStore import ApiStoreMixin
 from .ApiBuilder import ApiBuilderMixin
 from .ApiFramework import ApiFrameworkMixin
+from .ApiSsl import ApiSslMixin
 from .ApiObservability import ApiObservabilityMixin
 from .ApiFiles import ApiFilesMixin
 from .ApiScope import ApiScopeMixin
@@ -42,6 +43,7 @@ class Main(
     ApiStoreMixin,
     ApiBuilderMixin,
     ApiFrameworkMixin,
+    ApiSslMixin,
     ApiObservabilityMixin,
     ApiFilesMixin,
     ApiScopeMixin,
