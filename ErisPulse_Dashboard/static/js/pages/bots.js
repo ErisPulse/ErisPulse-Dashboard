@@ -19,11 +19,11 @@ export function _capabilityBadges(caps) {
 
 export function _adapterStatusBadge(status) {
   var map = {
-    started: { cls: "chip-ok", label: "running" },
-    starting: { cls: "chip-wr", label: "starting" },
-    stopping: { cls: "chip-wr", label: "stopping" },
-    stopped: { cls: "chip-er", label: "stopped" },
-    unknown: { cls: "chip-default", label: "unknown" },
+    started: { cls: "chip-ok", label: t("adapter_st_started") },
+    starting: { cls: "chip-wr", label: t("adapter_st_starting") },
+    stopping: { cls: "chip-wr", label: t("adapter_st_stopping") },
+    stopped: { cls: "chip-er", label: t("adapter_st_stopped") },
+    unknown: { cls: "chip-default", label: t("adapter_st_unknown") },
   };
   var s = map[status] || map.unknown;
   return (
