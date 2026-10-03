@@ -59,7 +59,13 @@ export function updateOnboardingCard(adapters) {
       return (a.bots[b] || {}).status === "online";
     });
   });
-  if (hasAdapter && hasAccount && hasOnline) {
+  // 配置完整度（/api/status 的 adapter_config_status；旧后端无此数据视为完成）
+  var cfgStatus = window._adapterConfigStatus || {};
+  var needCfg = Object.keys(cfgStatus).filter(function (p) {
+    return cfgStatus[p] === "unconfigured" || cfgStatus[p] === "incomplete";
+  });
+  var cfgDone = hasAdapter ? needCfg.length === 0 : true;
+  if (hasAdapter && hasAccount && hasOnline && cfgDone) {
     // 引导"毕业"：如果卡片正展示着，先道一声恭喜再收尾；持久化隐藏，之后不再出现
     if (host.querySelector(".onboarding-card"))
       toast(t("onboarding_congrats"), "ok");
@@ -81,13 +87,23 @@ export function updateOnboardingCard(adapters) {
       cta: hasAdapter ? t("goto_config") : "",
       page: "adapter",
     },
-    {
-      done: hasOnline,
-      label: t("onboarding_step3"),
-      cta: "",
-      page: "",
-    },
   ];
+  if (hasAdapter) {
+    steps.push({
+      done: cfgDone,
+      label: needCfg.length
+        ? t("onboarding_step_cfg").replace("{n}", String(needCfg.length))
+        : t("onboarding_step_cfg"),
+      cta: hasAdapter ? t("goto_config") : "",
+      page: "adapter",
+    });
+  }
+  steps.push({
+    done: hasOnline,
+    label: t("onboarding_step3"),
+    cta: "",
+    page: "",
+  });
   var remaining = steps.filter(function (s) {
     return !s.done;
   }).length;

@@ -14,6 +14,8 @@ export async function refreshDashboard() {
   document.getElementById("fwInfo").textContent = "ErisPulse v" + fw.version;
   const ad = d.adapters || {},
     mo = d.modules || {};
+  // 适配器配置完整度（onboarding-card 动态步骤用）
+  window._adapterConfigStatus = d.adapter_config_status || {};
   let ob = 0;
   Object.values(ad).forEach((a) =>
     Object.values(a.bots || {}).forEach((b) => {

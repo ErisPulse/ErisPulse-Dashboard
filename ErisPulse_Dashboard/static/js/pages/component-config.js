@@ -87,6 +87,11 @@ export async function loadAdapterConfigPage() {
     const logo = adapterLogoImg(a.platform, 22) || "";
     const dotColor = a.running ? "var(--ok-c)" : "var(--tx-t)";
     const plat = esc(a.platform);
+    var badge = "";
+    if (a.config_status === "unconfigured")
+      badge = '<span class="chip chip-er cfg-chip">' + esc(t("adapter_status_unconfigured")) + "</span>";
+    else if (a.config_status === "incomplete")
+      badge = '<span class="chip chip-wr cfg-chip">' + esc(t("adapter_status_incomplete")) + "</span>";
     selectorHtml.push(
       '<div class="' +
         cls +
@@ -97,6 +102,7 @@ export async function loadAdapterConfigPage() {
         "')\">",
       logo,
       '<span class="adapter-chip-name">' + plat + "</span>",
+      badge,
       '<span class="adapter-chip-dot" style="background:' +
         dotColor +
         '"></span>',
@@ -165,10 +171,15 @@ export async function loadAdapterConfigDetail(platform) {
   var html = '<div class="adapter-config-detail">';
 
   html +=
-    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px">' +
+    '<div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:8px;align-items:center">' +
+    '<button class="cfg-docs-link" style="background:none;border:none;cursor:pointer;font:inherit;color:var(--accent)" onclick="copyAdapterConnection(\'' +
+    esc(platform) +
+    '\')">' +
+    esc(t("copy_connection")) +
+    "</button>" +
     '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
     t("view_docs") +
-    ' ↗</a></div>';
+    " ↗</a></div>";
 
   if (d.has_config && d.schema) {
     html +=
@@ -517,6 +528,7 @@ export async function saveAdapterConfigAll(platform) {
   if (result && result.success) {
     _cfgClearDirtyPrefix(d.config_key + ".");
     toast(t("adapter_config_saved"), "ok");
+    if (result.adapter_running) promptAdapterRestart(platform);
     if (result.errors && result.errors.length > 0) {
       toast(
         t("config_validation_failed") + ": " + result.errors.join(", "),
@@ -1029,3 +1041,55 @@ export async function saveModuleConfigAll(moduleName) {
   }
 }
 
+
+// ── 连接地址一键复制（get_connection_info，旧 SDK 降级隐藏） ──
+export async function copyAdapterConnection(platform) {
+  const d = await api(
+    "/api/adapter/" + encodeURIComponent(platform) + "/connection",
+  );
+  if (!d) return;
+  if (!d.supported) {
+    toast(t("connection_unsupported"), "");
+    return;
+  }
+  const c = d.connection || {};
+  const lines = [];
+  if (c.base_url) lines.push(c.base_url);
+  (c.http || []).forEach(function (u) {
+    lines.push(u);
+  });
+  (c.ws || []).forEach(function (u) {
+    lines.push(u);
+  });
+  (c.sse || []).forEach(function (u) {
+    lines.push(u);
+  });
+  if (!lines.length) {
+    toast(t("connection_unsupported"), "");
+    return;
+  }
+  _copyToClipboard(lines.join("\n"));
+  toast(t("sec_copied"), "ok");
+}
+
+// ── 保存后重启引导（适配器运行中且可能需要重启才能完全生效） ──
+export async function promptAdapterRestart(platform) {
+  const choice = await showModal(
+    t("adapter_restart_title"),
+    t("adapter_restart_desc"),
+    [
+      { label: t("adapter_restart_later"), value: "later" },
+      { label: t("adapter_restart_now"), value: "restart", primary: true },
+    ],
+  );
+  if (choice !== "restart") return;
+  const r = await api("/api/modules/action", {
+    method: "POST",
+    body: JSON.stringify({ action: "reload", name: platform, type: "adapter" }),
+  });
+  if (r && r.success) {
+    toast(t("adapter_restarted"), "ok");
+  } else {
+    toast(t("save_failed") + ": " + (r?.error || t("unknown_error")), "er");
+  }
+}

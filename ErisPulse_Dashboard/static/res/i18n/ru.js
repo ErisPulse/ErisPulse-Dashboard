@@ -1184,6 +1184,16 @@ settings_tab_colorfont: "Цвет и шрифт",
     sec_audit_time: "Время",
     sec_audit_action: "Операция",
     sec_audit_detail: "Детали",
+    adapter_status_unconfigured: "Не настроен",
+    adapter_status_incomplete: "Неполный конфиг",
+    copy_connection: "Копировать адрес",
+    connection_unsupported: "Сведения о подключении не поддерживаются адаптером или SDK",
+    adapter_restart_title: "Перезапустить адаптер",
+    adapter_restart_desc: "Конфиг сохранён. Адаптер запущен; перезапуск полностью применит новую конфигурацию. Перезапустить сейчас?",
+    adapter_restart_now: "Перезапустить",
+    adapter_restart_later: "Позже",
+    adapter_restarted: "Адаптер перезапущен",
+    onboarding_step_cfg: "Завершите настройку адаптеров",
 
   };
 })();

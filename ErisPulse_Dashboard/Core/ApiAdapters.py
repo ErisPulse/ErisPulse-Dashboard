@@ -12,14 +12,22 @@ class ApiAdaptersMixin:
 
 
     async def _api_adapters(self, request: Request) -> JSONResponse:
+        get_meta = getattr(self.sdk.adapter, "get_meta", None)
         adapters = []
         for platform in self.sdk.adapter.list_registered():
             info = {
                 "platform": platform,
                 "enabled": self.sdk.adapter.is_enabled(platform),
                 "running": self.sdk.adapter.is_running(platform),
+                "config_status": self._adapter_config_status(platform),
+                "meta": None,
                 "bots": [],
             }
+            if get_meta is not None:
+                try:
+                    info["meta"] = get_meta(platform, resolve_i18n=True)
+                except Exception as e:
+                    self.logger.debug(f"adapter get_meta failed for {platform}: {e}")
             bots = self.sdk.adapter.list_bots(platform).get(platform, {})
             for bot_id, bd in bots.items():
                 info["bots"].append(
@@ -33,6 +41,34 @@ class ApiAdaptersMixin:
             adapters.append(info)
         return JSONResponse({"adapters": adapters})
 
+    def _adapter_config_status(self, platform: str) -> str | None:
+        """适配器配置完整度：ok / incomplete / unconfigured / none。
+
+        none = 适配器未声明 ConfigClass；schema API 不可用（旧 SDK）返回 None，
+        前端不显示徽章。
+        """
+        adapter_instance = self.sdk.adapter.get(platform)
+        if not adapter_instance:
+            return None
+        config_class = getattr(adapter_instance, "ConfigClass", None)
+        if config_class is None:
+            return "none"
+        try:
+            from ErisPulse.runtime.config_schema import (
+                dict_to_dataclass,
+                validate_config,
+            )
+        except Exception:
+            return None
+        config_key = adapter_instance._get_config_key()
+        values = self.sdk.config.getConfig(config_key) or {}
+        try:
+            instance = dict_to_dataclass(config_class, values)
+            errors = validate_config(instance)
+        except Exception:
+            return "unconfigured" if not values else "incomplete"
+        return "incomplete" if errors else "ok"
+
     async def _api_adapter_logos(self, request: Request) -> JSONResponse:
         import os as _os
 
@@ -44,6 +80,20 @@ class ApiAdaptersMixin:
                     name = f[:-4]
                     logos[name] = "/Dashboard/static/res/adapter_logo/" + f
         return JSONResponse({"logos": logos})
+
+    async def _api_adapter_connection(self, request: Request) -> JSONResponse:
+        """适配器对外连接信息（Webhook 地址等）；旧 SDK 无此 API 时降级"""
+        platform = request.path_params.get("platform", "")
+        fn = getattr(self.sdk.adapter, "get_connection_info", None)
+        if fn is None:
+            return JSONResponse({"supported": False})
+        try:
+            conn = fn(platform)
+        except Exception as e:
+            return JSONResponse({"supported": False, "error": str(e)})
+        if not conn:
+            return JSONResponse({"supported": False})
+        return JSONResponse({"supported": True, "connection": conn})
 
     # ════════════════ 适配器配置 ════════════════
 
@@ -145,7 +195,12 @@ class ApiAdaptersMixin:
             # Dashboard 不再主动调用 on_config_update，避免重复触发。
 
             self._add_audit_log("adapter_config_update", platform, request)
-            return JSONResponse({"success": True})
+            return JSONResponse(
+                {
+                    "success": True,
+                    "adapter_running": self.sdk.adapter.is_running(platform),
+                }
+            )
 
         key = body.get("key", "")
         value = body.get("value")

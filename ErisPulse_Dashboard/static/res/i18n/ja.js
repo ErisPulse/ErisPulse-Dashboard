@@ -1179,6 +1179,16 @@ settings_tab_colorfont: "色とフォント",
     sec_audit_time: "時刻",
     sec_audit_action: "操作",
     sec_audit_detail: "詳細",
+    adapter_status_unconfigured: "未設定",
+    adapter_status_incomplete: "設定が不完全",
+    copy_connection: "接続情報をコピー",
+    connection_unsupported: "このアダプタまたは SDK は接続情報に対応していません",
+    adapter_restart_title: "アダプタを再起動",
+    adapter_restart_desc: "設定を保存しました。このアダプタは実行中のため、再起動すると新しい設定が完全に反映されます。今すぐ再起動しますか？",
+    adapter_restart_now: "今すぐ再起動",
+    adapter_restart_later: "後で",
+    adapter_restarted: "アダプタを再起動しました",
+    onboarding_step_cfg: "アダプタの設定を完了",
 
   };
 })();

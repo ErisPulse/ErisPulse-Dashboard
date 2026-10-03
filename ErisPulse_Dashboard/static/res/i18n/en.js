@@ -1204,6 +1204,16 @@ settings_tab_colorfont: "Colors & Font",
     sec_audit_time: "Time",
     sec_audit_action: "Action",
     sec_audit_detail: "Detail",
+    adapter_status_unconfigured: "Unconfigured",
+    adapter_status_incomplete: "Incomplete config",
+    copy_connection: "Copy connection",
+    connection_unsupported: "Connection info not supported by this adapter or SDK",
+    adapter_restart_title: "Restart adapter",
+    adapter_restart_desc: "Config saved. This adapter is running; restart it to fully apply the new config. Restart now?",
+    adapter_restart_now: "Restart now",
+    adapter_restart_later: "Later",
+    adapter_restarted: "Adapter restarted",
+    onboarding_step_cfg: "Finish adapter config",
 
   };
 })();

@@ -304,6 +304,10 @@ class StatusMixin:
             {
                 "framework": fw,
                 "adapters": self.sdk.adapter.get_status_summary().get("adapters", {}),
+                "adapter_config_status": {
+                    p: self._adapter_config_status(p)
+                    for p in self.sdk.adapter.list_registered()
+                },
                 "modules": {
                     n: self.sdk.module.is_loaded(n)
                     for n in self.sdk.module.list_registered()
