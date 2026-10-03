@@ -332,6 +332,56 @@ class ApiObservabilityMixin:
         self._add_audit_log("audit_clear", "", request)
         return JSONResponse({"success": True})
 
+    async def _api_capabilities(self, request: Request) -> JSONResponse:
+        """SDK 能力探测表（hasattr 一次成型），供前端按能力显隐功能"""
+        s = self.sdk
+        return JSONResponse(
+            {
+                "capabilities": {
+                    "ssl_reload": hasattr(s.router, "reload"),
+                    "config_get_all": hasattr(s.config, "getAllConfig"),
+                    "config_delete": hasattr(s.config, "delConfig"),
+                    "adapter_meta": hasattr(s.adapter, "get_meta"),
+                    "adapter_connection": hasattr(
+                        s.adapter, "get_connection_info"
+                    ),
+                    "dump_state": hasattr(s, "dump_state"),
+                    "is_supervised": hasattr(s, "is_supervised"),
+                    "home_entry": hasattr(s.router, "register_home_entry"),
+                    "logger_handler": hasattr(s.logger, "handler"),
+                    "unregister_all_by_namespace": hasattr(
+                        s.router, "unregister_all_by_namespace"
+                    ),
+                    "module_views": True,
+                }
+            }
+        )
+
+    async def _api_diagnostics(self, request: Request) -> JSONResponse:
+        """诊断快照：框架信息 + 运行状态 + SDK dump_state（守卫）+ 近期审计"""
+        dump = None
+        dump_fn = getattr(self.sdk, "dump_state", None)
+        if dump_fn is not None:
+            try:
+                dump = dump_fn()
+            except Exception as e:
+                dump = {"error": str(e)}
+        return JSONResponse(
+            {
+                "framework": self._get_framework_info(),
+                "adapters": self.sdk.adapter.get_status_summary().get(
+                    "adapters", {}
+                ),
+                "modules": {
+                    n: self.sdk.module.is_loaded(n)
+                    for n in self.sdk.module.list_registered()
+                },
+                "sdk_state": dump,
+                "audit_recent": self._audit_log[-20:],
+                "timestamp": time.time(),
+            }
+        )
+
     # ════════════════ API · 备份 ════════════════
 
     async def _api_backup_export(self, request: Request) -> JSONResponse:

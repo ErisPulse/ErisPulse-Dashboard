@@ -256,6 +256,22 @@ class StatusMixin:
         for e in self._event_log:
             t = e["type"]
             ec[t] = ec.get(t, 0) + 1
+
+        # 工作目录所在磁盘用量（受限环境降级为 None，前端不展示）
+        disk = None
+        try:
+            import psutil as _psutil
+            from pathlib import Path as _Path
+
+            du = _psutil.disk_usage(str(_Path.cwd()))
+            disk = {
+                "total_gb": round(du.total / 1024**3, 1),
+                "used_gb": round(du.used / 1024**3, 1),
+                "percent": du.percent,
+            }
+        except Exception:
+            disk = None
+
         return {
             "uptime_seconds": round(uptime),
             "uptime_human": _CoreHelpers._fmt_uptime(uptime),
@@ -265,6 +281,7 @@ class StatusMixin:
             "pid": os.getpid(),
             "memory": mem,
             "process": proc_info,
+            "disk": disk,
             "event_counts": ec,
             "total_events": self._total_event_count,
         }

@@ -333,6 +333,18 @@ class RoutesMixin:
             handler=self._api_config_delete,
             methods=["POST"],
         )
+        r.register_http_route(
+            mn,
+            "/api/capabilities",
+            handler=self._api_capabilities,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/diagnostics",
+            handler=self._api_diagnostics,
+            methods=["GET"],
+        )
 
         # 日志相关 API
         r.register_http_route(mn, "/api/logs", handler=self._api_logs, methods=["GET"])
@@ -627,6 +639,15 @@ class RoutesMixin:
         """
         r = self.sdk.router
         mn = "Dashboard"
+
+        # 优先公开 API 一次性注销整个命名空间，旧 SDK 回退私有字典内省
+        unregister_all = getattr(r, "unregister_all_by_namespace", None)
+        if unregister_all is not None:
+            try:
+                unregister_all(mn)
+                return
+            except Exception:
+                pass
 
         http_routes_dict = getattr(r, "_http_routes", None)
         if isinstance(http_routes_dict, dict):

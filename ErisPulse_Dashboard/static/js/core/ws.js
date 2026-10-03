@@ -202,6 +202,12 @@ export function wsConnect() {
 
 export function loadAll() {
   initMirrorSelects();
+  // SDK 能力表（前端按能力显隐/降级的统一数据源）
+  api("/api/capabilities")
+    .then(function (c) {
+      window.CAPS = (c && c.capabilities) || {};
+    })
+    .catch(function () {});
   loadGlobalAppearance();
   initHeaderStatusIcon();
   applySettingDensity(getDensity());

@@ -76,3 +76,22 @@ export async function loadAboutContributors() {
   }
 }
 
+
+// ── 诊断快照导出（dump_state 守卫由后端处理） ──
+export async function exportDiagnostics() {
+  const d = await api("/api/diagnostics");
+  if (!d) return toast(t("export_diagnostics_failed"), "er");
+  const blob = new Blob([JSON.stringify(d, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download =
+    "erispulse-diagnostics-" +
+    new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") +
+    ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(t("export_diagnostics_done"), "ok");
+}

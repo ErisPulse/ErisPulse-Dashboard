@@ -86,6 +86,17 @@ class MainBase:
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
         self._start_ssl_watch()
+        # 注册框架 WebUI 主页入口（旧 SDK 无此 API 时跳过）
+        home_entry = getattr(self.sdk.router, "register_home_entry", None)
+        if home_entry is not None:
+            try:
+                home_entry(
+                    "Dashboard",
+                    "/Dashboard/",
+                    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+                )
+            except Exception:
+                pass
         self.logger.info("WebUI module loaded")
         asyncio.create_task(self._show_token_later())
         return True

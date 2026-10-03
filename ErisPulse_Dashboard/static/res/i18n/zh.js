@@ -1186,6 +1186,12 @@ settings_tab_colorfont: "颜色与字体",
     onboarding_step_cfg: "完成适配器配置",
     config_changed_externally: "配置文件已被外部修改",
     fw_delete_fallback: "已重置为空（当前 SDK 不支持删除键）",
+    instance_disk: "磁盘占用",
+    fw_version_row: "框架版本",
+    fw_update_available: "可更新",
+    export_diagnostics: "导出诊断信息",
+    export_diagnostics_failed: "诊断导出失败",
+    export_diagnostics_done: "诊断信息已导出",
 
   };
 })();

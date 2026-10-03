@@ -32,28 +32,28 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=109" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=109" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=111" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=111" />
         <script src="/Dashboard/static/res/vendor/marked/marked.min.js"></script>
     </head>
 
@@ -899,6 +899,28 @@
                                     <span
                                         class="perf-info-value"
                                         id="instConnections"
+                                        >--</span
+                                    >
+                                </div>
+                                <div class="perf-info-item">
+                                    <span
+                                        class="perf-info-label"
+                                        data-i18n="instance_disk"
+                                    ></span>
+                                    <span
+                                        class="perf-info-value"
+                                        id="instDisk"
+                                        >--</span
+                                    >
+                                </div>
+                                <div class="perf-info-item">
+                                    <span
+                                        class="perf-info-label"
+                                        data-i18n="fw_version_row"
+                                    ></span>
+                                    <span
+                                        class="perf-info-value"
+                                        id="instFwVer"
                                         >--</span
                                     >
                                 </div>
@@ -5636,6 +5658,13 @@
                         </div>
                         <div class="about-card about-intro">
                             <p data-i18n="about_desc"></p>
+                            <div style="margin-top:12px">
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="exportDiagnostics()"
+                                    data-i18n="export_diagnostics"
+                                ></button>
+                            </div>
                         </div>
                         <div class="about-grid">
                             <div class="about-feature">
@@ -6939,11 +6968,11 @@
         <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=109"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=109"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=109"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=109"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=109"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=109"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=111"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=111"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=111"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=111"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=111"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=111"></script>
     </body>
 </html>

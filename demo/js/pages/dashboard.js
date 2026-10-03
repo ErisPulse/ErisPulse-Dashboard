@@ -212,6 +212,26 @@ export async function loadPerformance() {
     document.getElementById("instConnections").textContent = String(
       process.connections || "--",
     );
+  // 磁盘占用（受限环境无数据保持 --）
+  if (document.getElementById("instDisk")) {
+    const disk = system.disk;
+    document.getElementById("instDisk").textContent = disk
+      ? disk.used_gb + "/" + disk.total_gb + " GB (" + disk.percent + "%)"
+      : "--";
+  }
+  // 框架版本 + 可更新标记（每次会话只查一次 PyPI，避免轮询打爆）
+  _fillFwVersionRow();
+  if (!window._fwVerChecked) {
+    window._fwVerChecked = true;
+    api("/api/framework/versions")
+      .then(function (v) {
+        if (!v || !v.current || !Array.isArray(v.versions) || !v.versions.length)
+          return;
+        window._fwUpdateAvailable = v.versions[0] !== v.current;
+        _fillFwVersionRow();
+      })
+      .catch(function () {});
+  }
   // 存储以便后续使用
   window._perfData = {
     vms: memory.vms_mb,
@@ -227,3 +247,16 @@ export async function loadPerformance() {
   };
 }
 
+
+function _fillFwVersionRow() {
+  const el = document.getElementById("instFwVer");
+  if (!el) return;
+  const fw = window._fwStatus || {};
+  let html = fw.version ? "v" + fw.version : "--";
+  if (window._fwUpdateAvailable)
+    html +=
+      ' <span class="chip chip-wr" style="padding:1px 8px;font-size:11px">' +
+      esc(t("fw_update_available")) +
+      "</span>";
+  el.innerHTML = html;
+}

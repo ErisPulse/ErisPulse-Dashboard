@@ -31,7 +31,14 @@ class ApiFrameworkMixin:
 
         self._add_audit_log("restart_framework", "", request)
         asyncio.create_task(_delayed_restart())
-        return JSONResponse({"success": True})
+        supervised = None
+        is_sup = getattr(self.sdk, "is_supervised", None)
+        if is_sup is not None:
+            try:
+                supervised = bool(is_sup())
+            except Exception:
+                supervised = None
+        return JSONResponse({"success": True, "supervised": supervised})
 
     async def _api_framework_versions(self, request: Request) -> JSONResponse:
 

@@ -1216,6 +1216,12 @@ settings_tab_colorfont: "Colors & Font",
     onboarding_step_cfg: "Finish adapter config",
     config_changed_externally: "Config file was modified externally",
     fw_delete_fallback: "Reset to null (this SDK version cannot delete keys)",
+    instance_disk: "Disk usage",
+    fw_version_row: "Framework version",
+    fw_update_available: "Update available",
+    export_diagnostics: "Export diagnostics",
+    export_diagnostics_failed: "Failed to export diagnostics",
+    export_diagnostics_done: "Diagnostics exported",
 
   };
 })();

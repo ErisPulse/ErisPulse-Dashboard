@@ -15,7 +15,19 @@ class EventLogMixin:
     # ════════════════ 事件 / 日志 / 审计采集与持久化 ════════════════
 
     def _setup_log_streaming(self):
-        """注册日志订阅器，通过 WebSocket 实时推送日志"""
+        """注册日志订阅器，通过 WebSocket 实时推送日志。
+
+        优先 SDK 公开的 handler 装饰器 API，旧版本回退私有 _register_handler。
+        """
+        handler_api = getattr(self.sdk.logger, "handler", None)
+        if handler_api is not None:
+            try:
+                handler_api("dashboard_log_stream", min_level="TRACE")(
+                    self._on_log_entry
+                )
+                return
+            except Exception:
+                pass
         try:
             self.sdk.logger._register_handler(
                 "dashboard_log_stream",
