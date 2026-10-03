@@ -258,8 +258,8 @@
     border-radius: 14px;
     border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
     background: var(--bg-t);
-    
-    transform: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transition:
+        transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
         border-color 0.3s ease,
         box-shadow 0.3s ease;
 }
