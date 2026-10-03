@@ -270,12 +270,12 @@ var _FRAMEWORK_VERSIONS = ["2.8.3", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/bots'] = function () {
         return _json({
             bots: [
-                { bot_id: 'bot_001', platform: 'Yunhu', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot', nickname: 'YunhuBot' } },
-                { bot_id: 'bot_002', platform: 'Yunhu', status: 'online', last_active: NOW - 120, info: { user_name: 'YunhuBot2', nickname: 'YunhuBot2' } },
-                { bot_id: 'bot_001', platform: 'OneBot11', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11', nickname: 'OneBot11' } },
-                { bot_id: 'bot_001', platform: 'Telegram', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot', nickname: 'ErisPulseBot' } },
-                { bot_id: 'bot_001', platform: 'Discord', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } },
-                { bot_id: 'bot_001', platform: 'Kook', status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot', nickname: 'ErisBot' } }
+                { bot_id: 'bot_001', platform: 'Yunhu', adapter_status: 'started', status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot', nickname: 'YunhuBot' } },
+                { bot_id: 'bot_002', platform: 'Yunhu', adapter_status: 'started', status: 'online', last_active: NOW - 120, info: { user_name: 'YunhuBot2', nickname: 'YunhuBot2' } },
+                { bot_id: 'bot_001', platform: 'OneBot11', adapter_status: 'started', status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11', nickname: 'OneBot11' } },
+                { bot_id: 'bot_001', platform: 'Telegram', adapter_status: 'started', status: 'online', last_active: NOW - 30, info: { user_name: 'ErisPulseBot', nickname: 'ErisPulseBot' } },
+                { bot_id: 'bot_001', platform: 'Discord', adapter_status: 'started', status: 'online', last_active: NOW - 60, info: { user_name: 'ErisPulse#0001', nickname: 'ErisPulse' } },
+                { bot_id: 'bot_001', platform: 'Kook', adapter_status: 'stopped', status: 'online', last_active: NOW - 300, info: { user_name: 'ErisBot', nickname: 'ErisBot' } }
             ]
         });
     };
