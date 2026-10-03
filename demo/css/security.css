@@ -1,16 +1,25 @@
 /* ErisPulse Dashboard – 安全页（settings-security 标签） */
 
-/* 瀑布流容器：卡片由 core/masonry.js 绝对定位排布 */
+/* 瀑布流容器：卡片由 core/masonry.js 绝对定位排布。
+   首次布局无动画；masonry-anim 挂上后重排走 0.25s --ease，
+   并遵循全局 data-anim="off" 与 prefers-reduced-motion */
 .sec-masonry {
   position: relative;
   margin-top: 20px;
 }
-.sec-item {
-  transition: transform 0.35s var(--ease);
-  will-change: transform;
-}
 .sec-item > .settings-card {
   height: 100%;
+}
+.sec-masonry.masonry-anim .sec-item {
+  transition: transform 0.25s var(--ease);
+}
+html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sec-masonry.masonry-anim .sec-item {
+    transition: none;
+  }
 }
 
 /* 提示条 */
@@ -120,6 +129,71 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 10px;
+}
+
+/* 模态第一步：模式选择双卡片 */
+.sec-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+.sec-proxy-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bd);
+  background: var(--bg-s);
+  color: var(--tx-p);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.55;
+  transition:
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+.sec-proxy-choice:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg-s));
+  transform: translateY(-1px);
+}
+.sec-proxy-choice b {
+  font-size: 14px;
+}
+
+/* 模态第二步：模块勾选列表 */
+.sec-mod-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 46vh;
+  overflow-y: auto;
+  margin-bottom: 4px;
+}
+.sec-mod-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease);
+}
+.sec-mod-row:hover {
+  background: var(--bg-s);
+}
+.sec-mod-row input {
+  accent-color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .sec-choice-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* 代码片段 */

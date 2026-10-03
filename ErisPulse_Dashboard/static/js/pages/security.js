@@ -110,7 +110,7 @@ export async function loadSecuritySsl() {
     _secInlineRow("key", t("sec_ssl_key_pem"), d.has_inline_key) +
     "</div>" +
     '<div class="sec-actions">' +
-    '<button class="btn btn-primary btn-sm" onclick="secApplySsl()">⚡ ' +
+    '<button class="btn btn-primary btn-sm" onclick="secApplySsl()">' +
     esc(t("sec_ssl_apply")) +
     "</button>" +
     '<button class="btn btn-danger btn-sm" onclick="secClearSsl()">' +
@@ -327,16 +327,8 @@ export async function loadSecurityProxy() {
     '<div class="settings-item-desc">' +
     esc(t("sec_proxy_desc_short")) +
     "</div>" +
-    '<div class="sec-proxy-chips">' +
-    '<span class="chip chip-ok">' +
-    esc(t("sec_proxy_mode2_chip")) +
-    "</span>" +
-    '<span class="chip">' +
-    esc(t("sec_proxy_mode1_chip")) +
-    "</span>" +
-    "</div>" +
     '<div class="sec-actions">' +
-    '<button class="btn btn-primary btn-sm" onclick="secOpenProxyModal()">⚡ ' +
+    '<button class="btn btn-primary btn-sm" onclick="secOpenProxyModal()">' +
     esc(t("sec_proxy_generate")) +
     "</button>" +
     "</div>" +
@@ -366,8 +358,7 @@ async function _secLoadProxySummary() {
     .replace("{m}", String(nRoutes));
 }
 
-export async function secOpenProxyModal() {
-  if (!authed) return showLogin();
+async function _secUpstreamInfo() {
   // 上游地址自动识别：主机取浏览器地址栏（用户当前可达的入口），
   // 端口优先取地址栏端口（直连场景即框架端口），经代理访问时回退框架配置端口
   var hostName = location.hostname || "127.0.0.1";
@@ -383,60 +374,152 @@ export async function secOpenProxyModal() {
     !isNaN(locPort) && locPort > 0 && locPort !== 80 && locPort !== 443
       ? locPort
       : cfgPort;
-  var upstream = hostName + ":" + port;
+  return { hostName: hostName, port: port, upstream: hostName + ":" + port };
+}
 
-  var dashboardNginx = _secNginxSnippet("dashboard.example.com", "/Dashboard/", upstream);
-  var rootNginx = _secNginxSnippet("ep.example.com", "/", upstream);
-  var dashboardCaddy = "dashboard.example.com {\n    reverse_proxy " + upstream + "\n}";
-  var rootCaddy = "ep.example.com {\n    reverse_proxy " + upstream + "\n}";
+function _secUpstreamHint(upstream) {
+  return (
+    '<div class="sec-hint">' +
+    esc(t("sec_proxy_upstream_hint").replace("{upstream}", upstream)) +
+    "</div>"
+  );
+}
 
-  var routesHtml = await _secRoutesHtml();
-
+// 模态第一步：选择「开放全部路由」或「按需选择模块」
+export async function secOpenProxyModal() {
+  if (!authed) return showLogin();
+  var info = await _secUpstreamInfo();
   var html =
     '<div class="sec-proxy-modal">' +
-    '<div class="sec-hint">' +
-    esc(
-      t("sec_proxy_upstream_hint").replace(
-        "{upstream}",
-        upstream,
-      ),
-    ) +
-    "</div>" +
-    '<div class="sec-proxy-block">' +
-    '<div class="sec-proxy-head"><span class="chip chip-ok">' +
-    esc(t("sec_proxy_recommended")) +
-    "</span><b>" +
-    esc(t("sec_proxy_mode2")) +
-    "</b></div>" +
-    '<div class="settings-item-desc">' +
-    esc(t("sec_proxy_mode2_desc")) +
-    "</div>" +
-    _secCodeBlock("secCodeDashNginx", "nginx", dashboardNginx) +
-    _secCodeBlock("secCodeDashCaddy", "caddy", dashboardCaddy) +
-    "</div>" +
-    '<div class="sec-proxy-block">' +
-    '<div class="sec-proxy-head"><span class="chip chip-wr">' +
-    esc(t("sec_proxy_alt")) +
-    "</span><b>" +
-    esc(t("sec_proxy_mode1")) +
-    "</b></div>" +
-    '<div class="settings-item-desc">' +
-    esc(t("sec_proxy_mode1_desc")) +
-    "</div>" +
-    _secCodeBlock("secCodeRootNginx", "nginx", rootNginx) +
-    _secCodeBlock("secCodeRootCaddy", "caddy", rootCaddy) +
-    "</div>" +
-    '<div class="sec-proxy-block">' +
-    '<div class="sec-proxy-head"><b>' +
-    esc(t("sec_proxy_routes")) +
-    "</b></div>" +
-    '<div class="settings-item-desc">' +
-    esc(t("sec_proxy_routes_desc")) +
-    "</div>" +
-    routesHtml +
+    _secUpstreamHint(info.upstream) +
+    '<div class="sec-choice-grid">' +
+    '<button class="sec-proxy-choice" onclick="secProxyPick(\'all\')">' +
+    "<b>" +
+    esc(t("sec_proxy_pick_all")) +
+    '</b><span class="settings-item-desc">' +
+    esc(t("sec_proxy_pick_all_desc")) +
+    "</span></button>" +
+    '<button class="sec-proxy-choice" onclick="secProxyPick(\'custom\')">' +
+    "<b>" +
+    esc(t("sec_proxy_pick_custom")) +
+    '</b><span class="settings-item-desc">' +
+    esc(t("sec_proxy_pick_custom_desc")) +
+    "</span></button>" +
     "</div>" +
     "</div>";
+  showModal(t("sec_proxy_title"), html, [
+    { label: t("ok"), value: true, primary: true },
+  ]);
+}
 
+var _secProxyGroups = null;
+var _secProxyOrder = [];
+
+// 模态第二步：all 直接出全量配置；custom 出模块勾选列表
+export async function secProxyPick(mode) {
+  if (!authed) return showLogin();
+  if (mode === "all") {
+    _secProxyStageConfig(null);
+    return;
+  }
+  var d = await api("/api/routes");
+  var groups = {};
+  (d.http_routes || []).forEach(function (r) {
+    var m = r.module || "root";
+    if (!groups[m]) groups[m] = { prefix: "/" + m, http: 0, ws: 0 };
+    groups[m].http++;
+  });
+  (d.ws_routes || []).forEach(function (r) {
+    var m = r.module || "root";
+    if (!groups[m]) groups[m] = { prefix: "/" + m, http: 0, ws: 0 };
+    groups[m].ws++;
+  });
+  var names = Object.keys(groups).sort(function (a, b) {
+    if (a === "Dashboard") return -1;
+    if (b === "Dashboard") return 1;
+    return a.localeCompare(b);
+  });
+  if (!names.length) {
+    toast(t("sec_routes_empty"), "er");
+    return;
+  }
+  _secProxyGroups = groups;
+  _secProxyOrder = names;
+
+  var info = await _secUpstreamInfo();
+  var rows = names
+    .map(function (m, i) {
+      var g = groups[m];
+      return (
+        '<label class="sec-mod-row">' +
+        '<input type="checkbox" id="secModChk_' +
+        i +
+        '"' +
+        (m === "Dashboard" ? " checked" : "") +
+        " />" +
+        '<code class="sec-route-prefix">' +
+        esc(g.prefix) +
+        "/</code>" +
+        '<span class="settings-item-desc">' +
+        esc(m) +
+        " · " +
+        g.http +
+        " HTTP" +
+        (g.ws ? " · " + g.ws + " WS" : "") +
+        "</span>" +
+        "</label>"
+      );
+    })
+    .join("");
+  var html =
+    '<div class="sec-proxy-modal">' +
+    _secUpstreamHint(info.upstream) +
+    '<div class="settings-item-label" style="margin-bottom:8px">' +
+    esc(t("sec_proxy_select_hint")) +
+    "</div>" +
+    '<div class="sec-mod-list">' +
+    rows +
+    "</div>" +
+    '<div class="sec-actions">' +
+    '<button class="btn btn-primary btn-sm" onclick="secProxyBuildCustom()">' +
+    esc(t("sec_proxy_generate_selected")) +
+    "</button>" +
+    "</div>" +
+    "</div>";
+  showModal(t("sec_proxy_title"), html, [
+    { label: t("ok"), value: true, primary: true },
+  ]);
+}
+
+export function secProxyBuildCustom() {
+  var selected = [];
+  _secProxyOrder.forEach(function (m, i) {
+    var el = document.getElementById("secModChk_" + i);
+    if (el && el.checked) selected.push(_secProxyGroups[m].prefix);
+  });
+  if (!selected.length) return toast(t("sec_proxy_select_none"), "er");
+  _secProxyStageConfig(selected);
+}
+
+// 模态第三步：输出 nginx / Caddy 配置（selected=null 为全量）
+async function _secProxyStageConfig(selected) {
+  var info = await _secUpstreamInfo();
+  var nginx, caddy;
+  if (!selected) {
+    nginx = _secNginxSnippet("ep.example.com", "/", info.upstream);
+    caddy = "ep.example.com {\n    reverse_proxy " + info.upstream + "\n}";
+  } else {
+    nginx = _secNginxMulti(selected, info.upstream);
+    caddy = _secCaddyMulti(selected, info.upstream);
+  }
+  var html =
+    '<div class="sec-proxy-modal">' +
+    _secUpstreamHint(info.upstream) +
+    '<div class="sec-proxy-block">' +
+    _secCodeBlock("secCodeNginx", "nginx", nginx) +
+    _secCodeBlock("secCodeCaddy", "caddy", caddy) +
+    "</div>" +
+    "</div>";
   showModal(t("sec_proxy_title"), html, [
     { label: t("ok"), value: true, primary: true },
   ]);
@@ -472,6 +555,60 @@ function _secNginxSnippet(serverName, location, upstream) {
   );
 }
 
+function _secNginxMulti(prefixes, upstream) {
+  // 公共头放在 server 块（location 无自身 proxy_set_header 时自动继承），
+  // 每个模块一个精简 location，配置整体可整段复制
+  var locs = prefixes
+    .map(function (p) {
+      return (
+        "    location " +
+        p +
+        "/ {\n        proxy_pass http://" +
+        upstream +
+        ";\n    }"
+      );
+    })
+    .join("\n");
+  return (
+    "server {\n" +
+    "    listen 443 ssl;\n" +
+    "    server_name dashboard.example.com;\n" +
+    "    # ssl_certificate     /path/fullchain.pem;\n" +
+    "    # ssl_certificate_key /path/privkey.pem;\n" +
+    "\n" +
+    "    proxy_http_version 1.1;\n" +
+    "    proxy_set_header Host $host;\n" +
+    "    proxy_set_header X-Real-IP $remote_addr;\n" +
+    "    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n" +
+    "    proxy_set_header X-Forwarded-Proto $scheme;\n" +
+    "    # WebSocket\n" +
+    '    proxy_set_header Upgrade $http_upgrade;\n' +
+    '    proxy_set_header Connection "upgrade";\n' +
+    "    proxy_read_timeout 3600s;\n" +
+    "\n" +
+    locs +
+    "\n}"
+  );
+}
+
+function _secCaddyMulti(prefixes, upstream) {
+  return (
+    "dashboard.example.com {\n" +
+    prefixes
+      .map(function (p) {
+        return (
+          "    handle " +
+          p +
+          "/* {\n        reverse_proxy " +
+          upstream +
+          "\n    }"
+        );
+      })
+      .join("\n") +
+    "\n}"
+  );
+}
+
 function _secCodeBlock(id, label, code) {
   return (
     '<div class="sec-code-wrap">' +
@@ -501,60 +638,6 @@ export function secCopyCode(id) {
 export function secCopyCodeText(text) {
   _copyToClipboard(text);
   toast(t("sec_copied"), "ok");
-}
-
-async function _secRoutesHtml() {
-  var d = await api("/api/routes");
-  if (!d) {
-    return (
-      '<span class="settings-item-desc">' + esc(t("unknown_error")) + "</span>"
-    );
-  }
-  var groups = {};
-  (d.http_routes || []).forEach(function (r) {
-    var m = r.module || "root";
-    if (!groups[m]) groups[m] = { prefix: "/" + m, http: 0, ws: 0 };
-    groups[m].http++;
-  });
-  (d.ws_routes || []).forEach(function (r) {
-    var m = r.module || "root";
-    if (!groups[m]) groups[m] = { prefix: "/" + m, http: 0, ws: 0 };
-    groups[m].ws++;
-  });
-  var names = Object.keys(groups).sort();
-  if (!names.length) {
-    return (
-      '<span class="settings-item-desc">' + esc(t("sec_routes_empty")) + "</span>"
-    );
-  }
-  return (
-    '<div class="sec-routes">' +
-    names
-      .map(function (m) {
-        var g = groups[m];
-        return (
-          '<div class="sec-route-row">' +
-          '<code class="sec-route-prefix">' +
-          esc(g.prefix) +
-          "/</code>" +
-          '<span class="settings-item-desc">' +
-          esc(m) +
-          " · " +
-          g.http +
-          " HTTP" +
-          (g.ws ? " · " + g.ws + " WS" : "") +
-          "</span>" +
-          '<button class="btn btn-secondary btn-xs" style="margin-left:auto" onclick="secCopyCodeText(\'' +
-          esc(g.prefix) +
-          "/')\">" +
-          esc(t("sec_copy_prefix")) +
-          "</button>" +
-          "</div>"
-        );
-      })
-      .join("") +
-    "</div>"
-  );
 }
 
 // ════════════════ 访问安全（token） ════════════════

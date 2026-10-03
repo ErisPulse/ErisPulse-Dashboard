@@ -46,8 +46,17 @@ function _masonryLayout(container, opts) {
 
 export function layoutMasonry(container, opts) {
   if (!container) return;
+  // 首次布局不播放动画（避免元素从自然位置瞬移/半途截断），
+  // 布局完成后再挂过渡类；后续重排（宽度/高度变化）走既有 --ease 体系
   _masonryLayout(container, opts || {});
   if (_masonryStates.has(container)) return;
+  if (document.documentElement.getAttribute("data-anim") !== "off") {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        container.classList.add("masonry-anim");
+      });
+    });
+  }
   // 首次接入：观察容器宽度与子项高度变化（字体加载/i18n 切换/内容展开）
   var pending = null;
   var schedule = function () {
