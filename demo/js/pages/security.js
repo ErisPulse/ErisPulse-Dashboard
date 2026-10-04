@@ -18,10 +18,6 @@ export async function loadSecurity() {
   loadSecurityAccess();
   loadSecurityRouter();
   loadSecurityAudit();
-  // 瀑布流：等本轮卡片渲染后布局（ResizeObserver 会兜底后续高度变化）
-  setTimeout(function () {
-    layoutMasonry(document.getElementById("secGrid"), { colWidth: 430 });
-  }, 60);
 }
 
 // ════════════════ SSL 证书管理 ════════════════

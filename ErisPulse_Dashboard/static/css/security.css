@@ -284,3 +284,26 @@
   }
 }
 
+
+/* ── 卡片包装层：复刻 settings-col 直接子级卡片的标准间距/分列规则 ── */
+/* 安全页卡片外有一层 #sec*Card 包装 div，.settings-col > .card 的规则
+   匹配不到，这里对 .sec-item 应用同一套约束 */
+@media (min-width: 769px) {
+  .settings-col > .sec-item {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+  .settings-col > .sec-item:last-child {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 768px) {
+  .settings-col > .sec-item {
+    margin-bottom: 20px;
+  }
+  .settings-col > .sec-item:last-child {
+    margin-bottom: 0;
+  }
+}
