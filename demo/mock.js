@@ -328,12 +328,23 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/lifecycle/clear'] = function () { return _json({ success: true }); };
 
     API_MAP['/api/performance'] = function () {
+        // 形状对齐真实后端：{ system: _get_system_status(), websocket, lifecycle_counts }
         return _json({
-            cpu_percent: 23.5,
-            memory: { rss_mb: 156.3, vms_mb: 412.8, system_percent: 42.1, system_total_gb: 16.0, system_available_gb: 9.3, system_cpu_percent: 15.2, swap_percent: 8.3, swap_used_mb: 328.5 },
-            process: { threads: 12, connections: 8, cpu_user: 145.23, cpu_system: 38.67, read_bytes_mb: 89.2, write_bytes_mb: 34.7 },
-            uptime_seconds: Math.floor(NOW - START_TIME),
-            uptime_human: '3d 7h 42m'
+            system: {
+                uptime_seconds: Math.floor(NOW - START_TIME),
+                uptime_human: '3d 7h 42m',
+                platform: 'Linux',
+                platform_release: '6.1.0',
+                platform_machine: 'x86_64',
+                pid: 12345,
+                memory: { rss_mb: 156.3, vms_mb: 412.8, cpu_percent: 23.5, system_percent: 42.1, system_total_gb: 16.0, system_available_gb: 9.3, system_cpu_percent: 15.2, swap_percent: 8.3, swap_used_mb: 328.5 },
+                process: { threads: 12, open_files: 42, cpu_user: 145.23, cpu_system: 38.67, read_bytes_mb: 89.2, write_bytes_mb: 34.7, connections: 8, listening: 2, created: START_TIME },
+                disk: { used_gb: 128.6, total_gb: 476.9, percent: 27 },
+                event_counts: { message: 347, notice: 89, request: 23, meta: 156 },
+                total_events: 615
+            },
+            websocket: { active_connections: 1, uptime_seconds: Math.floor(NOW - START_TIME), uptime_human: '3d 7h 42m' },
+            lifecycle_counts: {}
         });
     };
 
