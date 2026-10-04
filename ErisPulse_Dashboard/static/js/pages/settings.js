@@ -1,5 +1,10 @@
 // ErisPulse Dashboard – pages/settings (auto-split from dash.js)
 
+export function applySettingUiStyle(val) {
+  applyUiStyle(val);
+  if (typeof syncSettingsUI === "function") syncSettingsUI();
+}
+
 export function applySettingFont(id) {
   localStorage.setItem("ep_font", id);
   applyFont(id);
@@ -688,6 +693,12 @@ document.addEventListener(
 );;
 
 export function syncSettingsUI() {
+  // Style cards (eris 经典 / cel 赛璐璐 / kawaii 可爱极简)
+  var curStyle = getUiStyle();
+  document.querySelectorAll(".style-card").forEach(function(card) {
+    card.classList.toggle("active", card.dataset.style === curStyle);
+  });
+
   // Theme cards (Light / Dark / Auto)
   var curTheme = getTheme();
   document.querySelectorAll(".theme-card").forEach(function(card) {
@@ -951,7 +962,7 @@ export async function importBackup(input) {
 // ════════════════ 全局同步（一开全开，全量同步）════════════════
 // 同步范围：外观 + 行为 + 语言 + 布局（下列 localStorage 键）
 var SYNC_LOCAL_KEYS = [
-  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style",
+  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style", "ep_ui_style",
   "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
   "ep_show_node_selector", "ep_remember_groups",
   "ep_setting_dash_title", "ep_setting_bg_color", "ep_setting_bg_image",
@@ -1007,6 +1018,7 @@ var SYNC_APPLIERS = {
   ep_font: function (v) { applyFont(v); },
   ep_lang: function (v) { applySettingLang(v); },
   ep_anim_style: function (v) { applyAnimStyle(v); },
+  ep_ui_style: function (v) { applyUiStyle(v); },
   ep_home_pins: function () { renderHomePins(); },
   ep_nav_group_states: function () { restoreNavGroupStates(); },
   ep_sidebar_collapsed: function (v) {
@@ -1053,4 +1065,68 @@ export async function _applySyncedSettings(st) {
   } finally {
     setTimeout(function () { window._syncMuted = false; }, 800);
   }
+}
+
+// ── 背景：图片链接自定义 ──
+export async function applyBgImageUrl() {
+  var url = await prompt2(
+    t("bg_custom_url"),
+    "https://example.com/bg.jpg",
+    getSetting("bg_image", "").indexOf("http") === 0
+      ? getSetting("bg_image", "")
+      : "",
+  );
+  if (!url) return;
+  url = url.trim();
+  if (!/^https?:\/\//.test(url)) return toast(t("invalid_url"), "er");
+  setSetting("bg_image", url);
+  setSetting("bg_tile", "0");
+  applyBgImage(url);
+  toast(t("config_saved"), "ok");
+}
+// ── 主题包：zip 包上传（theme.json/theme.css/theme.js/assets，完整 JS/CSS 权限） ──
+export async function applyThemePackFile(input) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  input.value = '';
+  try {
+    var buf = await f.arrayBuffer();
+    var pack = await themepackBuild(buf, f.name.replace(/.(zip|css)$/i, ''));
+    var choice = await showModal(
+      t('theme_pack_warn_title'),
+      '<div class="settings-item-desc" style="margin-bottom:10px">' +
+        esc(t('theme_pack_warn_desc')) +
+        '</div><div class="settings-item"><div><div class="settings-item-label">' +
+        esc(pack.name) +
+        '</div><div class="settings-item-desc">' +
+        esc((pack.meta && pack.meta.author ? t('theme_pack_author') + ': ' + pack.meta.author + ' · ' : '') +
+          (pack.js ? t('theme_pack_has_js') : t('theme_pack_css_only'))) +
+        '</div></div></div>',
+      [
+        { label: t('cancel'), value: 'cancel' },
+        { label: t('theme_pack_apply'), value: 'apply', primary: true },
+      ],
+    );
+    if (choice !== 'apply') return;
+    themepackApply(pack);
+    themepackSave(buf, f.name);
+    syncThemePackUI();
+    toast(t('theme_pack_done'), 'ok');
+  } catch (e) {
+    toast(t('theme_pack_invalid') + ': ' + e.message, 'er');
+  }
+}
+
+export function clearThemePack() {
+  themepackClear();
+  syncThemePackUI();
+  toast(t('theme_pack_cleared'), 'ok');
+}
+
+export function syncThemePackUI() {
+  var el = document.getElementById('themePackActive');
+  if (!el) return;
+  var pack = null;
+  try { pack = JSON.parse(localStorage.getItem('ep_theme_pack') || 'null'); } catch (e) {}
+  el.textContent = pack && pack.name ? pack.name : t('theme_pack_none');
 }
