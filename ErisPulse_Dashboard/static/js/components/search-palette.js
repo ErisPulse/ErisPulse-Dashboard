@@ -75,6 +75,27 @@ function _palettePageEntries() {
         go(x.page);
       },
     });
+    // 顶栏页的子标签同样可搜（如 设置 › 安全/外观/更新）
+    var xTabs = MERGED_PAGE_TABS[x.page];
+    if (xTabs) {
+      xTabs.forEach(function (tabInfo) {
+        var tabLabel = t(tabInfo.i18n) || tabInfo.label;
+        var tabBtn = document.querySelector('[data-tab="' + tabInfo.id + '"]');
+        if (tabBtn) tabLabel = tabBtn.textContent.trim() || tabLabel;
+        entries.push({
+          id: "page:" + x.page + ":" + tabInfo.id,
+          group: "pages",
+          label: label + " · " + tabLabel,
+          icon: "",
+          hay: [label, tabLabel, _paletteEnT(tabInfo.i18n), tabInfo.id].join(" ").toLowerCase(),
+          run: function () {
+            go(x.page);
+            var btn = document.querySelector('[data-tab="' + tabInfo.id + '"]');
+            if (btn) btn.click();
+          },
+        });
+      });
+    }
   });
   return entries;
 }
@@ -352,11 +373,26 @@ export function isPaletteOpen() {
   return _paletteOpen;
 }
 
-// ── 全局键盘：Ctrl/Cmd+K 打开；Esc 关闭（捕获阶段，先于其他 Esc 处理）──
+// ── 全局键盘：Ctrl/Cmd+K 或 / 打开；Esc 关闭（捕获阶段，先于其他 Esc 处理）──
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
     e.preventDefault();
     togglePalette();
+    return;
+  }
+  if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !_paletteOpen) {
+    // 打字焦点下不劫持斜杠
+    var a = document.activeElement;
+    var typing =
+      a &&
+      (a.tagName === "INPUT" ||
+        a.tagName === "TEXTAREA" ||
+        a.tagName === "SELECT" ||
+        a.isContentEditable);
+    if (!typing) {
+      e.preventDefault();
+      openPalette();
+    }
     return;
   }
   if (e.key === "Escape" && _paletteOpen) {

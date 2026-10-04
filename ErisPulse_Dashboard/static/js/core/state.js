@@ -19,7 +19,6 @@ window._panelInst = null;
 window._collapseTimer = null;
 window._wsMeta = { connectedAt: 0, reconnects: 0, frames: 0, events: 0, url: "" };
 window._wsInspTimer = null;
-window.DEFAULT_UI_STYLE = "classic";
 window.FONT_PRESETS = [
   { id: "system", name: "", display: "", body: "",
     preview: "Aa", weight: "600" },
@@ -130,6 +129,14 @@ window.MERGED_PAGE_TABS = {
   adapter: [
     { id: "cfg-adapter", label: "adapter_config", i18n: "adapter_config" },
     { id: "cfg-module", label: "module_config", i18n: "module_config" },
+  ],
+  settings: [
+    { id: "settings-appearance", label: "settings_appearance", i18n: "settings_appearance" },
+    { id: "settings-behavior", label: "settings_behavior", i18n: "settings_behavior" },
+    { id: "settings-general", label: "settings_tab_general", i18n: "settings_tab_general" },
+    { id: "settings-security", label: "settings_security", i18n: "settings_security" },
+    { id: "settings-update", label: "fw_update_title", i18n: "fw_update_title" },
+    { id: "settings-about", label: "about", i18n: "about" },
   ],
 };
 window._dragPinIdx = null;
