@@ -40,7 +40,7 @@ export async function loadModuleViews() {
     if (!d || !d.views) return;
     _renderModuleViews(d.views);
      
-    _fillDefaultPageSelect();
+    if (typeof _renderDefaultPagePicker === "function") _renderDefaultPagePicker();
   } catch (e) {
     console.error("loadModuleViews error", e);
   }
