@@ -1399,3 +1399,30 @@
     border-color: var(--accent);
     color: var(--accent);
 }
+
+/* ── 移动端优化：主题/风格卡横向滑动；settings-item 堆叠防文字挤压 ── */
+@media (max-width: 768px) {
+    .theme-selector {
+        display: flex;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .theme-selector .theme-card {
+        flex: 0 0 190px;
+    }
+    .settings-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .settings-item > .settings-item-control {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .settings-item > div:first-child {
+        width: 100%;
+    }
+}
