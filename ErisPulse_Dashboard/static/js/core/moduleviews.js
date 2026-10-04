@@ -39,8 +39,8 @@ export async function loadModuleViews() {
     const d = await api("/api/views");
     if (!d || !d.views) return;
     _renderModuleViews(d.views);
-    // 模块视图可能影响默认起始页选项，刷新下拉
-    _fillDefaultPageSelect();
+    // 模块视图可能影响默认起始页选项，刷新选择器（旧版 _fillDefaultPageSelect 已废弃）
+    if (typeof _renderDefaultPagePicker === "function") _renderDefaultPagePicker();
   } catch (e) {
     console.error("loadModuleViews error", e);
   }
