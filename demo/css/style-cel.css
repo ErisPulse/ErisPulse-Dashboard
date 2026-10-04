@@ -64,12 +64,6 @@ html[data-ui-style="cel"] *::after {
 }
 
 /* 底纹：动漫平铺图 + 纸白叠层保证对比度 */
-html[data-ui-style="cel"] body {
-    background:
-        linear-gradient(rgba(250, 250, 245, 0.82), rgba(250, 250, 245, 0.82)),
-        url("../res/bg/cel-pattern.png") repeat;
-    background-size: auto, 460px auto;
-}
 
 /* ── 卡片：3px 黑边 + 硬阴影 + 直角 ── */
 html[data-ui-style="cel"] .card,
@@ -306,11 +300,6 @@ html[data-ui-style="cel"] .circular-progress {
 }
 
 /* ── 移动端：保持同风格（粗边在窄屏依旧成立，无需降级） ── */
-@media (max-width: 720px) {
-    html[data-ui-style="cel"] body {
-        background-size: auto, 320px auto;
-    }
-}
 
 /* ── 暗色适配：墨夜纸面（描边改为亮墨，硬阴影用纯黑） ── */
 html[data-ui-style="cel"][data-theme="dark"],
@@ -350,18 +339,27 @@ html[data-ui-style="cel"][data-oled="on"][data-theme="dark"][data-theme="dark"] 
     }
 }
 /* 暗色底纹：深色遮罩压住平铺图，保对比度 */
-html[data-ui-style="cel"][data-theme="dark"] body,
-html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] body {
-    background:
-        linear-gradient(rgba(15, 17, 24, 0.93), rgba(15, 17, 24, 0.93)),
-        url("../res/bg/cel-pattern.png") repeat;
-    background-size: auto, 460px auto;
+
+/* ── OLED 纯黑：面板压至纯黑，与普通暗色（#20242f 墨面）拉开层次 ── */
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"],
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] body
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] {
+    --bg-p: #000000;
+    --bg-s: #0a0c11;
+    --bg-t: #000000;
 }
 @media (prefers-color-scheme: dark) {
-    html[data-ui-style="cel"][data-theme="auto"] body {
-        background:
-            linear-gradient(rgba(15, 17, 24, 0.93), rgba(15, 17, 24, 0.93)),
-            url("../res/bg/cel-pattern.png") repeat;
-        background-size: auto, 460px auto;
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] {
+        --bg-p: #000000;
+        --bg-s: #0a0c11;
+        --bg-t: #000000;
     }
+}
+html[data-ui-style="cel"][data-oled="on"] .card,
+html[data-ui-style="cel"][data-oled="on"] .stat-card,
+html[data-ui-style="cel"][data-oled="on"] .settings-card,
+html[data-ui-style="cel"][data-oled="on"] .modal-box,
+html[data-ui-style="cel"][data-oled="on"] .sidebar,
+html[data-ui-style="cel"][data-oled="on"] .header {
+    background: #000000;
 }
