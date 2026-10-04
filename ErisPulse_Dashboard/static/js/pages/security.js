@@ -319,9 +319,6 @@ export async function loadSecurityProxy() {
     "<span>" +
     esc(t("sec_proxy_title")) +
     "</span>" +
-    '<span class="chip chip-ok" style="margin-left:auto">' +
-    esc(t("sec_proxy_recommended")) +
-    "</span>" +
     "</div>" +
     '<div class="settings-card-body">' +
     '<div class="settings-item-desc">' +

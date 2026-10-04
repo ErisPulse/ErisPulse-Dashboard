@@ -1053,17 +1053,14 @@ export async function copyAdapterConnection(platform) {
     return;
   }
   const c = d.connection || {};
+  // 只复制具体端点地址；没有端点时才回退根地址
   const lines = [];
-  if (c.base_url) lines.push(c.base_url);
-  (c.http || []).forEach(function (u) {
-    lines.push(u);
+  ["http", "ws", "sse"].forEach(function (k) {
+    (c[k] || []).forEach(function (u) {
+      lines.push(u);
+    });
   });
-  (c.ws || []).forEach(function (u) {
-    lines.push(u);
-  });
-  (c.sse || []).forEach(function (u) {
-    lines.push(u);
-  });
+  if (!lines.length && c.base_url) lines.push(c.base_url);
   if (!lines.length) {
     toast(t("connection_unsupported"), "");
     return;
