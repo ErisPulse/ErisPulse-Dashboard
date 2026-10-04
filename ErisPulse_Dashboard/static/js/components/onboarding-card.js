@@ -95,6 +95,7 @@ export function updateOnboardingCard(adapters) {
         ? t("onboarding_step_cfg").replace("{n}", String(needCfg.length))
         : t("onboarding_step_cfg"),
       cta: hasAdapter ? t("goto_config") : "",
+      run: "gotoOnboardingConfig",
       page: "adapter",
     });
   }
@@ -121,9 +122,9 @@ export function updateOnboardingCard(adapters) {
         "</span>" +
         (s.done || !s.cta
           ? ""
-          : '<button class="btn btn-secondary btn-xs" onclick="go(\'' +
-            s.page +
-            '\')">' +
+          : '<button class="btn btn-secondary btn-xs" onclick="' +
+            (s.run ? s.run + "()" : "go('" + s.page + "')") +
+            '">' +
             esc(s.cta) +
             "</button>") +
         "</div>"
@@ -154,4 +155,17 @@ export function updateOnboardingCard(adapters) {
     esc(t("onboarding_progress").replace("{n}", remaining)) +
     "</div>" +
     "</div>";
+}
+
+// 「完成适配器配置」CTA：直达第一个未配置/不完整适配器的配置表单
+export function gotoOnboardingConfig() {
+  var cfgStatus = window._adapterConfigStatus || {};
+  var need = Object.keys(cfgStatus).filter(function (p) {
+    return cfgStatus[p] === "unconfigured" || cfgStatus[p] === "incomplete";
+  });
+  if (need.length && typeof gotoComponentConfig === "function") {
+    gotoComponentConfig("adapter", need[0]);
+    return;
+  }
+  go("adapter");
 }
