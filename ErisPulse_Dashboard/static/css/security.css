@@ -1,27 +1,5 @@
 /* ErisPulse Dashboard – 安全页（settings-security 标签） */
 
-/* 瀑布流容器：卡片由 core/masonry.js 绝对定位排布。
-   首次布局无动画；masonry-anim 挂上后重排走 0.25s --ease，
-   并遵循全局 data-anim="off" 与 prefers-reduced-motion */
-.sec-masonry {
-  position: relative;
-  margin-top: 20px;
-}
-.sec-item > .settings-card {
-  height: 100%;
-}
-.sec-masonry.masonry-anim .sec-item {
-  transition: transform 0.25s var(--ease);
-}
-html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
-  transition: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .sec-masonry.masonry-anim .sec-item {
-    transition: none;
-  }
-}
-
 /* 提示条 */
 .sec-hint {
   margin: 10px 0;
@@ -306,20 +284,3 @@ html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
   }
 }
 
-/* ── 通用瀑布流容器（settings-col 等声明 data-masonry 即生效） ── */
-.masonry-grid {
-  position: relative;
-  transition: height 0.25s var(--ease);
-}
-/* settings-col 原为 CSS 多列布局，瀑布流接管后清除其 columns */
-.settings-col.masonry-grid {
-  columns: auto !important;
-  column-gap: 0;
-}
-.settings-col.masonry-grid > .card,
-.settings-col.masonry-grid > .settings-card {
-  break-inside: auto;
-  display: block;
-  width: auto;
-  margin-bottom: 0;
-}
