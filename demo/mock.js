@@ -516,8 +516,14 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/framework/ssl/upload'] = function () {
         return _json({ success: true, cert_path: 'config/ssl/cert.pem', key_path: 'config/ssl/key.pem' });
     };
-    API_MAP['/api/security/token/regenerate'] = function () {
-        return _json({ success: true, token: 'demo' });
+    API_MAP['/api/security/token/regenerate'] = function (init) {
+        // 预览-确认流：回显客户端提交的令牌
+        var tk = 'demo';
+        try {
+            var b = JSON.parse((init && init.body) || '{}');
+            if (b.token) tk = String(b.token);
+        } catch (e) {}
+        return _json({ success: true, token: tk });
     };
 
     API_MAP['/api/builder/validate'] = function () { return _json({ valid: true }); };
