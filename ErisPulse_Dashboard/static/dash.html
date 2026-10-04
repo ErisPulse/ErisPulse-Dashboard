@@ -14,7 +14,12 @@
                 if (localStorage.getItem("ep_oled") === "on") {
                     document.documentElement.setAttribute("data-oled", "on");
                 }
-                document.documentElement.setAttribute("data-ui-style", "eris");
+                // 界面风格：eris(经典,默认) / cel(赛璐璐) / glass(夜航玻璃)，CSS 前设置防 FOUC
+                var uiStyle = localStorage.getItem("ep_ui_style");
+                document.documentElement.setAttribute(
+                    "data-ui-style",
+                    ["cel", "glass"].indexOf(uiStyle) !== -1 ? uiStyle : "eris",
+                );
             })();
         </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,28 +37,30 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=115" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=115" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=118" />
+        <link rel="stylesheet" href="/Dashboard/static/css/style-glass.css?v=118" />
         <script src="/Dashboard/static/res/vendor/marked/marked.min.js"></script>
     </head>
 
@@ -4781,6 +4788,30 @@
 
                                     <div class="card settings-card">
                                         <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+                                            <span data-i18n="settings_ui_style"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="theme-selector">
+                                                <div class="theme-card style-card active" data-style="eris" onclick="applySettingUiStyle('eris')">
+                                                    <div class="theme-card-preview"><div class="tcp-header"><span class="tcp-dot"></span><span class="tcp-dot" style="opacity:0.3"></span><span class="tcp-dot" style="opacity:0.3"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card"></div><div class="tcp-card" style="height:8px;width:70%"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm"></div><div class="tcp-card-sm"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_style_classic">Classic</div>
+                                                </div>
+                                                <div class="theme-card style-card" data-style="cel" onclick="applySettingUiStyle('cel')">
+                                                    <div class="theme-card-preview" style="background:#fafaf5"><div class="tcp-header" style="border:2px solid #1a1a2e;border-bottom:2px solid #1a1a2e"><span class="tcp-dot" style="background:#e63946"></span><span class="tcp-dot" style="background:#f1c40f;opacity:1"></span><span class="tcp-dot" style="background:#4ea8de;opacity:1"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar" style="border-right:2px solid #1a1a2e"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card" style="border:2px solid #1a1a2e;border-radius:0;box-shadow:1px 1px 0 #1a1a2e"></div><div class="tcp-card" style="height:8px;width:70%;border:2px solid #1a1a2e;border-radius:0;background:#f1c40f"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm" style="border:2px solid #1a1a2e;border-radius:0;background:#4ea8de"></div><div class="tcp-card-sm" style="border:2px solid #1a1a2e;border-radius:0;background:#e63946"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_style_cel">Cel Shading</div>
+                                                </div>
+                                                <div class="theme-card style-card" data-style="glass" onclick="applySettingUiStyle('glass')">
+                                                    <div class="theme-card-preview" style="background:#0b1322"><div class="tcp-header" style="border-bottom:1px solid rgba(255,255,255,0.15)"><span class="tcp-dot" style="background:rgba(255,255,255,0.35)"></span><span class="tcp-dot" style="background:rgba(255,255,255,0.2)"></span><span class="tcp-dot" style="background:#e4b863"></span></div><div style="display:flex;flex:1"><div class="tcp-sidebar" style="background:rgba(255,255,255,0.08)"></div><div class="tcp-body"><div style="display:flex;flex-direction:column;gap:3px;flex:1"><div class="tcp-card" style="border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1)"></div><div class="tcp-card" style="height:8px;width:70%;border-radius:8px;border:1px solid rgba(228,184,99,0.45);background:rgba(228,184,99,0.2)"></div><div style="display:flex;gap:3px;margin-top:2px"><div class="tcp-card-sm" style="border-radius:6px;background:rgba(124,156,196,0.5)"></div><div class="tcp-card-sm" style="border-radius:6px;background:rgba(255,255,255,0.2)"></div></div></div></div></div></div>
+                                                    <div class="theme-card-label" data-i18n="settings_style_glass">Nocturne Glass</div>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-desc" style="margin-top:10px" data-i18n="settings_ui_style_desc"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                                             <span data-i18n="settings_display"></span>
                                         </div>
@@ -4812,10 +4843,31 @@
                                         <div class="settings-card-body">
                                             <div class="bg-controls">
                                                 <label class="btn btn-secondary btn-sm"><input type="file" accept="image/*" id="settingsBgFile" style="display:none" onchange="applyBgImageFile(this.files[0])"/><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="settings_upload_image"></span></label>
+                                                <button class="btn btn-secondary btn-sm" onclick="applyBgImageUrl()" data-i18n="bg_custom_url"></button>
                                                 <label class="color-custom"><input type="color" id="settingsBg" onchange="applyBgColorManual(this.value)"/><span data-i18n="settings_custom"></span></label>
                                                 <button class="btn btn-secondary btn-sm" onclick="resetBg()"><span data-i18n="settings_reset"></span></button>
                                             </div>
                                             <label class="settings-check-row" id="bgAutoThemeRow" style="display:none;margin-top:10px"><input type="checkbox" id="settingsBgAutoTheme" checked onchange="onBgAutoThemeToggle(this.checked)"/><span data-i18n="settings_bg_auto_theme"></span></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 4.8L20 8l-4 3.9.9 5.6L12 15l-4.9 2.5.9-5.6L4 8l5.6-1.2z"/></svg>
+                                            <span data-i18n="theme_pack_title"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item-desc" data-i18n="theme_pack_desc"></div>
+                                            <div class="settings-item" style="margin-top:12px">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="theme_pack_active"></div>
+                                                    <div class="settings-item-desc" id="themePackActive"></div>
+                                                </div>
+                                                <div class="settings-item-control" style="display:flex;gap:8px">
+                                                    <label class="btn btn-secondary btn-sm"><input type="file" accept=".zip,.css,application/zip,text/css" style="display:none" onchange="applyThemePackFile(this)"/><span data-i18n="theme_pack_import"></span></label>
+                                                    <button class="btn btn-danger btn-sm" onclick="clearThemePack()" data-i18n="theme_pack_clear"></button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -6910,11 +6962,11 @@
         <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=115"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=115"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=115"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=115"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=115"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=115"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=118"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=118"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=118"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=118"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=118"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=118"></script>
     </body>
 </html>

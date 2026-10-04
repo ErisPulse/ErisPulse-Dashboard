@@ -48,12 +48,18 @@ export function toggleTheme() {
 }
 
 export function getUiStyle() {
-   
-  return "classic";
+  var s = localStorage.getItem("ep_ui_style");
+  return s === "cel" || s === "glass" ? s : "eris";
 }
 
 export function applyUiStyle(style) {
-  document.documentElement.setAttribute("data-ui-style", "eris");
+  if (style !== "cel" && style !== "glass") style = "eris";
+  localStorage.setItem("ep_ui_style", style);
+  document.documentElement.setAttribute("data-ui-style", style);
+   
+  if (style === "glass" && getEffectiveTheme() !== "dark") {
+    applyTheme("dark");
+  }
 }
 
 export function getFont() {
@@ -247,7 +253,14 @@ export function applyBgImage(dataUrl) {
     ? "linear-gradient(rgba(10,14,23,0.8),rgba(10,14,23,0.8))"
     : "linear-gradient(rgba(244,247,252,0.74),rgba(244,247,252,0.74))";
   document.body.style.backgroundImage = overlay + ', url("' + dataUrl + '")';
-  document.body.style.backgroundSize = "cover";
+   
+  if (getSetting("bg_tile", "0") === "1") {
+    document.body.style.backgroundRepeat = "repeat";
+    document.body.style.backgroundSize = "460px auto";
+  } else {
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.backgroundSize = "cover";
+  }
   document.body.style.backgroundPosition = "center";
   document.body.style.backgroundAttachment = "fixed";
    
