@@ -1,27 +1,5 @@
  
 
-
-
-
-.sec-masonry {
-  position: relative;
-  margin-top: 20px;
-}
-.sec-item > .settings-card {
-  height: 100%;
-}
-.sec-masonry.masonry-anim .sec-item {
-  transition: transform 0.25s var(--ease);
-}
-html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
-  transition: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .sec-masonry.masonry-anim .sec-item {
-    transition: none;
-  }
-}
-
  
 .sec-hint {
   margin: 10px 0;
@@ -305,3 +283,4 @@ html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
     flex-wrap: wrap;
   }
 }
+

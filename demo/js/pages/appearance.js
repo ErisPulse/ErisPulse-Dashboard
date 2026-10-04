@@ -49,17 +49,13 @@ export function toggleTheme() {
 
 export function getUiStyle() {
   var s = localStorage.getItem("ep_ui_style");
-  return s === "cel" || s === "glass" ? s : "eris";
+  return s === "cel" ? s : "eris";
 }
 
 export function applyUiStyle(style) {
-  if (style !== "cel" && style !== "glass") style = "eris";
+  if (style !== "cel") style = "eris";
   localStorage.setItem("ep_ui_style", style);
   document.documentElement.setAttribute("data-ui-style", style);
-   
-  if (style === "glass" && getEffectiveTheme() !== "dark") {
-    applyTheme("dark");
-  }
 }
 
 export function getFont() {
