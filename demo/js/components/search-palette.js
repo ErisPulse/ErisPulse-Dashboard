@@ -75,6 +75,27 @@ function _palettePageEntries() {
         go(x.page);
       },
     });
+     
+    var xTabs = MERGED_PAGE_TABS[x.page];
+    if (xTabs) {
+      xTabs.forEach(function (tabInfo) {
+        var tabLabel = t(tabInfo.i18n) || tabInfo.label;
+        var tabBtn = document.querySelector('[data-tab="' + tabInfo.id + '"]');
+        if (tabBtn) tabLabel = tabBtn.textContent.trim() || tabLabel;
+        entries.push({
+          id: "page:" + x.page + ":" + tabInfo.id,
+          group: "pages",
+          label: label + " · " + tabLabel,
+          icon: "",
+          hay: [label, tabLabel, _paletteEnT(tabInfo.i18n), tabInfo.id].join(" ").toLowerCase(),
+          run: function () {
+            go(x.page);
+            var btn = document.querySelector('[data-tab="' + tabInfo.id + '"]');
+            if (btn) btn.click();
+          },
+        });
+      });
+    }
   });
   return entries;
 }
@@ -357,6 +378,21 @@ document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
     e.preventDefault();
     togglePalette();
+    return;
+  }
+  if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !_paletteOpen) {
+     
+    var a = document.activeElement;
+    var typing =
+      a &&
+      (a.tagName === "INPUT" ||
+        a.tagName === "TEXTAREA" ||
+        a.tagName === "SELECT" ||
+        a.isContentEditable);
+    if (!typing) {
+      e.preventDefault();
+      openPalette();
+    }
     return;
   }
   if (e.key === "Escape" && _paletteOpen) {
