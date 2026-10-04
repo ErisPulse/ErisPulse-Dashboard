@@ -18,10 +18,6 @@ export async function loadSecurity() {
   loadSecurityAccess();
   loadSecurityRouter();
   loadSecurityAudit();
-   
-  setTimeout(function () {
-    layoutMasonry(document.getElementById("secGrid"), { colWidth: 430 });
-  }, 60);
 }
 
  

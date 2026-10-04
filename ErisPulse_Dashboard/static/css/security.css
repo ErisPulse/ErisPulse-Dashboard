@@ -284,3 +284,26 @@
   }
 }
 
+
+ 
+
+
+@media (min-width: 769px) {
+  .settings-col > .sec-item {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+  .settings-col > .sec-item:last-child {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 768px) {
+  .settings-col > .sec-item {
+    margin-bottom: 20px;
+  }
+  .settings-col > .sec-item:last-child {
+    margin-bottom: 0;
+  }
+}
