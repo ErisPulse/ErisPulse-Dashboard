@@ -48,7 +48,7 @@ export function toggleTheme() {
 }
 
 export function getUiStyle() {
-  // 液态玻璃已移除：固定经典实底外观（保留轴位以兼容旧备份/外观同步数据）
+  // 风格轴已固定为 eris 实底（液态玻璃已移除）；保留函数兼容外观同步 payload 的 ui_style 字段
   return "classic";
 }
 

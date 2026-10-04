@@ -1,10 +1,5 @@
 // ErisPulse Dashboard – pages/settings (auto-split from dash.js)
 
-export function applySettingUiStyle(val) {
-  applyUiStyle(val);
-  if (typeof syncSettingsUI === "function") syncSettingsUI();
-}
-
 export function applySettingFont(id) {
   localStorage.setItem("ep_font", id);
   applyFont(id);
@@ -693,12 +688,6 @@ document.addEventListener(
 );;
 
 export function syncSettingsUI() {
-  // Style cards (ErisPulse / MD3)
-  var curStyle = getUiStyle();
-  document.querySelectorAll(".style-card").forEach(function(card) {
-    card.classList.toggle("active", card.dataset.style === curStyle);
-  });
-  
   // Theme cards (Light / Dark / Auto)
   var curTheme = getTheme();
   document.querySelectorAll(".theme-card").forEach(function(card) {
@@ -962,7 +951,7 @@ export async function importBackup(input) {
 // ════════════════ 全局同步（一开全开，全量同步）════════════════
 // 同步范围：外观 + 行为 + 语言 + 布局（下列 localStorage 键）
 var SYNC_LOCAL_KEYS = [
-  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style", "ep_ui_style",
+  "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style",
   "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
   "ep_show_node_selector", "ep_remember_groups",
   "ep_setting_dash_title", "ep_setting_bg_color", "ep_setting_bg_image",
@@ -1018,7 +1007,6 @@ var SYNC_APPLIERS = {
   ep_font: function (v) { applyFont(v); },
   ep_lang: function (v) { applySettingLang(v); },
   ep_anim_style: function (v) { applyAnimStyle(v); },
-  ep_ui_style: function (v) { applyUiStyle(v); },
   ep_home_pins: function () { renderHomePins(); },
   ep_nav_group_states: function () { restoreNavGroupStates(); },
   ep_sidebar_collapsed: function (v) {
