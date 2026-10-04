@@ -6,6 +6,7 @@ import * as m_core_api from "./core/api.js";
 import * as m_core_i__n from "./core/i18n.js";
 import * as m_core_utils from "./core/utils.js";
 import * as m_core_masonry from "./core/masonry.js";
+import * as m_core_themepack from "./core/themepack.js";
 import * as m_components_modal from "./components/modal.js";
 import * as m_components_toast from "./components/toast.js";
 import * as m_components_popover from "./components/popover.js";
@@ -48,6 +49,7 @@ const __namespaces = [
   m_core_i__n,
   m_core_utils,
   m_core_masonry,
+  m_core_themepack,
   m_components_modal,
   m_components_toast,
   m_components_popover,
@@ -95,6 +97,8 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyFont(getFont());
   applyI18n();
   applyCustomTheme();
+   
+  applyThemePack();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
    
