@@ -1293,3 +1293,37 @@ input, textarea, select, button,
     opacity: 1 !important;
     transition: none !important;
 }
+
+/* ════════════════ 全局滚动条隐藏（保留滚动能力） ════════════════ */
+/* 滚动条不显示但容器仍可滚动（滚轮/触摸/键盘）；代码编辑器保留
+   细滚动条供定位。Firefox 走 scrollbar-width，Chromium 走 webkit。 */
+* {
+    scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+/* 白名单：代码编辑器（config 页 TOML / 文件编辑器）保留细滚动条 */
+.CodeMirror-vscrollbar,
+.CodeMirror-hscrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bd) transparent;
+}
+.CodeMirror-vscrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    display: block;
+}
+.CodeMirror-hscrollbar::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    display: block;
+}
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+    background: var(--bd);
+    border-radius: 4px;
+}
