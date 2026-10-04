@@ -360,7 +360,6 @@
 .adapter-config-detail {
     padding: 0;
 
-    max-width: 960px;
 }
 
 /* 账户配置区（不再嵌套 fw-section，直接放卡片） */
@@ -449,4 +448,32 @@
 
 .modal-input {
     margin-top: 8px;
+}
+
+/* 组件配置页字段行：表单式布局（卡片占满页宽，label 定宽列 + 控件紧随） */
+.adapter-config-detail .fw-row {
+    justify-content: flex-start;
+    gap: 24px;
+}
+.adapter-config-detail .fw-row > .fw-label {
+    flex: 0 0 260px;
+}
+.adapter-config-detail .fw-row > .fw-control {
+    flex: 1;
+    max-width: 480px;
+}
+.adapter-config-detail .fw-row > .fw-control input[type="text"],
+.adapter-config-detail .fw-row > .fw-control input[type="password"],
+.adapter-config-detail .fw-row > .fw-control input[type="number"],
+.adapter-config-detail .fw-row > .fw-control select {
+    width: 100%;
+    max-width: 460px;
+}
+@media (max-width: 768px) {
+    .adapter-config-detail .fw-row {
+        flex-wrap: wrap;
+    }
+    .adapter-config-detail .fw-row > .fw-label {
+        flex: 0 0 100%;
+    }
 }

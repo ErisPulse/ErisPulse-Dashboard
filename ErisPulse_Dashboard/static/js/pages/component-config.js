@@ -170,12 +170,6 @@ export async function loadAdapterConfigDetail(platform) {
 
   var html = '<div class="adapter-config-detail">';
 
-  html +=
-    '<div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:8px;align-items:center">' +
-    '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
-    t("view_docs") +
-    " ↗</a></div>";
-
   if (d.has_config && d.schema) {
     var globalFieldsHtml = renderAdapterSchemaFields(
       d.schema.fields,
@@ -958,12 +952,6 @@ export async function loadModuleConfigDetail(moduleName) {
   }
 
   var html = '<div class="adapter-config-detail">';
-
-  html +=
-    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px">' +
-    '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
-    t("view_docs") +
-    ' ↗</a></div>';
 
   if (d.has_config && d.schema) {
     html +=
