@@ -695,11 +695,46 @@ export function secCopyToken() {
   toast(t("sec_copied"), "ok");
 }
 
+// ── 令牌重生成：预览 → 复制 → 确认应用（应用前旧令牌始终有效） ──
+function _secRandomToken() {
+  var bytes = new Uint8Array(32);
+  if (window.crypto && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (var i = 0; i < 32; i++)
+      bytes[i] = Math.floor(Math.random() * 256);
+  }
+  var s = btoa(String.fromCharCode.apply(null, bytes));
+  return s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 export async function secRegenToken() {
   if (!authed) return showLogin();
-  var ok = await confirm2(t("sec_token_regen"), t("sec_token_regen_confirm"));
-  if (!ok) return;
-  var d = await api("/api/security/token/regenerate", { method: "POST" });
+  // 步骤 1：本地生成新令牌并预览，用户复制确认前什么都不会发生
+  var newToken = _secRandomToken();
+  var preview = await showModal(
+    t("sec_token_preview_title"),
+    '<div class="settings-item-desc" style="margin-bottom:10px">' +
+      esc(t("sec_token_preview_desc")) +
+      "</div>" +
+      '<pre class="sec-code" id="secNewToken">' +
+      esc(newToken) +
+      "</pre>" +
+      '<div style="margin-top:8px;text-align:right">' +
+      '<button class="btn btn-secondary btn-xs" onclick="secCopyCode(\'secNewToken\')">' +
+      esc(t("sec_copy")) +
+      "</button></div>",
+    [
+      { label: t("cancel"), value: "cancel" },
+      { label: t("sec_token_apply"), value: "apply", primary: true },
+    ],
+  );
+  if (preview !== "apply") return; // 取消：旧令牌继续有效，本次生成作废
+  // 步骤 2：应用（旧令牌立即失效）
+  var d = await api("/api/security/token/regenerate", {
+    method: "POST",
+    body: JSON.stringify({ token: newToken }),
+  });
   if (!d || !d.success) return toast(d && d.error ? d.error : t("unknown_error"), "er");
   localStorage.setItem("__ep_tk__", d.token);
   toast(t("sec_token_regen_ok"), "ok");

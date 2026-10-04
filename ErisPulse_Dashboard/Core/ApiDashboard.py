@@ -151,8 +151,31 @@ class ApiDashboardMixin:
         return JSONResponse({"success": True, "deleted": True})
 
     async def _api_token_regenerate(self, request: Request) -> JSONResponse:
-        """重新生成 Dashboard 访问令牌；旧令牌立即失效，所有已登录会话需重新登录"""
-        new_token = secrets.token_urlsafe(32)
+        """重新生成 Dashboard 访问令牌；旧令牌立即失效，所有已登录会话需重新登录。
+
+        支持预览-确认流：客户端生成新令牌后经 body.token 提交应用
+        （提交前旧令牌始终有效）；不传 token 则由服务端生成并立即生效。
+        """
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        new_token = ""
+        if isinstance(body, dict):
+            new_token = str(body.get("token") or "")
+        if new_token:
+            # 客户端提交：校验格式（token_urlsafe 兼容，长度 32-128）
+            if (
+                len(new_token) < 32
+                or len(new_token) > 128
+                or not all(c.isalnum() or c in "-_" for c in new_token)
+            ):
+                return JSONResponse(
+                    {"error": "invalid token format"}, status_code=400
+                )
+        else:
+            new_token = secrets.token_urlsafe(32)
         self.sdk.config.setConfig("Dashboard.token", new_token, immediate=True)
         self._token = new_token
         self._add_audit_log("token_regenerate", "", request)
