@@ -5,7 +5,6 @@ import * as m_core_state from "./core/state.js";
 import * as m_core_api from "./core/api.js";
 import * as m_core_i__n from "./core/i18n.js";
 import * as m_core_utils from "./core/utils.js";
-import * as m_core_masonry from "./core/masonry.js";
 import * as m_core_themepack from "./core/themepack.js";
 import * as m_components_modal from "./components/modal.js";
 import * as m_components_toast from "./components/toast.js";
@@ -48,7 +47,6 @@ const __namespaces = [
   m_core_api,
   m_core_i__n,
   m_core_utils,
-  m_core_masonry,
   m_core_themepack,
   m_components_modal,
   m_components_toast,
@@ -99,8 +97,6 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyCustomTheme();
   // 用户主题包（上传的自定义 CSS 皮肤）
   themepackRestore();
-  // 各页卡片瀑布流对齐（[data-masonry] 容器自动布局）
-  bootMasonryGrids();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
   // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）
