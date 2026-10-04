@@ -201,38 +201,6 @@ export async function loadPerformance() {
   setEl("ioWrite", process.write_bytes_mb, " MB");
 
    
-  if (document.getElementById("instUptime"))
-    document.getElementById("instUptime").textContent =
-      system.uptime_human || "--";
-  if (document.getElementById("instThreads"))
-    document.getElementById("instThreads").textContent = String(
-      process.threads || "--",
-    );
-  if (document.getElementById("instConnections"))
-    document.getElementById("instConnections").textContent = String(
-      process.connections || "--",
-    );
-   
-  if (document.getElementById("instDisk")) {
-    const disk = system.disk;
-    document.getElementById("instDisk").textContent = disk
-      ? disk.used_gb + "/" + disk.total_gb + " GB (" + disk.percent + "%)"
-      : "--";
-  }
-   
-  _fillFwVersionRow();
-  if (!window._fwVerChecked) {
-    window._fwVerChecked = true;
-    api("/api/framework/versions")
-      .then(function (v) {
-        if (!v || !v.current || !Array.isArray(v.versions) || !v.versions.length)
-          return;
-        window._fwUpdateAvailable = v.versions[0] !== v.current;
-        _fillFwVersionRow();
-      })
-      .catch(function () {});
-  }
-   
   window._perfData = {
     vms: memory.vms_mb,
     threads: process.threads,
@@ -245,18 +213,4 @@ export async function loadPerformance() {
     sysTotal: memory.system_total_gb,
     sysAvail: memory.system_available_gb,
   };
-}
-
-
-function _fillFwVersionRow() {
-  const el = document.getElementById("instFwVer");
-  if (!el) return;
-  const fw = window._fwStatus || {};
-  let html = fw.version ? "v" + fw.version : "--";
-  if (window._fwUpdateAvailable)
-    html +=
-      ' <span class="chip chip-wr" style="padding:1px 8px;font-size:11px">' +
-      esc(t("fw_update_available")) +
-      "</span>";
-  el.innerHTML = html;
 }
