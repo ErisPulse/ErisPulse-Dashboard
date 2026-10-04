@@ -305,3 +305,21 @@ html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
     flex-wrap: wrap;
   }
 }
+
+/* ── 通用瀑布流容器（settings-col 等声明 data-masonry 即生效） ── */
+.masonry-grid {
+  position: relative;
+  transition: height 0.25s var(--ease);
+}
+/* settings-col 原为 CSS 多列布局，瀑布流接管后清除其 columns */
+.settings-col.masonry-grid {
+  columns: auto !important;
+  column-gap: 0;
+}
+.settings-col.masonry-grid > .card,
+.settings-col.masonry-grid > .settings-card {
+  break-inside: auto;
+  display: block;
+  width: auto;
+  margin-bottom: 0;
+}
