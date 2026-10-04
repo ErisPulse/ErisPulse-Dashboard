@@ -1,27 +1,5 @@
  
 
-
-
-
-.sec-masonry {
-  position: relative;
-  margin-top: 20px;
-}
-.sec-item > .settings-card {
-  height: 100%;
-}
-.sec-masonry.masonry-anim .sec-item {
-  transition: transform 0.25s var(--ease);
-}
-html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
-  transition: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .sec-masonry.masonry-anim .sec-item {
-    transition: none;
-  }
-}
-
  
 .sec-hint {
   margin: 10px 0;
@@ -306,20 +284,3 @@ html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
   }
 }
 
- 
-.masonry-grid {
-  position: relative;
-  transition: height 0.25s var(--ease);
-}
- 
-.settings-col.masonry-grid {
-  columns: auto !important;
-  column-gap: 0;
-}
-.settings-col.masonry-grid > .card,
-.settings-col.masonry-grid > .settings-card {
-  break-inside: auto;
-  display: block;
-  width: auto;
-  margin-bottom: 0;
-}
