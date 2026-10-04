@@ -359,6 +359,8 @@
 
 .adapter-config-detail {
     padding: 0;
+
+    max-width: 960px;
 }
 
 /* 账户配置区（不再嵌套 fw-section，直接放卡片） */

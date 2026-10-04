@@ -172,16 +172,18 @@ export async function loadAdapterConfigDetail(platform) {
 
   html +=
     '<div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:8px;align-items:center">' +
-    '<button class="cfg-docs-link" style="background:none;border:none;cursor:pointer;font:inherit;color:var(--accent)" onclick="copyAdapterConnection(\'' +
-    esc(platform) +
-    '\')">' +
-    esc(t("copy_connection")) +
-    "</button>" +
     '<a class="cfg-docs-link" href="https://www.erisdev.com" target="_blank" rel="noopener">' +
     t("view_docs") +
     " ↗</a></div>";
 
   if (d.has_config && d.schema) {
+    var globalFieldsHtml = renderAdapterSchemaFields(
+      d.schema.fields,
+      d.values || {},
+      d.config_key,
+    );
+    var hasRenderableFields =
+      d.schema.fields && Object.keys(d.schema.fields).length > 0;
     html +=
       '<div class="fw-section"><div class="fw-section-title">' +
       t("adapter_global_config") +
@@ -190,16 +192,18 @@ export async function loadAdapterConfigDetail(platform) {
       '<div id="adapterGlobalConfigFields" data-cfg-prefix="' +
       esc(d.config_key) +
       '.">' +
-      renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key) +
+      globalFieldsHtml +
       "</div>";
-    html +=
-      '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
-      esc(d.config_key) +
-      '." onclick="saveAdapterConfigAll(\'' +
-      esc(platform) +
-      "')\">" +
-      t("save_adapter_config") +
-      "</button></div>";
+    if (hasRenderableFields) {
+      html +=
+        '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+        esc(d.config_key) +
+        '." onclick="saveAdapterConfigAll(\'' +
+        esc(platform) +
+        "')\">" +
+        t("save_adapter_config") +
+        "</button></div>";
+    }
     html += "</div></div>";
   }
 
@@ -1041,33 +1045,6 @@ export async function saveModuleConfigAll(moduleName) {
   }
 }
 
-
-// ── 连接地址一键复制（get_connection_info，旧 SDK 降级隐藏） ──
-export async function copyAdapterConnection(platform) {
-  const d = await api(
-    "/api/adapter/" + encodeURIComponent(platform) + "/connection",
-  );
-  if (!d) return;
-  if (!d.supported) {
-    toast(t("connection_unsupported"), "");
-    return;
-  }
-  const c = d.connection || {};
-  // 只复制具体端点地址；没有端点时才回退根地址
-  const lines = [];
-  ["http", "ws", "sse"].forEach(function (k) {
-    (c[k] || []).forEach(function (u) {
-      lines.push(u);
-    });
-  });
-  if (!lines.length && c.base_url) lines.push(c.base_url);
-  if (!lines.length) {
-    toast(t("connection_unsupported"), "");
-    return;
-  }
-  _copyToClipboard(lines.join("\n"));
-  toast(t("sec_copied"), "ok");
-}
 
 // ── 保存后重启引导（适配器运行中且可能需要重启才能完全生效） ──
 export async function promptAdapterRestart(platform) {
