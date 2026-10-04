@@ -838,72 +838,85 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/files/decompress'] = function () { return _json({ success: true }); };
 
     var _mockAdapterConfigs = {
+        // 真实适配器声明（源自 SDK/Adapter 各适配器 ConfigClass / AccountConfigClass）
         Yunhu: {
-            config_key: 'qq', has_config: true, has_accounts: true,
+            config_key: 'Yunhu', has_config: true, has_accounts: true,
             schema: { fields: {
-                appid: { type: 'string', description: 'QQ 开放平台 AppID', group: 'connection', order: 1 },
-                secret: { type: 'string', secret: true, description: 'QQ 开放平台 AppSecret', group: 'connection', order: 2 },
-                token: { type: 'string', secret: true, description: 'WebSocket 鉴权 Token', group: 'connection', order: 3 },
-                sandbox: { type: 'boolean', widget: 'switch', description: '是否使用沙箱环境', group: 'advanced', order: 10 },
+                base_url: { type: 'string', description: 'Bot 开放 API 地址', group: 'connection', order: 1 },
+                web_api_base_url: { type: 'string', description: '公开 Web API 地址（非官方，用于信息查询）', group: 'connection', order: 2 },
+                ws_base_url: { type: 'string', description: 'WebSocket 订阅地址', group: 'connection', order: 3 },
             }},
-            values: { appid: '102045273', secret: 'aB3xK9mP2qR7sV4w', token: 'wss_token_demo_value_123', sandbox: false },
+            values: { base_url: 'https://chat-go.jwzhd.com/open-apis/v1', web_api_base_url: 'https://chat-web-go.jwzhd.com', ws_base_url: 'wss://ws.jwzhd.com/subscribe' },
             account_schema: { fields: {
-                enabled: { type: 'boolean', widget: 'switch', order: 1 },
-                name: { type: 'string', order: 2 },
-                appid: { type: 'string', description: '机器人 AppID', order: 3 },
-                secret: { type: 'string', secret: true, description: '机器人 Secret', order: 4 },
-                token: { type: 'string', secret: true, description: '回调鉴权 Token', order: 5 },
+                token: { type: 'string', secret: true, description: '机器人 Token', required: true, group: 'basic', order: 2 },
+                mode: { type: 'string', widget: 'select', description: '事件接收模式', group: 'connection', order: 3, options: [ { label: 'WebSocket', value: 'ws' }, { label: 'Webhook', value: 'webhook' } ] },
+                webhook_path: { type: 'string', description: 'Webhook 路径（仅 webhook 模式）', group: 'connection', order: 4 },
             }},
-            accounts: { default: { enabled: true, name: 'default', appid: '102045273', secret: 'bot_secret_abc123', token: 'callback_token_xyz' } }
+            accounts: { default: { enabled: true, token: 'yunhu_demo_token_AbCdEf123', mode: 'ws', webhook_path: '/webhook' } }
         },
-        Telegram: {
-            config_key: 'Telegram', has_config: true, has_accounts: false,
+        QQBot: {
+            config_key: 'QQBot', has_config: true, has_accounts: true,
             schema: { fields: {
-                token: { type: 'string', secret: true, description: 'Telegram Bot Token', order: 1 },
-                proxy: { type: 'string', description: 'HTTP 代理地址（可选）', order: 2 },
+                intents: { type: 'string', description: '订阅的 intents（JSON数组）：支持事件位序号（如 25）或事件名（如 GROUP_AND_C2C_EVENT）。常用位：0=GUILDS 9=GUILD_MESSAGES 12=DIRECT_MESSAGE 24=GROUP_MEMBER 25=群/私聊 26=INTERACTION 27=MESSAGE_AUDIT', group: 'connection', order: 1 },
             }},
-            values: { token: '7842139046:AAEhBO9xK_demo_token_FkMzqW', proxy: '' }
-        },
-        Discord: {
-            config_key: 'Discord', has_config: true, has_accounts: true,
-            schema: { fields: {
-                application_id: { type: 'string', description: 'Discord Application ID', order: 1 },
-                public_key: { type: 'string', description: 'Discord Public Key', order: 2 },
-            }},
-            values: { application_id: '1234567890123456789', public_key: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890' },
+            values: { intents: '[0, 9, 12, 25, 26, 27]' },
             account_schema: { fields: {
-                enabled: { type: 'boolean', widget: 'switch', order: 1 },
-                name: { type: 'string', order: 2 },
-                token: { type: 'string', secret: true, description: 'Bot Token', order: 3 },
+                appid: { type: 'string', description: 'QQ机器人应用ID（QQ开放平台获取）', required: true, group: 'basic', order: 1 },
+                secret: { type: 'string', secret: true, description: 'QQ机器人客户端密钥（QQ开放平台获取）', required: true, group: 'basic', order: 2 },
+                mode: { type: 'string', widget: 'select', description: '事件接收方式：websocket=长连接，webhook=HTTP回调', group: 'connection', order: 3, options: [ { label: 'WebSocket 长连接', value: 'websocket' }, { label: 'Webhook 回调', value: 'webhook' } ] },
+                api_base_url: { type: 'string', description: 'OpenAPI 根地址（默认官方地址，可自定义用于代理）', group: 'advanced', order: 4 },
+                access_token_url: { type: 'string', description: '自定义 access_token 接口地址（留空使用官方接口）', group: 'advanced', order: 5 },
+                gateway_url: { type: 'string', description: 'WebSocket 网关地址（留空时通过 /gateway/bot 动态获取）', group: 'connection', order: 6 },
+                webhook_path: { type: 'string', description: 'Webhook 模式的回调路径（mode=webhook 时生效）', group: 'connection', order: 7 },
+                bot_id: { type: 'string', description: '机器人ID（留空时连接后自动获取，也可手动填写用于 Using() 定位账户）', group: 'basic', order: 8 },
+                sandbox: { type: 'boolean', widget: 'switch', description: '[已废弃] 官方已统一使用 api.bot.qq.com，此字段仅用于兼容旧配置', group: 'advanced', order: 99 },
             }},
-            accounts: { 'main-bot': { enabled: true, name: 'main-bot', token: 'MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.GabcDE.demo_token_hash_FkMzqW' } }
+            values: {},
+            accounts: { default: { enabled: true, mode: 'websocket', api_base_url: 'https://api.bot.qq.com', webhook_path: '/webhook', appid: '', secret: '' } }
         },
         OneBot11: {
-            config_key: 'OneBot11', has_config: true, has_accounts: true,
-            schema: { fields: {
-                host: { type: 'string', description: 'WebSocket 监听地址', order: 1 },
-                port: { type: 'integer', description: 'WebSocket 监听端口', order: 2 },
-                access_token: { type: 'string', secret: true, description: '访问令牌', order: 3 },
-            }},
-            values: { host: '0.0.0.0', port: 8080, access_token: 'onebot_access_token_demo' },
+            config_key: 'OneBot', has_config: true, has_accounts: true,
+            schema: { fields: {} },
+            values: {},
             account_schema: { fields: {
-                enabled: { type: 'boolean', widget: 'switch', order: 1 },
-                name: { type: 'string', order: 2 },
-                host: { type: 'string', description: '连接地址', order: 3 },
-                port: { type: 'integer', description: '连接端口', order: 4 },
-                token: { type: 'string', secret: true, description: '鉴权 Token', order: 5 },
-                client_token: { type: 'string', secret: true, description: '客户端 Token', order: 6 },
+                mode: { type: 'string', widget: 'select', description: '连接模式: server(被动) 或 client(主动)', group: 'connection', order: 2, options: [ { label: 'Server', value: 'server' }, { label: 'Client', value: 'client' } ] },
+                url: { type: 'string', description: 'Client模式 WebSocket 地址', group: 'client', order: 3 },
+                token: { type: 'string', secret: true, description: '认证Token（Client模式连接Token / Server模式验证Token）', group: 'connection', order: 4 },
+                server_path: { type: 'string', description: 'Server模式 WebSocket 路径', group: 'server', order: 5 },
             }},
-            accounts: { default: { enabled: false, name: 'default', host: '127.0.0.1', port: 6700, token: '', client_token: 'ob12_client_token_demo' } }
+            accounts: { default: { enabled: true, mode: 'server', url: 'ws://127.0.0.1:3001', token: '', server_path: '/' } }
+        },
+        Discord: {
+            config_key: 'Discord', has_config: false, has_accounts: true,
+            schema: { fields: {} },
+            values: {},
+            account_schema: { fields: {
+                token: { type: 'string', secret: true, description: 'Discord Bot Token', required: true, order: 1 },
+                intents: { type: 'integer', description: 'Gateway Intents 位掩码（默认 GUILDS|GUILD_MESSAGES|MESSAGE_CONTENT = 33281）', order: 2 },
+            }},
+            accounts: { default: { enabled: true, token: '', intents: 33281 } }
         },
         Kook: {
-            config_key: 'Kook', has_config: true, has_accounts: true,
-            schema: { fields: {
-                token: { type: 'string', secret: true, description: 'KOOK Bot Token', order: 1 },
-                verify_token: { type: 'string', secret: true, description: 'Webhook 验证 Token', order: 2 },
+            config_key: 'Kook', has_config: false, has_accounts: true,
+            schema: { fields: {} },
+            values: {},
+            account_schema: { fields: {
+                token: { type: 'string', secret: true, description: 'Kook Bot Token', required: true, order: 1 },
+                bot_id: { type: 'string', description: '机器器人ID（可选，不填则以token推断）', order: 2 },
+                compress: { type: 'boolean', widget: 'switch', description: '是否启用WebSocket数据压缩', order: 3 },
             }},
-            values: { token: '1/MTIzNDU=/demo-kook-token-abc', verify_token: 'verify_token_demo_kook' }
-        }
+            accounts: { default: { enabled: true, token: '', bot_id: '', compress: true } }
+        },
+        Telegram: {
+            config_key: 'Telegram', has_config: false, has_accounts: true,
+            schema: { fields: {} },
+            values: {},
+            account_schema: { fields: {
+                token: { type: 'string', secret: true, description: 'Telegram Bot Token', required: true, order: 1 },
+                proxy: { type: 'string', description: 'HTTP 代理地址（可选）', order: 2 },
+            }},
+            accounts: { default: { enabled: true, token: '7842139046:AAEhBO9xK_demo_token_FkMzqW', proxy: '' } }
+        },
     };
 
     var _realFetch = window.fetch;
