@@ -1,0 +1,355 @@
+/* ══════════════════════════════════════════════════════════════
+   ErisPulse Dashboard – 赛璐璐动画风（Cel Shading / Toon Shading）
+   作用域：html[data-ui-style="cel"]
+   规范：3px 实心描边 #1a1a2e、纯色块、硬位移阴影（无渐变无模糊）、
+   高饱和配色、直角、抽帧动效（≤75ms linear）、hover 斜纹高光扫过。
+   参考规范：STYLEKIT cel-shading（用户 2026-10-04 提供）
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 色板与形状 Token（固定浅色纸面；dark/auto 在此风格下不改变色板） ── */
+html[data-ui-style="cel"] {
+    --cel-ink: #1a1a2e;
+    --cel-shadow: #1a1a2e;
+    --cel-paper: #fafaf5;
+    --cel-red: #e63946;
+    --cel-blue: #4ea8de;
+    --cel-green: #2ecc71;
+    --cel-yellow: #f1c40f;
+
+    --bg-p: #fafaf5;
+    --bg-s: #ffffff;
+    --bg-t: #ffffff;
+    --tx-p: var(--cel-ink);
+    --tx-s: rgba(26, 26, 46, 0.72);
+    --tx-t: rgba(26, 26, 46, 0.45);
+    --bd: var(--cel-ink);
+    --bd-h: var(--cel-ink);
+    --accent: var(--cel-red);
+    --accent-h: var(--cel-red);
+    --accent-rgb: 230, 57, 70;
+    --accent-fill: var(--cel-red);
+    --accent-fill-h: #c92d3c;
+    --sh: rgba(26, 26, 46, 0.9);
+    --modal: rgba(26, 26, 46, 0.35);
+    --focus-ring: rgba(230, 57, 70, 0.3);
+
+    --ok-c: #1f9d55;
+    --er-c: var(--cel-red);
+    --wr-c: #c98a06;
+    --pr-c: var(--cel-blue);
+    --sc-c: #8e44ad;
+
+    --radius-xs: 0;
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius-2xl: 0;
+
+    --ease: linear;
+    --ease-spring: linear;
+    --shadow-soft: 3px 3px 0 var(--cel-ink);
+    --shadow-float: 4px 4px 0 var(--cel-ink);
+    --shadow-glow: none;
+}
+
+/* 全局动效抽帧化：极短过渡 + 线性（覆盖各处 0.15-0.35s 丝滑曲线） */
+html[data-ui-style="cel"] *,
+html[data-ui-style="cel"] *::before,
+html[data-ui-style="cel"] *::after {
+    transition-duration: 75ms !important;
+    transition-timing-function: linear !important;
+    animation-timing-function: linear !important;
+}
+
+/* 底纹：动漫平铺图 + 纸白叠层保证对比度 */
+html[data-ui-style="cel"] body {
+    background:
+        linear-gradient(rgba(250, 250, 245, 0.82), rgba(250, 250, 245, 0.82)),
+        url("../res/bg/cel-pattern.png") repeat;
+    background-size: auto, 460px auto;
+}
+
+/* ── 卡片：3px 黑边 + 硬阴影 + 直角 ── */
+html[data-ui-style="cel"] .card,
+html[data-ui-style="cel"] .stat-card,
+html[data-ui-style="cel"] .settings-card {
+    background: var(--bg-t);
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    box-shadow: 3px 3px 0 var(--cel-shadow);
+}
+html[data-ui-style="cel"] .card:hover,
+html[data-ui-style="cel"] .stat-card:hover {
+    box-shadow: 4px 4px 0 var(--cel-shadow);
+    transform: translate(-1px, -1px);
+    border-color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .card-header {
+    border-bottom: 3px solid var(--cel-ink);
+    border-radius: 0;
+    background: var(--cel-paper);
+}
+html[data-ui-style="cel"] .stat-card {
+    cursor: pointer;
+}
+
+/* ── 按钮：粗边硬阴影，按下阴影归零（打击感）── */
+html[data-ui-style="cel"] .btn {
+    border: 3px solid var(--cel-ink) !important;
+    border-radius: 0;
+    background: var(--bg-t);
+    color: var(--cel-ink);
+    font-weight: 800;
+    box-shadow: 3px 3px 0 var(--cel-shadow);
+    position: relative;
+    overflow: hidden;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="cel"] .btn:hover {
+    background: var(--bg-t);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--cel-shadow);
+    border-color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--cel-shadow);
+}
+/* hover 斜纹高光扫过 */
+html[data-ui-style="cel"] .btn::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -60%;
+    width: 40%;
+    background: rgba(255, 255, 255, 0.55);
+    transform: skewX(-18deg);
+    transition: left 180ms linear !important;
+    pointer-events: none;
+}
+html[data-ui-style="cel"] .btn:hover::after {
+    left: 130%;
+}
+html[data-ui-style="cel"] .btn-primary {
+    background: var(--cel-red);
+    color: #ffffff;
+}
+html[data-ui-style="cel"] .btn-primary:hover {
+    background: var(--cel-red);
+}
+html[data-ui-style="cel"] .btn-secondary {
+    background: var(--bg-t);
+    color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .btn-danger {
+    background: var(--cel-red);
+    color: #ffffff;
+}
+html[data-ui-style="cel"] .btn-danger:hover {
+    background: var(--cel-red);
+}
+
+/* ── 侧栏 / 顶栏：纸面 + 粗黑分隔 ── */
+html[data-ui-style="cel"] .sidebar {
+    background: var(--bg-p);
+    border-right: 3px solid var(--cel-ink);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="cel"] .header {
+    background: var(--bg-p);
+    border-bottom: 3px solid var(--cel-ink);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="cel"] .nav-item {
+    border: 3px solid transparent;
+    border-radius: 0;
+}
+html[data-ui-style="cel"] .nav-item:hover {
+    border-color: var(--cel-ink);
+    background: var(--bg-t);
+}
+html[data-ui-style="cel"] .nav-item.active {
+    border-color: var(--cel-ink);
+    background: var(--cel-yellow);
+    color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .nav-item.active::before {
+    display: none;
+}
+
+/* ── 输入控件 ── */
+html[data-ui-style="cel"] .form-input,
+html[data-ui-style="cel"] .fw-input,
+html[data-ui-style="cel"] input[type="text"],
+html[data-ui-style="cel"] input[type="password"],
+html[data-ui-style="cel"] input[type="number"],
+html[data-ui-style="cel"] textarea,
+html[data-ui-style="cel"] select {
+    background: var(--bg-t);
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    color: var(--cel-ink);
+    font-weight: 700;
+}
+html[data-ui-style="cel"] input:focus,
+html[data-ui-style="cel"] textarea:focus,
+html[data-ui-style="cel"] select:focus {
+    outline: none;
+    box-shadow: 3px 3px 0 var(--focus-ring);
+}
+
+/* ── chips / 徽章：实边提饱和 ── */
+html[data-ui-style="cel"] .chip {
+    border: 2px solid var(--cel-ink);
+    border-radius: 0;
+    font-weight: 800;
+    background: var(--bg-t);
+    color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .chip-ok {
+    background: var(--cel-green);
+    color: #ffffff;
+}
+html[data-ui-style="cel"] .chip-er {
+    background: var(--cel-red);
+    color: #ffffff;
+}
+html[data-ui-style="cel"] .chip-wr {
+    background: var(--cel-yellow);
+    color: var(--cel-ink);
+}
+
+/* ── 模态 / 浮层 ── */
+html[data-ui-style="cel"] .modal-overlay,
+html[data-ui-style="cel"] #modalOv,
+html[data-ui-style="cel"] #outputOv,
+html[data-ui-style="cel"] #uploadOv,
+html[data-ui-style="cel"] #pkgDetailOv {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="cel"] .modal-box {
+    background: var(--bg-t);
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    box-shadow: 6px 6px 0 var(--cel-shadow);
+}
+html[data-ui-style="cel"] .popover,
+html[data-ui-style="cel"] .node-dropdown,
+html[data-ui-style="cel"] .home-pin-picker,
+html[data-ui-style="cel"] .fm-context-menu,
+html[data-ui-style="cel"] .ep-combobox-list,
+html[data-ui-style="cel"] .update-hint-bar,
+html[data-ui-style="cel"] .toast {
+    background: var(--bg-t);
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    box-shadow: 3px 3px 0 var(--cel-shadow);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+html[data-ui-style="cel"] .toast-ok {
+    background: var(--cel-green);
+    color: #ffffff;
+    border-color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .toast-er {
+    background: var(--cel-red);
+    color: #ffffff;
+    border-color: var(--cel-ink);
+}
+
+/* ── 标题字重 ── */
+html[data-ui-style="cel"] .page-title,
+html[data-ui-style="cel"] .card-header span,
+html[data-ui-style="cel"] .settings-item-label,
+html[data-ui-style="cel"] .stat-val {
+    font-weight: 900;
+}
+
+/* ── 开关：方轨道 + 方旋钮，粗黑描边 ── */
+html[data-ui-style="cel"] .switch {
+    width: 44px;
+    height: 24px;
+}
+html[data-ui-style="cel"] .switch-slider {
+    background: var(--bg-t);
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+}
+html[data-ui-style="cel"] .switch-slider:before {
+    width: 12px;
+    height: 12px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--cel-ink);
+    border-radius: 0;
+}
+html[data-ui-style="cel"] .switch input:checked + .switch-slider {
+    background: var(--cel-green);
+}
+html[data-ui-style="cel"] .switch input:checked + .switch-slider:before {
+    transform: translateX(20px);
+    background: #ffffff;
+}
+
+/* ── 进度环描边 ── */
+html[data-ui-style="cel"] .circular-progress-ring,
+html[data-ui-style="cel"] .circular-progress {
+    stroke: var(--cel-ink);
+}
+
+/* ── 移动端：保持同风格（粗边在窄屏依旧成立，无需降级） ── */
+@media (max-width: 720px) {
+    html[data-ui-style="cel"] body {
+        background-size: auto, 320px auto;
+    }
+}
+
+/* ── 暗色适配：墨夜纸面（描边改为亮墨，硬阴影用纯黑） ── */
+html[data-ui-style="cel"][data-theme="dark"],
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] {
+    --bg-p: #14161d;
+    --bg-s: #1b1e27;
+    --bg-t: #20242f;
+    --tx-p: #eceef4;
+    --tx-s: rgba(236, 238, 244, 0.72);
+    --tx-t: rgba(236, 238, 244, 0.45);
+    --cel-ink: #dfe3ee;
+        --cel-shadow: #000000;
+    --sh: rgba(0, 0, 0, 0.85);
+    --modal: rgba(0, 0, 0, 0.55);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-ui-style="cel"][data-theme="auto"] {
+        --bg-p: #14161d;
+        --bg-s: #1b1e27;
+        --bg-t: #20242f;
+        --tx-p: #eceef4;
+        --tx-s: rgba(236, 238, 244, 0.72);
+        --tx-t: rgba(236, 238, 244, 0.45);
+        --cel-ink: #dfe3ee;
+        --cel-shadow: #000000;
+    }
+}
+/* 暗色底纹：深色遮罩压住平铺图，保对比度 */
+html[data-ui-style="cel"][data-theme="dark"] body,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] body {
+    background:
+        linear-gradient(rgba(20, 22, 29, 0.88), rgba(20, 22, 29, 0.88)),
+        url("../res/bg/cel-pattern.png") repeat;
+    background-size: auto, 460px auto;
+}
+@media (prefers-color-scheme: dark) {
+    html[data-ui-style="cel"][data-theme="auto"] body {
+        background:
+            linear-gradient(rgba(20, 22, 29, 0.88), rgba(20, 22, 29, 0.88)),
+            url("../res/bg/cel-pattern.png") repeat;
+        background-size: auto, 460px auto;
+    }
+}

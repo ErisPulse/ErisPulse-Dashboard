@@ -141,9 +141,9 @@
 
 .perf-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    /* 信息区卡片已移除：CPU/内存两张环形卡两列排布，不留空占位列 */
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
-    /* 信息区行数多于环形卡时，不把两张环形卡拉伸到同高 */
     align-items: start;
 }
 
