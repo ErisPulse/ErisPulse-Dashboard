@@ -98,7 +98,9 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyI18n();
   applyCustomTheme();
    
-  applyThemePack();
+  themepackRestore();
+   
+  bootMasonryGrids();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
    

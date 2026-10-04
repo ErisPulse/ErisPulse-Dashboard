@@ -83,3 +83,26 @@ export function destroyMasonry(container) {
     _masonryStates.delete(container);
   }
 }
+
+ 
+ 
+var _mgGlobalBooted = false;
+
+export function bootMasonryGrids() {
+  if (_mgGlobalBooted) return;
+  _mgGlobalBooted = true;
+  var scan = function () {
+    document.querySelectorAll("[data-masonry]").forEach(function (el) {
+      if (!_masonryStates.has(el)) {
+        layoutMasonry(el, { colWidth: 430, selector: ":scope > .card, :scope > .settings-card, :scope > .sec-item" });
+      }
+    });
+  };
+  scan();
+  var pending = null;
+  var mo = new MutationObserver(function () {
+    if (pending) clearTimeout(pending);
+    pending = setTimeout(scan, 150);
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+}

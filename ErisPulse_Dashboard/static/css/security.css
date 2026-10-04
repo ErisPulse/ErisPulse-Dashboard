@@ -305,3 +305,21 @@ html[data-anim="off"] .sec-masonry.masonry-anim .sec-item {
     flex-wrap: wrap;
   }
 }
+
+ 
+.masonry-grid {
+  position: relative;
+  transition: height 0.25s var(--ease);
+}
+ 
+.settings-col.masonry-grid {
+  columns: auto !important;
+  column-gap: 0;
+}
+.settings-col.masonry-grid > .card,
+.settings-col.masonry-grid > .settings-card {
+  break-inside: auto;
+  display: block;
+  width: auto;
+  margin-bottom: 0;
+}
