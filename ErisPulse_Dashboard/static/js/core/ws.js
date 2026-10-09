@@ -258,20 +258,14 @@ export function loadAll() {
   _applyEditorOptions();
   fetchAdapterLogos();
   document.body.classList.toggle("privacy-on", getPrivacyMode());
+  // 登录只加载首屏（仪表盘状态 + 事件卡）与全局性数据；
+  // 各页面数据由路由 loaders 在首次进入时拉取，避免 20+ 个登录请求。
+  // 默认页为 dashboard 时 applyDefaultPageOnLogin 不走 go()，首屏数据在此直取
   window.refreshDashboard();
-  checkFwUpdateBadge();
-  loadEvents();
-  loadBots();
-  loadModules();
-  loadConfig();
-  loadStore();
-  loadMessageStats();
-  loadAuditLog();
   loadPerformance();
-  loadPackages();
-  loadPackageUpdates();
+  loadEvents();
+  checkFwUpdateBadge();
   loadModuleViews();
-  loadMaster();
   restartRefreshTimer();
 }
 

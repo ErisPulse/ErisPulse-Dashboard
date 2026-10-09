@@ -109,7 +109,11 @@ export function go(name, el, opts) {
   var minDelay = new Promise(function (r) { setTimeout(r, 800); });
 
   const loaders = {
-    dashboard: window.refreshDashboard,
+    dashboard: function () {
+      window.refreshDashboard();
+      // 性能环卡在首页上：进入即刷新（此前仅登录时加载一次，之后永不更新）
+      loadPerformance();
+    },
     bots: loadBots,
     "event-stream": function () {
       loadEvents();
