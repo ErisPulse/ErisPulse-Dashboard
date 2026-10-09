@@ -36,6 +36,7 @@ html[data-ui-style="cel"] {
 
     --ok-c: #1f9d55;
     --er-c: var(--cel-red);
+    --er-fill: var(--cel-red);
     --wr-c: #c98a06;
     --pr-c: var(--cel-blue);
     --sc-c: #8e44ad;

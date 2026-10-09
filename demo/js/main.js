@@ -40,7 +40,6 @@ import * as m_pages_permissions from "./pages/permissions.js";
 import * as m_pages_files from "./pages/files.js";
 import * as m_pages_cluster from "./pages/cluster.js";
 import * as m_pages_topology from "./pages/topology.js";
-import * as m_pages_security from "./pages/security.js";
 
 const __namespaces = [
   m_core_state,
@@ -83,7 +82,6 @@ const __namespaces = [
   m_pages_files,
   m_pages_cluster,
   m_pages_topology,
-  m_pages_security,
 ];
 for (const ns of __namespaces) Object.assign(window, ns);
 
