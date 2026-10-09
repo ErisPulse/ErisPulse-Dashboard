@@ -10,6 +10,26 @@ function isFrameworkPkg(s) {
   return v === "erispulse" || v.indexOf("erispulse==") === 0;
 }
  
+ 
+function getFwUpdateIntent(taskId) {
+  try {
+    var raw = localStorage.getItem("ep_fw_task");
+    if (!raw) return null;
+    var intent = JSON.parse(raw);
+    if (!intent || !intent.task_id) return null;
+    if (taskId && intent.task_id !== taskId) return null;
+    return intent;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearFwUpdateIntent() {
+  try {
+    localStorage.removeItem("ep_fw_task");
+  } catch (e) {}
+}
+ 
 function reloadAfterDashboardUpdate() {
    
   try { showUpdateHint("dashboard", ""); } catch (e) {}
@@ -107,7 +127,9 @@ export function wsConnect() {
       } else if (m.type === "install_progress") {
         const pkg =
           _installTaskIds.get(m.task_id) ||
-          (m.packages ? m.packages.join(", ") : "");
+          (m.packages ? m.packages.join(", ") : "") ||
+          (_tasks.find((t) => t.id === m.task_id) || {}).name ||
+          "";
         if (m.status === "running") {
           addOrUpdateTask(m.task_id, pkg, "running", m.output || []);
         } else if (m.status === "success") {
@@ -126,7 +148,12 @@ export function wsConnect() {
              
             var fwSpec =
               (m.packages || []).find((p) => isFrameworkPkg(p)) || pkg;
+            clearFwUpdateIntent();
             onFrameworkUpdateSuccess(fwSpec.split("==")[1] || "");
+          } else if (getFwUpdateIntent(m.task_id)) {
+            var fwIntent = getFwUpdateIntent(m.task_id);
+            clearFwUpdateIntent();
+            onFrameworkUpdateSuccess(fwIntent.version || "");
           } else {
             loadModules();
             loadPackages(true);
@@ -134,6 +161,7 @@ export function wsConnect() {
           }
         } else if (m.status === "error") {
           _installTaskIds.delete(m.task_id);
+          if (getFwUpdateIntent(m.task_id)) clearFwUpdateIntent();
           addOrUpdateTask(
             m.task_id,
             pkg,
@@ -172,16 +200,6 @@ export function wsConnect() {
         loadGlobalAppearance();
       } else if (m.type === "cert_files_changed") {
          
-        toast(t("cert_files_changed"), "");
-        const secTab = document.getElementById("settings-security-tab");
-        if (
-          secTab &&
-          secTab.style.display !== "none" &&
-          document.querySelector("#p-settings.page.active") &&
-          typeof loadSecuritySsl === "function"
-        ) {
-          loadSecuritySsl();
-        }
       } else if (m.type === "config_updated") {
          
         toast(t("config_changed_externally"), "");

@@ -687,11 +687,18 @@ export async function checkFwUpdateBadge() {
 export async function loadFrameworkVersions() {
   var spinBtn = document.getElementById("fwRefreshBtn");
   if (spinBtn) spinBtn.classList.add("spinning");
+  try {
+    await _loadFrameworkVersions();
+  } finally {
+    if (spinBtn) spinBtn.classList.remove("spinning");
+  }
+}
+
+async function _loadFrameworkVersions() {
   const d = await api(
     "/api/framework/versions?pre=" +
       (document.getElementById("fwPreRelease")?.checked || false),
   );
-  if (spinBtn) spinBtn.classList.remove("spinning");
   if (!d) return;
 
   _fwCurrentVer = d.current;
@@ -1135,6 +1142,13 @@ export async function doFrameworkUpdate() {
 
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, "ErisPulse==" + version);
+     
+    try {
+      localStorage.setItem(
+        "ep_fw_task",
+        JSON.stringify({ task_id: d.task_id, version: version }),
+      );
+    } catch (e) {}
     if (isWin) {
       toast(t("fw_win_update_started"), "ok");
     } else {
