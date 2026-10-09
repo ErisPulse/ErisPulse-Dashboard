@@ -663,10 +663,20 @@ export async function checkFwUpdateBadge() {
     var versions = d.versions || [];
     var latest = versions.length > 0 ? versions[0] : "";
     var hasUpdate = latest && cmpVer(latest, d.current) > 0;
-    if (!hasUpdate) return;
+    if (!hasUpdate) {
+      removeTask("fw-update-available");
+      return;
+    }
     // 红点
     document.getElementById("settingsBtn")?.classList.add("show-update");
     document.getElementById("settingsUpdateTab")?.classList.add("show-update");
+    // 任务面板常驻一条可点击条目（更新成功后在 onFrameworkUpdateSuccess 移除）
+    addOrUpdateTask(
+      "fw-update-available",
+      t("fw_popup_msg").replace("{latest}", latest),
+      "info",
+      [],
+    );
     // 弹出提示（延迟显示，避免与连接状态面板同时弹出）
     var popupText = document.getElementById("fwUpdatePopupText");
     if (popupText) {
@@ -1106,6 +1116,7 @@ export function onFrameworkUpdateSuccess(version) {
       t("fw_install_update") +
       "</span>";
   }
+  removeTask("fw-update-available");
   loadFrameworkVersions();
   showUpdateHint("framework", version);
   toast(t("fw_update_done"), "ok");
