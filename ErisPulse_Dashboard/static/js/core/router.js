@@ -109,7 +109,11 @@ export function go(name, el, opts) {
   var minDelay = new Promise(function (r) { setTimeout(r, 800); });
 
   const loaders = {
-    dashboard: window.refreshDashboard,
+    dashboard: function () {
+      window.refreshDashboard();
+       
+      loadPerformance();
+    },
     bots: loadBots,
     "event-stream": function () {
       loadEvents();
