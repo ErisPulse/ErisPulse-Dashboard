@@ -1,4 +1,12 @@
-// ErisPulse Dashboard – pages/files (auto-split from dash.js)
+// ErisPulse Dashboard – pages/files
+// 资源管理器式文件管理：面包屑导航、列表/网格双视图、点选+Ctrl 多选、
+// 行内 ⋮ 菜单（移动端）、排序表头、全屏编辑模态窗
+
+// ── 视图状态（view/sort 持久化） ──
+_fmView = localStorage.getItem("ep_fm_view") === "grid" ? "grid" : "list";
+_fmSort = { key: "name", dir: 1 };
+_fmEntries = [];
+_fmSelection = new Set();
 
 try {
   _fmIsWindows =
@@ -7,7 +15,7 @@ try {
     String(navigator.userAgentData && navigator.userAgentData.platform || "").toLowerCase() === "windows";
 } catch (e) {
   _fmIsWindows = false;
-};
+}
 
 export function debounceFmSearch() {
   clearTimeout(_fmSearchTimer);
@@ -48,7 +56,7 @@ export function fmFormatSize(bytes) {
 }
 
 export function fmFormatTime(ts) {
-  if (!ts) return "";
+  if (!ts) return "--";
   return new Date(ts * 1000).toLocaleString(getLocale(), {
     month: "2-digit",
     day: "2-digit",
@@ -69,33 +77,10 @@ export function fmGetIcon(type, name) {
   );
 }
 
-export function fmUpdateBreadcrumb(path, count) {
-  const bc = document.getElementById("fmBreadcrumb");
-  const parts = path === "." ? [] : path.split("/");
-  let html =
-    '<span class="fm-crumb' +
-    (parts.length === 0 ? " active" : "") +
-    '" onclick="fmNavigateTo(\'.\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>';
-  let accumulated = "";
-  parts.forEach((part, i) => {
-    accumulated += (accumulated ? "/" : "") + part;
-    const p = accumulated;
-    html +=
-      '<span class="fm-crumb-sep">/</span><span class="fm-crumb' +
-      (i === parts.length - 1 ? " active" : "") +
-      '" onclick="fmNavigateTo(\'' +
-      esc(p) +
-      "')\">" +
-      esc(part) +
-      "</span>";
-  });
-  if (count !== undefined) {
-    html += '<span class="fm-crumb-count">(' + count + ")</span>";
-  }
-  bc.innerHTML = html;
-}
+// ── 导航 ──
 
 export function fmNavigateTo(path) {
+  fmClearSelection();
   _fmCurrentPath = path;
   fmBrowse(path);
 }
@@ -110,13 +95,76 @@ export function fmGoUp() {
 export function fmToggleHidden() {
   _fmShowHidden = !_fmShowHidden;
   const btn = document.getElementById("fmHiddenBtn");
-  btn.style.background = _fmShowHidden ? "var(--accent)" : "";
+  if (btn) btn.style.background = _fmShowHidden ? "var(--accent)" : "";
   fmBrowse(_fmCurrentPath);
 }
 
 export function fmRefresh() {
   fmBrowse(_fmCurrentPath);
 }
+
+export function fmUpdateBreadcrumb(path, count) {
+  const bc = document.getElementById("fmBreadcrumb");
+  const parts = path === "." ? [] : path.split("/");
+  let html =
+    '<span class="fm-crumb' +
+    (parts.length === 0 ? " active" : "") +
+    '" onclick="fmNavigateTo(\'.\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>';
+  let accumulated = "";
+  parts.forEach((part, i) => {
+    accumulated += (accumulated ? "/" : "") + part;
+    const p = accumulated;
+    html +=
+      '<span class="fm-crumb-sep">›</span><span class="fm-crumb' +
+      (i === parts.length - 1 ? " active" : "") +
+      '" onclick="fmNavigateTo(\'' +
+      esc(p) +
+      "')\">" +
+      esc(part) +
+      "</span>";
+  });
+  if (count !== undefined) {
+    html += '<span class="fm-crumb-count">(' + count + ")</span>";
+  }
+  bc.innerHTML = html;
+}
+
+// ── 视图 / 排序 ──
+
+export function fmToggleView() {
+  _fmView = _fmView === "list" ? "grid" : "list";
+  localStorage.setItem("ep_fm_view", _fmView);
+  const btn = document.getElementById("fmViewBtn");
+  if (btn) btn.setAttribute("data-i18n-title", _fmView === "list" ? "fm_view_list" : "fm_view_grid");
+  fmRender();
+}
+
+export function fmSetSort(key) {
+  if (_fmSort.key === key) {
+    _fmSort.dir = -_fmSort.dir;
+  } else {
+    _fmSort = { key: key, dir: 1 };
+  }
+  fmRender();
+}
+
+function fmSortedEntries() {
+  const dirs = [];
+  const files = [];
+  _fmEntries.forEach((e) => (e.type === "directory" ? dirs : files).push(e));
+  const k = _fmSort.key;
+  const dir = _fmSort.dir;
+  const cmp = (a, b) => {
+    if (k === "size") return ((a.size || 0) - (b.size || 0)) * dir;
+    if (k === "date") return ((a.modified || 0) - (b.modified || 0)) * dir;
+    return String(a.name || "").localeCompare(String(b.name || ""), getLocale()) * dir;
+  };
+  dirs.sort(cmp);
+  files.sort(cmp);
+  return dirs.concat(files);
+}
+
+// ── 浏览与渲染 ──
 
 export async function fmBrowse(path) {
   _fmCurrentPath = path;
@@ -135,10 +183,20 @@ export async function fmBrowse(path) {
     return;
   }
 
-  const entries = d.entries || d.results || [];
-  fmUpdateBreadcrumb(d.path || path, entries.length);
+  _fmEntries = d.entries || d.results || [];
+  fmClearSelection();
+  fmUpdateBreadcrumb(d.path || path, _fmEntries.length);
+  fmRender();
+}
 
+function fmRender() {
   const fileList = document.getElementById("fmFileList");
+  if (!fileList) return;
+
+  fmUpdateSelBar();
+  fmRenderHeadRow();
+
+  const entries = fmSortedEntries();
   if (entries.length === 0) {
     fileList.innerHTML = renderUxEmpty(
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
@@ -147,52 +205,174 @@ export async function fmBrowse(path) {
     return;
   }
 
+  fileList.className = "fm2-list" + (_fmView === "grid" ? " fm2-grid" : "");
   fileList.innerHTML = entries
     .map((e) => {
       const isDir = e.type === "directory";
+      const sel = _fmSelection.has(e.path) ? " selected" : "";
       const icon = fmGetIcon(e.type, e.name);
       const size = isDir ? "--" : fmFormatSize(e.size || 0);
       const mtime = fmFormatTime(e.modified);
-      const rowActions = !isDir
-        ? '<button class="fm-card-action" onclick="event.stopPropagation();fmDownload(\'' +
-          esc(e.path) +
-          '\')" title="' + esc(t("download")) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>' +
-          '<button class="fm-card-action" onclick="event.stopPropagation();fmEditFile(\'' +
-          esc(e.path) +
-          '\')" title="' + esc(t("edit")) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
-        : "";
+      const open = fmOpenCall(e);
+      if (_fmView === "grid") {
+        return (
+          '<div class="fm2-tile' + sel + '" data-path="' + esc(e.path) + '"' +
+          ' onclick="fmRowClick(event, \'' + esc(e.path) + '\', \'' + e.type + '\')"' +
+          ' ondblclick="' + open + '"' +
+          ' oncontextmenu="fmContextMenu(event, \'' + esc(e.path) + '\', \'' + e.type + '\')">' +
+          '<div class="fm2-tile-icon">' + icon + "</div>" +
+          '<div class="fm2-tile-name" title="' + esc(e.name) + '">' + esc(e.name) + "</div>" +
+          '<div class="fm2-tile-meta">' + size + "</div>" +
+          "</div>"
+        );
+      }
       return (
-        '<div class="fm-file-card' + (isDir ? " is-dir" : "") + '" ondblclick="' +
-        (isDir
-          ? "fmNavigateTo('" + esc(e.path) + "')"
-          : "fmEditFile('" + esc(e.path) + "')") +
-        '" oncontextmenu="fmContextMenu(event,\'' +
-        esc(e.path) +
-        "','" +
-        esc(e.type) +
-        "')\">" +
-        '<div class="fm-card-icon">' + icon + "</div>" +
-        '<div class="fm-card-body">' +
-        '<span class="fm-card-name' + (isDir ? " folder-name" : "") + '">' + esc(e.name) + "</span>" +
-        '<span class="fm-card-meta">' + size + " · " + esc(mtime) + "</span>" +
-        "</div>" +
-        '<div class="fm-card-actions">' + rowActions + "</div>" +
+        '<div class="fm2-row' + (isDir ? " is-dir" : "") + sel + '" data-path="' + esc(e.path) + '"' +
+        ' data-meta="' + esc(size + " · " + mtime) + '"' +
+        ' onclick="fmRowClick(event, \'' + esc(e.path) + '\', \'' + e.type + '\')"' +
+        ' ondblclick="' + open + '"' +
+        ' oncontextmenu="fmContextMenu(event, \'' + esc(e.path) + '\', \'' + e.type + '\')">' +
+        '<span class="fm2-icon">' + icon + "</span>" +
+        '<span class="fm2-name" title="' + esc(e.name) + '">' + esc(e.name) + "</span>" +
+        '<span class="fm2-date">' + mtime + "</span>" +
+        '<span class="fm2-size">' + size + "</span>" +
+        '<button class="fm2-rowmenu" onclick="fmToggleRowMenu(event, \'' + esc(e.path) + '\', \'' + e.type + '\')" aria-label="menu">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>' +
+        "</button>" +
         "</div>"
       );
     })
     .join("");
 }
 
+function fmOpenCall(e) {
+  const p = esc(e.path);
+  return e.type === "directory" ? "fmNavigateTo('" + p + "')" : "fmEditFile('" + p + "')";
+}
+
+function fmRenderHeadRow() {
+  const head = document.getElementById("fmHeadRow");
+  if (!head) return;
+  head.style.display = _fmView === "list" ? "" : "none";
+  const arrow = (key) =>
+    _fmSort.key === key
+      ? '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-left:2px">' +
+        (_fmSort.dir > 0 ? '<polyline points="18 15 12 9 6 15"/>' : '<polyline points="6 9 12 15 18 9"/>') +
+        "</svg>"
+      : "";
+  head.querySelector(".fm2-col-name").innerHTML =
+    t("fm_col_name") + arrow("name");
+  head.querySelector(".fm2-col-date").innerHTML =
+    t("fm_col_modified") + arrow("date");
+  head.querySelector(".fm2-col-size").innerHTML =
+    t("fm_col_size") + arrow("size");
+}
+
+// ── 选择（桌面：单击选中，Ctrl 加选；移动端：直接打开，⋮ 出菜单） ──
+
+export function fmRowClick(event, path, type) {
+  if (path === "..") return; // 上级目录条目仅作导航快捷方式
+  if (event.ctrlKey || event.metaKey) {
+    event.stopPropagation();
+    if (_fmSelection.has(path)) _fmSelection.delete(path);
+    else _fmSelection.add(path);
+    fmRender();
+    return;
+  }
+  // 移动端：单击即打开（桌面靠双击打开，单击仅选中）
+  if (window.innerWidth <= 768) {
+    if (type === "directory") fmNavigateTo(path);
+    else fmEditFile(path);
+    return;
+  }
+  // 桌面单击：单选（替换选择）
+  _fmSelection = new Set([path]);
+  fmRender();
+}
+
+function fmSelectedPaths() {
+  return Array.from(_fmSelection);
+}
+
+export function fmClearSelection() {
+  _fmSelection = new Set();
+  fmUpdateSelBar();
+  document
+    .querySelectorAll("#fmFileList .selected")
+    .forEach((el) => el.classList.remove("selected"));
+}
+
+export function fmUpdateSelBar() {
+  const bar = document.getElementById("fmSelBar");
+  if (!bar) return;
+  const n = _fmSelection.size;
+  bar.style.display = n > 0 ? "" : "none";
+  if (n === 0) return;
+  const count = document.getElementById("fmSelCount");
+  if (count)
+    count.textContent = t("fm_selected_count").replace("{n}", n);
+  const dl = document.getElementById("fmSelDownload");
+  if (dl) {
+    // 仅选中单个文件时提供下载（多选/目录隐藏）
+    const entry = n === 1 ? _fmEntries.find((e) => e.path === fmSelectedPaths()[0]) : null;
+    dl.style.display = entry && entry.type !== "directory" ? "" : "none";
+  }
+}
+
+export async function fmDeleteSelected() {
+  const paths = fmSelectedPaths();
+  if (paths.length === 0) return;
+  const ok = await confirm2(
+    t("delete"),
+    t("delete_confirm") + " (" + paths.length + ")",
+  );
+  if (!ok) return;
+  const d = await api("/api/files/delete", {
+    method: "POST",
+    body: JSON.stringify({ paths }),
+  });
+  if (d && d.success) {
+    toast(t("delete_success"), "ok");
+    fmClearSelection();
+    fmBrowse(_fmCurrentPath);
+  } else {
+    toast(d?.error || t("delete_failed"), "er");
+  }
+}
+
+export function fmDownloadSelected() {
+  const paths = fmSelectedPaths();
+  if (paths.length === 1) fmDownload(paths[0]);
+}
+
+export async function fmCompressSelected() {
+  const paths = fmSelectedPaths();
+  if (paths.length === 0) return;
+  await fmCompressPaths(paths);
+}
+
+// ── 行菜单（右键 / 移动端 ⋮） ──
+
+export function fmToggleRowMenu(event, path, type) {
+  event.stopPropagation();
+  event.preventDefault();
+  // 移动端 ⋮：菜单贴屏幕底部成 bottom-sheet
+  fmShowContextMenu(event, path, type, window.innerWidth <= 768);
+}
+
 export function fmContextMenu(event, path, type) {
   event.preventDefault();
   event.stopPropagation();
+  fmShowContextMenu(event, path, type, false);
+}
+
+function fmShowContextMenu(event, path, type, bottomSheet) {
   if (_fmContextMenu) _fmContextMenu.remove();
 
   const isDir = type === "directory";
   const menu = document.createElement("div");
-  menu.className = "fm-context-menu";
-  menu.style.left = event.clientX + "px";
-  menu.style.top = event.clientY + "px";
+  menu.className =
+    "fm-context-menu" + (bottomSheet ? " fm-ctx-sheet" : "");
 
   let items = "";
   if (isDir) {
@@ -203,8 +383,8 @@ export function fmContextMenu(event, path, type) {
     );
   } else {
     items += fmCtxItem(
-      t("files"),
-      '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+      t("edit"),
+      '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
       "fmEditFile('" + esc(path) + "')",
     );
     items += fmCtxItem(
@@ -213,18 +393,10 @@ export function fmContextMenu(event, path, type) {
       "fmDownload('" + esc(path) + "')",
     );
   }
-  items += '<div class="fm-ctx-sep"></div>';
-  if (!_fmIsWindows) {
-    items += fmCtxItem(
-      t("permissions"),
-      '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>',
-      "fmChmod('" + esc(path) + "')",
-    );
-  }
   items += fmCtxItem(
-    t("rename_label"),
-    '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/>',
-    "fmRename('" + esc(path) + "')",
+    t("compress"),
+    '<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/>',
+    "fmCompressPaths(['" + esc(path) + "'], true)",
   );
   const fname = path.split("/").pop().toLowerCase();
   if (
@@ -242,6 +414,19 @@ export function fmContextMenu(event, path, type) {
     );
   }
   items += '<div class="fm-ctx-sep"></div>';
+  if (!_fmIsWindows) {
+    items += fmCtxItem(
+      t("permissions"),
+      '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>',
+      "fmChmod('" + esc(path) + "')",
+    );
+  }
+  items += fmCtxItem(
+    t("rename_label"),
+    '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/>',
+    "fmRename('" + esc(path) + "')",
+  );
+  items += '<div class="fm-ctx-sep"></div>';
   items +=
     '<div class="fm-ctx-item danger" onclick="fmDelete(\'' +
     esc(path) +
@@ -252,6 +437,15 @@ export function fmContextMenu(event, path, type) {
   menu.innerHTML = items;
   document.body.appendChild(menu);
   _fmContextMenu = menu;
+
+  if (bottomSheet) {
+    menu.style.left = "";
+    menu.style.top = "";
+  } else {
+    const r = menu.getBoundingClientRect();
+    menu.style.left = Math.min(event.clientX, window.innerWidth - r.width - 8) + "px";
+    menu.style.top = Math.min(event.clientY, window.innerHeight - r.height - 8) + "px";
+  }
 
   const close = () => {
     menu.remove();
@@ -273,6 +467,8 @@ export function fmCtxItem(label, svgPath, onclick) {
   );
 }
 
+// ── 编辑器模态窗 ──
+
 export async function fmEditFile(path) {
   const d = await api("/api/files/read?path=" + encodeURIComponent(path));
   if (!d) return;
@@ -286,9 +482,12 @@ export async function fmEditFile(path) {
   _fmEditPath = path;
   _fmDirty = false;
   const overlay = document.getElementById("fmEditorOv");
-  document.getElementById("fmEditorTitle").textContent = path;
-  document.getElementById("fmEditorStatus").textContent = "";
-
+  const name = path.split("/").pop();
+  document.getElementById("fmEditorTitle").textContent = name;
+  document.getElementById("fmEditorPath").textContent =
+    path === name ? "/" : path.slice(0, path.length - name.length - 1);
+  const st = document.getElementById("fmEditorStatus");
+  st.textContent = "";
   const container = document.getElementById("fmEditorContainer");
   if (typeof CodeMirror !== "undefined") {
     if (_fmEditor) _fmEditor.toTextArea();
@@ -311,8 +510,8 @@ export async function fmEditFile(path) {
     });
     _fmEditor.on("change", () => {
       _fmDirty = true;
-      document.getElementById("fmEditorStatus").textContent = "●";
-      document.getElementById("fmEditorStatus").style.color = "var(--wr-c)";
+      st.textContent = "●";
+      st.style.color = "var(--wr-c)";
     });
     _fmEditor.setSize("100%", "100%");
   } else {
@@ -322,8 +521,8 @@ export async function fmEditFile(path) {
       "</textarea>";
     document.getElementById("fmFallbackEditor").addEventListener("input", () => {
       _fmDirty = true;
-      document.getElementById("fmEditorStatus").textContent = "●";
-      document.getElementById("fmEditorStatus").style.color = "var(--wr-c)";
+      st.textContent = "●";
+      st.style.color = "var(--wr-c)";
     });
   }
   overlay.classList.add("show");
@@ -343,10 +542,11 @@ export async function fmSaveFile() {
     method: "PUT",
     body: JSON.stringify({ path: _fmEditPath, content }),
   });
+  const st = document.getElementById("fmEditorStatus");
   if (d && d.success) {
     _fmDirty = false;
-    document.getElementById("fmEditorStatus").textContent = t("file_saved");
-    document.getElementById("fmEditorStatus").style.color = "var(--ok-c)";
+    st.textContent = t("file_saved");
+    st.style.color = "var(--ok-c)";
     toast(t("file_saved"), "ok");
   } else {
     toast(d?.error || t("file_save_failed"), "er");
@@ -370,6 +570,8 @@ export async function fmCloseEditor(force) {
   _fmEditPath = "";
   _fmDirty = false;
 }
+
+// ── 增删改上传 ──
 
 export function fmDownload(path) {
   const tk = localStorage.getItem(TK);
@@ -441,6 +643,10 @@ export async function fmNewFolder() {
 
 export function fmUpload() {
   document.getElementById("fmUploadInput").click();
+}
+
+export function fmUploadFolder() {
+  document.getElementById("fmUploadFolderInput").click();
 }
 
 export async function fmDoUpload(input) {
@@ -546,18 +752,28 @@ document.addEventListener("keydown", function (e) {
     e.preventDefault();
     fmSaveFile();
   }
-});;
+});
 
+// 压缩：优先压缩选区，无选区时压缩全部；download 压缩产物
 export async function fmCompress() {
-  if (!authed) return showLogin();
-  const allRows = document.querySelectorAll("#fmFileList .fm-file-card");
-  if (allRows.length === 0) {
+  const paths =
+    _fmSelection.size > 0
+      ? fmSelectedPaths()
+      : fmSortedEntries().map((e) => e.path);
+  if (paths.length === 0) {
     toast(t("no_data"), "");
     return;
   }
+  await fmCompressPaths(paths);
+}
+
+export async function fmCompressPaths(paths, keepName) {
+  const defaultName = "archive.zip";
   const archiveName = await showModal(
     t("compress"),
-    '<input type="text" id="fmCompressName" class="form-input" value="archive.zip" style="width:100%">',
+    '<input type="text" id="fmCompressName" class="form-input" value="' +
+      defaultName +
+      '" style="width:100%">',
     [
       { label: t("cancel"), value: null },
       { label: t("ok"), value: "ok", primary: true },
@@ -565,15 +781,7 @@ export async function fmCompress() {
   );
   if (!archiveName) return;
   const name =
-    document.getElementById("fmCompressName")?.value?.trim() || "archive.zip";
-  const paths = [];
-  allRows.forEach((row) => {
-    const nameEl = row.querySelector(".fm-card-name");
-    if (nameEl) {
-      const n = nameEl.textContent;
-      paths.push(_fmCurrentPath === "." ? n : _fmCurrentPath + "/" + n);
-    }
-  });
+    document.getElementById("fmCompressName")?.value?.trim() || defaultName;
   if (paths.length === 0) return;
   const resp = await fetch(API + "/api/files/compress", {
     method: "POST",
@@ -592,6 +800,7 @@ export async function fmCompress() {
     a.click();
     URL.revokeObjectURL(url);
     toast(t("action_completed"), "ok");
+    fmClearSelection();
     fmBrowse(_fmCurrentPath);
   } else {
     const err = await resp.json().catch(() => ({}));
@@ -613,9 +822,7 @@ export async function fmDecompress(path) {
   }
 }
 
-
-
-// ── 文件编辑器：Esc / 点击遮罩关闭（含未保存确认）──
+// ── 文件编辑器：Esc / 点击遮罩关闭（含未保存确认） ──
 document.addEventListener("keydown", function (e) {
   if (e.key !== "Escape") return;
   const ov = document.getElementById("fmEditorOv");
