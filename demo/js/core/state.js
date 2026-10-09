@@ -206,6 +206,10 @@ window._fmEditPath = "";
 window._fmDirty = false;
 window._fmContextMenu = null;
 window._fmSearchTimer = undefined;
+window._fmEntries = [];
+window._fmSelection = new Set();
+window._fmView = "list";
+window._fmSort = { key: "name", dir: 1 };
 window.FM_EXT_COLORS = {
   py: "#4fa6de",
   pyw: "#4fa6de",
