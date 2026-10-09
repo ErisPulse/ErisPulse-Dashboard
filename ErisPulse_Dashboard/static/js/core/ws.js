@@ -131,7 +131,13 @@ export function wsConnect() {
           (_tasks.find((t) => t.id === m.task_id) || {}).name ||
           "";
         if (m.status === "running") {
-          addOrUpdateTask(m.task_id, pkg, "running", m.output || []);
+          // 心跳消息不带 output：undefined 让 addOrUpdateTask 保留已有输出
+          addOrUpdateTask(
+            m.task_id,
+            pkg,
+            "running",
+            m.output && m.output.length ? m.output : undefined,
+          );
         } else if (m.status === "success") {
           _installTaskIds.delete(m.task_id);
           addOrUpdateTask(m.task_id, pkg, "success", m.output || []);
@@ -173,15 +179,34 @@ export function wsConnect() {
       } else if (m.type === "module_changed") {
         if (m.data && m.data.action === "installed") {
           toast(m.data.name + ": " + t("module_loaded_dynamic"), "ok");
+          // 活动中心：安装完成落一条成功记录
+          addOrUpdateTask(
+            "mod:installed:" + m.data.name,
+            m.data.name + " · " + t("module_loaded_dynamic"),
+            "success",
+            [],
+          );
           // 新装模块若声明了配置，稍后聚合弹窗引导配置
           queueInstallGuide(m.data.name, "module");
         }
         if (m.data && m.data.action === "installed_adapter") {
           // 新适配器注册并启动完成：有配置则弹窗引导，无配置补安装成功 toast
           queueInstallGuide(m.data.name, "adapter");
+          addOrUpdateTask(
+            "mod:adapter:" + m.data.name,
+            m.data.name + " · " + t("module_loaded_dynamic"),
+            "success",
+            [],
+          );
         }
         if (m.data && m.data.action === "upgraded") {
           toast(t("pkg_upgrade_success"), "ok");
+          addOrUpdateTask(
+            "mod:upgraded",
+            t("pkg_upgrade_success"),
+            "success",
+            [],
+          );
           loadPackages(true);
         }
         loadModules();

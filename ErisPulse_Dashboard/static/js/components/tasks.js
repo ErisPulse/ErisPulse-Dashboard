@@ -101,6 +101,10 @@ export function renderTaskPanel() {
         statusIcon =
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
         statusClass = "task-success";
+      } else if (t.status === "info") {
+        statusIcon =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+        statusClass = "task-info";
       } else {
         statusIcon =
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
@@ -109,13 +113,20 @@ export function renderTaskPanel() {
       var output = (t.output || []).slice(-20).join("\n");
       var detail = t.status === "error" && t.errorMsg ? "\n" + t.errorMsg : "";
       var expanded = _expandedTasks.has(t.id) ? " task-expanded" : "";
+      // info 条目整行可点（跳转目标），普通条目点击展开输出
+      var rowClick =
+        t.status === "info"
+          ? 'onclick="openTaskTarget(\'' + esc(t.id) + '\')"'
+          : 'onclick="toggleTaskExpand(this)"';
       return (
         '<div class="task-item ' +
         statusClass +
         expanded +
         '" data-task-id="' +
         esc(t.id) +
-        '" onclick="toggleTaskExpand(this)">' +
+        '" ' +
+        rowClick +
+        ">" +
         '<div class="task-item-hd">' +
         '<span class="task-icon">' +
         statusIcon +
@@ -147,6 +158,16 @@ export function toggleTaskExpand(el) {
     _expandedTasks.add(taskId);
   } else {
     _expandedTasks.delete(taskId);
+  }
+}
+
+// info 条目跳转目标（活动中心入口）
+export function openTaskTarget(id) {
+  if (id === "fw-update-available") {
+    closeTaskPanel();
+    showSettings();
+    var btn = document.querySelector('.pkg-tab[data-tab="settings-update"]');
+    if (btn) switchSettingsTab("settings-update", btn);
   }
 }
 

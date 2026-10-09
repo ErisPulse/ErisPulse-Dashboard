@@ -942,3 +942,14 @@
     color: color-mix(in srgb, var(--accent) 75%, var(--tx-p));
     border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
 }
+
+/* 活动中心 info 条目：可点击跳转 */
+.task-item.task-info {
+    cursor: pointer;
+}
+.task-item.task-info .task-icon {
+    color: var(--accent);
+}
+.task-item.task-info:hover {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
