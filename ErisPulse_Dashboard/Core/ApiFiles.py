@@ -473,12 +473,43 @@ class ApiFilesMixin:
             name_lower = target.name.lower()
             if name_lower.endswith(".zip"):
                 with zipfile.ZipFile(target, "r") as zf:
+                    # 防 Zip Slip：拒绝绝对路径与 .. 上跳的条目
+                    for member in zf.namelist():
+                        normalized = member.replace("\\", "/")
+                        if (
+                            normalized.startswith("/")
+                            or ".." in normalized.split("/")
+                        ):
+                            return JSONResponse(
+                                {"error": "Unsafe archive entry: " + member},
+                                status_code=400,
+                            )
                     zf.extractall(dest)
             elif name_lower.endswith(
                 (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".tar")
             ):
                 with tarfile.open(target, "r:*") as tf:
-                    tf.extractall(dest)
+                    # 3.12+ 显式 data 过滤器（拒绝绝对路径/..逃逸/设备文件）；
+                    # 旧版本回退为逐成员校验
+                    try:
+                        tf.extractall(dest, filter="data")
+                    except TypeError:
+                        for member in tf.getmembers():
+                            name = member.name.replace("\\", "/")
+                            if (
+                                name.startswith("/")
+                                or ".." in name.split("/")
+                                or member.issym()
+                                or member.islnk()
+                            ):
+                                return JSONResponse(
+                                    {
+                                        "error": "Unsafe archive entry: "
+                                        + member.name
+                                    },
+                                    status_code=400,
+                                )
+                        tf.extractall(dest)
             else:
                 return JSONResponse(
                     {"error": "Unsupported archive format. Use .zip, .tar.gz, .tgz"},
