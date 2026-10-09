@@ -134,7 +134,6 @@ window.MERGED_PAGE_TABS = {
     { id: "settings-appearance", label: "settings_appearance", i18n: "settings_appearance" },
     { id: "settings-behavior", label: "settings_behavior", i18n: "settings_behavior" },
     { id: "settings-general", label: "settings_tab_general", i18n: "settings_tab_general" },
-    { id: "settings-security", label: "settings_security", i18n: "settings_security" },
     { id: "settings-update", label: "fw_update_title", i18n: "fw_update_title" },
     { id: "settings-about", label: "about", i18n: "about" },
   ],

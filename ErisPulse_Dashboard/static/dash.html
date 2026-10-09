@@ -37,29 +37,28 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/theme/dracula.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/security.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=123" />
-        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=123" />
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=124" />
+        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=124" />
                 <script src="/Dashboard/static/res/vendor/marked/marked.min.js"></script>
     </head>
 
@@ -4722,18 +4721,6 @@
                                 ></span>
                             </button>
                             <button
-                                class="view-btn pkg-tab"
-                                data-tab="settings-security"
-                                onclick="
-                                    switchSettingsTab(
-                                        'settings-security',
-                                        this,
-                                    )
-                                "
-                            >
-                                <span data-i18n="settings_security"></span>
-                            </button>
-                            <button
                                 class="view-btn pkg-tab has-update-dot"
                                 id="settingsUpdateTab"
                                 data-tab="settings-update"
@@ -5006,6 +4993,35 @@
                                                 </div>
                                                 <div class="settings-item-control">
                                                     <label class="switch"><input type="checkbox" id="settingsPrivacyMode" onchange="applyPrivacyMode(this.checked)"/><span class="switch-slider"></span></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="generalTokenCard"></div>
+
+                                    <div class="card settings-card">
+                                        <div class="card-header">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                            <span data-i18n="settings_login_lockout"></span>
+                                        </div>
+                                        <div class="settings-card-body">
+                                            <div class="settings-item">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="login_lockout_enable"></div>
+                                                    <div class="settings-item-desc" data-i18n="login_lockout_enable_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <label class="switch"><input type="checkbox" id="settingsLoginLockout" onchange="setLoginLockoutEnabled(this.checked)"/><span class="switch-slider"></span></label>
+                                                </div>
+                                            </div>
+                                            <div class="settings-item" style="border-top:none">
+                                                <div>
+                                                    <div class="settings-item-label" data-i18n="login_lockout_params"></div>
+                                                    <div class="settings-item-desc" id="loginLockoutSummary" data-i18n="login_lockout_params_desc"></div>
+                                                </div>
+                                                <div class="settings-item-control">
+                                                    <button class="btn btn-secondary btn-sm" onclick="openLoginLockoutModal()" data-i18n="login_lockout_configure"></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -5485,22 +5501,9 @@
                         </div>
                         <!-- settings-behavior-tab -->
 
-                        <div id="settings-security-tab" class="tab-section" style="display: none">
-                            <div class="settings-grid">
-                                <div class="settings-col">
-                                    <div id="secSslCard" class="sec-item"></div>
-                                    <div id="secAccessCard" class="sec-item"></div>
-                                    <div id="secProxyCard" class="sec-item"></div>
-                                    <div id="secRouterCard" class="sec-item"></div>
-                                    <div id="secAuditCard" class="sec-item"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- settings-security-tab -->
-
                         <div id="settings-update-tab" class="tab-section">
                             <div class="fw-update-card card">
-                                <!-- Hero: 状态徽章 + 版本流 -->
+                                <!-- Hero: 状态徽章为主，版本作行内小字 -->
                                 <div class="fw-hero">
                                     <div class="fw-hero-top">
                                         <span class="fw-status-badge" id="fwStatusBadge">
@@ -5522,32 +5525,22 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="fw-ver-flow">
-                                        <div class="fw-ver-block">
-                                            <span
-                                                class="fw-ver-label"
-                                                data-i18n="fw_current_version"
-                                            ></span>
-                                            <span
-                                                class="fw-ver-value"
-                                                id="fwCurrentVer"
-                                                >-</span
-                                            >
-                                        </div>
-                                        <div class="fw-ver-arrow">
-                                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                <polyline points="12 5 19 12 12 19"></polyline>
-                                            </svg>
-                                        </div>
+                                    <div class="fw-hero-nums">
                                         <div class="fw-ver-block">
                                             <span
                                                 class="fw-ver-label"
                                                 data-i18n="fw_latest_version"
                                             ></span>
+                                            <span class="fw-ver-big" id="fwLatestVer"
+                                                >-</span
+                                            >
+                                        </div>
+                                        <div class="fw-ver-block fw-ver-block-sub">
                                             <span
-                                                class="fw-ver-value fw-ver-latest"
-                                                id="fwLatestVer"
+                                                class="fw-ver-label"
+                                                data-i18n="fw_current_version"
+                                            ></span>
+                                            <span class="fw-ver-cur" id="fwCurrentVer"
                                                 >-</span
                                             >
                                         </div>
@@ -6952,11 +6945,11 @@
         <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=123"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=123"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=123"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=123"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=123"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=123"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=124"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=124"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=124"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=124"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=124"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=124"></script>
     </body>
 </html>

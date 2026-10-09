@@ -289,11 +289,28 @@ class StatusMixin:
     # ════════════════ API · 认证与系统状态 ════════════════
 
     async def _api_auth(self, request: Request) -> JSONResponse:
-        if self._login_fails >= 10 and time.time() - self._last_login_fail > 60:
+        # 登录失败锁定参数可配置（Dashboard.login_lockout_*，见设置-通用）
+        cfg = self._load_config()
+        lockout_enabled = cfg.get("login_lockout_enabled", True)
+        max_fails = int(cfg.get("login_lockout_max_fails", 10) or 10)
+        window = int(cfg.get("login_lockout_window", 60) or 60)
+        if (
+            lockout_enabled
+            and self._login_fails >= max_fails
+            and time.time() - self._last_login_fail > window
+        ):
             self._login_fails = 0
-        if self._login_fails >= 10:
+        if lockout_enabled and self._login_fails >= max_fails:
+            retry_after = max(
+                1, int(window - (time.time() - self._last_login_fail))
+            )
             return JSONResponse(
-                {"success": False, "error": "Too many attempts, try again later"},
+                {
+                    "success": False,
+                    "error": "Too many attempts, try again later",
+                    "error_code": "login_locked",
+                    "retry_after": retry_after,
+                },
                 status_code=429,
             )
         body = await request.json()

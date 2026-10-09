@@ -163,7 +163,7 @@ export function switchSettingsTab(tab, btn) {
   var loaders = {
     "settings-update": loadFrameworkVersions,
     "settings-about": loadAbout,
-    "settings-security": loadSecurity,
+    "settings-general": loadGeneralTab,
   };
   if (loaders[tab]) loaders[tab]();
   if (tab === "settings-update") {
@@ -1129,4 +1129,263 @@ export function syncThemePackUI() {
   var pack = null;
   try { pack = JSON.parse(localStorage.getItem('ep_theme_pack') || 'null'); } catch (e) {}
   el.textContent = pack && pack.name ? pack.name : t('theme_pack_none');
+}
+
+// ════════════════ 通用：访问令牌（原安全页迁移） ════════════════
+
+export function loadGeneralTab() {
+  loadAccessTokenCard();
+  loadLoginLockout();
+}
+
+// ── 令牌生成艺术：以令牌为种子确定性生成（p5 风点阵+流线），换令牌即换图案 ──
+function _tokenArtSvg(tk) {
+  // xmur3 字符串散列 → 32 位种子
+  var h = 1779033703 ^ tk.length;
+  for (var i = 0; i < tk.length; i++) {
+    h = Math.imul(h ^ tk.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  var seed = (h ^= h >>> 16) >>> 0;
+  function rnd() {
+    seed = (seed + 0x6d2b79f5) | 0;
+    var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  var W = 340, H = 84, s = "";
+  // 点阵：半径噪声波动，少量彩色点做视觉锚
+  var cols = 22, rows = 5;
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      var x = 14 + c * ((W - 28) / (cols - 1));
+      var y = 14 + r * ((H - 28) / (rows - 1));
+      var rad = 0.8 + rnd() * 2.1;
+      var roll = rnd();
+      var fill = "var(--tx-t)";
+      var op = 0.16 + rnd() * 0.2;
+      if (roll > 0.93) {
+        fill = "var(--accent)";
+        op = 0.85;
+        rad = 2.3 + rnd() * 1.6;
+      } else if (roll > 0.87) {
+        fill = "var(--ok-c)";
+        op = 0.6;
+      } else if (roll > 0.81) {
+        fill = "var(--wr-c)";
+        op = 0.55;
+      }
+      s +=
+        '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+        '" r="' + rad.toFixed(2) + '" fill="' + fill +
+        '" opacity="' + op.toFixed(2) + '"/>';
+    }
+  }
+  // 两条 p5 味的游走曲线
+  for (var l = 0; l < 2; l++) {
+    var d = "M -6 " + (16 + rnd() * (H - 32)).toFixed(1);
+    var px = -6;
+    while (px < W + 6) {
+      px += 24 + rnd() * 22;
+      var mx = (px - 12).toFixed(1);
+      var my = (10 + rnd() * (H - 20)).toFixed(1);
+      var ex = Math.min(px, W + 6).toFixed(1);
+      var ey = (10 + rnd() * (H - 20)).toFixed(1);
+      d += " S " + mx + " " + my + " " + ex + " " + ey;
+    }
+    var lc = l === 0 ? "var(--accent)" : "var(--wr-c)";
+    s +=
+      '<path d="' + d + '" fill="none" stroke="' + lc +
+      '" stroke-width="' + (1 + rnd() * 1.2).toFixed(2) +
+      '" opacity="0.45" stroke-linecap="round"/>';
+  }
+  return (
+    '<svg class="token-art" viewBox="0 0 ' + W + " " + H +
+    '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + "</svg>"
+  );
+}
+
+export function loadAccessTokenCard() {
+  var host = document.getElementById("generalTokenCard");
+  if (!host) return;
+  var tk = localStorage.getItem("__ep_tk__") || "";
+  var masked =
+    tk.length > 12
+      ? tk.slice(0, 6) + "••••••" + tk.slice(-4)
+      : "••••••";
+  host.innerHTML =
+    '<div class="card settings-card">' +
+    '<div class="card-header">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>' +
+    "<span>" +
+    esc(t("sec_token_title")) +
+    "</span>" +
+    "</div>" +
+    '<div class="settings-card-body">' +
+    '<div class="token-art-wrap" title="' + esc(t("sec_token_label")) + '">' +
+    _tokenArtSvg(tk) +
+    "</div>" +
+    '<div class="settings-item"><div>' +
+    '<div class="settings-item-label">' +
+    esc(t("sec_token_label")) +
+    "</div>" +
+    '<div class="settings-item-desc">' +
+    esc(t("sec_token_desc")) +
+    "</div>" +
+    "</div>" +
+    '<div class="settings-item-control">' +
+    "<code>" +
+    esc(masked) +
+    "</code>" +
+    "</div></div>" +
+    '<div class="settings-item" style="border-top:none">' +
+    '<div class="settings-item-control" style="display:flex;gap:8px;margin-left:0">' +
+    '<button class="btn btn-secondary btn-sm" onclick="copyAccessToken()">' +
+    esc(t("sec_copy")) +
+    "</button>" +
+    '<button class="btn btn-danger btn-sm" onclick="regenAccessToken()">' +
+    esc(t("sec_token_regen")) +
+    "</button>" +
+    "</div></div>" +
+    "</div></div>";
+}
+
+export function copyAccessToken() {
+  var tk = localStorage.getItem("__ep_tk__") || "";
+  if (!tk) return toast(t("unknown_error"), "er");
+  _copyToClipboard(tk);
+  toast(t("sec_copied"), "ok");
+}
+
+export function copyAccessTokenPreview() {
+  var el = document.getElementById("newTokenPreview");
+  if (!el) return;
+  _copyToClipboard(el.textContent);
+  toast(t("sec_copied"), "ok");
+}
+
+// ── 令牌重生成：预览 → 复制 → 确认应用（应用前旧令牌始终有效） ──
+function _randomAccessToken() {
+  var bytes = new Uint8Array(32);
+  if (window.crypto && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (var i = 0; i < 32; i++)
+      bytes[i] = Math.floor(Math.random() * 256);
+  }
+  var s = btoa(String.fromCharCode.apply(null, bytes));
+  return s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+export async function regenAccessToken() {
+  if (!authed) return showLogin();
+  // 步骤 1：本地生成新令牌并预览，用户复制确认前什么都不会发生
+  var newToken = _randomAccessToken();
+  var preview = await showModal(
+    t("sec_token_preview_title"),
+    '<div class="settings-item-desc" style="margin-bottom:10px">' +
+      esc(t("sec_token_preview_desc")) +
+      "</div>" +
+      '<pre class="settings-token-code" id="newTokenPreview">' +
+      esc(newToken) +
+      "</pre>" +
+      '<div style="margin-top:8px;text-align:right">' +
+      '<button class="btn btn-secondary btn-xs" onclick="copyAccessTokenPreview()">' +
+      esc(t("sec_copy")) +
+      "</button></div>",
+    [
+      { label: t("cancel"), value: "cancel" },
+      { label: t("sec_token_apply"), value: "apply", primary: true },
+    ],
+  );
+  if (preview !== "apply") return; // 取消：旧令牌继续有效，本次生成作废
+  // 步骤 2：应用（旧令牌立即失效）
+  var d = await api("/api/security/token/regenerate", {
+    method: "POST",
+    body: JSON.stringify({ token: newToken }),
+  });
+  if (!d || !d.success) return toast(d && d.error ? d.error : t("unknown_error"), "er");
+  localStorage.setItem("__ep_tk__", d.token);
+  toast(t("sec_token_regen_ok"), "ok");
+  loadAccessTokenCard();
+}
+
+// ════════════════ 通用：登录失败保护（配置存 Dashboard.login_lockout_*） ════════════════
+
+export async function loadLoginLockout() {
+  try {
+    var d = await api("/api/config");
+    var cfg = (d && d.config && d.config["Dashboard"]) || {};
+    var enabled = cfg.login_lockout_enabled !== false;
+    var maxFails = cfg.login_lockout_max_fails || 10;
+    var win = cfg.login_lockout_window || 60;
+    window._loginLockoutCfg = { max_fails: maxFails, window: win };
+    var sw = document.getElementById("settingsLoginLockout");
+    if (sw) sw.checked = enabled;
+    var sum = document.getElementById("loginLockoutSummary");
+    if (sum)
+      sum.textContent = t("login_lockout_params_desc")
+        .replace("{n}", maxFails)
+        .replace("{s}", win);
+  } catch (e) {}
+}
+
+export async function setLoginLockoutEnabled(on) {
+  var d = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({ key: "Dashboard.login_lockout_enabled", value: !!on }),
+  });
+  if (!d || !d.success) return toast(t("save_failed"), "er");
+  toast(on ? t("login_lockout_on") : t("login_lockout_off"), "ok");
+}
+
+export async function openLoginLockoutModal() {
+  var cfg = window._loginLockoutCfg || { max_fails: 10, window: 60 };
+  var html =
+    '<div class="settings-item-desc" style="margin-bottom:12px">' +
+    esc(t("login_lockout_modal_desc")) +
+    "</div>" +
+    '<div class="settings-item" style="margin-bottom:8px"><div>' +
+    '<div class="settings-item-label">' +
+    esc(t("login_lockout_max_fails")) +
+    "</div></div>" +
+    '<div class="settings-item-control">' +
+    '<input type="number" class="settings-input" id="lockoutMaxFails" min="3" max="100" value="' +
+    cfg.max_fails +
+    '" style="width:110px"/>' +
+    "</div></div>" +
+    '<div class="settings-item"><div>' +
+    '<div class="settings-item-label">' +
+    esc(t("login_lockout_window")) +
+    "</div></div>" +
+    '<div class="settings-item-control">' +
+    '<input type="number" class="settings-input" id="lockoutWindow" min="15" max="3600" value="' +
+    cfg.window +
+    '" style="width:110px"/>' +
+    "</div></div>";
+  var ok = await showModal(
+    t("login_lockout_modal_title"),
+    html,
+    [
+      { label: t("cancel"), value: false },
+      { label: t("save"), value: true, primary: true },
+    ],
+  );
+  if (!ok) return;
+  var mf = parseInt(document.getElementById("lockoutMaxFails").value, 10);
+  var win = parseInt(document.getElementById("lockoutWindow").value, 10);
+  if (!mf || mf < 3) mf = 3;
+  if (!win || win < 15) win = 15;
+  var r1 = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({ key: "Dashboard.login_lockout_max_fails", value: mf }),
+  });
+  var r2 = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({ key: "Dashboard.login_lockout_window", value: win }),
+  });
+  if (!r1 || !r1.success || !r2 || !r2.success)
+    return toast(t("save_failed"), "er");
+  toast(t("login_lockout_saved"), "ok");
+  loadLoginLockout();
 }
