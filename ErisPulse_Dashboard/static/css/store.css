@@ -174,10 +174,10 @@
 @keyframes pulse {
     0%,
     100% {
-        box-shadow: 0 0 0 0 rgba(180, 180, 80, 0.4);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--wr-c) 40%, transparent);
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(180, 180, 80, 0);
+        box-shadow: 0 0 0 6px transparent;
     }
 }
 
@@ -227,8 +227,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--wr-c, #f0ad4e);
-    border: 2px solid var(--bg, #fff);
+    background: var(--wr-c);
+    border: 2px solid var(--bg-p);
     animation: update-dot-pulse 1.8s ease-in-out infinite;
     display: none;
 }

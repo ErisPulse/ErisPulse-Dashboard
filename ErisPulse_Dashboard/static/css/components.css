@@ -199,23 +199,9 @@
 }
 
 .btn-danger {
-    background: #d32f2f;
+    background: var(--er-fill);
     color: #fff;
     border: none;
-}
-
-[data-theme="dark"] .btn-danger,
-[data-ui-style="eris"][data-theme="dark"] .btn-danger {
-    background: #ef5350;
-}
-
-@media (prefers-color-scheme: dark) {
-    [data-theme="auto"] .btn-danger {
-        background: #ef5350;
-    }
-    [data-ui-style="eris"][data-theme="auto"] .btn-danger {
-        background: #ef5350;
-    }
 }
 
 .btn-sm {
