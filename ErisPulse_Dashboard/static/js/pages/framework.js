@@ -663,10 +663,20 @@ export async function checkFwUpdateBadge() {
     var versions = d.versions || [];
     var latest = versions.length > 0 ? versions[0] : "";
     var hasUpdate = latest && cmpVer(latest, d.current) > 0;
-    if (!hasUpdate) return;
+    if (!hasUpdate) {
+      removeTask("fw-update-available");
+      return;
+    }
      
     document.getElementById("settingsBtn")?.classList.add("show-update");
     document.getElementById("settingsUpdateTab")?.classList.add("show-update");
+     
+    addOrUpdateTask(
+      "fw-update-available",
+      t("fw_popup_msg").replace("{latest}", latest),
+      "info",
+      [],
+    );
      
     var popupText = document.getElementById("fwUpdatePopupText");
     if (popupText) {
@@ -1106,6 +1116,7 @@ export function onFrameworkUpdateSuccess(version) {
       t("fw_install_update") +
       "</span>";
   }
+  removeTask("fw-update-available");
   loadFrameworkVersions();
   showUpdateHint("framework", version);
   toast(t("fw_update_done"), "ok");
