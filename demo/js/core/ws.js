@@ -131,7 +131,13 @@ export function wsConnect() {
           (_tasks.find((t) => t.id === m.task_id) || {}).name ||
           "";
         if (m.status === "running") {
-          addOrUpdateTask(m.task_id, pkg, "running", m.output || []);
+           
+          addOrUpdateTask(
+            m.task_id,
+            pkg,
+            "running",
+            m.output && m.output.length ? m.output : undefined,
+          );
         } else if (m.status === "success") {
           _installTaskIds.delete(m.task_id);
           addOrUpdateTask(m.task_id, pkg, "success", m.output || []);
@@ -174,14 +180,33 @@ export function wsConnect() {
         if (m.data && m.data.action === "installed") {
           toast(m.data.name + ": " + t("module_loaded_dynamic"), "ok");
            
+          addOrUpdateTask(
+            "mod:installed:" + m.data.name,
+            m.data.name + " · " + t("module_loaded_dynamic"),
+            "success",
+            [],
+          );
+           
           queueInstallGuide(m.data.name, "module");
         }
         if (m.data && m.data.action === "installed_adapter") {
            
           queueInstallGuide(m.data.name, "adapter");
+          addOrUpdateTask(
+            "mod:adapter:" + m.data.name,
+            m.data.name + " · " + t("module_loaded_dynamic"),
+            "success",
+            [],
+          );
         }
         if (m.data && m.data.action === "upgraded") {
           toast(t("pkg_upgrade_success"), "ok");
+          addOrUpdateTask(
+            "mod:upgraded",
+            t("pkg_upgrade_success"),
+            "success",
+            [],
+          );
           loadPackages(true);
         }
         loadModules();
