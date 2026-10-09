@@ -50,11 +50,17 @@ class PipOpsMixin:
             )
             combined_lines = []
 
+            last_push = [time.time()]
+
             def read_pipe(pipe):
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                        if len(combined_lines) % 5 == 0:
+                         
+                         
+                        now = time.time()
+                        if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
+                            last_push[0] = now
                             self._safe_broadcast(
                                 {
                                     "type": "install_progress",
@@ -68,6 +74,21 @@ class PipOpsMixin:
                     pass
                 pipe.close()
 
+            def _pip_heartbeat():
+                 
+                while proc.poll() is None:
+                    self._safe_broadcast(
+                        {
+                            "type": "install_progress",
+                            "task_id": task_id,
+                            "status": "running",
+                            "packages": packages,
+                        }
+                    )
+                    time.sleep(10)
+
+            hb = threading.Thread(target=_pip_heartbeat, daemon=True)
+            hb.start()
             t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
             t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
             t_out.start()
@@ -268,11 +289,17 @@ class PipOpsMixin:
             )
             combined_lines = []
 
+            last_push = [time.time()]
+
             def read_pipe(pipe):
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                        if len(combined_lines) % 5 == 0:
+                         
+                         
+                        now = time.time()
+                        if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
+                            last_push[0] = now
                             self._safe_broadcast(
                                 {
                                     "type": "install_progress",
@@ -286,6 +313,21 @@ class PipOpsMixin:
                     pass
                 pipe.close()
 
+            def _pip_heartbeat():
+                 
+                while proc.poll() is None:
+                    self._safe_broadcast(
+                        {
+                            "type": "install_progress",
+                            "task_id": task_id,
+                            "status": "running",
+                            "packages": packages,
+                        }
+                    )
+                    time.sleep(10)
+
+            hb = threading.Thread(target=_pip_heartbeat, daemon=True)
+            hb.start()
             t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
             t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
             t_out.start()
@@ -401,11 +443,17 @@ class PipOpsMixin:
             )
             combined_lines: list[str] = []
 
+            last_push = [time.time()]
+
             def read_pipe(pipe):
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                        if len(combined_lines) % 5 == 0:
+                         
+                         
+                        now = time.time()
+                        if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
+                            last_push[0] = now
                             self._safe_broadcast(
                                 {
                                     "type": "install_progress",
@@ -419,6 +467,21 @@ class PipOpsMixin:
                     pass
                 pipe.close()
 
+            def _pip_heartbeat():
+                 
+                while proc.poll() is None:
+                    self._safe_broadcast(
+                        {
+                            "type": "install_progress",
+                            "task_id": task_id,
+                            "status": "running",
+                            "packages": packages,
+                        }
+                    )
+                    time.sleep(10)
+
+            hb = threading.Thread(target=_pip_heartbeat, daemon=True)
+            hb.start()
             t_out = threading.Thread(target=read_pipe, args=(proc.stdout,))
             t_err = threading.Thread(target=read_pipe, args=(proc.stderr,))
             t_out.start()
