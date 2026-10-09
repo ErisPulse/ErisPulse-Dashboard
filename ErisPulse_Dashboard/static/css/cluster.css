@@ -108,7 +108,7 @@
 }
 .node-dot-online {
     background: var(--ok-c);
-    box-shadow: 0 0 4px rgba(46, 125, 50, 0.3);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--ok-c) 30%, transparent);
 }
 .node-dot-offline {
     background: var(--er-c);
