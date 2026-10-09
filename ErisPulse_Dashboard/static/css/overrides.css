@@ -1224,9 +1224,16 @@ input, textarea, select, button,
 }
 
  
+
+
 @media (max-width: 720px) {
     .sidebar {
         background: var(--bg-s) !important;
+        box-shadow: none;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .sidebar.open {
         box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
     }
 }
