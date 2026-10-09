@@ -60,6 +60,7 @@ class PipOpsMixin:
                                     "type": "install_progress",
                                     "task_id": task_id,
                                     "status": "running",
+                                    "packages": packages,
                                     "output": combined_lines[-10:],
                                 }
                             )
@@ -83,6 +84,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": packages,
                         "message": "Install timed out (5 min)",
                     }
                 )
@@ -99,6 +101,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "success",
+                        "packages": packages,
                         "output": combined_lines,
                     }
                 )
@@ -114,6 +117,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": packages,
                         "output": combined_lines,
                         "message": "\n".join(combined_lines[-10:])
                         if combined_lines
@@ -128,6 +132,7 @@ class PipOpsMixin:
                     "type": "install_progress",
                     "task_id": task_id,
                     "status": "error",
+                    "packages": packages,
                     "message": str(e),
                 }
             )
@@ -172,6 +177,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "success",
+                        "packages": [package_name],
                         "output": proc.stdout.splitlines()[-20:],
                     }
                 )
@@ -193,6 +199,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": [package_name],
                         "message": proc.stderr[-500:]
                         if proc.stderr
                         else "Uninstall failed",
@@ -210,6 +217,7 @@ class PipOpsMixin:
                     "type": "install_progress",
                     "task_id": task_id,
                     "status": "error",
+                    "packages": [package_name],
                     "message": str(e),
                 }
             )
@@ -270,6 +278,7 @@ class PipOpsMixin:
                                     "type": "install_progress",
                                     "task_id": task_id,
                                     "status": "running",
+                                    "packages": packages,
                                     "output": combined_lines[-10:],
                                 }
                             )
@@ -293,6 +302,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": packages,
                         "message": "Upgrade timed out (5 min)",
                     }
                 )
@@ -309,6 +319,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "success",
+                        "packages": packages,
                         "output": combined_lines,
                     }
                 )
@@ -330,6 +341,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": packages,
                         "output": combined_lines,
                         "message": "\n".join(combined_lines[-10:])
                         if combined_lines
@@ -344,6 +356,7 @@ class PipOpsMixin:
                     "type": "install_progress",
                     "task_id": task_id,
                     "status": "error",
+                    "packages": packages,
                     "message": str(e),
                 }
             )
@@ -398,6 +411,7 @@ class PipOpsMixin:
                                     "type": "install_progress",
                                     "task_id": task_id,
                                     "status": "running",
+                                    "packages": packages,
                                     "output": combined_lines[-10:],
                                 }
                             )
@@ -442,6 +456,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "success",
+                        "packages": [filename],
                         "output": all_lines[-50:],
                     }
                 )
@@ -461,6 +476,7 @@ class PipOpsMixin:
                         "type": "install_progress",
                         "task_id": task_id,
                         "status": "error",
+                        "packages": [filename],
                         "output": all_lines[-50:],
                         "message": "Install failed",
                     }
@@ -477,6 +493,7 @@ class PipOpsMixin:
                     "type": "install_progress",
                     "task_id": task_id,
                     "status": "error",
+                    "packages": [filename],
                     "message": str(e),
                 }
             )

@@ -9,6 +9,26 @@ function isFrameworkPkg(s) {
   var v = (s || "").trim().toLowerCase();
   return v === "erispulse" || v.indexOf("erispulse==") === 0;
 }
+// 框架更新意图（doFrameworkUpdate 发起时落盘）：安装中刷新页面会丢掉
+// 内存里的 _installTaskIds 映射，靠它仍能在 success 时辨认框架更新
+function getFwUpdateIntent(taskId) {
+  try {
+    var raw = localStorage.getItem("ep_fw_task");
+    if (!raw) return null;
+    var intent = JSON.parse(raw);
+    if (!intent || !intent.task_id) return null;
+    if (taskId && intent.task_id !== taskId) return null;
+    return intent;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearFwUpdateIntent() {
+  try {
+    localStorage.removeItem("ep_fw_task");
+  } catch (e) {}
+}
 // Dashboard 更新完成后强制刷新（带时间戳绕过 HTML 缓存）
 function reloadAfterDashboardUpdate() {
   // 埋下持久化提示：刷新后展示"已自动重载模块，异常可重启"引导
@@ -107,7 +127,9 @@ export function wsConnect() {
       } else if (m.type === "install_progress") {
         const pkg =
           _installTaskIds.get(m.task_id) ||
-          (m.packages ? m.packages.join(", ") : "");
+          (m.packages ? m.packages.join(", ") : "") ||
+          (_tasks.find((t) => t.id === m.task_id) || {}).name ||
+          "";
         if (m.status === "running") {
           addOrUpdateTask(m.task_id, pkg, "running", m.output || []);
         } else if (m.status === "success") {
@@ -126,7 +148,12 @@ export function wsConnect() {
             // 升级的是框架：新代码需重启才能生效，给出重启引导
             var fwSpec =
               (m.packages || []).find((p) => isFrameworkPkg(p)) || pkg;
+            clearFwUpdateIntent();
             onFrameworkUpdateSuccess(fwSpec.split("==")[1] || "");
+          } else if (getFwUpdateIntent(m.task_id)) {
+            var fwIntent = getFwUpdateIntent(m.task_id);
+            clearFwUpdateIntent();
+            onFrameworkUpdateSuccess(fwIntent.version || "");
           } else {
             loadModules();
             loadPackages(true);
@@ -134,6 +161,7 @@ export function wsConnect() {
           }
         } else if (m.status === "error") {
           _installTaskIds.delete(m.task_id);
+          if (getFwUpdateIntent(m.task_id)) clearFwUpdateIntent();
           addOrUpdateTask(
             m.task_id,
             pkg,
@@ -171,17 +199,7 @@ export function wsConnect() {
       } else if (m.type === "appearance_changed") {
         loadGlobalAppearance();
       } else if (m.type === "cert_files_changed") {
-        // 证书目录有外部更新（如 acme.sh / certbot deploy-hook 推送）
-        toast(t("cert_files_changed"), "");
-        const secTab = document.getElementById("settings-security-tab");
-        if (
-          secTab &&
-          secTab.style.display !== "none" &&
-          document.querySelector("#p-settings.page.active") &&
-          typeof loadSecuritySsl === "function"
-        ) {
-          loadSecuritySsl();
-        }
+        // SSL 管理已随安全页移除；保留分支避免旧后端消息导致未处理告警
       } else if (m.type === "config_updated") {
         // 配置文件被外部（编辑器/其他进程）修改
         toast(t("config_changed_externally"), "");
