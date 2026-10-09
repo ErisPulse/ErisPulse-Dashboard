@@ -65,15 +65,49 @@ export function fmFormatTime(ts) {
   });
 }
 
+// 文件类型 → 分类图标（代码/配置/图片/压缩包/文档/日志/密钥），着色沿用扩展名色表
+const FM_CATEGORY_ICONS = {
+  code: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
+  config:
+    '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>',
+  image:
+    '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  archive:
+    '<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/>',
+  doc: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+  log: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+  file: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+};
+
+const FM_EXT_CATEGORY = {
+  code: ["py", "pyw", "js", "mjs", "ts", "html", "htm", "css", "xml", "svg", "sh", "bash", "zsh", "sql"],
+  config: ["json", "toml", "yaml", "yml", "ini", "cfg", "conf", "env", "lock"],
+  image: ["png", "jpg", "jpeg", "gif", "svg", "ico", "webp", "bmp"],
+  archive: ["zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar"],
+  doc: ["md", "markdown", "txt", "rst", "pdf", "doc", "docx"],
+  log: ["log", "out"],
+  key: ["pem", "key", "crt", "cer"],
+};
+
 export function fmGetIcon(type, name) {
   if (type === "directory")
     return '<svg class="fm-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
-  var ext = (name || "").split(".").pop().toLowerCase();
-  var color = FM_EXT_COLORS[ext] || FM_EXT_COLORS._;
+  const ext = (name || "").split(".").pop().toLowerCase();
+  let category = "file";
+  for (const cat in FM_EXT_CATEGORY) {
+    if (FM_EXT_CATEGORY[cat].indexOf(ext) !== -1) {
+      category = cat;
+      break;
+    }
+  }
+  const color = FM_EXT_COLORS[ext] || FM_EXT_COLORS._;
   return (
     '<svg class="fm-icon file" style="color:' +
     color +
-    '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    FM_CATEGORY_ICONS[category] +
+    "</svg>"
   );
 }
 
@@ -184,6 +218,12 @@ export async function fmBrowse(path) {
   }
 
   _fmEntries = d.entries || d.results || [];
+  // 根目录不显示 .. 上级条目（上级用面包屑/上跳按钮）
+  if (_fmCurrentPath === "." || _fmCurrentPath === "") {
+    _fmEntries = _fmEntries.filter(
+      (e) => !(e.type === "directory" && e.name === ".."),
+    );
+  }
   fmClearSelection();
   fmUpdateBreadcrumb(d.path || path, _fmEntries.length);
   fmRender();
@@ -271,23 +311,21 @@ function fmRenderHeadRow() {
 // ── 选择（桌面：单击选中，Ctrl 加选；移动端：直接打开，⋮ 出菜单） ──
 
 export function fmRowClick(event, path, type) {
-  if (path === "..") return; // 上级目录条目仅作导航快捷方式
-  if (event.ctrlKey || event.metaKey) {
-    event.stopPropagation();
-    if (_fmSelection.has(path)) _fmSelection.delete(path);
-    else _fmSelection.add(path);
-    fmRender();
-    return;
-  }
-  // 移动端：单击即打开（桌面靠双击打开，单击仅选中）
+  // 移动端：单击即打开（桌面双击打开）
   if (window.innerWidth <= 768) {
     if (type === "directory") fmNavigateTo(path);
     else fmEditFile(path);
     return;
   }
-  // 桌面单击：单选（替换选择）
-  _fmSelection = new Set([path]);
-  fmRender();
+  // 桌面普通单击不动作（正常交互）；选择是主动行为——Ctrl/Cmd+点击，
+  // 避免误触即弹出操作条
+  if (event.ctrlKey || event.metaKey) {
+    event.stopPropagation();
+    if (path === "..") return;
+    if (_fmSelection.has(path)) _fmSelection.delete(path);
+    else _fmSelection.add(path);
+    fmRender();
+  }
 }
 
 function fmSelectedPaths() {
@@ -469,6 +507,32 @@ export function fmCtxItem(label, svgPath, onclick) {
 
 // ── 编辑器模态窗 ──
 
+// 编辑器 IDE 化：状态栏（光标位置/语言）+ 活动行 + 词法补全
+function fmEditorStatusUpdate(cm) {
+  const pos = cm.getCursor();
+  const el = document.getElementById("fmStatusPos");
+  if (el) el.textContent = "Ln " + (pos.line + 1) + ", Col " + (pos.ch + 1);
+}
+
+function fmEditorLangUpdate(path) {
+  const el = document.getElementById("fmStatusLang");
+  if (!el) return;
+  const mode = fmGetMode(path);
+  const names = {
+    javascript: "JavaScript",
+    python: "Python",
+    htmlmixed: "HTML",
+    css: "CSS",
+    xml: "XML",
+    markdown: "Markdown",
+    toml: "TOML",
+    yaml: "YAML",
+    shell: "Shell",
+    text: "Text",
+  };
+  el.textContent = names[mode] || "Text";
+}
+
 export async function fmEditFile(path) {
   const d = await api("/api/files/read?path=" + encodeURIComponent(path));
   if (!d) return;
@@ -483,9 +547,12 @@ export async function fmEditFile(path) {
   _fmDirty = false;
   const overlay = document.getElementById("fmEditorOv");
   const name = path.split("/").pop();
+  // 头部图标与列表一致：按扩展名分类着色
+  document.getElementById("fmEditorIcon").innerHTML = fmGetIcon("file", name);
   document.getElementById("fmEditorTitle").textContent = name;
   document.getElementById("fmEditorPath").textContent =
     path === name ? "/" : path.slice(0, path.length - name.length - 1);
+  fmEditorLangUpdate(path);
   const st = document.getElementById("fmEditorStatus");
   st.textContent = "";
   const container = document.getElementById("fmEditorContainer");
@@ -504,16 +571,39 @@ export async function fmEditFile(path) {
       lineNumbers: true,
       matchBrackets: true,
       autoCloseBrackets: true,
+      styleActiveLine: true,
       lineWrapping: true,
       tabSize: 4,
       indentUnit: 4,
+      extraKeys: {
+        "Ctrl-Space": "autocomplete",
+        "Ctrl-S": function (cm) { fmSaveFile(); },
+      },
+    });
+    // 词法补全：输入单词字符 800ms 后自动弹出（Esc/点选关闭）
+    let hintTimer = null;
+    _fmEditor.on("inputRead", function (cm, change) {
+      const ch = (change.text && change.text[0]) || "";
+      if (!/^[A-Za-z0-9_$]$/.test(ch)) return;
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(function () {
+        if (_fmEditor && String(_fmEditor.getValue()).length < 200000)
+          _fmEditor.showHint({
+            hint: CodeMirror.hint.anyword,
+            completeSingle: false,
+          });
+      }, 800);
+    });
+    _fmEditor.on("cursorActivity", function (cm) {
+      fmEditorStatusUpdate(cm);
     });
     _fmEditor.on("change", () => {
       _fmDirty = true;
-      st.textContent = "●";
+      st.textContent = "● " + t("fm_status_unsaved");
       st.style.color = "var(--wr-c)";
     });
     _fmEditor.setSize("100%", "100%");
+    fmEditorStatusUpdate(_fmEditor);
   } else {
     container.innerHTML =
       '<textarea id="fmFallbackEditor" class="code-editor" style="width:100%;height:100%;box-sizing:border-box" spellcheck="false">' +
@@ -521,7 +611,7 @@ export async function fmEditFile(path) {
       "</textarea>";
     document.getElementById("fmFallbackEditor").addEventListener("input", () => {
       _fmDirty = true;
-      st.textContent = "●";
+      st.textContent = "● " + t("fm_status_unsaved");
       st.style.color = "var(--wr-c)";
     });
   }
