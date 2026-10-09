@@ -68,6 +68,8 @@
     fm_view_list: "List view",
     fm_view_grid: "Grid view",
     fm_selected_count: "{n} selected",
+    fm_status_hint: "Ctrl+S to save",
+    fm_status_unsaved: "Unsaved",
     all_types: "All types",
     live_events: "Live Events",
     waiting_events: "Waiting for events...",

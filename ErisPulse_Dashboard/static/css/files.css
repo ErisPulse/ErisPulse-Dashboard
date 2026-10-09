@@ -522,3 +522,108 @@
         border-radius: 0;
     }
 }
+
+/* ── 编辑器 IDE 化：状态栏 + CodeMirror 打磨 ── */
+.fm-editor-modal .fm-editor-box {
+    width: min(1040px, 94vw);
+    height: min(680px, 86vh);
+}
+
+.fm-editor-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 5px 14px;
+    border-top: 1px solid var(--bd);
+    background: var(--bg-s);
+    font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 11px;
+    color: var(--tx-s);
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.fm2-status-item {
+    white-space: nowrap;
+}
+
+.fm2-status-dim {
+    opacity: 0.65;
+}
+
+.fm2-status-flex {
+    flex: 1;
+}
+
+.fm-editor-status {
+    font-weight: 600;
+}
+
+/* 亮色（default 主题）：gutter 分离 + 活动行高亮，向 IDE 观感靠拢 */
+.fm-editor-box .cm-s-default .CodeMirror {
+    font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--tx-p);
+    background: var(--bg-t);
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-gutters {
+    background: var(--bg-s);
+    border-right: 1px solid var(--bd);
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-linenumber {
+    color: var(--tx-t);
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-activeline-background {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-activeline .CodeMirror-linenumber {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-cursor {
+    border-left: 2px solid var(--accent);
+}
+
+.fm-editor-box .cm-s-default .CodeMirror-selected {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* 暗色（dracula）：活动行补底色 */
+.fm-editor-box .cm-s-dracula .CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.fm-editor-box .CodeMirror {
+    font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* 补全下拉与编辑器同风格 */
+.fm-editor-box .CodeMirror-hints {
+    z-index: 1300;
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    border-radius: 8px;
+    border: 1px solid var(--bd);
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+    .fm2-status-dim {
+        display: none;
+    }
+}
+
+/* 状态栏保存按钮：紧凑，随状态栏高度 */
+.fm-editor-savebtn {
+    padding: 3px 14px;
+    font-size: 12px;
+    line-height: 1.4;
+}

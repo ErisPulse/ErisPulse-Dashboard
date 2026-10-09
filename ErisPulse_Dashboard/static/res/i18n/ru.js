@@ -69,6 +69,8 @@
     fm_view_list: "Список",
     fm_view_grid: "Плитка",
     fm_selected_count: "Выбрано: {n}",
+    fm_status_hint: "Ctrl+S — сохранить",
+    fm_status_unsaved: "Не сохранено",
     all_types: "Все типы",
     live_events: "События в реальном времени",
     waiting_events: "Ожидание событий...",

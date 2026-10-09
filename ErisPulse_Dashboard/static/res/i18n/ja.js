@@ -68,6 +68,8 @@
     fm_view_list: "リスト表示",
     fm_view_grid: "グリッド表示",
     fm_selected_count: "{n} 件選択中",
+    fm_status_hint: "Ctrl+S で保存",
+    fm_status_unsaved: "未保存",
     all_types: "すべてのタイプ",
     live_events: "ライブイベント",
     waiting_events: "イベントを待機中...",
