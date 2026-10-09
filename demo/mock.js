@@ -351,10 +351,11 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/audit'] = function () { return _json({ logs: _genAudit(20) }); };
     API_MAP['/api/audit/clear'] = function () { return _json({ success: true }); };
 
+    var _mockDashCfg = { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***', login_lockout_enabled: true, login_lockout_max_fails: 10, login_lockout_window: 60 };
     function _mockConfig() {
         return {
             config: {
-                Dashboard: { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***' },
+                Dashboard: _mockDashCfg,
                 ErisPulse: {
                     server: { host: '0.0.0.0', port: 8000, auto_start: true, ssl_certfile: null, ssl_keyfile: null },
                     logger: { level: 'INFO', format: 'rich', log_files: [], memory_limit: 1000 },
@@ -368,7 +369,17 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         };
     }
     API_MAP['/api/config'] = function (opts) {
-        if (opts && opts.method === 'PUT') return _json({ success: true });
+        if (opts && opts.method === 'PUT') {
+            // 点分键写入（Dashboard.login_lockout_* 等），token 不可经此修改
+            try {
+                var b = JSON.parse(opts.body || '{}');
+                if (b && b.key && String(b.key).indexOf('Dashboard.') === 0) {
+                    var k = String(b.key).split('.').slice(1).join('.');
+                    if (k && k !== 'token') _mockDashCfg[k] = b.value;
+                }
+            } catch (e) {}
+            return _json({ success: true });
+        }
         return _json(_mockConfig());
     };
 
@@ -495,27 +506,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };
     API_MAP['/api/modules/action'] = function () { return _json({ success: true }); };
 
-    // ── 安全页 ──
-    API_MAP['/api/framework/ssl/status'] = function () {
-        return _json({
-            success: true,
-            enabled: false,
-            mode: 'none',
-            certfile: null,
-            keyfile: null,
-            has_inline_cert: false,
-            has_inline_key: false,
-            cert_info: null,
-            https_active: false,
-            can_reload: true
-        });
-    };
-    API_MAP['/api/framework/ssl/apply'] = function () {
-        return _json({ success: true, reloaded: true, message: null });
-    };
-    API_MAP['/api/framework/ssl/upload'] = function () {
-        return _json({ success: true, cert_path: 'config/ssl/cert.pem', key_path: 'config/ssl/key.pem' });
-    };
+    // ── 令牌与登录保护 ──
     API_MAP['/api/security/token/regenerate'] = function (init) {
         // 预览-确认流：回显客户端提交的令牌
         var tk = 'demo';

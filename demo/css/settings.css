@@ -311,6 +311,19 @@
     .settings-col > .settings-card:last-child {
         margin-bottom: 0;
     }
+    /* 令牌卡的包装层：与 .card 同规则参与列布局与间距 */
+    .settings-col > #generalTokenCard {
+        break-inside: avoid;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 24px;
+    }
+    .settings-col > #generalTokenCard:last-child {
+        margin-bottom: 0;
+    }
+    .settings-col > #generalTokenCard > .card {
+        margin-bottom: 0;
+    }
 }
 
 .settings-card {
@@ -1053,6 +1066,30 @@
 .style-card[data-style="eris"] .scp-dot { background: #3b6fe0; }
 .style-card[data-style="eris"] .scp-bar { background: #3b6fe0; opacity: 0.5; }
 
+/* 经典风格卡实际使用 theme-card-preview/tcp-* 部件：补着色（此前透明导致预览看似空盒） */
+.style-card[data-style="eris"] .theme-card-preview {
+    background: #f6f7f9;
+    border: 1px solid #e5e8ec;
+}
+.style-card[data-style="eris"] .tcp-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e8ec;
+}
+.style-card[data-style="eris"] .tcp-dot { background: #3a94d0; }
+.style-card[data-style="eris"] .tcp-sidebar {
+    background: #eef0f3;
+    border-right: 1px solid #e5e8ec;
+}
+.style-card[data-style="eris"] .tcp-body { background: #f6f7f9; }
+.style-card[data-style="eris"] .tcp-card {
+    background: #ffffff;
+    border: 1px solid #e2e6ec;
+}
+.style-card[data-style="eris"] .tcp-card-sm {
+    background: #ffffff;
+    border: 1px solid #e2e6ec;
+}
+
 .style-card[data-style="classic"] .style-card-preview {
     background: #f6f7f9;
 }
@@ -1275,6 +1312,15 @@
     .settings-grid .settings-col .settings-card:last-child {
         margin-bottom: 0;
     }
+    .settings-grid .settings-col > #generalTokenCard {
+        margin-bottom: 16px;
+    }
+    .settings-grid .settings-col > #generalTokenCard:last-child {
+        margin-bottom: 0;
+    }
+    .settings-grid .settings-col > #generalTokenCard .card {
+        margin-bottom: 0;
+    }
     .settings-col {
         gap: 16px;
     }
@@ -1425,4 +1471,35 @@
     .settings-item > div:first-child {
         width: 100%;
     }
+}
+
+/* ── 访问令牌（原安全页迁移）：令牌预览代码块 ── */
+.settings-token-code {
+    margin: 0;
+    padding: 10px 12px;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: var(--tx-p);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    word-break: break-all;
+    user-select: all;
+}
+
+/* ── 令牌生成艺术（确定性 SVG，随令牌变化） ── */
+.token-art-wrap {
+    margin-bottom: 14px;
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    background: var(--bg-s);
+    overflow: hidden;
+    line-height: 0;
+}
+.token-art {
+    display: block;
+    width: 100%;
+    height: 84px;
 }

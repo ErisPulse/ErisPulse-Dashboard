@@ -47,7 +47,15 @@ export async function doLogin() {
     toast(t("logged_in"), "ok");
   } else {
     if (!authed) localStorage.removeItem(TK);
-    toast(t("invalid_token"), "er");
+    if (d && d.error_code === "login_locked") {
+      // 429：触发登录失败锁定，提示剩余等待秒数而非误报令牌无效
+      toast(
+        t("login_lockout_locked").replace("{s}", d.retry_after || 60),
+        "er",
+      );
+    } else {
+      toast(t("invalid_token"), "er");
+    }
     inp.select();
   }
   btn.disabled = false;

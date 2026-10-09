@@ -1224,9 +1224,16 @@ input, textarea, select, button,
 }
 
 /* ── 移动端抽屉：必须完全不透明（浮在页面内容之上），并加强投影 ── */
+/* 投影只允许在抽屉展开（.open）时存在：关闭态盒体已 translateX(-100%) 移出屏幕，
+   阴影却仍会以 z-index:1000 渲染回视口约 50px，形成左侧黑色渐变遮罩 */
 @media (max-width: 720px) {
     .sidebar {
         background: var(--bg-s) !important;
+        box-shadow: none;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .sidebar.open {
         box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
     }
 }
