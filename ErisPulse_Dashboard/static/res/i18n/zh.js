@@ -68,6 +68,8 @@
     fm_view_list: "列表视图",
     fm_view_grid: "网格视图",
     fm_selected_count: "已选 {n} 项",
+    fm_status_hint: "Ctrl+S 保存",
+    fm_status_unsaved: "未保存",
     all_types: "全部类型",
     live_events: "实时事件",
     waiting_events: "等待事件...",

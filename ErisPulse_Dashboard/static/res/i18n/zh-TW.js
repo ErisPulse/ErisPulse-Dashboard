@@ -68,6 +68,8 @@
     fm_view_list: "列表檢視",
     fm_view_grid: "網格檢視",
     fm_selected_count: "已選 {n} 項",
+    fm_status_hint: "Ctrl+S 儲存",
+    fm_status_unsaved: "未儲存",
     all_types: "全部類型",
     live_events: "即時事件",
     waiting_events: "等待事件...",
