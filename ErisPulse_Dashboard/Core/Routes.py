@@ -288,20 +288,6 @@ class RoutesMixin:
 
          
         r.register_http_route(
-            mn, "/api/framework/ssl/status", handler=self._api_ssl_status, methods=["GET"]
-        )
-        r.register_http_route(
-            mn, "/api/framework/ssl/apply", handler=self._api_ssl_apply, methods=["POST"]
-        )
-        r.register_http_route(
-            mn,
-            "/api/framework/ssl/upload",
-            handler=self._api_ssl_upload,
-            methods=["POST"],
-        )
-
-         
-        r.register_http_route(
             mn,
             "/api/builder/validate",
             handler=self._api_builder_validate,
