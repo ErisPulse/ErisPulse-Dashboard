@@ -258,20 +258,14 @@ export function loadAll() {
   _applyEditorOptions();
   fetchAdapterLogos();
   document.body.classList.toggle("privacy-on", getPrivacyMode());
+   
+   
+   
   window.refreshDashboard();
-  checkFwUpdateBadge();
-  loadEvents();
-  loadBots();
-  loadModules();
-  loadConfig();
-  loadStore();
-  loadMessageStats();
-  loadAuditLog();
   loadPerformance();
-  loadPackages();
-  loadPackageUpdates();
+  loadEvents();
+  checkFwUpdateBadge();
   loadModuleViews();
-  loadMaster();
   restartRefreshTimer();
 }
 
