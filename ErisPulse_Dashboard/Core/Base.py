@@ -56,7 +56,6 @@ class MainBase:
         self._cluster: ClusterManager | None = None
         self._lifecycle_counts: dict[str, int] = {}
         self._ghost_cache: dict = {}
-        self._ssl_watcher_task: asyncio.Task | None = None
         self._register_routes()
 
     @staticmethod
@@ -85,7 +84,6 @@ class MainBase:
         asyncio.create_task(self._events_flush_loop())
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
-        self._start_ssl_watch()
         # 注册框架 WebUI 主页入口（旧 SDK 无此 API 时跳过）
         home_entry = getattr(self.sdk.router, "register_home_entry", None)
         if home_entry is not None:
@@ -150,7 +148,6 @@ class MainBase:
         self.logger.warning("")
 
     async def on_unload(self, event: dict) -> bool:
-        self._stop_ssl_watch()
         if self._cluster:
             await self._cluster.close()
         try:
