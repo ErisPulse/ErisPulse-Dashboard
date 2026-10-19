@@ -227,7 +227,13 @@ export function getHomePins() {
       if (Array.isArray(arr)) return arr;
     } catch (e) {}
   }
-  return HOME_PIN_DEFAULTS.slice();
+  var pins = HOME_PIN_DEFAULTS.slice();
+  document.querySelectorAll(".nav-item[data-module-view]").forEach(function (a) {
+    var id = a.getAttribute("data-module-view");
+    var pageId = "ext-" + id;
+    if (id && pins.indexOf(pageId) < 0) pins.push(pageId);
+  });
+  return pins;
 }
 
 export function setHomePins(arr) {
@@ -238,7 +244,8 @@ export function navItemContent(pinId) {
   var parts = pinId.split(":");
   var page = parts[0];
   var tab = parts[1];
-  var item = document.querySelector('.nav-item[data-page="' + page + '"]');
+  var item = document.querySelector('.nav-item[data-page="' + page + '"]') ||
+    document.querySelector('.nav-item[data-module-view="' + page + '"]');
   if (!item) return null;
   var svg = item.querySelector("svg");
   var span = item.querySelector("span");
@@ -347,9 +354,9 @@ export function toggleHomePinPicker() {
   if (picker.style.display === "none") {
     var pinned = getHomePins();
     var all = Array.prototype.map.call(
-      document.querySelectorAll(".nav-item[data-page]"),
+      document.querySelectorAll(".nav-item[data-page], .nav-item[data-module-view]"),
       function (a) {
-        return a.getAttribute("data-page");
+        return a.getAttribute("data-page") || a.getAttribute("data-module-view");
       },
     );
     picker.innerHTML = "";
