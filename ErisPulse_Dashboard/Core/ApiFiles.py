@@ -3,11 +3,20 @@
 import os
 import shutil
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from .Constants import MAX_READ_SIZE, MAX_UPLOAD_SIZE, SENSITIVE_FILES
+
+
+def _content_disposition(filename: str) -> str:
+    """RFC 6266/5987 兼容的 attachment 头，保证值 latin-1 可编码。"""
+    quoted = quote(filename, safe="")
+    if quoted == filename:
+        return f'attachment; filename="{filename}"'
+    return f"attachment; filename=\"{quoted}\"; filename*=UTF-8''{quoted}"
 
 
 class ApiFilesMixin:
@@ -245,7 +254,7 @@ class ApiFilesMixin:
             _iter(),
             media_type="application/octet-stream",
             headers={
-                "Content-Disposition": f'attachment; filename="{target.name}"',
+                "Content-Disposition": _content_disposition(target.name),
                 "Content-Length": str(target.stat().st_size),
             },
         )
@@ -454,7 +463,7 @@ class ApiFilesMixin:
         return Response(
             content=buf.getvalue(),
             media_type="application/zip",
-            headers={"Content-Disposition": f'attachment; filename="{archive_name}"'},
+            headers={"Content-Disposition": _content_disposition(archive_name)},
         )
 
     async def _api_files_decompress(self, request: Request) -> JSONResponse:
