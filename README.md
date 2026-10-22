@@ -1,7 +1,5 @@
 <div align="center">
 
-![](.github/assets/banner.png)
-
 ![](.github/dash_bot.png)
 
 # ErisPulse Dashboard
