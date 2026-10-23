@@ -137,6 +137,15 @@ export async function loadConfigSource() {
   }
 }
 
+ 
+export async function reloadConfigSourceGuard() {
+  if (_cfgSourceDirty) {
+    var ok = await confirm2(t("unsaved_title"), t("unsaved_confirm"));
+    if (!ok) return;
+  }
+  loadConfigSource();
+}
+
 export async function saveConfigSource() {
   var cm = _cfgSourceCM;
   var content = cm

@@ -100,7 +100,8 @@ export function go(name, el, opts) {
     var navItem = el || document.querySelector('.nav-item[data-page="' + name + '"]');
     var iconTitle = "";
     if (navItem) {
-      var spanEl = navItem.querySelector("span");
+       
+      var spanEl = navItem.querySelector("span:not(.nav-ico)");
       if (spanEl) iconTitle = spanEl.textContent;
     }
     strip.innerHTML = '<span class="pl-label">' + (iconTitle || name) + "</span>";
@@ -122,6 +123,8 @@ export function go(name, el, opts) {
     adapter: loadAdapterConfigPage,
     store: function () {
       loadStore();
+    },
+    packages: function () {
       loadPackages();
       loadPackageUpdates();
     },
@@ -248,7 +251,8 @@ export function navItemContent(pinId) {
     document.querySelector('.nav-item[data-module-view="' + page + '"]');
   if (!item) return null;
   var svg = item.querySelector("svg");
-  var span = item.querySelector("span");
+   
+  var span = item.querySelector("span:not(.nav-ico)");
   var title = span ? span.textContent : page;
    
   if (tab) {
@@ -492,7 +496,7 @@ export function restartRefreshTimer() {
 }
 
 export function toggleSidebarCollapse() {
-  if (window.innerWidth <= 768) return;  
+  if (window.innerWidth <= 1023) return;  
   const sb = document.getElementById("sidebar");
   sb.classList.toggle("collapsed");
   localStorage.setItem(

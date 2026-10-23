@@ -63,9 +63,7 @@ export async function loadAdapterConfigPage() {
     panel.appendChild(empty);
     var cta = document.createElement("button");
     cta.className = "empty-action";
-    cta.innerHTML =
-      t("store") +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
+    cta.textContent = t("store");
     cta.onclick = function () {
       go("store");
     };
@@ -153,9 +151,12 @@ export async function loadAdapterConfigDetail(platform) {
     panel.appendChild(container);
   }
   container.innerHTML =
-    '<div style="padding:40px;text-align:center;color:var(--tx-s)">' +
-    t("loading") +
-    "...</div>";
+    '<div class="cfg-skeleton">' +
+    '<div class="skeleton skeleton-text" style="width: 38%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 72%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 56%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 64%"></div>' +
+    "</div>";
 
   const d = await api(
     "/api/adapter/" + encodeURIComponent(platform) + "/config",
@@ -190,7 +191,7 @@ export async function loadAdapterConfigDetail(platform) {
       "</div>";
     if (hasRenderableFields) {
       html +=
-        '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+        '<div class="cfg-fields-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
         esc(d.config_key) +
         '." onclick="saveAdapterConfigAll(\'' +
         esc(platform) +
@@ -936,9 +937,12 @@ export async function loadModuleConfigDetail(moduleName) {
     panel.appendChild(container);
   }
   container.innerHTML =
-    '<div style="padding:40px;text-align:center;color:var(--tx-s)">' +
-    t("loading") +
-    "...</div>";
+    '<div class="cfg-skeleton">' +
+    '<div class="skeleton skeleton-text" style="width: 38%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 72%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 56%"></div>' +
+    '<div class="skeleton skeleton-text" style="width: 64%"></div>' +
+    "</div>";
 
   const d = await api(
     "/api/module/" + encodeURIComponent(moduleName) + "/config",

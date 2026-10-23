@@ -30,9 +30,16 @@ export function toggleLogAutoRefresh() {
 export function _onWebSocketLog(logData) {
   if (!_logStreamActive) return;
   _logStreamBuffer.push(logData);
-  if (!_logStreamFlushTimer) {
-    _logStreamFlushTimer = setTimeout(_flushLogStream, 300);
-  }
+  if (_logStreamFlushTimer) return;
+   
+   
+   
+  _logStreamFlushTimer = setTimeout(function () {
+    _logStreamFlushTimer = null;
+    requestAnimationFrame(function () {
+      _flushLogStream();
+    });
+  }, 250);
 }
 
 export function _flushLogStream() {
@@ -42,14 +49,14 @@ export function _flushLogStream() {
   _logStreamBuffer = [];
 
    
+  var hasNewModule = false;
   newLogs.forEach(function (log) {
     if (log.module && !_availableModules.has(log.module)) {
       _availableModules.add(log.module);
+      hasNewModule = true;
     }
   });
-  if (newLogs.some(function (l) { return l.module; })) {
-    updateModuleSelect();
-  }
+  if (hasNewModule) updateModuleSelect();
 
    
   var moduleFilter = document.getElementById("logModuleFilter")?.value || "";

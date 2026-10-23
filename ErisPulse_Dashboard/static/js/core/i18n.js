@@ -50,6 +50,8 @@ export function toggleLang() {
       adapter: loadAdapterConfigPage,
       store: function () {
         loadStore();
+      },
+      packages: function () {
         loadPackages();
         loadPackageUpdates();
       },
@@ -104,7 +106,7 @@ export function applyI18n() {
    
   document.querySelectorAll(".nav-item").forEach((el) => {
     const label = el.querySelector("span[data-i18n]");
-    if (label) el.title = label.textContent || "";
+    if (label) el.setAttribute("data-tip", label.textContent || "");
   });
   var nodeLabel = document.getElementById("nodeSelectorLabel");
   if (nodeLabel) {

@@ -38,6 +38,23 @@ export function onThemeChanged() {
     var col = getSetting("bg_color", "");
     if (col) applyAccentColor(deriveAccentFromBg(col));
   }
+   
+  if (!bgAutoThemeEnabled()) {
+    var accent = getSetting("accent_color", "");
+    if (accent) applyAccentColor(accent);
+  }
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+}
+
+ 
+ 
+export function refreshAppearanceChains() {
+  var img = getSetting("bg_image", "");
+  if (img) applyBgImage(img);
+  var accent = getSetting("accent_color", "");
+  if (accent && !bgAutoThemeEnabled()) applyAccentColor(accent);
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+  if (typeof updateOledHint === "function") updateOledHint();
 }
 
 export function toggleTheme() {
@@ -56,6 +73,8 @@ export function applyUiStyle(style) {
   if (style !== "cel") style = "eris";
   localStorage.setItem("ep_ui_style", style);
   document.documentElement.setAttribute("data-ui-style", style);
+   
+  refreshAppearanceChains();
 }
 
 export function getFont() {
@@ -132,21 +151,13 @@ export function applyOled(on) {
   } else {
     document.documentElement.removeAttribute("data-oled");
   }
+   
+  refreshAppearanceChains();
 }
 
 export function hexToRgbStr(hex) {
-  hex = hex.replace("#", "");
-  if (hex.length === 3)
-    hex = hex
-      .split("")
-      .map(function (c) {
-        return c + c;
-      })
-      .join("");
-  var r = parseInt(hex.substr(0, 2), 16);
-  var g = parseInt(hex.substr(2, 2), 16);
-  var b = parseInt(hex.substr(4, 2), 16);
-  return r + ", " + g + ", " + b;
+  var c = hexToRgbObj(hex);
+  return c.r + ", " + c.g + ", " + c.b;
 }
 
 export function shadeHex(hex, pct) {
@@ -162,17 +173,107 @@ export function shadeHex(hex, pct) {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
+function hexToRgbObj(hex) {
+  hex = String(hex || "").replace("#", "");
+  if (hex.length === 3)
+    hex = hex
+      .split("")
+      .map(function (c) {
+        return c + c;
+      })
+      .join("");
+  return {
+    r: parseInt(hex.substr(0, 2), 16) || 0,
+    g: parseInt(hex.substr(2, 2), 16) || 0,
+    b: parseInt(hex.substr(4, 2), 16) || 0,
+  };
+}
+
+ 
+export function relLuminance(rgb) {
+  var f = function (v) {
+    v = v / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * f(rgb.r) + 0.7152 * f(rgb.g) + 0.0722 * f(rgb.b);
+}
+
+export function contrastRatio(hexA, hexB) {
+  var la = relLuminance(hexToRgbObj(hexA));
+  var lb = relLuminance(hexToRgbObj(hexB));
+  var hi = Math.max(la, lb),
+    lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+ 
+function _surfaceHexForContrast() {
+  var dark = getEffectiveTheme() === "dark";
+  if (getUiStyle() === "cel") return dark ? "#20242f" : "#ffffff";
+  if (dark && getOled()) return "#0a0d12";
+  return dark ? "#1c2027" : "#ffffff";
+}
+
+ 
+ 
+ 
+export function ensureAccentReadable(hex) {
+  var surface = _surfaceHexForContrast();
+  var ratio = contrastRatio(hex, surface);
+  if (ratio >= 4.5) return hex;
+  var target = ratio >= 2.6 ? 3.4 : 4.5;
+  var darken = relLuminance(hexToRgbObj(surface)) > 0.35;  
+  var out = hex;
+  for (var i = 0; i < 20 && contrastRatio(out, surface) < target; i++) {
+    var next = shadeHex(out, darken ? -3 : 3);
+    if (next === out) break;  
+    out = next;
+  }
+  return out;
+}
+
+ 
+function ensureFillReadable(hex) {
+  var out = hex;
+  for (var i = 0; i < 16 && contrastRatio(out, "#ffffff") < 3.0; i++) {
+    var next = shadeHex(out, -3);
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
 export function applyAccentColor(hex) {
   if (!hex) return;
+  hex = ensureAccentReadable(hex);  
   setSetting("accent_color", hex);
   var root = document.documentElement.style;
   root.setProperty("--accent", hex);
   root.setProperty("--accent-rgb", hexToRgbStr(hex));
    
-  root.setProperty("--accent-fill", shadeHex(hex, -18));
-  root.setProperty("--accent-fill-h", shadeHex(hex, -28));
+  root.setProperty("--accent-fill", ensureFillReadable(shadeHex(hex, -18)));
+  root.setProperty("--accent-fill-h", ensureFillReadable(shadeHex(hex, -28)));
   root.setProperty("--accent-h", shadeHex(hex, -10));
+  root.setProperty("--lk", hex);
   syncAccentUI(hex);
+}
+
+ 
+export async function pickAccentFromScreen() {
+  if (window.EyeDropper) {
+    try {
+      var res = await new EyeDropper().open();
+      if (res && res.sRGBHex) {
+        applyAccentColorManual(res.sRGBHex);
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") return;  
+       
+    }
+  }
+  var input = document.getElementById("settingsAccent");
+  if (input) input.click();
 }
 
 export function applyAccentColorManual(hex) {
@@ -208,6 +309,7 @@ export function applyBgImageFile(file) {
   reader.onload = function (e) {
     var dataUrl = e.target.result;
      
+    setSetting("bg_tile", "0");  
     applyBgImage(dataUrl);
     showBgAutoThemeRow(true);
     if (bgAutoThemeEnabled()) {
@@ -241,14 +343,71 @@ export async function uploadBgImage(file) {
   }
 }
 
+ 
+ 
+export function getBgTrans() {
+  var v = getSetting("bg_trans", null);
+  if (v === null) {
+    var legacy = getSetting("bg_level", null);
+    if (legacy !== null) {
+      v = legacy;
+      setSetting("bg_trans", legacy);
+      localStorage.removeItem("ep_setting_bg_level");
+    }
+  }
+  if (v === null) v = "standard";
+  return BG_TRANS_LEVELS.indexOf(v) !== -1 ? v : "standard";
+}
+
+ 
+export function applyBgTransClass() {
+  var root = document.documentElement.classList;
+  root.remove("bg-level-soft", "bg-level-strong");
+  var lvl = getBgTrans();
+  if (lvl === "soft") root.add("bg-level-soft");
+  else if (lvl === "strong") root.add("bg-level-strong");
+}
+
+ 
+export function applySettingBgLevel(level) {
+  if (BG_TRANS_LEVELS.indexOf(level) === -1) level = "standard";
+  setSetting("bg_trans", level);
+  applyBgTransClass();
+   
+  var img = getSetting("bg_image", "");
+  if (img) applyBgImage(img);
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+}
+
+ 
+export function applySettingBgTrans(level) {
+  applySettingBgLevel(level);
+}
+
+ 
+var BG_OVERLAY_ALPHA = {
+  light: { soft: 0.72, standard: 0.58, strong: 0.42 },
+  dark: { soft: 0.66, standard: 0.52, strong: 0.36 },
+};
+
+function _bgOverlayCss() {
+  var dark = getEffectiveTheme() === "dark";
+  var oled = dark && getOled();
+  var rgb = oled ? "0, 0, 0" : dark ? "10,14,23" : "244,247,252";
+  var a = (BG_OVERLAY_ALPHA[dark ? "dark" : "light"] || BG_OVERLAY_ALPHA.light)[getBgTrans()];
+  if (typeof a !== "number") a = 0.55;
+   
+  if (oled) a = Math.min(0.9, a + 0.1);
+  return "linear-gradient(rgba(" + rgb + "," + a + "),rgba(" + rgb + "," + a + "))";
+}
+
 export function applyBgImage(dataUrl) {
   if (!dataUrl) return;
    
-  var dark = getEffectiveTheme() === "dark";
-  var overlay = dark
-    ? "linear-gradient(rgba(10,14,23,0.8),rgba(10,14,23,0.8))"
-    : "linear-gradient(rgba(244,247,252,0.74),rgba(244,247,252,0.74))";
-  document.body.style.backgroundImage = overlay + ', url("' + dataUrl + '")';
+   
+  document.documentElement.classList.add("bg-image");
+  applyBgTransClass();
+  document.body.style.backgroundImage = _bgOverlayCss() + ', url("' + dataUrl + '")';
    
   if (getSetting("bg_tile", "0") === "1") {
     document.body.style.backgroundRepeat = "repeat";
@@ -261,13 +420,29 @@ export function applyBgImage(dataUrl) {
   document.body.style.backgroundAttachment = "fixed";
    
   document.documentElement.style.removeProperty("--bg-p");
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+}
+
+ 
+export function applyBgPattern(url) {
+  if (!url) return;
+  setSetting("bg_image", url);
+  setSetting("bg_tile", "1");
+  applyBgImage(url);
+  if (bgAutoThemeEnabled()) {
+    extractImageColor(url, function (hex) {
+      applyAccentColor(hex);
+    });
+  }
 }
 
 export function clearBgImage() {
+  document.documentElement.classList.remove("bg-image", "bg-level-soft", "bg-level-strong");
   document.body.style.removeProperty("background-image");
   document.body.style.removeProperty("background-size");
   document.body.style.removeProperty("background-position");
   document.body.style.removeProperty("background-attachment");
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
 export function extractImageColor(dataUrl, cb) {
@@ -414,32 +589,40 @@ export function resetAccent() {
   root.removeProperty("--accent-fill");
   root.removeProperty("--accent-fill-h");
   root.removeProperty("--accent-h");
+  root.removeProperty("--lk");
   syncAccentUI("#4fa6de");
 }
 
 export function syncAccentUI(hex) {
-  var swatches = document.querySelectorAll(".color-swatch");
-  swatches.forEach(function (s) {
+  document.querySelectorAll(".accent-chip").forEach(function (s) {
     s.classList.toggle("active", s.dataset.color === hex);
   });
   var accentInput = document.getElementById("settingsAccent");
   if (accentInput) accentInput.value = hex;
 }
 
+ 
 export function initAccentSwatches() {
   var wrap = document.getElementById("accentSwatches");
-  if (!wrap || wrap.childElementCount) return;
+  if (!wrap) return;
+  wrap.innerHTML = "";
   ACCENT_PRESETS.forEach(function (c) {
     var btn = document.createElement("button");
-    btn.className = "color-swatch";
-    btn.style.background = c;
+    btn.type = "button";
+    btn.className = "accent-chip";
     btn.dataset.color = c;
-    btn.title = c;
+    btn.title = c.toUpperCase();
+    btn.style.setProperty("--chip", c);
+    btn.innerHTML =
+      '<span class="accent-chip-dot"></span>' +
+      '<span class="accent-chip-sample">Aa</span>';
     btn.onclick = function () {
       applyAccentColorManual(c);
     };
     wrap.appendChild(btn);
   });
+  var cur = getSetting("accent_color", "");
+  syncAccentUI(cur || "#4fa6de");
 }
 
 export function getFullCustomTheme() {

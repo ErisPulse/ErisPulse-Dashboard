@@ -57,16 +57,16 @@ export async function loadModules() {
   if (mmMo) mmMo.textContent = allModules.length;
   document.getElementById("adapterList").innerHTML = adapters.length
     ? adapters.map((m) => renderPluginRow(m, true)).join("")
-    : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><p>' +
       t("no_adapters") +
-      "</div>";
+      "</p></div>";
   document.getElementById("moduleList").innerHTML = modules.length
     ? modules.map((m) => renderPluginRow(m, false)).join("")
-    : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><p>' +
       t("no_modules") +
-      ' <a class="empty-action" style="margin-top:0;margin-left:6px;padding:3px 10px;font-size:12px" onclick="go(\'store\')">' +
+      '</p><button class="empty-action" onclick="go(\'store\')">' +
       t("store") +
-      "</a></div>";
+      "</button></div>";
 }
 
 export function renderPluginRow(m, isAd) {
@@ -97,11 +97,9 @@ export function renderPluginRow(m, isAd) {
   }
 
   let meta = "";
-  if (m.version)
-    meta += "<span>" + t("module_version") + ": " + esc(m.version) + "</span>";
   if (m.author)
     meta += "<span>" + t("module_author") + ": " + esc(m.author) + "</span>";
-  if (!meta && m.description) meta = "<span>" + esc(m.description) + "</span>";
+  if (m.description) meta += "<span>" + esc(m.description) + "</span>";
   if (!meta) meta = "<span>" + t("module_no_desc") + "</span>";
 
    
@@ -321,37 +319,82 @@ export function renderPluginRow(m, isAd) {
       "</div></div>";
   }
 
-  const adLogo = isAd ? adapterLogoImg(m.name, 20) : "";
+   
+   
+   
+   
+   
+   
+  var brandLogo = isAd ? getAdapterLogo(m.name) : null;
+  let icoHtml = "";
+  if (brandLogo) {
+    icoHtml =
+      '<img src="' + esc(brandLogo) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createRange().createContextualFragment(moduleIconFallback(\'' + _jsq(m.name) + '\')))">';
+  } else if (m.logo_url) {
+    icoHtml =
+      '<img src="' + esc(m.logo_url) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createRange().createContextualFragment(moduleIconFallback(\'' + _jsq(m.name) + '\')))">';
+  } else if (m.icon_svg) {
+    icoHtml = String(m.icon_svg);
+  } else {
+    icoHtml = moduleIconFallback(m.name);
+  }
   var html =
-    '<div class="module-card">' +
+    '<div class="module-card' +
+    (isAd ? " is-adapter" : "") +
+    '">' +
     '<div class="module-card-main">' +
-    '<div class="module-card-id" role="button" onclick="toggleModuleDetail(this)">' +
-    '<span class="module-status-dot ' +
-    statusDot +
-    '"></span>' +
-    adLogo +
+    '<div class="module-card-id" role="button" tabindex="0" onclick="toggleModuleDetail(this)" onkeydown="if(event.key===\'Enter\'){toggleModuleDetail(this)}">' +
+    '<span class="module-ico">' +
+    icoHtml +
+    "</span>" +
     '<div class="module-card-info"><div class="module-name-row">' +
     '<span class="module-name">' +
     esc(m.name) +
-    '</span><span class="chip ' +
+    "</span>" +
+    (m.version ? '<span class="module-version">v' + esc(m.version) + "</span>" : "") +
+    '<span class="chip ' +
     statusClass +
     ' module-status-chip"' +
-    (isLazyModule
-      ? ' title="' + esc(t("module_lazy_desc")) + '"'
-      : "") +
+    (isLazyModule ? ' title="' + esc(t("module_lazy_desc")) + '"' : "") +
     ">" +
     esc(statusText) +
-    '</span></div><div class="module-meta">' +
+    "</span></div>" +
+    '<div class="module-meta">' +
     meta +
-    '</div></div>' +
+    "</div></div>" +
     '<span class="module-card-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>' +
-    '</div>' +
+    "</div>" +
+    "</div>" +
     '<div class="module-card-side">' +
+    '<span class="module-enable-label">' +
+    '<label class="switch"><input type="checkbox" ' +
+    (m.enabled ? "checked" : "") +
+    ' onchange="toggleModuleEnabled(\'' +
+    _jsq(m.name) +
+    "','" +
+    _jsq(m.type) +
+    '\',this)"><span class="switch-slider"></span></label>' +
+    "</span>" +
     acts +
-    '</div></div>' +
+    "</div>" +
     detailHtml +
     "</div>";
   return html;
+}
+
+ 
+export function moduleIconFallback(name) {
+  var initial = ((name || "?").trim().charAt(0) || "?").toUpperCase();
+  return (
+    '<span class="module-ico-initial">' + esc(initial) + "</span>"
+  );
+}
+
+export async function toggleModuleEnabled(name, type, el) {
+  if (!authed) return showLogin();
+  var action = el.checked ? "enable" : "disable";
+  await moduleAction(name, action, type);
+  loadModules();
 }
 
 export function toggleModuleDetail(el) {
