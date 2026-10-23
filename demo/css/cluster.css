@@ -522,3 +522,16 @@
     padding-top: 12px;
     border-top: 1px solid var(--bd);
 }
+
+/* ══════════ 移动端（≤768）：集群表单触控目标 ══════════ */
+@media (max-width: 768px) {
+    .cluster-form-field input {
+        min-height: 40px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+
+    .cluster-form-field .btn,
+    .cluster-actions .btn {
+        min-height: 40px;
+    }
+}

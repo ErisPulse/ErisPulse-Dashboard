@@ -773,3 +773,13 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
     backdrop-filter: none;
 }
 
+
+/* ══════════ 移动端触控基础（触屏/粗指针设备） ══════════ */
+/* 消除点击高亮歧义与 300ms 双击缩放判定：交互元素禁用双击缩放手势 */
+@media (hover: none), (pointer: coarse) {
+    a, button, input, select, textarea, label,
+    [role="button"], [onclick] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+}

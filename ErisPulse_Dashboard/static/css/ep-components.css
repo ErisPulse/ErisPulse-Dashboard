@@ -353,3 +353,29 @@
         transition: none;
     }
 }
+
+/* ══════════ 移动端（≤768）：搜索/下拉触控目标 ≥40px ══════════ */
+@media (max-width: 768px) {
+    .ep-search,
+    .ep-select,
+    .ep-input {
+        min-height: 40px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+
+    .ep-combobox-trigger {
+        min-height: 40px;
+    }
+
+    .ep-combobox-panel,
+    .ep-select-panel {
+        max-height: calc(100dvh - 140px);
+    }
+}
+
+/* 多选触发器触控目标 */
+@media (max-width: 768px) {
+    .ep-multiselect-trigger {
+        min-height: 40px;
+    }
+}

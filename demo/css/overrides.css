@@ -90,8 +90,9 @@
         transform: translateX(0);
     }
 
-    .page {
-        padding: 16px;
+    /* modules.css 以 ID 选择器给合并页设了同属性 clamp，类选择器无法竞争，须 !important */
+    .content .page {
+        padding: 16px !important;
     }
 
     .grid-2,
@@ -1358,4 +1359,118 @@ input, textarea, select, button,
 .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
     background: var(--bd);
     border-radius: 4px;
+}
+
+/* ══════════ 移动端 UX 体检修复（≤768） ══════════ */
+/* 注意：本文件中部有一条无 scoped 的 .page padding clamp() 规则，
+   会压掉前面的媒体查询留白，故在文件末尾重新声明以生效 */
+
+@media (max-width: 1023px) {
+    /* 提高特异性：部分内核对后置 @media 规则与前置裸规则的同特异性排序不稳定 */
+    .content .page {
+        /* 抽屉/平板档：四边 16px */
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* 列表正文 13 → 14px，行高放宽 */
+    .list-row,
+    .ev-item,
+    .cmd-row,
+    .pkg-row,
+    .audit-row,
+    .bot-card,
+    .fm-file-row,
+    .route-item {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* 页签/分段按钮：全站统一触控目标 44px（view-btn/pkg-tab/settings 段） */
+    .view-btn,
+    .pkg-tab {
+        min-height: 44px;
+    }
+
+    /* 工具条内小按钮兜底 */
+    .filter-bar .btn-sm {
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    /* 芯片类元信息保底 12px 可读 */
+    .chip {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* 手机档：四边 16px，不贴边 */
+    .content .page {
+        padding: 16px !important;
+    }
+
+    .header h1 {
+        max-width: 46vw;
+    }
+}
+
+/* ≤480：图标化后的 .btn-sm 保证 40px 最小可点宽度 */
+@media (max-width: 480px) {
+    .btn-sm {
+        min-width: 40px;
+    }
+}
+
+/* ══════════ 移动端（≤768）：模态近全屏（放 overrides 末尾以覆盖旧的 95% 宽规则） ══════════ */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 8px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 560px;
+        max-height: calc(100dvh - 16px);
+        padding: 16px;
+    }
+
+    /* 表单单列 + 输入 44px/16px（防 iOS 聚焦自动放大） */
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-box input,
+    .modal-box select,
+    .modal-box textarea {
+        font-size: 16px;
+    }
+
+    .modal-box input:not([type="checkbox"]):not([type="radio"]) {
+        min-height: 44px;
+    }
+}
+
+/* 模块卡更多按钮：覆盖上方 ≤720 块的 36px 旧值（文件后部声明胜出） */
+@media (max-width: 768px) {
+    .module-more-btn,
+    .module-more {
+        flex: 0 0 40px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+}
+
+/* iOS 刘海/底部手势条：滚动内容与模态底部留出 safe-area */
+@media (max-width: 1023px) {
+    .page {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    }
 }

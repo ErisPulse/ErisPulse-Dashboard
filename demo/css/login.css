@@ -316,3 +316,16 @@
 .route-group-card { border-radius: var(--radius-lg); }
 .master-card { border-radius: var(--radius-lg); }
 .bot-card { border-radius: var(--radius-lg); }
+
+/* ══════════ 移动端（≤768）：登录表单触控目标 ══════════ */
+@media (max-width: 768px) {
+    .login-card .ep-input,
+    .form-group input {
+        min-height: 44px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+
+    .login-actions .btn {
+        min-height: 44px;
+    }
+}

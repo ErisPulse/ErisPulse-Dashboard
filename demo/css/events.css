@@ -728,3 +728,28 @@ body.privacy-on .ev-item {
     color: #fff;
     transform: none;
 }
+
+/* ══════════ 移动端/触屏：详情常显（无 hover）+ 字号 ══════════ */
+/* 触屏无 hover：事件详情由「悬停展开」改为「常显」，窄屏同步放开 */
+@media (max-width: 768px), (hover: none) {
+    .ev-detail {
+        max-height: 160px;
+        opacity: 1;
+        margin-top: 4px;
+    }
+
+    .ev-time {
+        font-size: 12px;
+    }
+
+    .ev-detail-item {
+        font-size: 12px;
+    }
+}
+
+/* 事件类型角标：≥11px */
+@media (max-width: 768px) {
+    .ev-type-tag {
+        font-size: 11px;
+    }
+}

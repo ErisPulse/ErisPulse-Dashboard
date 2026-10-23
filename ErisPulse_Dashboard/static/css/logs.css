@@ -716,3 +716,49 @@
         font-size: 11px;
     }
 }
+
+/* ══════════ 移动端（≤768）：日志工具条触控目标 + 字号 ══════════ */
+@media (max-width: 768px) {
+    .log-tool-btn {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+    }
+
+    .log-search {
+        min-height: 40px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+
+    .ep-combobox-trigger {
+        min-height: 40px;
+    }
+
+    .lifecycle-time {
+        font-size: 12px;
+    }
+
+    .audit-row {
+        font-size: 13px;
+    }
+}
+
+/* 日志页小字号与可点 chip 触控目标 */
+@media (max-width: 768px) {
+    .log-level-chip {
+        font-size: 12px;
+        min-height: 40px;
+    }
+
+    .audit-row .chip.audit-action-chip {
+        font-size: 12px;
+    }
+
+    .lifecycle-badge {
+        font-size: 11px;
+    }
+
+    .log-time {
+        font-size: 12px;
+    }
+}

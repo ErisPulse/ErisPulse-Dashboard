@@ -929,15 +929,18 @@ code.ws-insp-val {
     }
 
     .app .task-panel {
-        top: 58px;
+        /* header 实高 ~64px（12px 上下留白 + 40px 内容），58px 会被 header 压住 */
+        top: 70px;
         right: 10px;
     }
 
-    /* 侧栏 = 全高抽屉：直角贴边 */
+    /* 侧栏 = 全高抽屉：直角贴边；dvh 避免 iOS 底部工具栏遮挡，底部留 safe-area */
     .sidebar {
         border-radius: 0;
         border: none;
         border-right: 1px solid var(--bd);
+        height: 100dvh;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     /* 抽屉态恢复滚动与文字（overrides.css 已 revert 文字），tooltip 不适用 */
@@ -948,5 +951,65 @@ code.ws-insp-val {
 
     .sidebar.collapsed .nav-item::after {
         display: none;
+    }
+
+    /* WS 连接详情面板与 task-panel 同步避开 header 实高 */
+    .ws-inspector {
+        top: 70px;
+    }
+}
+
+/* ── 手机 ≤768px：header 重排 + 触控目标放大 ── */
+@media (max-width: 768px) {
+    .header {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    /* 标题单行截断，不给换行撑高 header */
+    .header-left {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .header h1 {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-right {
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .conn-badge-text {
+        max-width: 72px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 触控目标 ≥40px */
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .btn-hamburger {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* 抽屉导航：字号 14、整行 ≥44px */
+    .sidebar .nav-item {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    /* 抽屉选中后由 router 自动收起（已有机制），此处保证抽屉不超宽 */
+    .sidebar,
+    .sidebar.collapsed {
+        max-width: 85vw;
     }
 }

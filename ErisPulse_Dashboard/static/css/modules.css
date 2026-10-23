@@ -449,3 +449,39 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ══════════ 移动端（≤768）：模块管理工具条与卡片按钮 ══════════ */
+@media (max-width: 768px) {
+    .module-search {
+        flex: 1 1 100%;
+        max-width: none;
+        min-height: 40px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+
+    .module-toolbar .ep-combobox-trigger {
+        min-height: 40px;
+    }
+
+    .module-more-btn,
+    .module-more {
+        flex: 0 0 40px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .module-primary-btn {
+        min-height: 40px;
+    }
+
+    .module-status-chip {
+        font-size: 11px;
+    }
+}
+
+/* 模块卡 ID 行（点击展开详情的整行）：≥40px */
+@media (max-width: 768px) {
+    .module-card-id {
+        min-height: 40px;
+    }
+}

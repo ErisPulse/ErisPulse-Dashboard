@@ -761,3 +761,11 @@
         box-sizing: border-box;
     }
 }
+
+/* ══════════ 移动端（≤768）：框架页输入触控目标 ══════════ */
+@media (max-width: 768px) {
+    .fw-input {
+        min-height: 40px;
+        font-size: 16px; /* 防 iOS 聚焦自动放大 */
+    }
+}

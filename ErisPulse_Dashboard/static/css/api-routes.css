@@ -214,3 +214,24 @@
 .btn-danger:active {
     filter: none;
 }
+
+/* ══════════ 移动端（≤768）：路由表路径换行 + 表头字号 ══════════ */
+@media (max-width: 768px) {
+    .route-table {
+        font-size: 13px;
+    }
+
+    /* 长路径在单元格内折行，避免撑出横向滚动（滚动条全局隐藏无暗示） */
+    .route-table td {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .route-table thead th {
+        font-size: 11px;
+    }
+
+    .route-group-body {
+        overflow-x: auto;
+    }
+}

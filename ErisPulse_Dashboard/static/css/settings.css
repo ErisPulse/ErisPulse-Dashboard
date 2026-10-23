@@ -2027,3 +2027,38 @@ button.set-row:hover {
     width: 100%;
     height: 84px;
 }
+
+/* ══════════ 移动端/触屏：设置页触控目标 + 字体卡删除按钮常显 ══════════ */
+@media (max-width: 768px) {
+    .settings-nav-item {
+        min-height: 44px;
+    }
+
+    .ep-combobox-trigger {
+        min-height: 40px;
+    }
+}
+
+/* 触屏无 hover：自定义字体删除按钮常显（并放大到可点尺寸） */
+@media (max-width: 768px), (hover: none) {
+    .font-card-del {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        top: 4px;
+        right: 4px;
+        font-size: 16px;
+        background: var(--bg-t);
+        border: 1px solid var(--bd);
+    }
+}
+
+/* 设置详情返回按钮：触屏目标 40px */
+@media (max-width: 768px) {
+    .settings-back {
+        width: 40px;
+        height: 40px;
+    }
+}

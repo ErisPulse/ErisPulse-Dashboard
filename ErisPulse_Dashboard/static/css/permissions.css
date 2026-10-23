@@ -1284,3 +1284,18 @@
     border-bottom: 1px solid var(--bd);
     margin-top: 6px;
 }
+
+/* ══════════ 移动端（≤768）：权限页触控目标 ≥40px ══════════ */
+@media (max-width: 768px) {
+    .scope-nav-item {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .scope-nav {
+        /* 横向滑动容器：右缘渐隐提示可横滑（全局隐藏滚动条，需可见暗示） */
+        -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
+        mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
+    }
+}
