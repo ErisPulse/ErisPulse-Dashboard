@@ -173,6 +173,33 @@ group_title_en="My Group",
 
 ---
 
+## 模块 logo 声明约定
+
+模块管理页与模块商店的图标按以下三级回退链渲染，模块开发者可按需声明前两级：
+
+1. **适配器品牌 logo**（仅适配器）：Dashboard 内置的 `/api/adapter-logos` 品牌图标服务，自动按适配器名匹配，无需声明。
+2. **模块元数据声明**：模块在元数据（`@module_metadata` 装饰器或模块 info）中声明以下任一字段，Dashboard 在模块卡与商店卡上自动渲染：
+   - `logo_url`：图标外链 URL（PNG / SVG 均 可，建议正方形、透明底、≥ 96×96）。加载失败时自动回退到第 3 级。
+   - `icon_svg`：内联 SVG 字符串。规范与视窗 `icon_svg` 一致：`viewBox="0 0 24 24"`、`stroke="currentColor"`、`stroke-width="2"`、不写死宽高（容器约束为 22px）。
+3. **兜底首字母头像**：未声明任何图标时，Dashboard 以模块名首字符生成头像瓦片——`--accent-soft` 底、主文字色、圆角方卡，全部使用设计语言 token，不按模块名哈希取色，保证主题/OLED/cel 皮肤下的一致性。
+
+```python
+from ErisPulse import module_metadata
+
+@module_metadata(
+    name="MyModule",
+    version="1.0.0",
+    description="示例模块",
+    logo_url="https://example.com/logo.png",   # 二选一即可
+    # icon_svg='<svg viewBox="0 0 24 24" ...>...</svg>',
+)
+class MyModule: ...
+```
+
+> 提示：本地图标也可用 `logo_url` 指向模块自注册的 HTTP 路由地址。
+
+---
+
 ## 常用 CSS 类名
 
 模块视窗使用 HTML 注入模式时，可直接使用 Dashboard 已有的 CSS 类名来保持视觉一致性：
