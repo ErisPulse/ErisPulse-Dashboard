@@ -347,8 +347,19 @@ class DashboardPackageManager:
 
         all_pkgs = {}
         try:
-            for dist in importlib.metadata.distributions():
-                name = dist.metadata["Name"]
+            dist_iter = importlib.metadata.distributions()
+            while True:
+                 
+                try:
+                    dist = next(dist_iter)
+                except StopIteration:
+                    break
+                except Exception:
+                    continue
+                 
+                name = dist.metadata.get("Name")
+                if not name:
+                    continue
                 version = dist.metadata["Version"]
                 summary = dist.metadata.get("Summary", "")
                 if name in erispulse_pkgs:
@@ -376,7 +387,11 @@ class DashboardPackageManager:
 
         packages = sorted(
             all_pkgs.values(),
-            key=lambda p: (not p["is_module"], not p["is_adapter"], p["name"].lower()),
+            key=lambda p: (
+                not p["is_module"],
+                not p["is_adapter"],
+                (p["name"] or "").lower(),
+            ),
         )
         result = {"packages": packages, "total": len(packages)}
         self._installed_cache = result
@@ -387,9 +402,10 @@ class DashboardPackageManager:
         versions = {}
         try:
             for dist in importlib.metadata.distributions():
-                name = dist.metadata["Name"]
-                version = dist.metadata["Version"]
-                versions[name.lower()] = version
+                name = dist.metadata.get("Name")
+                if not name:
+                    continue
+                versions[name.lower()] = dist.metadata["Version"]
         except Exception:
             pass
         return versions
