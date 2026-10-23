@@ -728,3 +728,28 @@ body.privacy-on .ev-item {
     color: #fff;
     transform: none;
 }
+
+ 
+ 
+@media (max-width: 768px), (hover: none) {
+    .ev-detail {
+        max-height: 160px;
+        opacity: 1;
+        margin-top: 4px;
+    }
+
+    .ev-time {
+        font-size: 12px;
+    }
+
+    .ev-detail-item {
+        font-size: 12px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .ev-type-tag {
+        font-size: 11px;
+    }
+}

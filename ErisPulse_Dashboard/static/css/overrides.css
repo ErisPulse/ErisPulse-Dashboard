@@ -90,8 +90,9 @@
         transform: translateX(0);
     }
 
-    .page {
-        padding: 16px;
+     
+    .content .page {
+        padding: 16px !important;
     }
 
     .grid-2,
@@ -1358,4 +1359,118 @@ input, textarea, select, button,
 .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
     background: var(--bd);
     border-radius: 4px;
+}
+
+ 
+
+
+
+@media (max-width: 1023px) {
+     
+    .content .page {
+         
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+     
+    .list-row,
+    .ev-item,
+    .cmd-row,
+    .pkg-row,
+    .audit-row,
+    .bot-card,
+    .fm-file-row,
+    .route-item {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+     
+    .view-btn,
+    .pkg-tab {
+        min-height: 44px;
+    }
+
+     
+    .filter-bar .btn-sm {
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+     
+    .chip {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+     
+    .content .page {
+        padding: 16px !important;
+    }
+
+    .header h1 {
+        max-width: 46vw;
+    }
+}
+
+ 
+@media (max-width: 480px) {
+    .btn-sm {
+        min-width: 40px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 8px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 560px;
+        max-height: calc(100dvh - 16px);
+        padding: 16px;
+    }
+
+     
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-box input,
+    .modal-box select,
+    .modal-box textarea {
+        font-size: 16px;
+    }
+
+    .modal-box input:not([type="checkbox"]):not([type="radio"]) {
+        min-height: 44px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .module-more-btn,
+    .module-more {
+        flex: 0 0 40px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+}
+
+ 
+@media (max-width: 1023px) {
+    .page {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    }
 }

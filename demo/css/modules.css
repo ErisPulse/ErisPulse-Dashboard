@@ -449,3 +449,39 @@
         grid-template-columns: 1fr;
     }
 }
+
+ 
+@media (max-width: 768px) {
+    .module-search {
+        flex: 1 1 100%;
+        max-width: none;
+        min-height: 40px;
+        font-size: 16px;  
+    }
+
+    .module-toolbar .ep-combobox-trigger {
+        min-height: 40px;
+    }
+
+    .module-more-btn,
+    .module-more {
+        flex: 0 0 40px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .module-primary-btn {
+        min-height: 40px;
+    }
+
+    .module-status-chip {
+        font-size: 11px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .module-card-id {
+        min-height: 40px;
+    }
+}

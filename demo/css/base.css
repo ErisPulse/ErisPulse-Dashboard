@@ -773,3 +773,13 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
     backdrop-filter: none;
 }
 
+
+ 
+ 
+@media (hover: none), (pointer: coarse) {
+    a, button, input, select, textarea, label,
+    [role="button"], [onclick] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+}

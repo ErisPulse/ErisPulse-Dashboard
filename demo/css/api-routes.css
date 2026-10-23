@@ -214,3 +214,24 @@
 .btn-danger:active {
     filter: none;
 }
+
+ 
+@media (max-width: 768px) {
+    .route-table {
+        font-size: 13px;
+    }
+
+     
+    .route-table td {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .route-table thead th {
+        font-size: 11px;
+    }
+
+    .route-group-body {
+        overflow-x: auto;
+    }
+}

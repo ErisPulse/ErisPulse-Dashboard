@@ -929,7 +929,8 @@ code.ws-insp-val {
     }
 
     .app .task-panel {
-        top: 58px;
+         
+        top: 70px;
         right: 10px;
     }
 
@@ -938,6 +939,8 @@ code.ws-insp-val {
         border-radius: 0;
         border: none;
         border-right: 1px solid var(--bd);
+        height: 100dvh;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
      
@@ -948,5 +951,65 @@ code.ws-insp-val {
 
     .sidebar.collapsed .nav-item::after {
         display: none;
+    }
+
+     
+    .ws-inspector {
+        top: 70px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .header {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+     
+    .header-left {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .header h1 {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-right {
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .conn-badge-text {
+        max-width: 72px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+     
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .btn-hamburger {
+        width: 40px;
+        height: 40px;
+    }
+
+     
+    .sidebar .nav-item {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+     
+    .sidebar,
+    .sidebar.collapsed {
+        max-width: 85vw;
     }
 }

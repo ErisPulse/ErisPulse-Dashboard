@@ -1305,3 +1305,58 @@
 .task-item.task-info:hover {
     background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
+
+ 
+@media (max-width: 768px) {
+     
+    .store-toolbar .store-search-wrap {
+        flex: 1 1 100%;
+    }
+
+    .store-toolbar .ep-combobox {
+        flex: 1 1 40%;
+    }
+
+    .store-toolbar .ep-combobox-trigger,
+    .store-toolbar .ep-search,
+    .store-search-wrap input {
+        min-height: 40px;
+        font-size: 16px;  
+    }
+
+    .pkg-search {
+        flex: 1 1 140px;
+        min-height: 40px;
+        font-size: 16px;
+    }
+
+    .pkg-toolbar {
+        row-gap: 8px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .store-cat-chip {
+        min-height: 40px;
+    }
+
+    .store-card-tag {
+        font-size: 10px;
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .store-card-check {
+        width: 40px;
+        height: 40px;
+        box-sizing: border-box;
+        border: 8px solid transparent;
+        background-clip: content-box;
+        padding: 0;
+        margin: -8px;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+}

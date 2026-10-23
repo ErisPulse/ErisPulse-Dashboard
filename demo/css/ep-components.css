@@ -353,3 +353,29 @@
         transition: none;
     }
 }
+
+ 
+@media (max-width: 768px) {
+    .ep-search,
+    .ep-select,
+    .ep-input {
+        min-height: 40px;
+        font-size: 16px;  
+    }
+
+    .ep-combobox-trigger {
+        min-height: 40px;
+    }
+
+    .ep-combobox-panel,
+    .ep-select-panel {
+        max-height: calc(100dvh - 140px);
+    }
+}
+
+ 
+@media (max-width: 768px) {
+    .ep-multiselect-trigger {
+        min-height: 40px;
+    }
+}

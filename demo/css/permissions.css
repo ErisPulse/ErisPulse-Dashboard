@@ -1284,3 +1284,18 @@
     border-bottom: 1px solid var(--bd);
     margin-top: 6px;
 }
+
+ 
+@media (max-width: 768px) {
+    .scope-nav-item {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .scope-nav {
+         
+        -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
+        mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
+    }
+}

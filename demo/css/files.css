@@ -883,3 +883,28 @@
         border: none;
     }
 }
+
+ 
+@media (max-width: 768px) {
+    .fm2-search {
+        min-height: 40px;
+        font-size: 16px;  
+        flex: 1 1 120px;
+        width: auto;
+    }
+
+    .fm2-toolbtn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .fm2-rowmenu {
+        width: 40px;
+        height: 40px;
+    }
+
+    .fm2-previewbtn {
+        width: 40px;
+        height: 40px;
+    }
+}

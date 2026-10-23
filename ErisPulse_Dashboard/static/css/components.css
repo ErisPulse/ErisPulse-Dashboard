@@ -1319,3 +1319,46 @@ select.form-select::-ms-expand {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+ 
+@media (max-width: 768px) {
+     
+    .btn {
+        min-height: 40px;
+    }
+
+    .btn-sm {
+        min-height: 40px;
+    }
+
+    .btn-xs {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .modal-actions .btn {
+        min-height: 44px;
+    }
+
+    .filter-bar input[type="text"] {
+        min-height: 40px;
+        font-size: 16px;
+    }
+
+     
+    .toast {
+        left: 12px;
+        right: 12px;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        translate: none;
+        transform: translateY(12px);
+        max-width: none;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .toast + .toast {
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+}

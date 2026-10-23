@@ -316,3 +316,16 @@
 .route-group-card { border-radius: var(--radius-lg); }
 .master-card { border-radius: var(--radius-lg); }
 .bot-card { border-radius: var(--radius-lg); }
+
+ 
+@media (max-width: 768px) {
+    .login-card .ep-input,
+    .form-group input {
+        min-height: 44px;
+        font-size: 16px;  
+    }
+
+    .login-actions .btn {
+        min-height: 44px;
+    }
+}
