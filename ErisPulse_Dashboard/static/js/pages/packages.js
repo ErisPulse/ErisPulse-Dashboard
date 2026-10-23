@@ -7,6 +7,16 @@ export function debouncePkgs() {
 
 export async function loadPackages(forceRefresh) {
   const force = forceRefresh === true;
+  // 首次进入渲染骨架占位，避免列表区闪空
+  if (!_pkgCache) {
+    document.getElementById("pkgInstalledList").innerHTML =
+      '<div class="pkg-skeleton">' +
+      '<div class="skeleton skeleton-text" style="width: 42%"></div>' +
+      '<div class="skeleton skeleton-text" style="width: 68%"></div>' +
+      '<div class="skeleton skeleton-text" style="width: 55%"></div>' +
+      '<div class="skeleton skeleton-text" style="width: 61%"></div>' +
+      "</div>";
+  }
   const params = force ? "?force=true" : "";
   const d = await api("/api/packages" + params);
   if (!d || d.error) return;
@@ -38,20 +48,21 @@ export function renderPkgInstalled() {
 
   const html = filtered
     .map((p) => {
+      // 类型徽标胶囊：模块 / 适配器 / 依赖库，语义色三件套
       let typeBadges = "";
       if (p.is_module)
         typeBadges +=
-          '<span class="chip chip-pr" style="font-size:10px;padding:1px 6px">' +
+          '<span class="chip chip-pr pkg-type-chip">' +
           t("pkg_type_module") +
           "</span>";
       if (p.is_adapter)
         typeBadges +=
-          '<span class="chip chip-sc" style="font-size:10px;padding:1px 6px">' +
+          '<span class="chip chip-sc pkg-type-chip">' +
           t("pkg_type_adapter") +
           "</span>";
       if (!p.is_module && !p.is_adapter)
         typeBadges +=
-          '<span class="chip" style="font-size:10px;padding:1px 6px;background:var(--bg-s);color:var(--tx-t)">' +
+          '<span class="chip chip-muted pkg-type-chip">' +
           t("pkg_type_library") +
           "</span>";
 
@@ -77,17 +88,17 @@ export function renderPkgInstalled() {
       return (
         '<div class="pkg-row">' +
         '<div class="pkg-info">' +
-        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+        '<div class="pkg-name-row">' +
         '<span class="pkg-name">' +
         esc(p.name) +
         "</span>" +
         typeBadges +
         "</div>" +
-        '<div style="font-size:12px;color:var(--tx-s);margin-top:2px">' +
+        '<div class="pkg-summary">' +
         esc(p.summary || "") +
         "</div>" +
         "</div>" +
-        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">' +
+        '<div class="pkg-row-side">' +
         '<span class="pkg-version">v' +
         esc(p.version) +
         "</span>" +
@@ -107,9 +118,10 @@ export async function loadPackageUpdates(forceRefresh) {
 
   if (!_pkgUpdateCache || forceRefresh) {
     document.getElementById("pkgUpdateList").innerHTML =
-      '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg><p>' +
-      t("pkg_checking_updates") +
-      "</p></div>";
+      '<div class="pkg-skeleton">' +
+      '<div class="skeleton skeleton-text" style="width: 50%"></div>' +
+      '<div class="skeleton skeleton-text" style="width: 64%"></div>' +
+      "</div>";
     const force = forceRefresh === true;
     const params = force ? "?force=true" : "";
     const d = await api("/api/packages/updates" + params);
@@ -145,11 +157,11 @@ export async function loadPackageUpdates(forceRefresh) {
         esc(u.name) +
         "</span>" +
         "</div>" +
-        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">' +
+        '<div class="pkg-row-side">' +
         '<span class="pkg-version-old">v' +
         esc(u.current) +
         "</span>" +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--wr-c)"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pkg-arrow"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
         '<span class="pkg-version-new">v' +
         esc(u.latest) +
         "</span>" +
@@ -271,11 +283,9 @@ export async function loadGitPackages() {
   });
   if (pkgs.length === 0) {
     container.innerHTML =
-      '<div class="empty-state" style="padding:32px 20px">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;opacity:0.3;margin-bottom:8px">' +
-      '<circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/>' +
-      "</svg>" +
-      '<p style="font-size:13px;color:var(--tx-s);margin:0">' +
+      '<div class="empty-state">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>' +
+      "<p>" +
       t("pkg_git_no_packages") +
       "</p>" +
       "</div>";
@@ -292,16 +302,12 @@ export async function loadGitPackages() {
         ? `<button class="btn btn-primary btn-xs" onclick="upgradeGitPkg('${urlEsc}')">${t("pkg_git_upgrade")}</button>`
         : "";
       return `
-        <div class="kv-row" style="display:flex;align-items:center;gap:12px;padding:12px 18px">
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;word-break:break-all">${urlEsc}</div>
-            <div style="font-size:11px;color:var(--tx-s);margin-top:4px">
-              ${label}
-            </div>
+        <div class="pkg-row">
+          <div class="pkg-info">
+            <div class="pkg-git-url">${urlEsc}</div>
+            <div class="pkg-git-meta">${label}</div>
           </div>
-          <div style="flex-shrink:0;display:flex;gap:4px">
-            ${btn}
-          </div>
+          <div class="pkg-row-side">${btn}</div>
         </div>`;
     })
     .join("");

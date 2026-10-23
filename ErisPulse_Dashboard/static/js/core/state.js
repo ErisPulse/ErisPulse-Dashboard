@@ -34,8 +34,6 @@ window.PAGE_REDIRECTS = {
   modules: { page: "module-mgmt", tab: "mm-adapters" },
   "ext-modules": { page: "module-mgmt", tab: "mm-adapters" },
   "ext-store": { page: "store", tab: "st-browse" },
-  "ext-packages": { page: "store", tab: "st-packages" },
-  packages: { page: "store", tab: "st-packages" },
   lifecycle: { page: "logs", tab: "mon-lifecycle" },
   audit: { page: "logs", tab: "mon-audit" },
 };
@@ -76,6 +74,22 @@ window.ACCENT_PRESETS = [
   "#2c7bb6", // 深蓝
   "#495057", // 石板灰
 ];
+// 内置背景图案库（res/bg_upload，小图平铺用；appearance.js 读取）
+window.BG_PATTERNS = [
+  "bg_3d6e2854f17344af90657cf84b6749e2.png",
+  "bg_4611839d3c9a4da9b5398a2add4b1563.png",
+  "bg_6fe3bf5c643e4cb5baa4f0e9914b3af8.png",
+  "bg_7a8ad507b69f4af3a521dd922baa2a7a.png",
+  "bg_7dee06aa2b964b15acbf977c00915534.png",
+  "bg_94fe543f882340dfafa96b2774036c4d.png",
+  "bg_975562470ad74e23bea465704fb3b581.png",
+  "bg_d0e134ca59e940348f47259c9c50858a.png",
+  "bg_92a54f52e84d4d76809c05c716848aa7.gif",
+  "bg_f0344a55d2d64e6fbdd7e35d874f3770.gif",
+  "bg_54ce22286de24255ba895d17d2a1bb69.jpg",
+].map(function (n) { return "/Dashboard/static/res/bg_upload/" + n; });
+// 透感档位（ep_setting_bg_trans）：soft 轻 / standard 标准（默认，无附加类） / strong 强
+window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
 window.FULL_THEME_VARS = [
   { key:'--bg-p', label:'主背景', group:'bg' },
   { key:'--bg-s', label:'次背景（侧栏）', group:'bg' },
@@ -113,9 +127,12 @@ window.MERGED_PAGE_TABS = {
     { id: "ev-stream", label: "event_stream", i18n: "event_stream" },
     { id: "ev-builder", label: "event_builder", i18n: "event_builder" },
   ],
-  store: [
-    { id: "st-browse", label: "store", i18n: "store" },
-    { id: "st-packages", label: "pkg_manager", i18n: "pkg_manager" },
+  packages: [
+    { id: "pk-installed", label: "pkg_installed", i18n: "pkg_installed" },
+    { id: "pk-updates", label: "pkg_updates", i18n: "pkg_updates" },
+    { id: "pk-install-new", label: "pkg_install_new", i18n: "pkg_install_new" },
+    { id: "pk-git", label: "pkg_git_install", i18n: "pkg_git_install" },
+    { id: "pk-upload", label: "upload_title", i18n: "upload_title" },
   ],
   logs: [
     { id: "mon-logs", label: "sys_logs", i18n: "sys_logs" },

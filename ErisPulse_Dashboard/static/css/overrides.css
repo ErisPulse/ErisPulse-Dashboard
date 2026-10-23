@@ -1,5 +1,20 @@
 /* ErisPulse Dashboard – overrides (auto-split from dash.css, aligned with js/) */
 
+/* ── 栅格自适应：auto-fit 替代固定列数（≥1024px 生效；下方窄屏断点继续兜底）。
+     grid-2=双卡布局 360 起、grid-3=实体卡列表 300 起、grid-4=统计卡 210 起；
+     动态条目少的场景空轨道自动收拢，不再留空列 ── */
+.grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+}
+
+.grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}
+
 /* 响应式优化 */
 @media (min-width: 1024px) {
     .sidebar.collapsed + .content {
@@ -7,38 +22,8 @@
     }
 }
 
+/* 平板 768-1023px：侧栏走抽屉模式（见下方 ≤1023px 块），此处仅保留栅格密度调整 */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .sidebar {
-        width: 60px;
-    }
-
-    .sidebar .nav-group-title,
-    .sidebar .nav-item span,
-    .sidebar .nav-badge,
-    .sidebar .fw-ver,
-    .sidebar .restart-btn span,
-    .sidebar .sidebar-settings-btn span {
-        display: none;
-    }
-
-    .sidebar .node-selector {
-        display: none;
-    }
-
-    .sidebar .nav-item {
-        justify-content: center;
-        padding: 10px;
-    }
-
-    .sidebar .nav-item svg {
-        opacity: 0.85;
-    }
-
-    .sidebar .sidebar-footer {
-        justify-content: center;
-        gap: 4px;
-    }
-
     .grid-3 {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -48,7 +33,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
     .sidebar-collapse-btn {
         display: none;
     }
@@ -75,7 +60,7 @@
     }
 
     .sidebar.collapsed .nav-group-title,
-    .sidebar.collapsed .nav-item span,
+    .sidebar.collapsed .nav-item > span:not(.nav-ico),
     .sidebar.collapsed .nav-badge,
     .sidebar.collapsed .fw-ver,
     .sidebar.collapsed .restart-btn span,
@@ -93,7 +78,7 @@
     }
 
     .sidebar.collapsed .nav-group-title,
-    .sidebar.collapsed .nav-item span,
+    .sidebar.collapsed .nav-item > span:not(.nav-ico),
     .sidebar.collapsed .nav-badge,
     .sidebar.collapsed .fw-ver {
         opacity: 1;
@@ -244,59 +229,61 @@
 
 /* ─── 内容区 ─── */
 .content {
-    
+
 }
 
 .page {
-    padding: 32px 36px;
+    padding: clamp(16px, 3vw, 32px) clamp(14px, 3.4vw, 36px);
     scroll-behavior: smooth;
 }
 
 /* ─── 卡片 ─── */
 .card,
 .stat-card {
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
     background: var(--bg-t);
     transition:
-        transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
+        transform 0.15s var(--ease-smooth),
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth);
 }
 
+/* 普通卡片 hover：只加深边框（可点卡片由 .is-link/.is-clickable 上浮） */
 .card:hover,
 .stat-card:hover {
     transform: none;
-    border-color: var(--bd);
+    border-color: var(--bd-h);
     box-shadow: none;
 }
 
 /* ─── 按钮 ─── */
 .btn-primary {
     background: var(--accent-fill);
-    border-radius: 10px;
     font-weight: 600;
     letter-spacing: 0.01em;
-    color: #fff;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    color: var(--fg-on-accent, white);
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
 .btn-primary:hover {
     background: var(--accent-fill-h);
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
 }
 
 .btn-primary:active {
-    transform: none;
+    transform: translateY(0) scale(0.97);
 }
 
-input, textarea, select, .btn { border-radius: 8px; }
+/* 按钮圆角不在此覆写：components.css 按尺寸档位定义
+   （.btn=md / .btn-sm=sm / .btn-xs=xs），后文件覆盖会抹平档位 */
+input, textarea, select { border-radius: var(--radius-md); }
 
+/* 焦点柔光环：accent 描边由各控件自身 focus 提供，这里统一 3.5px accent-soft 环 */
 :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--focus-ring);
-    border-radius: 6px;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 /* ─── 全局过渡 ─── */
@@ -418,10 +405,8 @@ select:hover:not(:disabled) {
 
 .card-header { letter-spacing: 0.01em; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { border-radius: 3px; background: var(--bd); }
-::-webkit-scrollbar-thumb:hover { background: var(--bd-h); }
+/* 滚动条样式由 base.css 全局镂空胶囊统一提供（本文件末尾另有全局隐藏规则），
+   此处旧的 6px 滚动条规则与之冲突，已移除 */
 
 
 /* 启动画面消失动画 */
@@ -586,7 +571,7 @@ select:hover:not(:disabled) {
 .card:hover,
 .stat-card:hover {
     transform: none;
-    border-color: var(--bd);
+    border-color: var(--bd-h);
     box-shadow: none;
 }
 
@@ -597,8 +582,8 @@ select:hover:not(:disabled) {
 /* 第二处竖条同样禁用 */
 
 .stat-card {
-    border-radius: var(--radius-xl);
-    padding: 22px 24px;
+    border-radius: var(--radius-lg);
+    padding: clamp(14px, 1.6vw, 20px) clamp(16px, 2.2vw, 22px);
 }
 
 .stat-card-icon {
@@ -611,37 +596,31 @@ select:hover:not(:disabled) {
 }
 
 .btn {
-    border-radius: var(--radius-sm);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth);
 }
 
 .btn-primary {
-    border-radius: var(--radius-sm);
     box-shadow: none;
 }
 
 .btn-primary:hover {
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
 }
 
 .btn-primary:active {
     transform: translateY(0) scale(0.97);
 }
 
-.btn-secondary {
-    border-radius: var(--radius-sm);
-}
-
 .btn-secondary:hover { color: var(--accent); }
 
 .btn:active {
-    transform: none;
+    transform: scale(0.97);
 }
 
 .btn-icon {
-    border-radius: var(--radius-sm);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    border-radius: var(--radius-md);
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth);
 }
 
 .btn-icon:hover {
@@ -662,12 +641,12 @@ select:hover:not(:disabled) {
 }
 
 .nav-item:hover {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    background: var(--accent-soft);
     transform: none;
 }
 
 .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    background: var(--accent-soft);
 }
 
 .nav-item.active::before {
@@ -676,8 +655,8 @@ select:hover:not(:disabled) {
 }
 
 .chip {
-    border-radius: var(--radius-sm);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    border-radius: 999px;
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth);
 }
 
 input,
@@ -689,10 +668,11 @@ select,
 .form-input,
 .form-select,
 .settings-input {
-    border-radius: var(--radius-sm);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    border-radius: var(--radius-md);
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
+/* 输入焦点统一：accent 描边 + 3.5px accent-soft 柔光环 */
 input:focus,
 textarea:focus,
 select:focus,
@@ -702,15 +682,19 @@ select:focus,
 .form-input:focus,
 .form-select:focus,
 .settings-input:focus {
-    box-shadow: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
-::-webkit-scrollbar-thumb {
-    border-radius: var(--radius-2xl);
-}
+/* 滚动条 thumb 圆角由 base.css 镂空胶囊统一（999px + 透明描边），此处不再覆写 */
 
 .modal-box {
     border-radius: var(--radius-xl);
+}
+
+/* toast 圆角回到组件档位（login.css 的紧凑化规则会全局压到 md，这里兜底） */
+.toast {
+    border-radius: var(--radius-lg);
 }
 
 .progress-bar-wrap {
@@ -811,7 +795,7 @@ body {
 
 /* 内容区呼吸感 */
 .page {
-    padding: 32px 36px;
+    padding: clamp(16px, 3vw, 32px) clamp(14px, 3.4vw, 36px);
 }
 
 /* 卡片网格间距 */
@@ -821,9 +805,9 @@ body {
     gap: 20px;
 }
 
-/* 导航活跃项：平整洁净底色 */
+/* 导航活跃项：accent-soft 柔和底（token 化，跟随运行时 accent / OLED 18% 档） */
 .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: var(--accent-soft);
 }
 
 /* 侧边栏分组分隔线弱化 */
@@ -954,12 +938,13 @@ input, textarea, select, button,
 }
 
 .card {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
+/* 普通卡片 hover 只加深边框，保持扁平（无投影） */
 .card:hover {
     border-color: var(--bd-h, var(--bd));
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -975,18 +960,16 @@ input, textarea, select, button,
 
 /* ========== 深色主题微调 ========== */
 
+/* 扁平契约：主按钮不做内高光/外发光（层级靠色彩与边框表达） */
 [data-theme="dark"] .btn-primary {
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.14),
-        0 2px 8px color-mix(in srgb, var(--accent) 24%, transparent);
+    box-shadow: none;
 }
 
+/* 暗色下卡片头图标：扁平 accent-soft 底（渐变已归零） */
 [data-theme="dark"] .card-header > svg {
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--accent) 14%, transparent),
-        color-mix(in srgb, var(--accent) 5%, transparent)
-    );
+    background: var(--accent-soft);
+    border-radius: var(--radius-sm);
+    padding: 3px;
 }
 
 /* ========== 卡片图标：右下角设计位 ========== */
@@ -1117,8 +1100,8 @@ input, textarea, select, button,
     letter-spacing: 0.02em;
 }
 
-/* 断点与移动端抽屉（768px）对齐；高度与 header 对齐 */
-@media (max-width: 768px) {
+/* 断点与移动/平板抽屉（1023px）对齐；高度与 header 对齐 */
+@media (max-width: 1023px) {
     .sidebar-header {
         display: flex;
         align-items: center;
@@ -1133,41 +1116,40 @@ input, textarea, select, button,
 /* ========== 2.0 视觉升级：微交互与质感 ========== */
 /* 仅使用 transform/opacity，遵循 prefers-reduced-motion */
 
-/* 卡片悬浮抬升 */
+/* 卡片悬浮抬升：只给可点的实体卡（store/bot/module）；
+   统计卡默认不抬升，可下钻的挂 .is-link（dashboard.css 定义同款上浮） */
 .stat-card,
 .store-card,
 .bot-card,
 .module-card {
     transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        border-color 0.18s ease;
+        transform 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        border-color 0.15s var(--ease-smooth);
 }
-.stat-card:hover,
 .store-card:hover,
-.bot-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.28);
-}
+.bot-card:hover,
 .module-card:hover {
     transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--bd-h);
 }
 
 /* 按钮微交互 */
 .btn {
     transition:
-        transform 0.12s ease,
-        box-shadow 0.18s ease,
-        background-color 0.18s ease,
-        border-color 0.18s ease,
-        opacity 0.18s ease;
+        transform 0.12s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        background-color 0.15s var(--ease-smooth),
+        border-color 0.15s var(--ease-smooth),
+        opacity 0.15s var(--ease-smooth);
 }
 .btn:active {
     transform: scale(0.97);
 }
 .btn:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 /* 侧边栏激活项左侧光条增强 */
@@ -1188,14 +1170,15 @@ input, textarea, select, button,
     letter-spacing: -0.01em;
 }
 
-/* 状态徽章 / chip 过渡 */
+/* 状态徽章 / chip / 下拉触发器过渡（含 box-shadow 供焦点环渐显） */
 .chip,
 .ep-combobox-trigger,
 .ep-multiselect-trigger {
     transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease;
+        background-color 0.15s var(--ease-smooth),
+        border-color 0.15s var(--ease-smooth),
+        color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth);
 }
 
 /* 折叠指示器统一过渡（路由分组等） */
@@ -1299,6 +1282,48 @@ input, textarea, select, button,
     animation: none !important;
     opacity: 1 !important;
     transition: none !important;
+}
+
+/* ════════════════ 组件库次世代：Tabs / 浮层统一 ════════════════ */
+
+/* Tabs 激活语言全站唯一：accent-soft 柔和底 + accent 文字（与 nav-item/下拉选项同源）。
+   覆盖各页面 css 里的局部实现（view-btn 原白底 / scope-nav-item 原手写 mix） */
+.view-btn.active,
+.scope-nav-item.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    box-shadow: none;
+}
+
+.view-btn.active {
+    font-weight: 600;
+}
+
+/* 浮层（popover / 挂 body 下拉）：--shadow-hover 悬浮影 + 签名弹入 scale(.96)+8px */
+.popover {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
+}
+
+.popover.show {
+    animation: popoverFadeIn 0.18s var(--ease-soft-spring);
+}
+
+@keyframes popoverFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .popover.show {
+        animation: none;
+    }
 }
 
 /* ════════════════ 全局滚动条隐藏（保留滚动能力） ════════════════ */

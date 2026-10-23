@@ -1,199 +1,95 @@
-/* ErisPulse Dashboard – modules (auto-split from dash.css, aligned with js/) */
+/* ErisPulse Dashboard – modules
+   模块管理页（适配器/模块卡网格）· EP Design Language v1.1
+   生命周期时间轴样式见 logs.css */
 
-/* 生命周期样式 */
-.lifecycle-item {
+/* ───────────────────────── 页面标准边距（本组页面防御性收口） ─────────────────────────
+   全局 .page padding 由 overrides.css 提供（clamp 值）；此处对模块与配置管理组
+   各页面显式重申同一 token 化边距，防止页面级规则意外覆盖导致内容贴边 */
+#p-module-mgmt,
+#p-store,
+#p-packages,
+#p-logs,
+#p-commands,
+#p-master,
+#p-config,
+#p-adapter {
+    padding: clamp(16px, 3vw, 32px) clamp(14px, 3.4vw, 36px);
+}
+
+/* ───────────────────────── 模块卡网格 ───────────────────────── */
+
+/* 工具条：搜索/筛选/双 tab/刷新 一行收纳 */
+.module-toolbar {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--bd);
-    font-size: 13px;
-    transition: background 0.2s;
-    cursor: default;
-}
-
-.lifecycle-item:last-child {
-    border-bottom: none;
-}
-
-.lifecycle-item:hover {
-    background: var(--bg-s);
-}
-
-.lifecycle-item.has-data {
-    cursor: pointer;
-}
-
-.lifecycle-badge {
-    font-weight: 600;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    min-width: 48px;
-    text-align: center;
-    flex-shrink: 0;
-    letter-spacing: 0.3px;
-}
-
-.lifecycle-badge.core {
-    background: var(--pr-bg);
-    color: var(--pr-c);
-}
-
-.lifecycle-badge.module {
-    background: var(--ok-bg);
-    color: var(--ok-c);
-}
-
-.lifecycle-badge.adapter {
-    background: var(--wr-bg);
-    color: var(--wr-c);
-}
-
-.lifecycle-badge.server {
-    background: var(--sc-bg);
-    color: var(--sc-c);
-}
-
-.lifecycle-badge.message {
-    background: var(--ok-bg);
-    color: var(--ok-c);
-}
-
-.lifecycle-badge.command {
-    background: var(--wr-bg);
-    color: var(--wr-c);
-}
-
-.lifecycle-badge.event {
-    background: var(--pr-bg);
-    color: var(--pr-c);
-}
-
-.lifecycle-badge.config {
-    background: var(--sc-bg);
-    color: var(--sc-c);
-}
-
-.lifecycle-event {
-    flex: 1;
-    font-weight: 500;
-    color: var(--tx-p);
-    font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.lifecycle-time {
-    font-size: 12px;
-    color: var(--tx-t);
-    flex-shrink: 0;
-}
-
-.lifecycle-expand-hint {
-    font-size: 10px;
-    color: var(--tx-t);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-}
-
-.lifecycle-item.expanded .lifecycle-expand-hint {
-    transform: rotate(90deg);
-}
-
-.lifecycle-data {
-    display: none;
-    padding: 8px 0 0;
-    width: 100%;
-}
-
-.lifecycle-item.expanded .lifecycle-data {
-    display: block;
-}
-
-.lifecycle-data pre {
-    font-size: 11px;
-    background: var(--bg-s);
-    padding: 8px;
-    border-radius: 6px;
-    overflow-x: auto;
-    color: var(--tx-s);
-    margin: 0;
-}
-
-.lifecycle-expand-hint {
-    font-size: 10px;
-    color: var(--tx-t);
-    transition: transform 0.2s;
-    display: inline-block;
-}
-
-.lifecycle-item.has-data {
-    cursor: pointer;
-}
-
-.lifecycle-item.has-data .lifecycle-expand-hint {
-    margin-left: auto;
-}
-
-.lifecycle-item.expanded .lifecycle-expand-hint {
-    transform: rotate(90deg);
-}
-
-.lifecycle-data {
-    display: none;
-    margin-top: 8px;
+    flex-wrap: wrap;
     padding: 10px 12px;
-    background: var(--bg);
-    border-radius: 6px;
     border: 1px solid var(--bd);
-    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    margin-top: 14px;
 }
 
-.lifecycle-item.expanded .lifecycle-data {
-    display: block;
+.module-toolbar .ep-select {
+    width: auto;
 }
 
-.lifecycle-data pre {
+.module-toolbar-spacer {
+    flex: 1;
+}
+
+.module-toolbar .mm-tabs {
     margin: 0;
-    font-size: 12px;
-    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
-    color: var(--tx-p);
-    white-space: pre-wrap;
-    word-break: break-all;
 }
 
-/* 模块管理卡片样式 */
+.module-list-count {
+    display: none;
+}
+
 #adapterList,
 #moduleList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    /* start：卡片可展开，展开高度只属于自身，不拉伸同排兄弟 */
+    align-items: start;
+    gap: 12px;
+    padding: 14px 0 0;
 }
 .module-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 12px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition:
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        transform 0.15s var(--ease-smooth);
 }
+
 .module-card:hover {
-    border-color: color-mix(in srgb, var(--accent) 30%, var(--bd));
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-color: var(--bd-h);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
 }
+
 .module-card.expanded {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--bd));
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--bd));
+    box-shadow: var(--shadow-hover);
 }
+
 .module-card-main {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
+    padding: 12px 12px 10px 14px;
     font-size: 13px;
+    flex-wrap: wrap;
 }
+
 .module-card-id {
     flex: 1;
     min-width: 0;
@@ -202,37 +98,113 @@
     gap: 10px;
     cursor: pointer;
 }
+
+/* 图标瓦片：适配器用品牌 logo，模块用立方体图标 */
+.module-ico {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--bg-s);
+    border: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--tx-s);
+    overflow: hidden;
+}
+
+.module-ico svg {
+    width: 19px;
+    height: 19px;
+}
+
+.module-card.is-adapter .module-ico {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--accent);
+}
+
+.module-card.is-adapter .module-ico img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.module-ico img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+/* 兜底首字母头像：accent-soft 底 + 主文字色，全部 token 化（不按模块名哈希取色） */
+.module-ico:has(.module-ico-initial) {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.module-ico-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--tx-p);
+    user-select: none;
+}
+
 .module-card-info {
     flex: 1;
     min-width: 0;
 }
+
 .module-name-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     flex-wrap: wrap;
 }
+
 .module-name {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13.5px;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 }
-.module-status-chip {
-    font-size: 10px;
-    padding: 1px 7px;
-}
-.module-meta {
+
+.module-version {
     font-size: 11px;
     color: var(--tx-t);
-    margin-top: 2px;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    flex-shrink: 0;
+}
+
+.module-status-chip {
+    font-size: 10px;
+    padding: 1px 8px;
+    flex-shrink: 0;
+}
+
+.module-meta {
+    font-size: 11.5px;
+    color: var(--tx-t);
+    margin-top: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .module-meta span:not(:last-child)::after {
     content: "·";
     margin: 0 5px;
     opacity: 0.55;
 }
+
 .module-card-chevron {
     flex-shrink: 0;
     display: inline-flex;
@@ -240,53 +212,87 @@
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     color: var(--tx-t);
-    transition: transform 0.2s;
+    transition: transform 0.2s var(--ease-smooth), background-color 0.15s var(--ease-smooth);
 }
+
 .module-card-chevron svg {
     width: 14px;
     height: 14px;
 }
+
+.module-card-id:hover .module-card-chevron {
+    background: var(--bg-s);
+}
+
 .module-card.expanded .module-card-chevron {
     transform: rotate(180deg);
 }
+
+/* 卡片操作行：启用开关 + 主操作 + ⋯ 菜单 */
 .module-card-side {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
+    padding: 0 12px 10px 14px;
+    margin-top: auto;
 }
+
+.module-card-side .switch {
+    margin-right: 2px;
+}
+
+.module-enable-label {
+    font-size: 11px;
+    color: var(--tx-t);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    margin-right: auto;
+    min-width: 0;
+}
+
+.module-enable-label .switch {
+    flex-shrink: 0;
+}
+
 .module-more-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 7px;
+    padding: 5px 7px;
 }
+
 .module-action-menu {
     position: fixed;
     z-index: 1200;
-    min-width: 132px;
+    min-width: 140px;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
     padding: 5px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    animation: moduleMenuIn 0.14s ease;
+    animation: moduleMenuIn 0.16s var(--ease-soft-spring, ease);
 }
+
 @keyframes moduleMenuIn {
     from {
         opacity: 0;
-        transform: translateY(-4px);
+        transform: scale(0.96) translateY(6px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1) translateY(0);
     }
 }
+
 .module-menu-item {
     display: block;
     width: 100%;
@@ -297,19 +303,23 @@
     font-size: 12.5px;
     color: var(--tx-p);
     padding: 7px 10px;
-    border-radius: 7px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     white-space: nowrap;
 }
+
 .module-menu-item:hover {
     background: var(--bg-s);
 }
+
 .module-menu-item.danger {
     color: var(--er-c);
 }
+
 .module-menu-item.danger:hover {
     background: var(--er-bg);
 }
+
 .module-status-dot {
     width: 8px;
     height: 8px;
@@ -319,47 +329,61 @@
 
 .module-status-dot.loaded {
     background: var(--ok-c);
+    box-shadow: 0 0 0 3px var(--ok-bg);
 }
 
 .module-status-dot.enabled {
     background: var(--wr-c);
+    box-shadow: 0 0 0 3px var(--wr-bg);
 }
 
 .module-status-dot.disabled {
     background: var(--tx-t);
+    box-shadow: 0 0 0 3px var(--bg-s);
 }
+
+/* 展开详情：底部下沉面板 */
 .module-detail {
-    padding: 10px 14px 12px 14px;
+    padding: 10px 14px 12px;
     border-top: 1px solid var(--bd);
-    border-radius: 0 0 12px 12px;
-    background: color-mix(in srgb, var(--bg-s) 60%, transparent);
+    background: color-mix(in srgb, var(--bg-s) 55%, transparent);
     display: block;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
+
 .module-detail.hidden {
     display: none;
 }
+
 .module-detail-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px 16px;
     align-items: center;
     font-size: 12px;
     color: var(--tx-s);
 }
+
 .module-detail-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
 }
+
+.module-detail-item strong {
+    font-weight: 600;
+    color: var(--tx-t);
+}
+
 .module-detail-item.cap-item {
     flex: 1 1 100%;
     flex-wrap: wrap;
     row-gap: 5px;
 }
+
 .module-detail-item.cap-item strong {
     flex-shrink: 0;
 }
+
 .module-cap-tag {
     display: inline-block;
     max-width: 100%;
@@ -369,47 +393,59 @@
     vertical-align: middle;
     font-size: 10px;
     font-weight: 500;
-    padding: 2px 7px;
-    border-radius: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
     background: var(--bg-t);
     color: var(--tx-s);
     border: 1px solid var(--bd);
 }
+
 .module-git-chip {
     font-size: 10px;
     padding: 1px 6px;
 }
+
 .dep-code {
-    font-family: monospace;
-    font-size: 10px;
+    font-family: var(--font-mono, monospace);
+    font-size: 10.5px;
     background: var(--bg-t);
-    padding: 1px 5px;
-    border-radius: 3px;
+    padding: 1px 6px;
+    border-radius: var(--radius-xs);
     color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
 }
 
 .module-search {
     padding: 8px 14px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
     max-width: 300px;
     width: 100%;
 }
 
 .module-search:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
+
 .module-view-iframe {
     width: 100%;
     height: calc(100vh - 120px);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
+}
+
+/* 窄屏：模块卡退化为单列 */
+@media (max-width: 700px) {
+    #adapterList,
+    #moduleList {
+        grid-template-columns: 1fr;
+    }
 }

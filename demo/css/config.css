@@ -71,7 +71,7 @@
     min-width: 0;
     padding: 6px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
     color: var(--tx-p);
     font-size: 13px;
@@ -82,7 +82,7 @@
 
 .kv-input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, rgba(var(--accent-rgb), 0.14));
 }
 
 .kv-btn {
@@ -157,7 +157,7 @@
 .kv-count {
     font-size: 11px;
     padding: 1px 8px;
-    border-radius: 12px;
+    border-radius: 999px;
     background: var(--bg-t);
     color: var(--tx-t);
     border: 1px solid var(--bd);
@@ -165,12 +165,14 @@
 
 .cfg-source-status {
     min-height: 22px;
-    margin-top: 8px;
     font-size: 12px;
     line-height: 1.4;
     display: flex;
     align-items: center;
     gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .cfg-source-status.ok {
@@ -179,6 +181,53 @@
 
 .cfg-source-status.err {
     color: var(--er-c);
+}
+
+/* ---- 源码编辑器区：编辑器 + 状态/操作条 ---- */
+
+.cfg-source-wrap {
+    padding: 12px 16px 16px;
+}
+
+/* 操作条：左侧语法校验状态、右侧重新加载（丢弃修改，带二次确认）与保存 */
+.cfg-source-bar {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cfg-source-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* ---- 备份卡内容行：说明文字独立成行，按钮组右对齐 ---- */
+
+.cfg-backup-row {
+    padding: 14px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cfg-backup-desc {
+    font-size: 13px;
+    color: var(--tx-s);
+}
+
+.cfg-backup-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 配置页内后续卡片间距 */
+.cfg-gap-card {
+    margin-top: 14px;
 }
 
 .kv-textarea {
@@ -245,7 +294,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 14px 8px 10px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     border: none;
     background: var(--bg-t);
     cursor: pointer;
@@ -261,7 +310,7 @@
 }
 
 .adapter-chip.active {
-    background: color-mix(in srgb, var(--accent) 14%, var(--bg-t));
+    background: var(--accent-soft, rgba(var(--accent-rgb), 0.14));
     color: var(--tx-p);
 }
 
@@ -341,10 +390,6 @@
         max-width: 100%;
         box-sizing: border-box;
     }
-
-    #p-adapter-config .page-title {
-        font-size: 20px;
-    }
 }
 
 .adapter-list-name {
@@ -388,7 +433,7 @@
 
 .account-card {
     border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
-    border-radius: var(--radius-md);
+    border-radius: 16px;
     overflow: hidden;
     background: var(--bg-t);
     transition: border-color 0.2s;
@@ -439,7 +484,7 @@
     font-size: 10px;
     color: var(--wr-c);
     border: 1px solid var(--wr-c);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     padding: 0 5px;
     margin-left: 6px;
     vertical-align: middle;

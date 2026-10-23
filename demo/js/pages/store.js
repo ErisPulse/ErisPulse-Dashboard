@@ -252,7 +252,7 @@ export async function loadStore(forceRefresh) {
           let actionBtn = "";
           if (hasUpdate) {
             statusBadge =
-              '<span class="chip chip-wr" style="margin-left:4px;font-size:10px">' +
+              '<span class="chip chip-wr store-status-chip">' +
               t("store_update_available") +
               "</span>";
             actionBtn =
@@ -263,11 +263,11 @@ export async function loadStore(forceRefresh) {
               "</button>";
           } else if (isInstalled) {
             statusBadge =
-              '<span class="chip chip-ok" style="margin-left:4px;font-size:10px">v' +
+              '<span class="chip chip-ok store-status-chip">v' +
               esc(installedVer) +
               "</span>";
             actionBtn =
-              '<span style="font-size:12px;color:var(--ok-c);font-weight:500">' +
+              '<span class="store-installed-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
               t("active") +
               "</span>";
           } else {
@@ -295,53 +295,81 @@ export async function loadStore(forceRefresh) {
                 .join("") +
               "</div>";
           }
+          // 图标瓦片三级回退（与模块管理页同链）：
+          // ① 源数据 logo_url 外链图片 → ② icon_svg 内联 SVG → ③ 名称首字母（accent-soft 底）
+          var icoInner;
+          if (i.logo_url) {
+            icoInner =
+              '<img src="' + esc(i.logo_url) + '" alt="" loading="lazy">';
+          } else if (i.icon_svg) {
+            icoInner = String(i.icon_svg);
+          } else {
+            icoInner = esc(((i.name || "?").trim().charAt(0) || "?").toUpperCase());
+          }
+          var detailArgs =
+            "'" + esc(i.name) + "','" + esc(i.package) + "','" + esc(i.type) + "'";
           return (
             '<div class="store-card' +
             (hasUpdate ? " store-card-update" : "") +
-            '" onclick="openPkgDetail(\'' +
-            esc(i.name) +
-            "','" +
+            '" onclick="openPkgDetail(' +
+            detailArgs +
+            ')">' +
+            '<div class="store-card-head">' +
+            '<input type="checkbox" class="store-card-check" data-pkg="' +
             esc(i.package) +
-            "','" +
-            esc(i.type) +
-            '\')"><div style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="store-card-check" data-pkg="' +
-            esc(i.package) +
-            '" onclick="event.stopPropagation();updateBatchBar()"><span style="font-size:14px;font-weight:600">' +
+            '" onclick="event.stopPropagation();updateBatchBar()">' +
+            '<span class="store-ico' +
+            (i.type === "adapter" ? " is-adapter" : "") +
+            '">' +
+            icoInner +
+            "</span>" +
+            // 名称行独占：标题块内名称在上（溢出省略 + 悬停完整名），
+            // 类型/分类/状态胶囊下沉为第二行标签组，避免挤压名称可读性
+            '<div class="store-card-title">' +
+            '<span class="store-name" title="' +
             esc(i.name) +
-            '</span><span class="chip chip-pr">' +
+            '">' +
+            esc(i.name) +
+            "</span>" +
+            '<span class="store-pkg" title="' +
+            esc(i.package) +
+            '">' +
+            esc(i.package) +
+            "</span>" +
+            '<div class="store-card-badges">' +
+            '<span class="chip ' +
+            (i.type === "adapter" ? "chip-wr" : "chip-pr") +
+            ' store-type-chip">' +
             esc(i.type) +
             "</span>" +
             catBadge +
             statusBadge +
-            '</div><div style="font-size:12px;color:var(--tx-t);font-family:Consolas,Monaco,monospace">' +
-            esc(i.package) +
-            '</div><div class="store-card-desc">' +
+            "</div>" +
+            "</div>" +
+            "</div>" +
+            '<div class="store-card-desc">' +
             esc(i.description || "-") +
             "</div>" +
             tagBadges +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto"><span style="font-size:12px;color:var(--tx-s);font-weight:500">v' +
+            '<div class="store-card-foot">' +
+            '<span class="store-ver">v' +
             esc(i.version || "?") +
             (hasUpdate
-              ? ' <span style="color:var(--wr-c);font-weight:600">&larr;</span> ' +
-                t("store_version_current") +
-                " v" +
-                esc(installedVer)
+              ? ' <span class="store-ver-old">v' + esc(installedVer) + "</span>"
               : "") +
-            '</span><div style="display:flex;align-items:center;gap:6px">' +
+            "</span>" +
+            '<div class="store-card-foot-actions">' +
             actionBtn +
-            '<button class="store-card-detail-btn" onclick="event.stopPropagation();openPkgDetail(\'' +
-            esc(i.name) +
-            "','" +
-            esc(i.package) +
-            "','" +
-            esc(i.type) +
-            '\')" title="' +
+            '<button class="store-card-detail-btn" onclick="event.stopPropagation();openPkgDetail(' +
+            detailArgs +
+            ')" title="' +
             t("view_detail") +
-            '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button></div></div></div>'
+            '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>' +
+            "</div></div></div>"
           );
         })
         .join("")
-    : '<div class="empty-state" style="grid-column:span 3"><p>' +
+    : '<div class="empty-state" style="grid-column: 1 / -1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>' +
       t("no_packages") +
       "</p></div>";
 }

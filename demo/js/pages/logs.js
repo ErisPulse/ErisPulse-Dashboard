@@ -30,9 +30,16 @@ export function toggleLogAutoRefresh() {
 export function _onWebSocketLog(logData) {
   if (!_logStreamActive) return;
   _logStreamBuffer.push(logData);
-  if (!_logStreamFlushTimer) {
-    _logStreamFlushTimer = setTimeout(_flushLogStream, 300);
-  }
+  if (_logStreamFlushTimer) return;
+  // 渲染合帧：WS 日志仅入队，至多每 250ms 合并一批，DOM 写入对齐下一动画帧；
+  // 高频日志不再逐条触发列表重排（增量插入见 _flushLogStream，全量重建仅发生在
+  // 切 tab / 变更过滤器 / 手动刷新等用户动作驱动的 loadLogs）
+  _logStreamFlushTimer = setTimeout(function () {
+    _logStreamFlushTimer = null;
+    requestAnimationFrame(function () {
+      _flushLogStream();
+    });
+  }, 250);
 }
 
 export function _flushLogStream() {
@@ -41,15 +48,15 @@ export function _flushLogStream() {
   var newLogs = _logStreamBuffer;
   _logStreamBuffer = [];
 
-  // Collect new modules
+  // 收集新出现的模块；仅在有真正新增时才重建模块下拉，避免每批次无谓刷新
+  var hasNewModule = false;
   newLogs.forEach(function (log) {
     if (log.module && !_availableModules.has(log.module)) {
       _availableModules.add(log.module);
+      hasNewModule = true;
     }
   });
-  if (newLogs.some(function (l) { return l.module; })) {
-    updateModuleSelect();
-  }
+  if (hasNewModule) updateModuleSelect();
 
   // Apply current filters
   var moduleFilter = document.getElementById("logModuleFilter")?.value || "";

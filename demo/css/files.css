@@ -202,11 +202,62 @@
 }
 
 .fm2-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 13.5px;
     color: var(--tx-p);
+    min-width: 0;
+}
+
+.fm2-nametext {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* 可预览文件：名称尾部预览按钮（桌面 hover 浮现 / 触屏常显） */
+.fm2-previewbtn {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--tx-t);
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.fm2-previewbtn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.fm2-row:hover .fm2-previewbtn,
+.fm2-previewbtn:focus-visible {
+    opacity: 1;
+}
+
+.fm2-previewbtn:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.fm2-previewbtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
+@media (hover: none) {
+    .fm2-previewbtn {
+        opacity: 1;
+    }
 }
 
 .fm2-row.is-dir .fm2-name {
@@ -626,4 +677,209 @@
     padding: 3px 14px;
     font-size: 12px;
     line-height: 1.4;
+}
+
+/* ════════════════ 在线预览模态（img/video/audio/PDF 原生标签） ════════════════ */
+.fm-preview-modal .fm-preview-box {
+    width: min(1080px, 94vw);
+    height: min(720px, 88vh);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--bd);
+    box-shadow: var(--shadow-hover);
+    animation: modalIn 0.2s var(--ease-soft-spring) both;
+}
+
+/* ── 头部：类型图标 + 文件名/元信息 + 画廊导航/下载/关闭 ── */
+.fm-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0;
+}
+
+.fm-preview-icon {
+    display: flex;
+    align-items: center;
+    color: var(--tx-s);
+    flex-shrink: 0;
+}
+
+.fm-preview-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.fm-preview-titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.fm-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fm-preview-meta {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 11px;
+    color: var(--tx-t);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.fm-preview-hbtn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+}
+
+.fm-preview-hbtn svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ── 媒体区：次级底衬托，contain 自适应 ── */
+.fm-preview-body {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-s);
+    overflow: hidden;
+}
+
+.fm-preview-media {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.fm-preview-body iframe.fm-preview-media {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    border: 0;
+    background: var(--bg-t);
+}
+
+/* 音频：大图标 + 原生控件 */
+.fm-preview-audiowrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 24px;
+    width: 100%;
+}
+
+.fm-preview-audioicon {
+    width: 64px;
+    height: 64px;
+    color: var(--tx-t);
+}
+
+.fm-preview-audiowrap audio {
+    width: min(420px, 86%);
+}
+
+/* 加载骨架：呼吸态（设计语言·加载态规范） */
+.fm-preview-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-s);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.fm-preview-skel {
+    width: 46%;
+    height: 46%;
+    min-width: 180px;
+    min-height: 120px;
+    border-radius: 14px;
+    background: var(--bd);
+    animation: fmPreviewBreath 1.2s ease-in-out infinite;
+}
+
+@keyframes fmPreviewBreath {
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fm-preview-skel {
+        animation: none;
+    }
+
+    .fm-preview-modal .fm-preview-box {
+        animation: none;
+    }
+}
+
+/* ── 底部信息条 ── */
+.fm-preview-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    border-top: 1px solid var(--bd);
+    background: var(--bg-s);
+    font-size: 12px;
+    color: var(--tx-s);
+    flex-shrink: 0;
+    min-height: 31px;
+}
+
+.fm-preview-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.fm-preview-hint {
+    color: var(--tx-t);
+    flex-shrink: 0;
+    font-size: 11.5px;
+}
+
+/* ── 移动端：全屏预览 ── */
+@media (max-width: 768px) {
+    .fm-preview-modal .fm-preview-box {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+        border: none;
+    }
 }

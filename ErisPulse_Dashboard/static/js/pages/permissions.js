@@ -89,21 +89,21 @@ export async function loadAuditLog() {
           file_decompress: "chip-pr",
         }[log.action] || "chip-sc";
       return (
-        '<div class="list-row" style="font-size:13px;gap:12px">' +
+        '<div class="audit-row">' +
         '<span class="chip ' +
         actionClass +
-        '" style="min-width:100px;justify-content:center">' +
+        ' audit-action-chip">' +
         esc(actionLabel) +
         "</span>" +
-        '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-s)" title="' +
+        '<span class="audit-detail" title="' +
         esc(log.detail) +
         '">' +
         esc(log.detail || "-") +
         "</span>" +
-        '<span style="font-size:11px;color:var(--tx-t);white-space:nowrap">' +
-        esc(log.ip || "") +
+        '<span class="audit-ip">' +
+        esc(log.ip || "-") +
         "</span>" +
-        '<span style="font-size:11px;color:var(--tx-t);white-space:nowrap;min-width:140px;text-align:right">' +
+        '<span class="audit-time">' +
         esc(tm) +
         "</span>" +
         "</div>"
@@ -165,9 +165,9 @@ export async function loadCommands() {
   const cmds = d.commands || [];
   if (!cmds.length) {
     document.getElementById("cmdListBody").innerHTML =
-      '<div style="padding:32px 18px;text-align:center;color:var(--tx-t);font-size:13px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.3;margin-bottom:8px"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><div>' +
+      '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><p>' +
       t("cmd_no_commands") +
-      "</div></div>";
+      "</p></div>";
     return;
   }
   let html = "";
@@ -196,11 +196,7 @@ export async function loadCommands() {
         "<span>" + t("cmd_group") + ": " + esc(c.group) + "</span>",
       );
     if (c.usage)
-      metaParts.push(
-        '<span style="font-family:Consolas,Monaco,monospace;font-size:11px">' +
-          esc(c.usage) +
-          "</span>",
-      );
+      metaParts.push('<span class="cmd-usage">' + esc(c.usage) + "</span>");
     let platformBadges = "";
     for (const p of c.allowed_platforms || []) {
       platformBadges +=
@@ -231,9 +227,7 @@ export async function loadCommands() {
       '<div class="cmd-meta">' +
       (metaParts.length
         ? metaParts.join("")
-        : '<span style="color:var(--tx-t)">' +
-          t("module_no_desc") +
-          "</span>") +
+        : '<span class="cmd-meta-empty">' + t("module_no_desc") + "</span>") +
       "</div>" +
       "</div>" +
       '<div class="cmd-actions">' +
@@ -251,23 +245,22 @@ export async function loadCommands() {
 export function renderCmdGlobalSettings(gs) {
   var prefixes = gs.prefixes || [gs.prefix || "/"];
   var prefixStr = prefixes.join(",");
+  // 双列表单网格：前缀输入通栏，三个开关各占一格
   var html =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px">' +
-    '<div style="grid-column:1/-1">' +
-    '<div style="color:var(--tx-s);font-size:13px;margin-bottom:4px">' +
+    '<div class="cmd-settings-field span-2">' +
+    "<label>" +
     t("cmd_prefix") +
-    "</div>" +
+    "</label>" +
     '<input class="fw-input" id="cmdSetPrefix" value="' +
     esc(prefixStr) +
-    '" placeholder="/" style="width:100%">' +
-    '<div style="font-size:11px;color:var(--tx-t);margin-top:2px">' +
+    '" placeholder="/">' +
+    '<span class="cmd-settings-hint">' +
     t("cmd_prefix_hint") +
-    "</div>" +
+    "</span>" +
     "</div>" +
     renderCmdToggleRow("cmdSetCaseSensitive", t("cmd_case_sensitive"), gs.case_sensitive) +
     renderCmdToggleRow("cmdSetAllowSpace", t("cmd_allow_space_prefix"), gs.allow_space_prefix) +
-    renderCmdToggleRow("cmdSetMustAtBot", t("cmd_must_at_bot"), gs.must_at_bot) +
-    "</div>";
+    renderCmdToggleRow("cmdSetMustAtBot", t("cmd_must_at_bot"), gs.must_at_bot);
   document.getElementById("cmdGlobalSettingsBody").innerHTML = html;
   var settingsTimer = null;
   ["cmdSetPrefix", "cmdSetCaseSensitive", "cmdSetAllowSpace", "cmdSetMustAtBot"].forEach(function (id) {
@@ -284,8 +277,8 @@ export function renderCmdGlobalSettings(gs) {
 
 export function renderCmdToggleRow(id, label, checked) {
   return (
-    '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">' +
-    '<span style="color:var(--tx-s);font-size:13px">' +
+    '<div class="cmd-toggle-row">' +
+    '<span class="cmd-toggle-label">' +
     esc(label) +
     "</span>" +
     '<label class="switch"><input type="checkbox" id="' +

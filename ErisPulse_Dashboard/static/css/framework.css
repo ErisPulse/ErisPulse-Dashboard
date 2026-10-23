@@ -568,7 +568,7 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--wr-c);
-    margin-top: 16px;
+    margin-top: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -582,6 +582,22 @@
     background: var(--bg-s);
     border-radius: 8px;
     border: 1px solid var(--bd);
+}
+
+/* 分区容器：与顶部提示条保持节奏 */
+.fw-body {
+    margin-top: 14px;
+}
+
+/* 危险操作区：右对齐的重启等破坏性操作，与常规操作区视觉隔离 */
+.fw-danger-bar {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--bd);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
 }
 
 [data-theme="dark"] .restart-banner {

@@ -59,54 +59,59 @@ export async function loadBots() {
               esc(av) +
               '" data-logo="' +
               (logoSrc ? esc(logoSrc) : "") +
-              '" onerror="_botAvatarFallback(this)">';
+              '" alt="" onerror="_botAvatarFallback(this)">';
           } else if (logoSrc) {
             avatarHtml =
-              '<img src="' +
-              esc(logoSrc) +
-              '" onerror="_botAvatarFallback(this)">';
+              '<img src="' + esc(logoSrc) + '" alt="" onerror="_botAvatarFallback(this)">';
           } else {
             avatarHtml =
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>';
           }
+          // v1.2 卡片结构：头部（logo+状态点 / 名称 / 连接 chip）+ 卡底元信息收纳
           return (
             '<div class="bot-card" data-bot-status="' +
             (on ? "online" : "offline") +
-            '"><div class="' +
+            '">' +
+            '<div class="bot-head">' +
+            '<span class="' +
             avCls +
             '">' +
             avatarHtml +
-            '</div><div class="bot-card-body"><div class="bot-name-row">' +
+            '<i class="bot-status-dot" aria-hidden="true"></i></span>' +
+            '<div class="bot-card-body">' +
             '<span class="bot-name">' +
             esc(nm) +
             "</span>" +
-            '</div><div class="bot-platform-row">' +
+            '<span class="bot-platform-row">' +
             esc(x.platform) +
-            " / " +
-            '<code class="bot-id-code">' +
+            ' <code class="bot-id-code">' +
             esc(x.bot_id) +
-            "</code>" +
+            "</code></span>" +
             "</div>" +
-            capsHtml +
-            '</div><div class="bot-card-right"><div class="bot-status-row">' +
-            '<span class="dot" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' +
-            (on ? "var(--ok-c)" : "var(--tx-t)") +
-            '"></span><span style="font-size:12px;font-weight:500;color:' +
-            (on ? "var(--ok-c)" : "var(--tx-s)") +
-            '">' +
+            '<span class="chip ' +
+            (on ? "chip-ok" : "chip-er") +
+            ' bot-conn-chip"><i class="bot-conn-dot"></i>' +
             (on ? t("online") : t("offline")) +
-            '</span></div><div class="bot-last-active">' +
-            esc(la) +
+            "</span>" +
             "</div>" +
+            '<div class="bot-foot">' +
+            (capsHtml ||
+              '<span class="bot-caps-empty" aria-hidden="true"></span>') +
+            '<span class="bot-foot-meta">' +
+            '<span class="bot-last-active">' +
+            esc(la) +
+            "</span>" +
             adStatusHtml +
-            "</div></div>"
+            "</span>" +
+            "</div>" +
+            "</div>"
           );
         })
         .join("")
-    : '<div class="empty-state" style="grid-column:span 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg><h3>' +
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/></svg><h3>' +
       t("no_bots") +
       '</h3><button class="empty-action" onclick="go(\'adapter\')">' +
       t("adapter_config") +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button></div>';
+      "</button></div>";
 }
 

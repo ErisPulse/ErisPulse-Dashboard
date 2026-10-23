@@ -1,4 +1,5 @@
 /* ════════════════ 全局功能搜索（Ctrl+K / `/`）════════════════ */
+/* 视觉语言与 QvQChat 弹层对齐：radius 16 / shadow-hover / 弹入动画 / accent-soft 焦点环 */
 
 .palette-overlay {
     display: none;
@@ -13,6 +14,13 @@
     align-items: flex-start;
     justify-content: center;
     padding: 12vh 16px 16px;
+    animation: paletteFade 0.15s ease;
+}
+
+@keyframes paletteFade {
+    from {
+        opacity: 0;
+    }
 }
 
 .palette-box {
@@ -22,32 +30,57 @@
     flex-direction: column;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 14px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
     overflow: hidden;
-    animation: paletteIn 0.16s ease;
+    animation: paletteIn 0.2s var(--ease-soft-spring) both;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 输入焦点：accent 描边 + 3.5px 柔光环（qvq-msg-editor 同款） */
+.palette-box:focus-within {
+    border-color: var(--accent);
+    box-shadow:
+        var(--shadow-hover),
+        0 0 0 3.5px var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
 @keyframes paletteIn {
     from {
-        transform: translateY(-8px) scale(0.985);
         opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
     }
 }
 
+/* 输入行 = 一体化横向搜索组件：图标/占位文字/Esc 徽标都在同一容器内，
+   内嵌场样式（bg-s 圆角），不再是裸输入框。域样式全部由整行承担 */
 .palette-input-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--bd);
+    margin: 10px 10px 0;
+    padding: 11px 14px;
+    background: var(--bg-s);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
     flex: none;
+    cursor: text;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.palette-input-row .palette-search-icon {
-    flex: none;
-    color: var(--tx-t);
-    display: flex;
+.palette-box:focus-within .palette-input-row {
+    background: var(--bg-t);
+    border-color: color-mix(in srgb, var(--bd) 60%, transparent);
+}
+
+/* 输入框自身不带任何域样式（环/边框归整行），点击穿透让整行可点 */
+.palette-input-row .palette-search-icon,
+.palette-input-row .palette-esc {
+    pointer-events: none;
 }
 
 #paletteInput {
@@ -59,10 +92,34 @@
     color: var(--tx-p);
     font-size: 15px;
     font-family: inherit;
+    letter-spacing: 0.01em;
+    height: 24px;
+    line-height: 24px;
+    box-shadow: none;
+}
+
+#paletteInput:focus,
+#paletteInput:focus-visible {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.palette-input-row .palette-search-icon {
+    flex: none;
+    color: var(--tx-t);
+    display: flex;
+}
+
+.palette-input-row .palette-search-icon svg {
+    width: 17px;
+    height: 17px;
 }
 
 #paletteInput::placeholder {
     color: var(--tx-t);
+    opacity: 1;
+    font-size: 14px;
 }
 
 .palette-esc {
@@ -70,9 +127,10 @@
     font-size: 10px;
     color: var(--tx-t);
     border: 1px solid var(--bd);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     padding: 2px 6px;
-    background: var(--bg-s);
+    background: var(--bg-t);
+    line-height: 1.4;
 }
 
 .palette-list {
@@ -94,10 +152,15 @@
     align-items: center;
     gap: 10px;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 13px;
     color: var(--tx-p);
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.palette-item:hover {
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
 .palette-item-icon {
@@ -139,8 +202,14 @@
     background: var(--bg-s);
 }
 
+/* 选中项：accent-soft 底 + accent 文字/图标 */
 .palette-item.active {
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+}
+
+.palette-item.active .palette-item-label {
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .palette-item.active .palette-item-icon {
@@ -167,7 +236,7 @@
 
 .palette-foot .palette-kbd {
     border: 1px solid var(--bd);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     padding: 1px 5px;
     background: var(--bg-s);
     font-size: 10px;
@@ -180,5 +249,12 @@
 
     .palette-foot {
         display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .palette-overlay.show,
+    .palette-box {
+        animation: none;
     }
 }

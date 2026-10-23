@@ -61,58 +61,60 @@ export async function refreshDashboard() {
     aH +=
       '<div class="list-row">' +
       adapterLogoImg(n, 20) +
+      '<span class="dash-list-name">' +
+      esc(n) +
+      '</span><span class="dash-list-sub">' +
+      Object.keys(i.bots || {}).length +
+      " bots</span>" +
       '<span class="chip ' +
       (on ? "chip-ok" : "chip-er") +
-      '" style="min-width:60px;justify-content:center">' +
+      ' dash-list-chip">' +
       esc(i.status) +
-      '</span><span style="flex:1;font-weight:500">' +
-      esc(n) +
-      '</span><span style="font-size:12px;color:var(--tx-s)">' +
-      Object.keys(i.bots || {}).length +
-      " bots</span></div>";
+      "</span></div>";
   });
   document.getElementById("dashAdapters").innerHTML =
     aH ||
-    '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><p>' +
       t("no_adapters") +
-      "</div>";
+      "</p></div>";
 
   let mH = "";
   Object.entries(mo).forEach(([n, l]) => {
     mH +=
-      '<div class="list-row"><span class="chip ' +
-      (l ? "chip-ok" : "chip-er") +
-      '" style="min-width:60px;justify-content:center">' +
-      (l ? t("active") : t("inactive")) +
-      '</span><span style="flex:1;font-weight:500">' +
+      '<div class="list-row"><span class="dash-list-name">' +
       esc(n) +
+      '</span><span class="chip ' +
+      (l ? "chip-ok" : "chip-er") +
+      ' dash-list-chip">' +
+      (l ? t("active") : t("inactive")) +
       "</span></div>";
   });
   document.getElementById("dashModules").innerHTML =
     mH ||
-    '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><p>' +
       t("no_modules") +
-      "</div>";
+      "</p></div>";
 
   platforms = Object.keys(ad);
 }
 
 export function statCard(v, label, icon, page) {
+  // v1.1 stat 瓦片：图标软底方块 + 大数字 + 小标签（.stat-val 类名被 EP 动画/WS 依赖，勿改）
   const tag = page
     ? '<div class="stat-card is-link" onclick="go(' + "'" + page + "'" + ')">'
     : '<div class="stat-card">';
   return (
     tag +
     (icon
-      ? '<svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+      ? '<span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
         icon +
-        "</svg>"
+        "</svg></span>"
       : "") +
-    '<div class="stat-val">' +
+    '<span class="stat-meta"><span class="stat-val">' +
     v +
-    '</div><div class="stat-label">' +
+    '</span><span class="stat-label">' +
     esc(label) +
-    "</div></div>"
+    "</span></span></div>"
   );
 }
 
@@ -199,6 +201,37 @@ export async function loadPerformance() {
   setEl("swapMem", memory.swap_used_mb, " MB");
   setEl("ioRead", process.read_bytes_mb, " MB");
   setEl("ioWrite", process.write_bytes_mb, " MB");
+
+  // 性能卡指标格：轻量三项（线程/交换内存已在 CPU/内存详情浮层，不在卡面堆叠）
+  var extraRows = [];
+  if (system.uptime_human)
+    extraRows.push([t("instance_uptime"), system.uptime_human, ""]);
+  if (system.disk && system.disk.percent !== undefined)
+    extraRows.push([
+      t("instance_disk"),
+      (system.disk.percent || 0) + "%",
+      system.disk.used_gb !== undefined && system.disk.total_gb !== undefined
+        ? system.disk.used_gb + " / " + system.disk.total_gb + " GB"
+        : "",
+    ]);
+  if (process.connections !== undefined)
+    extraRows.push([t("instance_connections"), process.connections, ""]);
+  var extraEl = document.getElementById("perfExtra");
+  if (extraEl) {
+    extraEl.innerHTML = extraRows
+      .map(function (r) {
+        return (
+          '<div class="perf-extra-cell"' +
+          (r[2] ? ' title="' + esc(r[2]) + '"' : "") +
+          '><span class="perf-extra-label">' +
+          esc(r[0]) +
+          '</span><span class="perf-extra-val">' +
+          esc(String(r[1])) +
+          "</span></div>"
+        );
+      })
+      .join("");
+  }
 
   // 存储以便后续使用
   window._perfData = {

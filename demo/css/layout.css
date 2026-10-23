@@ -1,11 +1,25 @@
 /* ErisPulse Dashboard – layout (auto-split from dash.css, aligned with js/) */
+/* 悬浮壳：页面四周与区块之间露出 var(--gap-shell) 的 --bg-p 底色 */
+.app.authed {
+    padding: var(--gap-shell);
+    gap: var(--gap-shell);
+}
+
+/* 任务面板锚点从旧全幅 header 顶边换到悬浮 header 卡片之下 */
+.app .task-panel {
+    top: calc(var(--gap-shell) + 64px + 6px);
+    right: var(--gap-shell);
+}
+
+/* 悬浮壳：header 为独立圆角卡片，浮在 --bg-p 底色上（间隙由 .app 的 gap 提供） */
 .header {
-    background: var(--bg-s);
+    background: var(--bg-t);
     padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--bd);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-panel);
     flex-shrink: 0;
     position: relative;
 }
@@ -245,8 +259,8 @@ code.ws-insp-val {
     font-size: 11px;
     cursor: help;
 }
-/* 移动端：WS 面板固定定位铺满宽度，避免被 header 容器裁剪/溢出 */
-@media (max-width: 768px) {
+/* 移动/平板（≤1023px，抽屉模式）：WS 面板固定定位铺满宽度，避免被 header 容器裁剪/溢出 */
+@media (max-width: 1023px) {
     .ws-inspector {
         position: fixed;
         top: 58px;
@@ -334,18 +348,23 @@ code.ws-insp-val {
 .main {
     display: flex;
     flex: 1;
+    gap: var(--gap-shell);
     overflow: hidden;
     min-height: 0;
 }
 
+/* 悬浮圆角面板：与卡片同 surface 语言（--bg-t 浮在 --bg-p 上），独立滚动由 .sidebar-nav 承担 */
 .sidebar {
     width: 232px;
-    background: var(--bg-s);
-    border-right: 1px solid var(--bd);
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-panel);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    min-height: 0;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 节点下拉（折叠态左探出）与折叠态 tooltip 需要溢出可见 */
     overflow: visible;
 }
 
@@ -353,15 +372,17 @@ code.ws-insp-val {
     width: 196px;
 }
 .sidebar.compact .nav-item {
-    padding: 6px 8px 6px 18px;
+    padding: 5px 8px;
     font-size: 12px;
     gap: 8px;
-    margin-left: 4px;
-    margin-right: 4px;
 }
-.sidebar.compact .nav-item svg {
-    width: 16px;
-    height: 16px;
+.sidebar.compact .nav-ico {
+    width: 26px;
+    height: 26px;
+}
+.sidebar.compact .nav-ico svg {
+    width: 14px;
+    height: 14px;
 }
 .sidebar.compact .nav-group-title {
     padding: 10px 8px 4px 12px;
@@ -371,22 +392,10 @@ code.ws-insp-val {
 
 .sidebar-nav {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 6px;
-}
-
-.sidebar-nav::-webkit-scrollbar {
-    width: 4px;
-}
-
-.sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb {
-    background: var(--bd);
-    border-radius: 2px;
+    padding: 8px 6px;
 }
 
 .nav-group-title {
@@ -406,7 +415,7 @@ code.ws-insp-val {
     transition:
         color 0.2s ease,
         background 0.2s ease;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     margin: 0 4px;
     padding: 8px 10px 8px 12px;
     position: relative;
@@ -432,7 +441,7 @@ code.ws-insp-val {
 
 .nav-group-title:hover {
     color: var(--tx-p);
-    background: var(--bg-t);
+    background: var(--bg-s);
 }
 
 .nav-group-title:hover::after {
@@ -446,7 +455,9 @@ code.ws-insp-val {
 .nav-group .nav-item {
     transition:
         opacity 0.25s ease,
-        transform 0.25s ease;
+        transform 0.25s ease,
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .nav-group.collapsed .nav-item {
@@ -486,14 +497,12 @@ code.ws-insp-val {
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 8px 12px 8px 24px;
-    margin-bottom: 2px;
-    margin-left: 4px;
-    margin-right: 4px;
+    gap: 10px;
+    padding: 6px 8px;
+    margin: 0 4px 2px;
     background: transparent;
-    border: 1px solid transparent;
-    border-radius: 9px;
+    border: none;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition:
         background 0.2s ease,
@@ -506,62 +515,57 @@ code.ws-insp-val {
     position: relative;
 }
 
-/* 展开态激活项：左侧 accent 指示条 + tint 药丸底色双重标识 */
-.nav-item::before {
-    content: "";
-    position: absolute;
-    left: 7px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 0;
-    border-radius: 2px;
-    background: var(--accent);
-    opacity: 0;
+/* 圆形图标卡：状态标识集中在 ico 上，item 本体不吃药丸底 */
+.nav-ico {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--bg-s);
     transition:
-        height 0.2s ease,
-        opacity 0.2s ease;
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.nav-ico svg {
+    width: 15px;
+    height: 15px;
+    opacity: 0.75;
+    transition:
+        opacity 0.2s ease,
+        color 0.2s ease;
 }
 
 .nav-item:hover {
-    background: var(--bg-t);
     color: var(--tx-p);
+}
+
+.nav-item:hover .nav-ico {
+    background: var(--accent-soft);
+}
+
+.nav-item:hover .nav-ico svg {
+    opacity: 1;
 }
 
 .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--tx-p);
+    color: var(--accent);
     font-weight: 600;
-    transform: none;
-    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.nav-item.active::before {
-    height: 55%;
+.nav-item.active .nav-ico {
+    background: var(--accent-soft);
+}
+
+.nav-item.active .nav-ico svg {
+    color: var(--accent);
     opacity: 1;
 }
 
-.nav-item svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    opacity: 0.7;
-    transition:
-        opacity 0.2s ease,
-        transform 0.2s ease;
-}
-
-.nav-item:hover svg {
-    opacity: 0.9;
-    transform: none;
-}
-
-.nav-item.active svg {
-    opacity: 1;
-    transform: none;
-}
-
-.nav-item span {
+/* 文字标签样式（.nav-ico 是图标卡容器，须排除） */
+.nav-item > span:not(.nav-ico) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -581,11 +585,11 @@ code.ws-insp-val {
 }
 
 .sidebar.collapsed {
-    width: 60px;
+    width: 66px;
 }
 
 .sidebar.collapsed .nav-group-title,
-.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .nav-item > span:not(.nav-ico),
 .sidebar.collapsed .nav-badge,
 .sidebar.collapsed .fw-ver {
     opacity: 0;
@@ -599,7 +603,7 @@ code.ws-insp-val {
 }
 
 .nav-group-title,
-.nav-item span,
+.nav-item > span:not(.nav-ico),
 .nav-badge,
 .fw-ver {
     transition:
@@ -635,32 +639,62 @@ code.ws-insp-val {
 
 .sidebar.collapsed .nav-item {
     justify-content: center;
-    padding: 10px;
+    padding: 8px 4px;
+    margin: 0 2px 4px;
     gap: 0;
 }
 
-.sidebar.collapsed .nav-item::before {
-    display: none;
-}
+/* 折叠态 = 悬浮圆形图标列：激活/悬停状态沿用展开态的 .nav-ico 规则（ico 着色），item 本体无底色 */
 
-/* 折叠态激活项：不画下划线，用药丸底色 + 图标着色标识（与展开态视觉语言一致） */
-.sidebar.collapsed .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 20%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-
-.sidebar.collapsed .nav-item.active svg {
-    color: var(--accent);
-    opacity: 1;
-}
-
-.sidebar.collapsed .nav-item svg {
+.sidebar.collapsed .nav-ico svg {
     opacity: 0.9;
     margin: 0;
 }
 
-.sidebar.collapsed .nav-item span {
+.sidebar.collapsed .nav-item > span:not(.nav-ico) {
     display: none;
+}
+
+/* 气泡 tooltip 需要探出面板右缘：折叠态默认放开滚动裁剪。
+   内容超出视口时由 main.js 挂 is-scrollable 切回内部滚动——
+   footer 始终吸底（展开按钮永不因高度不足丢失），代价仅是该极端场景下气泡被裁 */
+.sidebar.collapsed .sidebar-nav {
+    overflow: visible;
+}
+
+.sidebar.collapsed .sidebar-nav.is-scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 折叠态 hover 气泡：文案来自 data-tip（main.js 在 i18n 后同步） */
+.sidebar.collapsed .nav-item::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-4px);
+    padding: 5px 10px;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hover);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--tx-p);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1200;
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+}
+
+.sidebar.collapsed .nav-item:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -682,7 +716,7 @@ code.ws-insp-val {
     padding: 8px;
     /* 折叠态仅剩节点圆点：加边框使其读作可点按钮 */
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .sidebar.collapsed .node-selector-current {
@@ -706,9 +740,24 @@ code.ws-insp-val {
     margin-left: 4px;
 }
 
+/* ── 节点选择器：统一到面板语言（surface 底上以次级底色做 hover，圆角/发丝线节奏与 nav 一致）── */
+/* 用 .sidebar 前缀抬高优先级覆盖 cluster.css 的基础样式 */
+.sidebar .node-selector {
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
+}
+
+.sidebar .node-selector-header {
+    border-radius: var(--radius-md);
+}
+
+.sidebar .node-selector-header:hover {
+    background: var(--bg-s);
+}
+
 .sidebar-footer {
-    padding: 8px 12px;
-    border-top: 1px solid var(--bd);
+    padding: 10px 12px;
+    border-top: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -735,7 +784,7 @@ code.ws-insp-val {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
     opacity: 0.5;
     transition:
@@ -782,18 +831,7 @@ code.ws-insp-val {
     display: block;
 }
 
-.page::-webkit-scrollbar {
-    width: 4px;
-}
-
-.page::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.page::-webkit-scrollbar-thumb {
-    background: var(--bd);
-    border-radius: 2px;
-}
+/* 滚动条走 base.css 全局镂空样式 */
 
 .page-title {
     font-size: 26px;
@@ -874,4 +912,41 @@ code.ws-insp-val {
     padding: 4px 8px 0;
     border-top: 1px solid var(--bd);
     margin-top: auto;
+}
+
+/* ── 移动/平板 ≤1023px：回到全高抽屉 + 全宽 header（hamburger/overlay 机制见 overrides.css） ── */
+@media (max-width: 1023px) {
+    .app.authed {
+        padding: 0;
+        gap: 0;
+    }
+
+    /* header 全宽贴顶 */
+    .header {
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--bd);
+    }
+
+    .app .task-panel {
+        top: 58px;
+        right: 10px;
+    }
+
+    /* 侧栏 = 全高抽屉：直角贴边 */
+    .sidebar {
+        border-radius: 0;
+        border: none;
+        border-right: 1px solid var(--bd);
+    }
+
+    /* 抽屉态恢复滚动与文字（overrides.css 已 revert 文字），tooltip 不适用 */
+    .sidebar.collapsed .sidebar-nav {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .sidebar.collapsed .nav-item::after {
+        display: none;
+    }
 }

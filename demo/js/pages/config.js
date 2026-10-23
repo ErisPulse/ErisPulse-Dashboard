@@ -137,6 +137,15 @@ export async function loadConfigSource() {
   }
 }
 
+// 危险操作守卫：源码有未保存修改时，重新加载前二次确认（丢弃修改不可撤销）
+export async function reloadConfigSourceGuard() {
+  if (_cfgSourceDirty) {
+    var ok = await confirm2(t("unsaved_title"), t("unsaved_confirm"));
+    if (!ok) return;
+  }
+  loadConfigSource();
+}
+
 export async function saveConfigSource() {
   var cm = _cfgSourceCM;
   var content = cm

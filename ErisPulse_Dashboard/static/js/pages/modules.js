@@ -57,16 +57,16 @@ export async function loadModules() {
   if (mmMo) mmMo.textContent = allModules.length;
   document.getElementById("adapterList").innerHTML = adapters.length
     ? adapters.map((m) => renderPluginRow(m, true)).join("")
-    : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><p>' +
       t("no_adapters") +
-      "</div>";
+      "</p></div>";
   document.getElementById("moduleList").innerHTML = modules.length
     ? modules.map((m) => renderPluginRow(m, false)).join("")
-    : '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><p>' +
       t("no_modules") +
-      ' <a class="empty-action" style="margin-top:0;margin-left:6px;padding:3px 10px;font-size:12px" onclick="go(\'store\')">' +
+      '</p><button class="empty-action" onclick="go(\'store\')">' +
       t("store") +
-      "</a></div>";
+      "</button></div>";
 }
 
 export function renderPluginRow(m, isAd) {
@@ -97,11 +97,9 @@ export function renderPluginRow(m, isAd) {
   }
 
   let meta = "";
-  if (m.version)
-    meta += "<span>" + t("module_version") + ": " + esc(m.version) + "</span>";
   if (m.author)
     meta += "<span>" + t("module_author") + ": " + esc(m.author) + "</span>";
-  if (!meta && m.description) meta = "<span>" + esc(m.description) + "</span>";
+  if (m.description) meta += "<span>" + esc(m.description) + "</span>";
   if (!meta) meta = "<span>" + t("module_no_desc") + "</span>";
 
   // 主操作按钮：加载/启用（实心）、停止加载（描边）；低频与危险操作收进 ⋯ 菜单
@@ -321,37 +319,82 @@ export function renderPluginRow(m, isAd) {
       "</div></div>";
   }
 
-  const adLogo = isAd ? adapterLogoImg(m.name, 20) : "";
+  // 图标三级回退：① 适配器品牌 logo（/api/adapter-logos）→ ② 模块元数据声明
+  // （m.logo_url 外链图片 / m.icon_svg 内联 SVG，见 docs/module-view-registration.md）→ ③ 首字母头像
+  // （accent-soft 底 + 主文字色，全 token 化，不做按名哈希随机彩色，保持家族一致性）
+  // 注意：adapterLogoImg() 在无品牌 logo 时返回的是占位空 span（真值字符串），不能用于判空；
+  // 此处改用 getAdapterLogo() 取品牌 logo 地址判空，保证适配器条目与普通模块共用同一条回退链，
+  // 品牌 logo 加载失败时经 onerror 直降 ③ 首字母头像（与 logo_url 分支行为一致）
+  var brandLogo = isAd ? getAdapterLogo(m.name) : null;
+  let icoHtml = "";
+  if (brandLogo) {
+    icoHtml =
+      '<img src="' + esc(brandLogo) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createRange().createContextualFragment(moduleIconFallback(\'' + _jsq(m.name) + '\')))">';
+  } else if (m.logo_url) {
+    icoHtml =
+      '<img src="' + esc(m.logo_url) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createRange().createContextualFragment(moduleIconFallback(\'' + _jsq(m.name) + '\')))">';
+  } else if (m.icon_svg) {
+    icoHtml = String(m.icon_svg);
+  } else {
+    icoHtml = moduleIconFallback(m.name);
+  }
   var html =
-    '<div class="module-card">' +
+    '<div class="module-card' +
+    (isAd ? " is-adapter" : "") +
+    '">' +
     '<div class="module-card-main">' +
-    '<div class="module-card-id" role="button" onclick="toggleModuleDetail(this)">' +
-    '<span class="module-status-dot ' +
-    statusDot +
-    '"></span>' +
-    adLogo +
+    '<div class="module-card-id" role="button" tabindex="0" onclick="toggleModuleDetail(this)" onkeydown="if(event.key===\'Enter\'){toggleModuleDetail(this)}">' +
+    '<span class="module-ico">' +
+    icoHtml +
+    "</span>" +
     '<div class="module-card-info"><div class="module-name-row">' +
     '<span class="module-name">' +
     esc(m.name) +
-    '</span><span class="chip ' +
+    "</span>" +
+    (m.version ? '<span class="module-version">v' + esc(m.version) + "</span>" : "") +
+    '<span class="chip ' +
     statusClass +
     ' module-status-chip"' +
-    (isLazyModule
-      ? ' title="' + esc(t("module_lazy_desc")) + '"'
-      : "") +
+    (isLazyModule ? ' title="' + esc(t("module_lazy_desc")) + '"' : "") +
     ">" +
     esc(statusText) +
-    '</span></div><div class="module-meta">' +
+    "</span></div>" +
+    '<div class="module-meta">' +
     meta +
-    '</div></div>' +
+    "</div></div>" +
     '<span class="module-card-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>' +
-    '</div>' +
+    "</div>" +
+    "</div>" +
     '<div class="module-card-side">' +
+    '<span class="module-enable-label">' +
+    '<label class="switch"><input type="checkbox" ' +
+    (m.enabled ? "checked" : "") +
+    ' onchange="toggleModuleEnabled(\'' +
+    _jsq(m.name) +
+    "','" +
+    _jsq(m.type) +
+    '\',this)"><span class="switch-slider"></span></label>' +
+    "</span>" +
     acts +
-    '</div></div>' +
+    "</div>" +
     detailHtml +
     "</div>";
   return html;
+}
+
+// 兜底图标：模块名首字母头像（token 化配色，见 .module-ico-initial）
+export function moduleIconFallback(name) {
+  var initial = ((name || "?").trim().charAt(0) || "?").toUpperCase();
+  return (
+    '<span class="module-ico-initial">' + esc(initial) + "</span>"
+  );
+}
+
+export async function toggleModuleEnabled(name, type, el) {
+  if (!authed) return showLogin();
+  var action = el.checked ? "enable" : "disable";
+  await moduleAction(name, action, type);
+  loadModules();
 }
 
 export function toggleModuleDetail(el) {

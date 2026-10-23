@@ -110,7 +110,8 @@ for (const ns of __namespaces) Object.assign(window, ns);
   // 默认收起侧边栏（首次使用或无设置时）
   const isCollapsed =
     collapsedSetting === null ? true : collapsedSetting === "true";
-  if (isCollapsed && window.innerWidth > 768)
+  // ≤1023px 为抽屉模式，不启用收起态
+  if (isCollapsed && window.innerWidth > 1023)
     document.getElementById("sidebar").classList.add("collapsed");
   updateNodeSelectorVisibility();
   restoreNavGroupStates();
@@ -162,6 +163,33 @@ for (const ns of __namespaces) Object.assign(window, ns);
     showLogin();
   }
   initMirrorSelects();
+  // ── 折叠态侧栏导航滚动裁剪切换：内容放得下保持 overflow visible（折叠气泡可探出），
+  // 放不下切内部滚动——footer 吸底，折叠按钮不因高度不足被推出视口 ──
+  (function () {
+    var nav = null;
+    function update() {
+      if (!nav) nav = document.querySelector(".sidebar-nav");
+      if (!nav) return;
+      if (nav.scrollHeight > nav.clientHeight + 2) nav.classList.add("is-scrollable");
+      else nav.classList.remove("is-scrollable");
+    }
+    window.addEventListener("resize", update);
+    var sb = document.getElementById("sidebar");
+    var navEl = document.querySelector(".sidebar-nav");
+    if (window.MutationObserver) {
+      if (sb)
+        new MutationObserver(update).observe(sb, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+      if (navEl)
+        new MutationObserver(function () {
+          setTimeout(update, 50);
+        }).observe(navEl, { childList: true, subtree: true });
+    }
+    setTimeout(update, 300);
+    setTimeout(update, 1500);
+  })();
   const dz = document.getElementById("uploadDropZone");
   if (dz) {
     dz.addEventListener("dragover", function (e) {

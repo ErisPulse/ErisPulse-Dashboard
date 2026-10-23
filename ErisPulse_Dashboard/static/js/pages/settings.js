@@ -128,6 +128,149 @@ export function applySettingOled(on) {
   applyOled(on);
 }
 
+// ════════════════ 背景与透感设置卡（所见即所得） ════════════════
+
+// 平铺开关：仅改变背景铺设方式，透感档位与遮罩不受影响
+export function applySettingBgTile(on) {
+  setSetting("bg_tile", on ? "1" : "0");
+  var img = getSetting("bg_image", "");
+  if (img) applyBgImage(img);
+  syncBgCardUI();
+}
+
+// 透感三档选择器（bgLevelSeg）激活态同步
+export function syncBgLevelSeg() {
+  var seg = document.getElementById("bgLevelSeg");
+  if (!seg) return;
+  var cur = getBgTrans();
+  seg.querySelectorAll("button").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.level === cur);
+  });
+}
+
+// 背景卡整体回显：预览缩略图 / 平铺开关 / 透感档位 / 自动取色 / 清除按钮 / OLED 提示
+export function syncBgCardUI() {
+  var img = getSetting("bg_image", "");
+  var has = !!img;
+  var tile = getSetting("bg_tile", "0") === "1";
+  var box = document.getElementById("bgPreviewBox");
+  var im = document.getElementById("bgPreviewImg");
+  var empty = document.getElementById("bgPreviewEmpty");
+  if (im) {
+    if (has) {
+      im.style.backgroundImage = 'url("' + img + '")';
+      // 预览与实际铺设方式一致：图案平铺 / 照片封面
+      im.style.backgroundRepeat = tile ? "repeat" : "no-repeat";
+      im.style.backgroundSize = tile ? "64px auto" : "cover";
+    } else {
+      im.style.removeProperty("background-image");
+    }
+  }
+  if (box) box.classList.toggle("has-bg", has);
+  if (empty) empty.style.display = has ? "none" : "flex";
+  var tileEl = document.getElementById("settingsBgTile");
+  if (tileEl) tileEl.checked = tile;
+  syncBgLevelSeg();
+  showBgAutoThemeRow(has);
+  var autoChk = document.getElementById("settingsBgAutoTheme");
+  if (autoChk) autoChk.checked = bgAutoThemeEnabled();
+  var clearBtn = document.getElementById("bgClearBtn");
+  if (clearBtn) clearBtn.style.display = has ? "inline-flex" : "none";
+  syncBgPatternActive();
+  updateOledHint();
+}
+
+// OLED + 背景图同时开启时给出提示（透明黑底会发灰，透感已自动收紧）
+export function updateOledHint() {
+  var hint = document.getElementById("bgOledHint");
+  if (!hint) return;
+  var show = !!getSetting("bg_image", "") && getOled();
+  hint.style.display = show ? "block" : "none";
+}
+
+// 图案库缩略图（BG_PATTERNS 来自 state.js；小图 + 平铺 + 自动取色）
+export function renderBgPatternGrid() {
+  var grid = document.getElementById("bgPatternGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  (BG_PATTERNS || []).forEach(function (url) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "bg-pattern-thumb";
+    b.title = t("settings_bg_pattern");
+    b.style.backgroundImage = 'url("' + url + '")';
+    b.onclick = function () {
+      applyBgPattern(url);
+      syncBgCardUI();
+    };
+    grid.appendChild(b);
+  });
+  syncBgPatternActive();
+}
+
+export function syncBgPatternActive() {
+  var cur = getSetting("bg_image", "");
+  var tile = getSetting("bg_tile", "0") === "1";
+  document.querySelectorAll(".bg-pattern-thumb").forEach(function (b, i) {
+    b.classList.toggle("active", tile && (BG_PATTERNS || [])[i] === cur);
+  });
+}
+
+// 预览卡「清除背景」：移除图片与纯色，保留透感档位偏好
+export function clearBgFromCard() {
+  resetBg();
+  syncBgCardUI();
+}
+
+// ── 每卡局部重置（设置卡右上角 ↺）──
+export async function resetSettingsGroup(group) {
+  var key = "settings_reset_group_" + group;
+  var ok = await confirm2(t("settings_card_reset"), t(key));
+  if (!ok) return;
+  switch (group) {
+    case "theme":
+      localStorage.removeItem("ep_theme");
+      applyTheme("auto");
+      localStorage.setItem("ep_ui_style", "eris");
+      applyUiStyle("eris");
+      break;
+    case "bg":
+      localStorage.removeItem("ep_setting_bg_tile");
+      localStorage.removeItem("ep_setting_bg_trans");
+      resetBg();
+      applyBgTransClass();
+      break;
+    case "accent":
+      resetAccent();
+      break;
+    case "density":
+      localStorage.removeItem("ep_setting_density");
+      applySettingDensity("comfortable");
+      localStorage.removeItem("ep_oled");
+      applySettingOled(false);
+      localStorage.removeItem("ep_anim_style");
+      applySettingAnimStyle("subtle");
+      break;
+    case "font":
+      localStorage.removeItem("ep_font");
+      applyFont("system");
+      initFontSelector();
+      break;
+    case "advanced":
+      clearThemePack();
+      resetFullCustomTheme();
+      localStorage.removeItem("ep_setting_custom_css");
+      var cssEl = document.getElementById("epCustomCss");
+      if (cssEl) cssEl.textContent = "";
+      var ta = document.getElementById("settingsCustomCss");
+      if (ta) ta.value = "";
+      break;
+  }
+  syncSettingsUI();
+  syncBgCardUI();
+  toast(t("settings_reset_group_done"), "ok");
+}
+
 export function alert2(title, text) {
   return showModal(title, text, [
     { label: t("ok"), value: true, primary: true },
@@ -149,34 +292,133 @@ export function showSettings() {
 
 export function closeSettings() {}
 
+// ════════════════ 分区导航（索引 + 详情两栏） ════════════════
+// 面板懒加载器：进入分区时按需拉取数据
+var SETTINGS_SEC_LOADERS = {
+  "sec-update": function () { loadFrameworkVersions(); },
+  "sec-about": function () { loadAbout(); },
+  "sec-security": function () { loadGeneralTab(); },
+};
+
+function _selectSettingsPane(paneId, remember) {
+  var pane = document.querySelector('.settings-pane[data-pane="' + paneId + '"]');
+  if (!pane) pane = document.querySelector('.settings-pane[data-pane="sec-appearance"]');
+  if (!pane) return;
+  paneId = pane.dataset.pane;
+  document.querySelectorAll("#settingsDetail .settings-pane").forEach(function (p) {
+    p.classList.toggle("active", p === pane);
+  });
+  // 子面板归属父分区：导航高亮跟随父项
+  var navSec = pane.dataset.parent || paneId;
+  document.querySelectorAll("#settingsNav .settings-nav-item").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.sec === navSec);
+  });
+  if (remember && !pane.dataset.parent) setSetting("settings_section", paneId);
+  var loader = SETTINGS_SEC_LOADERS[paneId];
+  if (loader) loader();
+  if (paneId === "sec-update") {
+    var el = document.getElementById("settingsUpdateTab");
+    if (el) el.classList.remove("show-update");
+  }
+  syncSettingsSectionUI();
+}
+
+// 用户点击入口（导航项 / 值行）：移动端同时滑入详情视图
+export function switchSettingsSection(sec) {
+  _selectSettingsPane(sec, true);
+  if (window.innerWidth < 960) {
+    var shell = document.getElementById("settingsShell");
+    if (shell) shell.classList.add("show-detail");
+  }
+}
+
+// 返回：子面板回到父分区；顶级面板在移动端退回索引
+export function settingsGoBack() {
+  var pane = document.querySelector(".settings-pane.active");
+  var parent = pane && pane.dataset.parent;
+  if (parent) {
+    _selectSettingsPane(parent, true);
+    return;
+  }
+  var shell = document.getElementById("settingsShell");
+  if (shell) shell.classList.remove("show-detail");
+}
+
+// 兼容旧 tab 入口（PAGE_REDIRECTS / 活动中心 / 默认起始页均按旧 tab id 调用）
 export function switchSettingsTab(tab, btn) {
-  var tabs = btn.closest(".pkg-tabs").querySelectorAll(".pkg-tab");
-  tabs.forEach(function (b) {
-    b.classList.remove("active");
-  });
-  btn.classList.add("active");
-  document.querySelectorAll("#p-settings .tab-section").forEach(function (s) {
-    s.style.display = "none";
-  });
-  var target = document.getElementById(tab + "-tab");
-  if (target) target.style.display = "block";
-  var loaders = {
-    "settings-update": loadFrameworkVersions,
-    "settings-about": loadAbout,
-    "settings-general": loadGeneralTab,
+  var map = {
+    "settings-appearance": "sec-appearance",
+    "settings-behavior": "sec-behavior",
+    "settings-general": "sec-language",
+    "settings-update": "sec-update",
+    "settings-about": "sec-about",
   };
-  if (loaders[tab]) loaders[tab]();
-  if (tab === "settings-update") {
-    document.getElementById("settingsUpdateTab")?.classList.remove("show-update");
+  switchSettingsSection(map[tab] || "sec-appearance");
+}
+
+// 分区行条目回显：行内分段选择器与值行副标题
+export function syncSettingsSectionUI() {
+  var themeSeg = document.getElementById("themeModeSeg");
+  if (themeSeg) {
+    var th = getTheme();
+    themeSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.theme === th);
+    });
+  }
+  var styleSeg = document.getElementById("uiStyleSeg");
+  if (styleSeg) {
+    var st = getUiStyle();
+    styleSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.style === st);
+    });
+  }
+  var accentVal = document.getElementById("accentRowValue");
+  if (accentVal) {
+    var ac = getSetting("accent_color", "");
+    if (ac) accentVal.style.background = ac;
+    else accentVal.style.removeProperty("background");
+  }
+  var bgVal = document.getElementById("bgRowValue");
+  if (bgVal) {
+    var hasBg = !!getSetting("bg_image", "");
+    bgVal.textContent = hasBg ? "" : t("settings_bg_empty");
+  }
+  var fontVal = document.getElementById("fontRowValue");
+  if (fontVal) {
+    var fid = getFont();
+    var label = t("font_system");
+    if (fid && fid !== "system") {
+      var hit = (window._customFonts || []).find(function (f) { return f.url === fid; });
+      if (hit) label = hit.name;
+      else {
+        var pre = FONT_PRESETS.find(function (p) { return p.id === fid; });
+        if (pre && pre.name) label = pre.name;
+      }
+    }
+    fontVal.textContent = label;
+  }
+  var denVal = document.getElementById("densityRowValue");
+  if (denVal) {
+    denVal.textContent = t(
+      getDensity() === "compact" ? "settings_density_compact" : "settings_density_comfortable",
+    );
+  }
+  var langVal = document.getElementById("langRowValue");
+  if (langVal) {
+    var langCard = document.querySelector('.lang-card[data-lang="' + lang + '"] .lang-name');
+    langVal.textContent = langCard ? langCard.textContent : lang;
   }
 }
 
 export async function loadSettings() {
+  _selectSettingsPane(getSetting("settings_section", "sec-appearance"), false);
   updateAboutCard();
   syncSettingsUI();
   initAccentSwatches();
   initCustomThemeEditor();
   initFontSelector();
+  renderBgPatternGrid();
+  syncBgCardUI();
   await loadGlobalAppearance();
 }
 
@@ -298,6 +540,12 @@ export function applyGlobalAppearanceData(app) {
   } else {
     clearBgImage();
   }
+  if (app.bg_tile !== undefined) {
+    setSetting("bg_tile", app.bg_tile ? "1" : "0");
+  }
+  if (app.bg_trans) {
+    applySettingBgLevel(app.bg_trans);
+  }
   if (app.accent_color) {
     applyAccentColor(app.accent_color);
   }
@@ -317,6 +565,8 @@ export function collectAppearanceData() {
     oled: getOled(),
     bg_color: getSetting("bg_color", ""),
     bg_image: getSetting("bg_image", ""),
+    bg_tile: getSetting("bg_tile", "0") === "1",
+    bg_trans: getBgTrans(),
     accent_color: getSetting("accent_color", ""),
     bg_auto_theme: bgAutoThemeEnabled(),
   };
@@ -585,6 +835,8 @@ export function exportAppearancePrefs() {
     oled: getOled(),
     bg_color: getSetting("bg_color", ""),
     bg_image: getSetting("bg_image", ""),
+    bg_tile: getSetting("bg_tile", "0") === "1",
+    bg_trans: getBgTrans(),
     accent_color: getSetting("accent_color", ""),
     bg_auto_theme: bgAutoThemeEnabled(),
     dash_title: getSetting("dash_title", "ErisPulse Dashboard"),
@@ -633,6 +885,8 @@ export function importAppearancePrefs() {
         } else {
           clearBgImage();
         }
+        if (d.bg_tile !== undefined) setSetting("bg_tile", d.bg_tile ? "1" : "0");
+        if (d.bg_trans) applySettingBgLevel(d.bg_trans);
         if (d.accent_color) applyAccentColor(d.accent_color);
         if (d.bg_auto_theme !== undefined) {
           localStorage.setItem("ep_setting_bg_auto_theme", d.bg_auto_theme);
@@ -742,10 +996,8 @@ export function syncSettingsUI() {
   else syncAccentUI("#4fa6de");
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = getSetting("bg_color", "") || "#f4f7fb";
-  var hasBgImg = !!getSetting("bg_image", "");
-  showBgAutoThemeRow(hasBgImg);
-  var autoChk = document.getElementById("settingsBgAutoTheme");
-  if (autoChk) autoChk.checked = bgAutoThemeEnabled();
+  // 背景与透感卡整体回显（预览/平铺/档位/自动取色/OLED 提示）
+  syncBgCardUI();
   // 偏好设置回显
   _renderDefaultPagePicker();
   var dnEl = document.getElementById("settingsDensity");
@@ -763,6 +1015,8 @@ export function syncSettingsUI() {
   var atEl = document.getElementById("settingsEventAutoTop");
   if (atEl) atEl.checked = getEventAutoTop();
   document.body.classList.toggle("privacy-on", getPrivacyMode());
+  // 分区行条目（分段选择器/值行副标题）随设置变化同步
+  syncSettingsSectionUI();
 }
 
 export function applySettingTheme(theme) {
@@ -845,9 +1099,13 @@ export function resetAppearanceSettings() {
       "ep_theme",
       "ep_oled",
       "ep_font",
+      "ep_ui_style",
+      "ep_anim_style",
       "ep_setting_accent_color",
       "ep_setting_bg_color",
       "ep_setting_bg_image",
+      "ep_setting_bg_tile",
+      "ep_setting_bg_trans",
       "ep_setting_bg_auto_theme",
       "ep_setting_custom_css",
       "ep_setting_density",
@@ -966,6 +1224,7 @@ var SYNC_LOCAL_KEYS = [
   "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
   "ep_show_node_selector", "ep_remember_groups",
   "ep_setting_dash_title", "ep_setting_bg_color", "ep_setting_bg_image",
+  "ep_setting_bg_tile", "ep_setting_bg_trans",
   "ep_setting_accent_color", "ep_setting_bg_auto_theme", "ep_setting_custom_css",
   "ep_setting_privacy_mode", "ep_setting_density", "ep_setting_default_page",
   "ep_setting_editor_tab_size", "ep_setting_editor_line_wrap",
@@ -1030,6 +1289,8 @@ var SYNC_APPLIERS = {
   ep_setting_dash_title: function (v) { applyDashTitle(v); },
   ep_setting_bg_color: function (v) { applyBgColor(v); },
   ep_setting_bg_image: function (v) { v ? applyBgImage(v) : clearBgImage(); },
+  ep_setting_bg_tile: function (v) { applySettingBgTile(v === "1"); },
+  ep_setting_bg_trans: function (v) { applySettingBgLevel(v); },
   ep_setting_accent_color: function (v) { applyAccentColor(v); },
   ep_setting_bg_auto_theme: function (v) {
     localStorage.setItem("ep_setting_bg_auto_theme", v);
@@ -1129,6 +1390,33 @@ export function syncThemePackUI() {
   var pack = null;
   try { pack = JSON.parse(localStorage.getItem('ep_theme_pack') || 'null'); } catch (e) {}
   el.textContent = pack && pack.name ? pack.name : t('theme_pack_none');
+}
+
+// ── 主题变量编辑器模态：打开时按已存主题重建表单，Esc/遮罩点击关闭 ──
+var _customThemeEscHandler = null;
+
+export function openCustomThemeModal() {
+  var ov = document.getElementById('customThemeOv');
+  if (!ov) return;
+  initCustomThemeEditor(); // 按当前保存值重建变量表单与开关状态
+  ov.classList.add('show');
+  // 捕获阶段拦截 Esc，避免其他全局快捷键处理器抢先响应
+  _customThemeEscHandler = function (e) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    closeCustomThemeModal();
+  };
+  document.addEventListener('keydown', _customThemeEscHandler, true);
+}
+
+export function closeCustomThemeModal() {
+  var ov = document.getElementById('customThemeOv');
+  if (ov) ov.classList.remove('show');
+  if (_customThemeEscHandler) {
+    document.removeEventListener('keydown', _customThemeEscHandler, true);
+    _customThemeEscHandler = null;
+  }
 }
 
 // ════════════════ 通用：访问令牌（原安全页迁移） ════════════════

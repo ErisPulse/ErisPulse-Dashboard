@@ -1,5 +1,6 @@
 """ApiFilesMixin：文件管理器 API"""
 
+import mimetypes
 import os
 import shutil
 from pathlib import Path
@@ -11,12 +12,45 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from .Constants import MAX_READ_SIZE, MAX_UPLOAD_SIZE, SENSITIVE_FILES
 
 
-def _content_disposition(filename: str) -> str:
-    """RFC 6266/5987 兼容的 attachment 头，保证值 latin-1 可编码。"""
+def _content_disposition(filename: str, disposition: str = "attachment") -> str:
+    """RFC 6266/5987 兼容的 Content-Disposition 头，保证值 latin-1 可编码。"""
     quoted = quote(filename, safe="")
     if quoted == filename:
-        return f'attachment; filename="{filename}"'
-    return f"attachment; filename=\"{quoted}\"; filename*=UTF-8''{quoted}"
+        return f'{disposition}; filename="{filename}"'
+    return f'{disposition}; filename="{quoted}"; filename*=UTF-8\'\'{quoted}'
+
+
+# mimetypes 在精简环境（无 /etc/mime.types、无注册表项）可能缺失的常见媒体类型兜底
+_MEDIA_TYPE_FALLBACK = {
+    ".webp": "image/webp",
+    ".mkv": "video/x-matroska",
+    ".m4v": "video/x-m4v",
+    ".mov": "video/quicktime",
+    ".m4a": "audio/mp4",
+    ".flac": "audio/flac",
+    ".opus": "audio/ogg",
+    ".aac": "audio/aac",
+}
+
+
+def _guess_media_type(filename: str) -> str:
+    ct, _ = mimetypes.guess_type(filename)
+    if not ct:
+        ct = _MEDIA_TYPE_FALLBACK.get(Path(filename).suffix.lower())
+    return ct or "application/octet-stream"
+
+
+def _is_inline_safe(media_type: str) -> bool:
+    """inline 放行白名单：仅浏览器可安全内联渲染的媒体类型。
+
+    刻意排除 text/html 与 image/svg+xml——两者可直接导航执行脚本，
+    与 Dashboard 同源会暴露 localStorage 内的 token；SVG 经 <img> 预览
+    不执行脚本，attachment 头不影响 <img> 嵌入展示。
+    """
+    return (
+        media_type.startswith(("image/", "video/", "audio/"))
+        and media_type != "image/svg+xml"
+    ) or media_type in ("application/pdf", "text/plain")
 
 
 class ApiFilesMixin:
@@ -239,24 +273,69 @@ class ApiFilesMixin:
 
     async def _api_files_download(self, request: Request):
         file_path = request.query_params.get("path", "")
+        # inline=1 供在线预览（img/video/audio/iframe）内联渲染；
+        # 非白名单类型自动回退 attachment，不开同源 HTML/SVG 脚本口子
+        inline = request.query_params.get("inline", "") in ("1", "true")
         target = self._resolve_safe_path(file_path)
         if target is None:
             return JSONResponse({"error": "Path not allowed"}, status_code=403)
         if not target.exists() or not target.is_file():
             return JSONResponse({"error": "File not found"}, status_code=404)
 
+        size = target.stat().st_size
+        media_type = _guess_media_type(target.name)
+        if inline and not _is_inline_safe(media_type):
+            inline = False
+        disposition = "inline" if inline else "attachment"
+
+        headers = {
+            "Content-Disposition": _content_disposition(target.name, disposition),
+            "Content-Length": str(size),
+        }
+        start, end = 0, size - 1 if size else 0
+        status_code = 200
+
+        # Range 支持：视频拖动进度条 / PDF 分段加载 / 断点续传
+        if size and request.headers.get("range", "").startswith("bytes="):
+            spec = request.headers["range"][6:].split(",")[0].strip()
+            try:
+                first, _, last = spec.partition("-")
+                if first:
+                    start = int(first)
+                    if last:
+                        end = min(int(last), size - 1)
+                elif last:
+                    start = max(size - int(last), 0)
+            except ValueError:
+                start, end = 0, size - 1
+            else:
+                if start > end or start >= size:
+                    return Response(
+                        status_code=416,
+                        headers={"Content-Range": f"bytes */{size}"},
+                    )
+                status_code = 206
+                headers["Content-Range"] = f"bytes {start}-{end}/{size}"
+                headers["Content-Length"] = str(end - start + 1)
+
         def _iter():
             with open(target, "rb") as f:
-                while chunk := f.read(65536):
+                f.seek(start)
+                remaining = end - start + 1
+                while remaining > 0:
+                    chunk = f.read(min(65536, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
                     yield chunk
 
+        if status_code == 206:
+            headers["Accept-Ranges"] = "bytes"
         return StreamingResponse(
             _iter(),
-            media_type="application/octet-stream",
-            headers={
-                "Content-Disposition": _content_disposition(target.name),
-                "Content-Length": str(target.stat().st_size),
-            },
+            status_code=status_code,
+            media_type=media_type,
+            headers=headers,
         )
 
     async def _api_files_mkdir(self, request: Request) -> JSONResponse:

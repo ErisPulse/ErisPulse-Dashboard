@@ -50,6 +50,8 @@ export function toggleLang() {
       adapter: loadAdapterConfigPage,
       store: function () {
         loadStore();
+      },
+      packages: function () {
         loadPackages();
         loadPackageUpdates();
       },
@@ -101,10 +103,10 @@ export function applyI18n() {
   document.title = titles[lang] || "ErisPulse Dashboard";
   const htmlLangMap = { zh: "zh-CN", "zh-TW": "zh-TW", ja: "ja", ru: "ru" };
   document.documentElement.lang = htmlLangMap[lang] || "en";
-  // 侧边栏折叠态无文字，用本地化页面名做悬浮提示（跟随语言切换）
+  // 侧边栏折叠态无文字，用本地化页面名做悬浮气泡提示（跟随语言切换）
   document.querySelectorAll(".nav-item").forEach((el) => {
     const label = el.querySelector("span[data-i18n]");
-    if (label) el.title = label.textContent || "";
+    if (label) el.setAttribute("data-tip", label.textContent || "");
   });
   var nodeLabel = document.getElementById("nodeSelectorLabel");
   if (nodeLabel) {

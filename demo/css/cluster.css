@@ -144,41 +144,32 @@
 
 /* 集群通用 */
 .cluster-badge {
-    display: inline-flex;
-    align-items: center;
+    margin-left: 4px;
+    flex-shrink: 0;
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    margin-left: 8px;
-    vertical-align: middle;
-}
-.cluster-badge.badge-online {
-    background: var(--ok-bg);
-    color: var(--ok-c);
-}
-.cluster-badge.badge-offline {
-    background: var(--er-bg);
-    color: var(--er-c);
-}
-.cluster-badge.badge-local {
-    background: rgba(var(--accent), 0.12);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
 }
 .cluster-warn {
     color: var(--wr-c);
 }
 .cluster-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    padding: 48px 20px;
+    padding: 56px 24px;
     color: var(--tx-t);
 }
 .cluster-empty svg {
     width: 40px;
     height: 40px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     opacity: 0.4;
+}
+.cluster-empty-guide {
+    font-size: 13px;
+    max-width: 420px;
+    line-height: 1.6;
 }
 .cluster-loading {
     display: flex;
@@ -199,36 +190,36 @@
     }
 }
 
+/* 工具条：节点计数 + 添加动作 */
 .cluster-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 .cluster-toolbar-info {
     font-size: 13px;
     color: var(--tx-s);
 }
 
-/* 集群管理卡片 */
-.cluster-node-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* ════════════════ 节点卡网格：auto-fill 自适应，多节点自动多列 ════════════════ */
+.cluster-node-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+    gap: 14px;
+    align-items: start;
 }
+
 .cluster-node-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 12px;
-    transition:
-        border-color 0.25s ease,
-        box-shadow 0.25s ease,
-        transform 0.2s ease;
+    border-radius: var(--radius-lg);
+    transition: border-color 0.15s var(--ease-smooth);
 }
 .cluster-node-card:hover {
-    
-    box-shadow: none;
-    transform: none;
+    border-color: var(--bd-h);
 }
 .cluster-card-header {
     display: flex;
@@ -264,7 +255,7 @@
     font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
     background: var(--bg-s);
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     flex: 1;
     min-width: 0;
 }
@@ -283,6 +274,7 @@
     margin: 8px 16px 0;
     flex-wrap: wrap;
     align-items: center;
+    font-variant-numeric: tabular-nums;
 }
 .cluster-node-actions {
     display: flex;
@@ -290,27 +282,78 @@
     flex-shrink: 0;
 }
 
-/* 卡片折叠按钮 */
+/* ════════════════ 能力矩阵（卡面常显层级） ════════════════ */
+.cluster-cap-matrix {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin: 12px 16px 0;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--bg-s) 55%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bd) 45%, transparent);
+}
+
+.cluster-cap-matrix-label {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tx-t);
+    margin-right: 2px;
+}
+
+.cluster-cap-matrix-empty {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+.cluster-cap-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: opacity 0.15s var(--ease-smooth);
+}
+.cluster-cap-tag.cap-supported {
+    background: var(--ok-bg);
+    color: var(--ok-c);
+}
+/* 不支持：中性弱化胶囊（非错误语义，避免大面积红色造成视觉噪声） */
+.cluster-cap-tag.cap-unsupported {
+    background: transparent;
+    color: var(--tx-t);
+    border: 1px dashed color-mix(in srgb, var(--bd) 80%, transparent);
+    opacity: 0.75;
+}
+.cluster-cap-tag.cap-unsupported:hover {
+    opacity: 1;
+}
+
+/* 卡片折叠按钮（详情区入口） */
 .cluster-card-toggle {
     display: flex;
     align-items: center;
     gap: 6px;
     width: 100%;
     padding: 10px 16px;
+    margin-top: 10px;
     border: none;
+    border-top: 1px solid color-mix(in srgb, var(--bd) 45%, transparent);
     background: none;
     color: var(--tx-t);
     font-size: 12px;
     cursor: pointer;
-    transition:
-        color 0.2s ease,
-        background 0.2s ease;
+    transition: color 0.15s var(--ease-smooth);
 }
 .cluster-card-toggle:hover { color: var(--accent); }
 .cluster-card-toggle .toggle-arrow {
     width: 14px;
     height: 14px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.25s var(--ease-smooth);
     flex-shrink: 0;
 }
 .cluster-card-expanded .cluster-card-toggle .toggle-arrow,
@@ -322,18 +365,18 @@
     font-size: 11px;
     background: var(--bg-s);
     padding: 1px 8px;
-    border-radius: 8px;
+    border-radius: 999px;
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
 }
 
-/* 卡片详情区（可折叠） */
+/* 卡片详情区（可折叠，承载运行统计） */
 .cluster-card-detail {
     max-height: 0;
     overflow: hidden;
     transition:
-        max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.25s ease;
+        max-height 0.3s var(--ease-smooth),
+        opacity 0.2s var(--ease-smooth);
     padding: 0 16px;
     opacity: 0;
 }
@@ -352,68 +395,38 @@
     height: 16px;
 }
 
-/* 卡片统计 */
+/* 卡片统计：自适应瓦片网格 */
 .cluster-card-stats {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 8px;
 }
 .cluster-card-stat {
     display: flex;
     flex-direction: column;
     align-items: center;
     background: var(--bg-s);
-    border-radius: 8px;
-    padding: 8px 14px;
-    min-width: 72px;
-    transition: transform 0.15s ease;
-}
-.cluster-card-stat:hover {
-    transform: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    min-width: 0;
 }
 .cluster-stat-val {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     line-height: 1.2;
+    color: var(--tx-p);
+    font-variant-numeric: tabular-nums;
 }
 .cluster-stat-label {
     font-size: 10px;
     color: var(--tx-t);
-    text-transform: uppercase;
     letter-spacing: 0.3px;
     font-weight: 500;
     margin-top: 2px;
-}
-
-/* 功能标签 */
-.cluster-card-caps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.cluster-cap-tag {
-    display: inline-flex;
-    align-items: center;
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    transition:
-        transform 0.15s ease,
-        opacity 0.2s ease;
-}
-.cluster-cap-tag:hover {
-    transform: none;
-}
-.cluster-cap-tag.cap-supported {
-    background: var(--ok-bg);
-    color: var(--ok-c);
-}
-.cluster-cap-tag.cap-unsupported {
-    background: var(--er-bg);
-    color: var(--er-c);
-    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 /* 小图标按钮 */

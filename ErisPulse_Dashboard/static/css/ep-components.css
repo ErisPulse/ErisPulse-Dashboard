@@ -6,14 +6,14 @@
 .ep-input {
     padding: 8px 14px;
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 13px;
     background: var(--bg-s);
     color: var(--tx-p);
     transition:
-        border-color 0.18s ease,
-        box-shadow 0.18s ease,
-        background-color 0.18s ease;
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        background-color 0.15s var(--ease-smooth);
 }
 .ep-search:hover,
 .ep-select:hover,
@@ -25,7 +25,7 @@
 .ep-input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-search::placeholder,
 .ep-input::placeholder {
@@ -65,22 +65,23 @@
     color: var(--tx-p);
     background: var(--bg-s);
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     transition:
-        border-color 0.18s ease,
-        box-shadow 0.18s ease,
-        background-color 0.18s ease;
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        background-color 0.15s var(--ease-smooth);
 }
 .ep-combobox-trigger:hover {
-    border-color: color-mix(in srgb, var(--accent) 32%, var(--bd));
+    border-color: var(--bd-h);
 }
 .ep-combobox-trigger:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-combobox-trigger:active {
     background: color-mix(in srgb, var(--accent) 5%, var(--bg-s));
@@ -99,7 +100,7 @@
 }
 .ep-combobox[data-open="1"] .ep-combobox-trigger {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-combobox[data-open="1"] .ep-combobox-arrow {
     transform: rotate(180deg);
@@ -110,7 +111,7 @@
     cursor: not-allowed;
     filter: saturate(0.6);
 }
-/* 下拉列表 v2：层级阴影 + 弹出动画 + 主题化滚动条 */
+/* 下拉列表 v2：radius 12 + shadow-hover 悬浮影 + 弹入动画 + 主题化滚动条 */
 .ep-combobox-list {
     display: none;
     position: fixed;
@@ -121,14 +122,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--bg-t);
-    border: 1px solid color-mix(in srgb, var(--bd) 85%, transparent);
-    border-radius: 12px;
-    box-shadow:
-        0 2px 6px -2px rgba(0, 0, 0, 0.1),
-        0 12px 32px -6px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
     z-index: 1300;
     padding: 5px;
-    animation: epPop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+    animation: epPop 0.18s var(--ease-soft-spring);
 }
 .ep-combobox-list::-webkit-scrollbar,
 .ep-multiselect-panel::-webkit-scrollbar {
@@ -151,21 +150,21 @@
     align-items: center;
     gap: 8px;
     padding: 7px 30px 7px 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     color: var(--tx-p);
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.12s ease;
+    transition: background-color 0.12s var(--ease-smooth);
 }
 .ep-combobox-opt:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: var(--accent-soft);
 }
 .ep-combobox-opt.ep-kb-active {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: var(--accent-soft);
 }
 .ep-combobox-opt[data-selected="1"] {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    background: var(--accent-soft);
     color: var(--accent);
     font-weight: 600;
 }
@@ -212,24 +211,25 @@
     color: var(--tx-p);
     background: var(--bg-s);
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     text-align: left;
     transition:
-        border-color 0.18s ease,
-        box-shadow 0.18s ease,
-        background-color 0.18s ease;
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        background-color 0.15s var(--ease-smooth);
 }
 .ep-multiselect-trigger:hover {
-    border-color: color-mix(in srgb, var(--accent) 32%, var(--bd));
+    border-color: var(--bd-h);
 }
 .ep-multiselect-trigger:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-multiselect[data-open="1"] .ep-multiselect-trigger {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-multiselect-label {
     flex: 1;
@@ -248,7 +248,7 @@
     line-height: 1;
     padding: 3px 8px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    background: var(--accent-soft);
     color: var(--accent);
     font-size: 11px;
     font-weight: 700;
@@ -276,14 +276,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--bg-t);
-    border: 1px solid color-mix(in srgb, var(--bd) 85%, transparent);
-    border-radius: 12px;
-    box-shadow:
-        0 2px 6px -2px rgba(0, 0, 0, 0.1),
-        0 12px 32px -6px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
     z-index: 1300;
     padding: 8px;
-    animation: epPop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+    animation: epPop 0.18s var(--ease-soft-spring);
 }
 .ep-multiselect-search {
     width: 100%;
@@ -294,13 +292,13 @@
     color: var(--tx-p);
     background: var(--bg-s);
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 .ep-multiselect-search:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 .ep-multiselect-actions {
     display: flex;
@@ -312,14 +310,14 @@
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     color: var(--tx-p);
     cursor: pointer;
-    transition: background-color 0.12s ease;
+    transition: background-color 0.12s var(--ease-smooth);
 }
 .ep-multiselect-opt:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: var(--accent-soft);
 }
 .ep-multiselect-opt input {
     accent-color: var(--accent);
@@ -332,15 +330,15 @@
     text-align: center;
 }
 
-/* ========== 2.0 动效 ========== */
+/* ========== 2.0 动效：浮层弹入（scale .96 + 8px，设计语言签名） ========== */
 @keyframes epPop {
     from {
         opacity: 0;
-        transform: scale(0.97);
+        transform: scale(0.96) translateY(8px);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) translateY(0);
     }
 }
 @media (prefers-reduced-motion: reduce) {

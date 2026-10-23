@@ -65,13 +65,17 @@ export function fmFormatTime(ts) {
   });
 }
 
-// 文件类型 → 分类图标（代码/配置/图片/压缩包/文档/日志/密钥），着色沿用扩展名色表
+// 文件类型 → 分类图标（代码/配置/图片/视频/音频/压缩包/文档/日志/密钥），着色沿用扩展名色表
 const FM_CATEGORY_ICONS = {
   code: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
   config:
     '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001-1.51 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 002.82-1.18V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/>',
   image:
     '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  video:
+    '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>',
+  audio:
+    '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
   archive:
     '<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/>',
   doc: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
@@ -83,7 +87,9 @@ const FM_CATEGORY_ICONS = {
 const FM_EXT_CATEGORY = {
   code: ["py", "pyw", "js", "mjs", "ts", "html", "htm", "css", "xml", "svg", "sh", "bash", "zsh", "sql"],
   config: ["json", "toml", "yaml", "yml", "ini", "cfg", "conf", "env", "lock"],
-  image: ["png", "jpg", "jpeg", "gif", "svg", "ico", "webp", "bmp"],
+  image: ["png", "jpg", "jpeg", "gif", "svg", "ico", "webp", "bmp", "avif", "apng"],
+  video: ["mp4", "webm", "mkv", "mov", "avi", "m4v", "flv", "wmv"],
+  audio: ["mp3", "wav", "ogg", "oga", "m4a", "flac", "aac", "opus", "wma", "mid", "midi"],
   archive: ["zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar"],
   doc: ["md", "markdown", "txt", "rst", "pdf", "doc", "docx"],
   log: ["log", "out"],
@@ -109,6 +115,170 @@ export function fmGetIcon(type, name) {
     FM_CATEGORY_ICONS[category] +
     "</svg>"
   );
+}
+
+// ── 在线预览（原生 HTML5 标签，零新增依赖） ──
+
+// 浏览器可原生渲染的预览类型（扩展名白名单；mkv/mov 视浏览器解码器支持而定）
+const FM_PREVIEW_IMAGE = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "svg", "avif", "apng"];
+const FM_PREVIEW_VIDEO = ["mp4", "webm", "m4v", "mov", "mkv"];
+const FM_PREVIEW_AUDIO = ["mp3", "wav", "ogg", "oga", "m4a", "flac", "aac", "opus"];
+
+export function fmPreviewKind(name) {
+  const ext = (name || "").split(".").pop().toLowerCase();
+  if (FM_PREVIEW_IMAGE.indexOf(ext) !== -1) return "image";
+  if (FM_PREVIEW_VIDEO.indexOf(ext) !== -1) return "video";
+  if (FM_PREVIEW_AUDIO.indexOf(ext) !== -1) return "audio";
+  if (ext === "pdf") return "pdf";
+  return "";
+}
+
+// 大文件流式播放提示阈值（字节）
+const FM_PREVIEW_STREAM_HINT = 100 * 1024 * 1024;
+
+// 预览状态（模块作用域；state.js 未预声明，勿用隐式全局）
+let _fmPreview = null;
+
+function fmPreviewUrl(path) {
+  const tk = localStorage.getItem(TK);
+  return (
+    API +
+    "/api/files/download?path=" +
+    encodeURIComponent(path) +
+    "&inline=1" +
+    (tk ? "&token=" + encodeURIComponent(tk) : "")
+  );
+}
+
+function fmPreviewEntry(path) {
+  return _fmEntries.find((e) => e.path === path);
+}
+
+export function fmPreviewFile(path) {
+  const name = path.split("/").pop();
+  const kind = fmPreviewKind(name);
+  if (!kind) return fmEditFile(path);
+  // 图片画廊序列 = 当前目录排序后的全部图片；其余类型单文件
+  let list = [path];
+  if (kind === "image") {
+    const imgs = fmSortedEntries()
+      .filter((e) => e.type === "file" && fmPreviewKind(e.name) === "image")
+      .map((e) => e.path);
+    if (imgs.indexOf(path) !== -1) list = imgs;
+  }
+  _fmPreview = { list, index: list.indexOf(path), kind };
+  fmPreviewRender();
+  document.getElementById("fmPreviewOv").classList.add("show");
+}
+
+function fmPreviewRender() {
+  const st = _fmPreview;
+  if (!st) return;
+  const path = st.list[st.index];
+  const name = path.split("/").pop();
+  const entry = fmPreviewEntry(path);
+  const size = entry ? entry.size || 0 : 0;
+
+  document.getElementById("fmPreviewIcon").innerHTML = fmGetIcon("file", name);
+  document.getElementById("fmPreviewTitle").textContent = name;
+  const meta =
+    fmFormatSize(size) +
+    (st.kind === "image" && st.list.length > 1
+      ? " · " + (st.index + 1) + " / " + st.list.length
+      : "");
+  document.getElementById("fmPreviewMeta").textContent = meta;
+  document.getElementById("fmPreviewPrev").style.display =
+    st.kind === "image" && st.list.length > 1 ? "" : "none";
+  document.getElementById("fmPreviewNext").style.display =
+    st.kind === "image" && st.list.length > 1 ? "" : "none";
+
+  // 底部信息：图片加载后补尺寸；大媒体给出流式播放提示
+  document.getElementById("fmPreviewInfo").textContent = name;
+  const hint =
+    (st.kind === "video" || st.kind === "audio") && size > FM_PREVIEW_STREAM_HINT
+      ? t("preview_stream_hint")
+      : "";
+  document.getElementById("fmPreviewHint").textContent = hint;
+
+  const url = fmPreviewUrl(path);
+  const body = document.getElementById("fmPreviewBody");
+  const skel =
+    '<div class="fm-preview-loading"><div class="fm-preview-skel"></div></div>';
+  if (st.kind === "image") {
+    body.innerHTML =
+      skel +
+      '<img class="fm-preview-media" alt="" src="' +
+      esc(url) +
+      '" onload="fmPreviewLoaded(this)" onerror="fmPreviewError(this)">';
+  } else if (st.kind === "video") {
+    body.innerHTML =
+      skel +
+      '<video class="fm-preview-media" controls preload="metadata" src="' +
+      esc(url) +
+      '" onloadeddata="fmPreviewLoaded(this)" onerror="fmPreviewError(this)"></video>';
+  } else if (st.kind === "audio") {
+    body.innerHTML =
+      skel +
+      '<div class="fm-preview-audiowrap"><svg class="fm-preview-audioicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><audio controls preload="metadata" src="' +
+      esc(url) +
+      '" oncanplay="fmPreviewLoaded(this)" onerror="fmPreviewError(this)"></audio></div>';
+  } else if (st.kind === "pdf") {
+    body.innerHTML =
+      skel +
+      '<iframe class="fm-preview-media" title="PDF" src="' +
+      esc(url) +
+      '" onload="fmPreviewLoaded(this)"></iframe>';
+  }
+}
+
+export function fmPreviewLoaded(el) {
+  const loading = document.querySelector("#fmPreviewBody .fm-preview-loading");
+  if (loading) loading.remove();
+  if (el && el.tagName === "IMG" && _fmPreview) {
+    const info = document.getElementById("fmPreviewInfo");
+    const entry = fmPreviewEntry(_fmPreview.list[_fmPreview.index]);
+    info.textContent =
+      el.naturalWidth +
+      " × " +
+      el.naturalHeight +
+      " · " +
+      fmFormatSize(entry ? entry.size || 0 : 0);
+  }
+}
+
+export function fmPreviewError() {
+  const body = document.getElementById("fmPreviewBody");
+  if (!body) return;
+  body.innerHTML = renderUxEmpty(
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    "preview_unsupported"
+  );
+}
+
+export function fmPreviewNav(dir) {
+  const st = _fmPreview;
+  if (!st || st.list.length < 2) return;
+  st.index = (st.index + dir + st.list.length) % st.list.length;
+  fmPreviewRender();
+}
+
+export function fmPreviewDownload() {
+  if (_fmPreview) fmDownload(_fmPreview.list[_fmPreview.index]);
+}
+
+export function fmPreviewClose() {
+  const ov = document.getElementById("fmPreviewOv");
+  if (ov) ov.classList.remove("show");
+  // 清空 DOM 释放媒体（停止播放 / 断开流式连接）
+  const body = document.getElementById("fmPreviewBody");
+  if (body) body.innerHTML = "";
+  _fmPreview = null;
+}
+
+// 统一入口：可预览类型走预览，其余走编辑器
+export function fmOpenFile(path) {
+  if (fmPreviewKind(path.split("/").pop())) fmPreviewFile(path);
+  else fmEditFile(path);
 }
 
 // ── 导航 ──
@@ -254,6 +424,15 @@ function fmRender() {
       const size = isDir ? "--" : fmFormatSize(e.size || 0);
       const mtime = fmFormatTime(e.modified);
       const open = fmOpenCall(e);
+      // 可预览类型：名称尾部出现预览按钮（桌面 hover 显示 / 触屏常显）
+      const previewable = !isDir && !!fmPreviewKind(e.name);
+      const previewBtn = previewable
+        ? '<button class="fm2-previewbtn" title="' +
+          esc(t("preview")) +
+          '" onclick="event.stopPropagation();fmPreviewFile(\'' +
+          esc(e.path) +
+          '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>'
+        : "";
       if (_fmView === "grid") {
         return (
           '<div class="fm2-tile' + sel + '" data-path="' + esc(e.path) + '"' +
@@ -273,7 +452,7 @@ function fmRender() {
         ' ondblclick="' + open + '"' +
         ' oncontextmenu="fmContextMenu(event, \'' + esc(e.path) + '\', \'' + e.type + '\')">' +
         '<span class="fm2-icon">' + icon + "</span>" +
-        '<span class="fm2-name" title="' + esc(e.name) + '">' + esc(e.name) + "</span>" +
+        '<span class="fm2-name"><span class="fm2-nametext" title="' + esc(e.name) + '">' + esc(e.name) + "</span>" + previewBtn + "</span>" +
         '<span class="fm2-date">' + mtime + "</span>" +
         '<span class="fm2-size">' + size + "</span>" +
         '<button class="fm2-rowmenu" onclick="fmToggleRowMenu(event, \'' + esc(e.path) + '\', \'' + e.type + '\')" aria-label="menu">' +
@@ -287,7 +466,7 @@ function fmRender() {
 
 function fmOpenCall(e) {
   const p = esc(e.path);
-  return e.type === "directory" ? "fmNavigateTo('" + p + "')" : "fmEditFile('" + p + "')";
+  return e.type === "directory" ? "fmNavigateTo('" + p + "')" : "fmOpenFile('" + p + "')";
 }
 
 function fmRenderHeadRow() {
@@ -314,7 +493,7 @@ export function fmRowClick(event, path, type) {
   // 移动端：单击即打开（桌面双击打开）
   if (window.innerWidth <= 768) {
     if (type === "directory") fmNavigateTo(path);
-    else fmEditFile(path);
+    else fmOpenFile(path);
     return;
   }
   // 桌面普通单击不动作（正常交互）；选择是主动行为——Ctrl/Cmd+点击，
@@ -420,6 +599,13 @@ function fmShowContextMenu(event, path, type, bottomSheet) {
       "fmNavigateTo('" + esc(path) + "')",
     );
   } else {
+    if (fmPreviewKind(path.split("/").pop())) {
+      items += fmCtxItem(
+        t("preview"),
+        '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+        "fmPreviewFile('" + esc(path) + "')",
+      );
+    }
     items += fmCtxItem(
       t("edit"),
       '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
@@ -927,5 +1113,31 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!ov) return;
   ov.addEventListener("mousedown", function (e) {
     if (e.target === ov) fmCloseEditor();
+  });
+});
+
+// ── 预览模态：Esc 关闭，←/→ 切换画廊（图片） ──
+document.addEventListener("keydown", function (e) {
+  const ov = document.getElementById("fmPreviewOv");
+  if (!ov || !ov.classList.contains("show")) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+    fmPreviewClose();
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    e.stopPropagation();
+    fmPreviewNav(-1);
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    e.stopPropagation();
+    fmPreviewNav(1);
+  }
+});
+document.addEventListener("DOMContentLoaded", function () {
+  const ov = document.getElementById("fmPreviewOv");
+  if (!ov) return;
+  ov.addEventListener("mousedown", function (e) {
+    if (e.target === ov) fmPreviewClose();
   });
 });

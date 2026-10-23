@@ -127,35 +127,27 @@ export function _clusterNodeCardHtml(n) {
   var dotClass = online ? "node-dot-online" : "node-dot-offline";
   var caps = info.capabilities || {};
   var capKeys = _capKeys;
-  var supportedCaps = [];
-  var unsupportedCaps = [];
+  var supportedCaps = 0;
+  var capsHtml = "";
   capKeys.forEach(function (k) {
     var c = caps[k];
-    if (c && c.supported) supportedCaps.push(k);
-    else if (c && c.supported === false) unsupportedCaps.push(k);
-  });
-
-  var capsHtml = "";
-  if (supportedCaps.length > 0 || unsupportedCaps.length > 0) {
-    capsHtml += '<div class="cluster-card-caps">';
-    supportedCaps.forEach(function (k) {
+    if (c && c.supported) {
+      supportedCaps++;
       capsHtml +=
         '<span class="cluster-cap-tag cap-supported" title="' +
         esc(t("cap_" + k + "_desc")) +
         '">' +
         esc(t("cap_" + k)) +
         "</span>";
-    });
-    unsupportedCaps.forEach(function (k) {
+    } else if (c && c.supported === false) {
       capsHtml +=
         '<span class="cluster-cap-tag cap-unsupported" title="' +
         esc(t("cap_" + k + "_desc")) +
         '">' +
         esc(t("cap_" + k)) +
         "</span>";
-    });
-    capsHtml += "</div>";
-  }
+    }
+  });
 
   var meta = "";
   if (info.latency_ms >= 0)
@@ -173,10 +165,8 @@ export function _clusterNodeCardHtml(n) {
     esc(n.name || n.id) +
     "</span>";
   h += online
-    ? '<span class="cluster-badge badge-online">' +
-      esc(t("node_online")) +
-      "</span>"
-    : '<span class="cluster-badge badge-offline">' +
+    ? '<span class="chip chip-ok cluster-badge">' + esc(t("node_online")) + "</span>"
+    : '<span class="chip chip-er cluster-badge">' +
       esc(t("node_offline")) +
       "</span>";
   h += "</div>";
@@ -229,6 +219,17 @@ export function _clusterNodeCardHtml(n) {
   h += "</div>";
   if (meta) h += '<div class="cluster-node-meta">' + meta + "</div>";
 
+  // 能力矩阵常显于卡面：支持 = 语义色胶囊 / 不支持 = 中性弱化胶囊
+  h += '<div class="cluster-cap-matrix">';
+  h +=
+    '<span class="cluster-cap-matrix-label">' +
+    esc(t("capability_matrix")) +
+    "</span>";
+  h +=
+    capsHtml ||
+    '<span class="cluster-cap-matrix-empty">' + esc(t("node_probing")) + "</span>";
+  h += "</div>";
+
   h +=
     '<button class="cluster-card-toggle" onclick="toggleClusterCardDetail(\'' +
     cardId +
@@ -236,10 +237,10 @@ export function _clusterNodeCardHtml(n) {
   h +=
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-arrow"><polyline points="6 9 12 15 18 9"/></svg>';
   h += "<span>" + esc(t("cluster_card_detail") || "Details") + "</span>";
-  if (supportedCaps.length > 0)
+  if (capKeys.length > 0)
     h +=
       '<span class="cluster-cap-count">' +
-      supportedCaps.length +
+      supportedCaps +
       "/" +
       capKeys.length +
       "</span>";
@@ -379,39 +380,22 @@ export function _buildStatsHtml(overviewData) {
 export function _fillClusterCardDetail(nodeId, overviewData) {
   var el = document.getElementById("clusterCard-" + nodeId + "-detail");
   if (!el) return;
-  var info = nodeRuntimeInfo[nodeId] || {};
-  var caps = info.capabilities || {};
-  var capKeys = _capKeys;
-  var statsHtml = _buildStatsHtml(overviewData);
-  var capsHtml = "";
-  var supportedCaps = 0;
-  capKeys.forEach(function (k) {
-    var c = caps[k];
-    if (c && c.supported) {
-      supportedCaps++;
-      capsHtml +=
-        '<span class="cluster-cap-tag cap-supported" title="' +
-        esc(t("cap_" + k + "_desc")) +
-        '">' +
-        esc(t("cap_" + k)) +
-        "</span>";
-    } else if (c && c.supported === false) {
-      capsHtml +=
-        '<span class="cluster-cap-tag cap-unsupported" title="' +
-        esc(t("cap_" + k + "_desc")) +
-        '">' +
-        esc(t("cap_" + k)) +
-        "</span>";
-    }
-  });
-  var h = "";
-  if (capsHtml) h += '<div class="cluster-card-caps">' + capsHtml + "</div>";
-  h = statsHtml + h;
+  // 能力矩阵已常显于卡面，详情区只承载运行统计
+  var h = _buildStatsHtml(overviewData);
   el.innerHTML =
     h || '<div style="font-size:12px;color:var(--tx-t);padding:4px 0">-</div>';
-  var countEl = el.parentElement.querySelector(".cluster-cap-count");
-  if (countEl && capKeys.length > 0)
-    countEl.textContent = supportedCaps + "/" + capKeys.length;
+  var card = document.getElementById("clusterCard-" + nodeId);
+  if (card) {
+    var countEl = card.querySelector(".cluster-cap-count");
+    if (countEl && _capKeys.length > 0) {
+      var caps = (nodeRuntimeInfo[nodeId] || {}).capabilities || {};
+      var supported = 0;
+      _capKeys.forEach(function (k) {
+        if (caps[k] && caps[k].supported) supported++;
+      });
+      countEl.textContent = supported + "/" + _capKeys.length;
+    }
+  }
 }
 
 export async function loadClusterPage() {
@@ -447,7 +431,7 @@ export async function loadClusterPage() {
       esc(t("node_add")) +
       "</button></div>";
   } else {
-    html += '<div class="cluster-node-list">';
+    html += '<div class="cluster-node-grid">';
     nodes.forEach(function (n) {
       html += _clusterNodeCardHtml(n);
     });

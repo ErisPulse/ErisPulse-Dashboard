@@ -1,9 +1,8 @@
 /* ErisPulse Dashboard – login (auto-split from dash.css, aligned with js/) */
+/* 视觉语言与 QvQChat 家族对齐：surface 卡 + 1px 边框 + 克制阴影 + 弹入动画 */
 .login-overlay {
     position: fixed;
     inset: 0;
-    background: var(--modal);
-    backdrop-filter: none;
     z-index: 1001;
     display: flex;
     justify-content: center;
@@ -12,31 +11,13 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
+    background: var(--bg-p);
+    overflow: hidden;
 }
 
 .login-overlay.show {
     opacity: 1;
     pointer-events: auto;
-}
-
-.login-card {
-    background: var(--bg-t);
-    border-radius: 16px;
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: none;
-    animation: scaleIn 0.2s ease-out;
-}
-
-.login-card h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.login-avatar {
-    display: none;
 }
 
 .login-decor {
@@ -47,164 +28,18 @@
     display: none;
 }
 
-.login-card p {
-    font-size: 14px;
-    color: var(--tx-s);
-    margin-bottom: 24px;
-    line-height: 1.5;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--bd);
-    border-radius: 8px;
-    font-size: 14px;
-    background: var(--bg-s);
-    color: var(--tx-p);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    font-family: inherit;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: var(--accent);
-    background: var(--bg-t);
-}
-
-.form-group input::placeholder {
-    color: var(--tx-t);
-}
-
-.login-hint {
-    font-size: 12px;
-    color: var(--tx-t);
-    line-height: 1.5;
-    margin-bottom: 24px;
-}
-
-.login-hint code {
-    background: var(--bg-s);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    border: 1px solid var(--bd);
-}
-
-.login-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.login-lang-select {
-    padding: 4px 24px 4px 8px;
-    border: 1px solid var(--bd);
-    border-radius: 6px;
-    background: var(--bg-s);
-    color: var(--tx-s);
-    font-size: 12px;
-    font-family: inherit;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 6px center;
-    background-size: 12px;
-    transition: border-color 0.2s;
-    flex-shrink: 0;
-}
-
-.login-lang-select:hover {
-    border-color: var(--accent);
-    color: var(--tx-p);
-}
-
-.login-lang-select:focus {
-    border-color: var(--accent);
-}
-
-.login-footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid var(--bd);
-}
-
-.login-globe-icon {
-    width: 14px;
-    height: 14px;
-    color: var(--tx-t);
-    flex-shrink: 0;
-}
-
-.login-lang-select option {
-    background: var(--bg-t);
-    color: var(--tx-p);
-}
-.login-card { border-radius: var(--radius-xl); }
-.module-search, .ep-select, .form-input, .form-select, .settings-input {
-    border-radius: var(--radius-sm);
-}
-.ep-combobox-trigger { border-radius: var(--radius-sm); }
-.ep-multiselect-search { border-radius: var(--radius-sm); }
-.log-level-chip { border-radius: var(--radius-sm); }
-.store-card { border-radius: var(--radius-lg); }
-.cluster-card { border-radius: var(--radius-lg); }
-.event-card { border-radius: var(--radius-md); }
-.list-row { border-radius: var(--radius-md); }
-.toast { border-radius: var(--radius-md); }
-.conn-panel { border-radius: var(--radius-lg); }
-.conn-badge { border-radius: var(--radius-sm); }
-.popover { border-radius: var(--radius-lg); }
-.pkg-row { border-radius: var(--radius-md); }
-.route-group-card { border-radius: var(--radius-lg); }
-.master-card { border-radius: var(--radius-lg); }
-.bot-card { border-radius: var(--radius-lg); }
-
-.login-avatar {
-    display: block;
-    text-align: center;
-    margin-bottom: 14px;
-}
-
-.login-avatar img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-}
-
-/* ========== 沉浸式登录页 ========== */
-
-.login-overlay {
-    background: var(--bg-p);
-    overflow: hidden;
-}
-
+/* ══ 背景层：accent 派生的扁平 blur 圆 + 点阵，只做质感不引入新色相 ══ */
 .login-bg {
     position: absolute;
     inset: 0;
     pointer-events: none;
 }
 
-/* 光斑：颜色取自主题 accent，低不透明度只做质感不抢色彩 */
 .login-orb {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
-    opacity: 0.22;
+    opacity: 0.16;
 }
 
 .login-orb-a {
@@ -212,7 +47,7 @@
     height: 460px;
     left: -120px;
     top: -140px;
-    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 42%, transparent);
     animation: loginDrift 20s ease-in-out infinite alternate;
 }
 
@@ -221,7 +56,7 @@
     height: 380px;
     right: -100px;
     bottom: -120px;
-    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
     animation: loginDrift 26s ease-in-out infinite alternate-reverse;
 }
 
@@ -242,29 +77,62 @@
         transparent 1px
     );
     background-size: 26px 26px;
-    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(
         ellipse at center,
-        #000 30%,
+        black 30%,
         transparent 75%
     );
 }
 
+/* 暗色/OLED 下降低光斑透明度，避免大面积发脏 */
+[data-theme="dark"] .login-orb {
+    opacity: 0.12;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] .login-orb {
+        opacity: 0.12;
+    }
+}
+
+[data-oled="on"][data-theme="dark"] .login-orb {
+    opacity: 0.1;
+}
+
+/* ══ 登录卡：QvQChat 悬浮卡语言（radius 20 / surface 底 / 1px 边框 / shadow-hover） ══ */
 .login-card {
     position: relative;
     z-index: 2;
-    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    border: 1px solid color-mix(in srgb, var(--tx-p) 10%, transparent);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-    padding: 32px 28px;
+    width: 100%;
     max-width: 380px;
+    background: var(--bg-t);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-hover);
+    padding: 30px 28px;
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
+/* 每次显示时弹入（scale 0.96 + 上移 8px → 归位） */
+.login-overlay.show .login-card {
+    animation: loginCardIn 0.22s var(--ease-soft-spring) both;
+}
+
+@keyframes loginCardIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* logo 直接展示，不做圆形包裹 */
 .login-avatar {
     display: flex;
     justify-content: center;
@@ -272,29 +140,148 @@
 }
 
 .login-avatar img {
-    width: 68px;
-    height: 68px;
+    width: 84px;
+    height: auto;
     object-fit: contain;
-    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--accent) 30%, transparent));
+}
+
+/* 输入框：居中、略放大，焦点为 accent 柔光环（0 0 0 3.5px accent-soft） */
+.login-card .ep-input {
+    padding: 11px 14px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.login-card .ep-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
 .login-hint {
+    font-size: 12px;
+    color: var(--tx-t);
+    line-height: 1.5;
+    margin-bottom: 0;
     min-height: 18px;
 }
 
+.login-hint code {
+    background: var(--bg-s);
+    padding: 1px 6px;
+    border-radius: var(--radius-xs);
+    font-size: 11px;
+    border: 1px solid var(--bd);
+}
+
+/* 通用表单组（login.css 承载的全局规则，保持与 ep-input 同款焦点语言） */
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background: var(--bg-s);
+    color: var(--tx-p);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-t);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+}
+
+.form-group input::placeholder {
+    color: var(--tx-t);
+}
+
+/* 主按钮：hover 轻浮起，active 归位 */
 .login-actions {
+    display: flex;
+    gap: 8px;
     justify-content: stretch;
 }
 
 .login-actions .btn {
     width: 100%;
     justify-content: center;
-    padding: 10px 16px;
+    padding: 11px 16px;
     font-size: 14px;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s var(--ease-soft-spring);
+}
+
+.login-actions .btn:hover {
+    transform: translateY(-1px);
+}
+
+.login-actions .btn:active {
+    transform: translateY(0);
+}
+
+/* 语言选择（页脚） */
+.login-lang-select {
+    padding: 4px 24px 4px 8px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-xs);
+    background: var(--bg-s);
+    color: var(--tx-s);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+}
+
+.login-lang-select:hover {
+    border-color: var(--accent);
+    color: var(--tx-p);
+}
+
+.login-lang-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+}
+
+.login-lang-select option {
+    background: var(--bg-t);
+    color: var(--tx-p);
 }
 
 .login-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--bd);
+}
+
+.login-globe-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--tx-t);
+    flex-shrink: 0;
 }
 
 @media (max-width: 480px) {
@@ -304,7 +291,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .login-orb {
+    .login-orb,
+    .login-card {
         animation: none;
     }
 }
+
+/* ══ 既有 radius 全站映射（login.css 承载，勿删） ══ */
+.module-search, .ep-select, .form-input, .form-select, .settings-input {
+    border-radius: var(--radius-sm);
+}
+.ep-combobox-trigger { border-radius: var(--radius-sm); }
+.ep-multiselect-search { border-radius: var(--radius-sm); }
+.log-level-chip { border-radius: var(--radius-sm); }
+.store-card { border-radius: var(--radius-lg); }
+.cluster-card { border-radius: var(--radius-lg); }
+.event-card { border-radius: var(--radius-md); }
+.list-row { border-radius: var(--radius-md); }
+.toast { border-radius: var(--radius-md); }
+.conn-panel { border-radius: var(--radius-lg); }
+.conn-badge { border-radius: var(--radius-sm); }
+.popover { border-radius: var(--radius-lg); }
+.pkg-row { border-radius: var(--radius-md); }
+.route-group-card { border-radius: var(--radius-lg); }
+.master-card { border-radius: var(--radius-lg); }
+.bot-card { border-radius: var(--radius-lg); }

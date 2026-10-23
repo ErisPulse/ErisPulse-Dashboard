@@ -226,7 +226,8 @@ export function _renderModuleViews(views) {
       const iconSvg =
         v.icon_svg ||
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>';
-      navItem.innerHTML = iconSvg;
+      // 与静态侧栏同构：svg 包进圆形图标卡 .nav-ico
+      navItem.innerHTML = '<span class="nav-ico">' + iconSvg + "</span>";
 
       const span = document.createElement("span");
       // Use multi-language titles dict if available
@@ -241,6 +242,8 @@ export function _renderModuleViews(views) {
         }
       }
       navItem.appendChild(span);
+      // 折叠态悬浮气泡文案（动态项无 data-i18n span，生成时直接写入）
+      navItem.setAttribute("data-tip", span.textContent || v.id);
       navGroup.appendChild(navItem);
     });
   });

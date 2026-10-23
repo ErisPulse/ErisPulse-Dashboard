@@ -18,6 +18,31 @@ export function evHtml(e, count) {
   var type = e.type || "meta";
   var ico = EV_TYPE_ICONS[type] || EV_TYPE_ICONS.meta;
   var hb = isHeartbeatEvent(e);
+  // 悬停展开的详情字段（紧凑行 + hover 详情：密度分级，Koishi 日志流手法）
+  var details = [];
+  if (e.detail_type) details.push(["detail_type", e.detail_type]);
+  if (e.platform) details.push(["platform", e.platform]);
+  if (e.user_id) details.push(["user_id", privText(e.user_id)]);
+  if (e.group_id) details.push(["group_id", privText(e.group_id)]);
+  if (e.channel_id) details.push(["channel_id", privText(e.channel_id)]);
+  if (e.message_id) details.push(["message_id", e.message_id]);
+  var detailHtml = "";
+  if (details.length && !denseCls) {
+    detailHtml =
+      '<div class="ev-detail" aria-hidden="true">' +
+      details
+        .map(function (d) {
+          return (
+            '<span class="ev-detail-item"><i>' +
+            esc(d[0]) +
+            "</i>" +
+            esc(String(d[1])) +
+            "</span>"
+          );
+        })
+        .join("") +
+      "</div>";
+  }
   return (
     '<div class="ev-item ev-' +
     esc(type) +
@@ -27,7 +52,9 @@ export function evHtml(e, count) {
     esc(t(type) || type) +
     '"><span class="ev-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
     ico +
-    '</svg></span><div class="ev-body"><div class="ev-title"><span class="ev-title-text">' +
+    '</svg></span><span class="ev-type-tag">' +
+    esc(t(type) || type) +
+    '</span><div class="ev-body"><div class="ev-title"><span class="ev-title-text">' +
     esc(privText(e.alt_message || e.detail_type || "-")) +
     "</span>" +
     (count > 1
@@ -37,7 +64,9 @@ export function evHtml(e, count) {
     (e.user_id
       ? '<div class="ev-sub">user: ' + esc(privText(e.user_id)) + "</div>"
       : "") +
-    '</div><div class="ev-side"><span class="ev-plat">' +
+    "</div>" +
+    detailHtml +
+    '<div class="ev-side"><span class="ev-plat">' +
     esc(e.platform || "-") +
     '</span><span class="ev-time">' +
     tm +
@@ -68,28 +97,150 @@ export function renderEventsHtml(events) {
   return html;
 }
 
+/* ═══ WS 事件渲染管线：入队 → 合帧 → 批量前插 → 容量裁剪 ═══
+   core/ws.js 逐条调用 prependEventHtml（core 层不可改），合帧收敛在本层完成：
+   事件风暴期每秒最多 4 次批量渲染，杜绝逐条插入与全量 innerHTML 重建 */
+var _pendEvents = []; // [container, ev] 到达序
+var _pendRAF = 0;
+var _pendTimer = null;
+var _pendLast = 0;
+var _EVENT_FLUSH_MS = 250; // 合帧窗口：rAF 对齐 + 250ms 节流
+var _EVENT_LIST_DOM_CAP = 300; // 事件流页 DOM 行数上限（超出从尾部移除）
+var _DASH_EVENTS_DOM_CAP = 20; // 首页最近事件行数上限
+
 export function prependEventHtml(container, ev) {
-  if (isHeartbeatEvent(ev)) {
-    var first = container.firstElementChild;
-    if (
-      first &&
-      first.classList.contains("ev-hb") &&
-      first.dataset.platform === (ev.platform || "")
-    ) {
-      var c = (parseInt(first.dataset.count || "1", 10) || 1) + 1;
-      first.dataset.count = c;
-      var cnt = first.querySelector(".ev-hb-count");
+  // 首条事件到达时清掉首载骨架（dash.html 内置 .skeleton 占位）
+  var skels = container.querySelectorAll(":scope > .skeleton");
+  if (skels.length) skels.forEach(function (n) { n.remove(); });
+  _pendEvents.push([container, ev]);
+  _scheduleEventFlush();
+}
+
+function _scheduleEventFlush() {
+  if (_pendRAF || _pendTimer) return;
+  var wait = _EVENT_FLUSH_MS - (Date.now() - _pendLast);
+  if (wait <= 0) {
+    _pendRAF = requestAnimationFrame(_flushPendEvents);
+  } else {
+    _pendTimer = setTimeout(function () {
+      _pendTimer = null;
+      _pendRAF = requestAnimationFrame(_flushPendEvents);
+    }, wait);
+  }
+}
+
+function _flushPendEvents() {
+  if (_pendTimer) {
+    clearTimeout(_pendTimer);
+    _pendTimer = null;
+  }
+  _pendRAF = 0;
+  _pendLast = Date.now();
+  var batch = _pendEvents;
+  _pendEvents = [];
+  if (!batch.length) return;
+  // 按容器分组（首页/事件流两视口互不干扰），保持到达顺序
+  var byContainer = new Map();
+  batch.forEach(function (it) {
+    if (!byContainer.has(it[0])) byContainer.set(it[0], []);
+    byContainer.get(it[0]).push(it[1]);
+  });
+  byContainer.forEach(function (evs, c) {
+    _prependBatch(c, evs);
+  });
+}
+
+function _clearPendingEvents() {
+  _pendEvents = [];
+  if (_pendRAF) {
+    cancelAnimationFrame(_pendRAF);
+    _pendRAF = 0;
+  }
+  if (_pendTimer) {
+    clearTimeout(_pendTimer);
+    _pendTimer = null;
+  }
+}
+
+/* 批量前插：evs 为到达序（旧→新）。语义与逐条版等价——
+   同平台心跳并入当前逻辑首行（DOM 直改计数/时间），其余拼串后一次 insertAdjacentHTML（新在上） */
+function _prependBatch(container, evs) {
+  var items = []; // [{ev, count}]
+  var headEl = container.firstElementChild; // 逻辑首行（DOM 引用）
+  var headIdx = -1; // 或批内虚拟首行（items 下标）
+  var tmFmt = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  };
+  evs.forEach(function (ev) {
+    var hb = isHeartbeatEvent(ev);
+    var plat = ev.platform || "";
+    // 与逻辑首行同平台心跳：只更新计数与时间（0-2 个节点级改动）
+    if (hb && headEl && headEl.classList.contains("ev-hb") && headEl.dataset.platform === plat) {
+      var c = (parseInt(headEl.dataset.count || "1", 10) || 1) + 1;
+      headEl.dataset.count = c;
+      var cnt = headEl.querySelector(".ev-hb-count");
       if (cnt) cnt.textContent = "\u00d7" + c;
-      var tmEl = first.querySelector(".ev-time");
+      var tmEl = headEl.querySelector(".ev-time");
       if (tmEl)
         tmEl.textContent = new Date(ev.time * 1000).toLocaleTimeString(
           getLocale(),
-          { hour: "2-digit", minute: "2-digit", second: "2-digit" },
+          tmFmt,
         );
       return;
     }
+    if (hb && headIdx >= 0 && isHeartbeatEvent(items[headIdx].ev) && items[headIdx].ev.platform === plat) {
+      items[headIdx].count++;
+      return;
+    }
+    headEl = null;
+    headIdx = items.length;
+    items.push({ ev: ev, count: 1 });
+  });
+  if (items.length) {
+    // 最新在最上：一次批量插入，避免逐条 insertAdjacentHTML
+    var html = "";
+    for (var i = items.length - 1; i >= 0; i--)
+      html += evHtml(items[i].ev, items[i].count);
+    container.insertAdjacentHTML("afterbegin", html);
+    // 容量裁剪：超出上限从尾部移除
+    var cap =
+      container.id === "dashEvents" ? _DASH_EVENTS_DOM_CAP : _EVENT_LIST_DOM_CAP;
+    while (container.children.length > cap)
+      container.removeChild(container.lastChild);
   }
-  container.insertAdjacentHTML("afterbegin", evHtml(ev));
+  // 搜索过滤激活时，同步本容器各行可见性（仅当事件流列表）
+  var input = document.getElementById("eSearchFilter");
+  if (container.id === "eventList" && input && input.value.trim()) {
+    filterEventRows();
+  }
+}
+
+/* 工具条即时搜索：客户端按行文本过滤（不动数据源） */
+export function filterEventRows() {
+  var input = document.getElementById("eSearchFilter");
+  var list = document.getElementById("eventList");
+  if (!list) return;
+  var q = (input && input.value ? input.value : "").trim().toLowerCase();
+  var rows = list.querySelectorAll(":scope > .ev-item");
+  var shown = 0;
+  rows.forEach(function (r) {
+    var hit = !q || (r.textContent || "").toLowerCase().indexOf(q) >= 0;
+    r.style.display = hit ? "" : "none";
+    if (hit) shown++;
+  });
+  var hint = list.querySelector(":scope > .ev-filter-empty");
+  if (q && rows.length && shown === 0) {
+    if (!hint) {
+      var d = document.createElement("div");
+      d.className = "empty-state ev-filter-empty";
+      d.innerHTML = "<p>" + esc(t("no_data")) + "</p>";
+      list.appendChild(d);
+    }
+  } else if (hint) {
+    hint.remove();
+  }
 }
 
 export async function loadEvents() {
@@ -101,6 +252,8 @@ export async function loadEvents() {
   if (pf) u.set("platform", pf);
   const d = await api("/api/events?" + u);
   if (!d) return;
+  // 全量重建路径（过滤器/切页/清空/重连）：先丢弃在途增量，防止重建后陈旧前插
+  _clearPendingEvents();
   allEvents = d.events || [];
   if (d.total_count !== undefined) _totalEventCount = d.total_count;
   document.getElementById("eventList").innerHTML = allEvents.length
@@ -110,9 +263,10 @@ export async function loadEvents() {
       "</p></div>";
   document.getElementById("dashEvents").innerHTML =
     renderEventsHtml(allEvents.slice(-20).reverse()) ||
-    '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+    '<div class="empty-state ev-empty-mini"><p>' +
       t("waiting_events") +
-      "</div>";
+      "</p></div>";
+  filterEventRows();
   const ps = document.getElementById("ePlatFilter");
   if (ps && platforms.length) {
     const ex = new Set([...ps.options].map((o) => o.value));
@@ -150,6 +304,8 @@ export function _relativeTime(ts) {
 }
 
 export function refreshEventViews() {
+  // 全量重建路径（设置项变更：隐私模式/行密度）：清在途增量后按最新呈现重绘
+  _clearPendingEvents();
   var evl = document.getElementById("eventList");
   var dh = document.getElementById("dashEvents");
   var all = typeof allEvents !== "undefined" ? allEvents : [];
@@ -164,9 +320,9 @@ export function refreshEventViews() {
     if (!s || s.id === "p-dashboard") {
       dh.innerHTML =
         renderEventsHtml(all.slice(-20).reverse()) ||
-        '<div style="padding:16px 18px;font-size:13px;color:var(--tx-s)">' +
+        '<div class="empty-state ev-empty-mini"><p>' +
           t("waiting_events") +
-          "</div>";
+          "</p></div>";
     }
   }
 }
@@ -189,10 +345,13 @@ export function _flushEventStream() {
   }
   const em = el.querySelector(".empty-state");
   if (em) em.remove();
-  _wsEventBuffer.forEach((ev) => {
-    prependEventHtml(el, ev);
+  // 缓冲并入统一管线后同步落盘（调用方已是 500ms 节流，此处无需再等帧）
+  var buf = _wsEventBuffer;
+  _wsEventBuffer = [];
+  buf.forEach(function (ev) {
+    _pendEvents.push([el, ev]);
   });
-  while (el.children.length > 100) el.removeChild(el.lastChild);
+  _flushPendEvents();
   if (getEventAutoTop()) {
     try {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -200,7 +359,6 @@ export function _flushEventStream() {
       window.scrollTo(0, 0);
     }
   }
-  _wsEventBuffer = [];
 }
 
 export function toggleEventLive() {

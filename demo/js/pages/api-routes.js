@@ -46,82 +46,77 @@ export async function loadApiRoutes() {
     var g = groups[mod];
     var totalRoutes = g.http.length + g.ws.length;
     if (totalRoutes === 0) return;
-    var basePath = "/" + mod;
 
+    html += '<div class="card route-group-card collapsed">';
     html +=
-      '<div class="card route-group-card collapsed" style="margin-bottom:12px">';
+      '<div class="card-header" onclick="toggleRouteGroup(this)">';
     html +=
-      '<div class="card-header" style="cursor:pointer;user-select:none" onclick="toggleRouteGroup(this)">';
-    html +=
-      '<svg class="route-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;transition:transform .2s">';
-    html += '<polyline points="6 9 12 15 18 9"/></svg>';
-    html += '<span style="flex:1;font-size:14px">' + esc(mod) + "</span>";
+      '<svg class="route-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    html += '<span class="route-group-name">' + esc(mod) + "</span>";
     html +=
       '<span class="chip chip-sc" style="margin:0">' +
       totalRoutes +
       " routes</span>";
     if (g.http.length > 0)
       html +=
-        '<span class="chip chip-pr" style="margin:0;margin-left:4px">' +
+        '<span class="chip chip-pr" style="margin:0">' +
         g.http.length +
         " HTTP</span>";
     if (g.ws.length > 0)
       html +=
-        '<span class="chip chip-sc" style="margin:0;margin-left:4px">' +
+        '<span class="chip chip-sc" style="margin:0">' +
         g.ws.length +
         " WS</span>";
     html += "</div>";
+
+    // 表格化：sticky 表头 + 行 hover + 方法徽标胶囊
     html += '<div class="route-group-body" style="display:none">';
+    html +=
+      '<table class="route-table"><thead><tr>' +
+      '<th class="th-method">Method</th><th>Path</th><th class="th-action"></th>' +
+      "</tr></thead><tbody>";
 
     g.http.forEach(function (r) {
       var mc = methodColor[r.method] || "method-get";
-      html += '<div class="route-item">';
+      html += '<tr class="route-row">';
+      html += '<td class="td-method"><span class="method-badge ' + mc + '">' + esc(r.method) + "</span></td>";
+      html += '<td class="td-path"><code class="route-path">' + esc(r.full_path) + "</code></td>";
       html +=
-        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-      html += '<span class="method-badge ' + mc + '">' + r.method + "</span>";
-      html +=
-        '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' +
-        esc(r.full_path) +
-        "</code>";
-      html += '<div style="margin-left:auto">';
-      html +=
-        '<button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' +
+        '<td class="td-action"><button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' +
         esc(r.method) +
         "','" +
         esc(r.full_path) +
         "')\">" +
         t("test") +
-        "</button>";
-      html += "</div></div></div>";
+        "</button></td>";
+      html += "</tr>";
     });
 
     g.ws.forEach(function (r) {
       var authBadge = r.has_auth
-        ? '<span class="chip chip-wr" style="margin:0">' +
-          t("requires_auth") +
-          "</span>"
+        ? '<span class="chip chip-wr">' + t("requires_auth") + "</span>"
         : "";
-      html += '<div class="route-item">';
+      html += '<tr class="route-row">';
+      html += '<td class="td-method"><span class="method-badge method-ws">WS</span></td>';
       html +=
-        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-      html += '<span class="method-badge method-ws">WS</span>';
-      html += authBadge;
-      html +=
-        '<code style="font-size:13px;font-weight:500;background:var(--bg-s);padding:2px 6px;border-radius:4px">' +
+        '<td class="td-path"><code class="route-path">' +
         esc(r.full_path) +
-        "</code>";
-      html += "</div></div>";
+        "</code>" +
+        authBadge +
+        "</td>";
+      html += '<td class="td-action"></td>';
+      html += "</tr>";
     });
 
-    html += "</div></div>";
+    html += "</tbody></table></div></div>";
   });
 
   var container = document.getElementById("routeModulesContainer");
   container.innerHTML =
     html ||
-    '<div style="padding:16px;font-size:13px;color:var(--tx-s);text-align:center">' +
+    '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg><p>' +
       t("no_data") +
-      "</div>";
+      "</p></div>";
 }
 
 export function toggleRouteGroup(hd) {

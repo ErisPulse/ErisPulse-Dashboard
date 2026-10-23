@@ -1,19 +1,260 @@
-/* ErisPulse Dashboard – store (auto-split from dash.css, aligned with js/) */
+/* ErisPulse Dashboard – store
+   模块商店（市场浏览 + 已装包管理）· EP Design Language v1.1 */
+
+/* ───────────────────────── 工具条 ───────────────────────── */
+
+.store-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+}
+
+.store-toolbar .ep-select {
+    width: auto;
+}
+
+/* ───────────────────────── 筛选区行距 ─────────────────────────
+   页面头栏（搜索工具条）、分类 chips 行、标签选择器三行回到区块标准节奏
+   （14px，design-language §2.3）。此前三者 margin 均为 0，行与行以 0 间距
+   堆叠贴死；行隐藏（display:none）时 margin 随之失效，不会叠出双倍空隙 */
+.store-toolbar,
+.store-category-chips,
+.store-tags {
+    margin-top: 14px;
+}
+
+.store-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+}
+
+.store-search-wrap svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--tx-t);
+    pointer-events: none;
+}
+
+.store-search-wrap input {
+    width: 100%;
+    padding: 7px 12px 7px 32px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    background: var(--bg-s);
+    color: var(--tx-p);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition:
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth);
+}
+
+.store-search-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
+/* ───────────────────────── 市场卡片 ───────────────────────── */
+
+.store-grid {
+    margin-top: 12px;
+}
+
+/* 网格间距分档：舒适档 16px / 紧凑档 14px（见下方密度双档）。
+   用 .grid-3.store-grid 抬升特异性，压过 overrides.css 全局
+   .grid-3 { gap: 20px } 的后载同特异性覆盖 */
+.grid-3.store-grid {
+    gap: 16px;
+}
+
+/* 舒适档（默认）：padding 18px、卡内行距 10px（design-language 卡片 18–20px 一档） */
 .store-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: var(--radius-lg);
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     box-shadow: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    position: relative;
+    transition:
+        border-color 0.15s var(--ease-smooth),
+        transform 0.18s var(--ease-smooth),
+        box-shadow 0.18s var(--ease-smooth);
+}
+
+/* ───────────────────────── 密度双档 ─────────────────────────
+   紧凑档（html[data-density="compact"]）：维持既有紧凑表达——
+   padding 16px 18px / 卡内行距 8px / 网格 gap 14px；
+   舒适档参数见上方 .store-card 默认值（padding 18px / gap 10px / 网格 16px） */
+[data-density="compact"] .store-card {
+    padding: 16px 18px;
+    gap: 8px;
+}
+
+[data-density="compact"] .grid-3.store-grid {
+    gap: 14px;
+}
+
+/* 窄屏（≤768px）：商店卡采用紧凑档参数，配合全局栅格单列回退呈现列表式原生感 */
+@media (max-width: 768px) {
+    .store-card {
+        padding: 16px 18px;
+        gap: 8px;
+    }
+
+    .grid-3.store-grid {
+        gap: 14px;
+    }
 }
 
 .store-card:hover {
-    box-shadow: none;
-    transform: none;
+    border-color: var(--bd-h);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.store-card-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+/* 图标瓦片：首字母头像，适配器 accent 染色 */
+.store-ico {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--bg-s);
+    border: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+    color: var(--tx-s);
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.store-ico.is-adapter {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--accent);
+}
+
+/* 源数据声明的图片 / 内联 SVG 图标：约束在瓦片内，保持外观尺寸一致 */
+.store-ico img,
+.store-ico svg {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.store-card-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+/* 名称行独占标题块首行：溢出省略、悬停显全名，保证名称可读性优先 */
+.store-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.store-pkg {
+    font-size: 11px;
+    color: var(--tx-t);
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* 徽标组：类型/分类/状态胶囊，位于名称与包名之下，可换行（标签行类名 store-card-tags 另有用途） */
+.store-card-badges {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
+    min-width: 0;
+}
+
+.store-type-chip,
+.store-status-chip {
+    font-size: 10px;
+    padding: 1px 8px;
+    flex-shrink: 0;
+}
+
+.store-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 4px;
+}
+
+.store-card-foot-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.store-ver {
+    font-size: 12px;
+    color: var(--tx-s);
+    font-weight: 500;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.store-ver-old {
+    color: var(--tx-t);
+    text-decoration: line-through;
+    font-weight: 400;
+}
+
+.store-installed-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ok-c);
+    font-weight: 600;
+}
+
+.store-installed-flag svg {
+    width: 13px;
+    height: 13px;
 }
 
 .view-toggle {
@@ -21,7 +262,7 @@
     gap: 4px;
     background: var(--bg-s);
     padding: 3px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--bd);
 }
 
@@ -33,7 +274,7 @@
     border: none;
     background: transparent;
     color: var(--tx-s);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
@@ -58,8 +299,7 @@
 .pkg-tabs {
     gap: 2px;
     padding: 4px;
-    margin: 16px 0;
-    border-radius: 12px;
+    margin: 14px 0;
     flex-wrap: wrap;
 }
 .pkg-tab {
@@ -67,7 +307,6 @@
     font-size: 13px;
     font-weight: 600;
     gap: 7px;
-    border-radius: 8px;
 }
 .pkg-tab svg {
     width: 16px;
@@ -89,7 +328,7 @@
 .pkg-search {
     padding: 8px 14px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 13px;
     background: var(--bg-s);
     color: var(--tx-p);
@@ -108,7 +347,7 @@
     padding: 10px 16px;
     border-bottom: 1px solid var(--bd);
     gap: 12px;
-    transition: background 0.15s;
+    transition: background 0.15s var(--ease-smooth);
 }
 
 .pkg-row:hover {
@@ -117,6 +356,12 @@
 
 .pkg-row:last-child {
     border-bottom: none;
+}
+
+.pkg-list {
+    max-height: calc(100vh - 380px);
+    min-height: 120px;
+    overflow-y: auto;
 }
 
 .pkg-row-update {
@@ -128,23 +373,72 @@
     min-width: 0;
 }
 
+.pkg-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pkg-summary {
+    font-size: 12px;
+    color: var(--tx-s);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pkg-row-side {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.pkg-arrow {
+    width: 15px;
+    height: 15px;
+    color: var(--wr-c);
+    flex-shrink: 0;
+}
+
+.pkg-git-url {
+    font-weight: 600;
+    font-size: 12.5px;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    color: var(--tx-p);
+    word-break: break-all;
+}
+
+.pkg-git-meta {
+    margin-top: 4px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.pkg-git-meta .chip {
+    font-size: 10px;
+}
+
 .pkg-name {
     font-weight: 600;
     font-size: 13px;
-    font-family: Consolas, Monaco, monospace;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
 }
 
 .pkg-version {
     font-size: 12px;
     color: var(--tx-s);
-    font-family: Consolas, Monaco, monospace;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
     white-space: nowrap;
 }
 
 .pkg-version-old {
     font-size: 12px;
     color: var(--tx-t);
-    font-family: Consolas, Monaco, monospace;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
     text-decoration: line-through;
     white-space: nowrap;
 }
@@ -153,13 +447,71 @@
     font-size: 12px;
     color: var(--ok-c);
     font-weight: 600;
-    font-family: Consolas, Monaco, monospace;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
     white-space: nowrap;
 }
 
 .store-card-update {
     border-color: var(--wr-bd);
-    box-shadow: 0 0 0 1px var(--wr-bd);
+}
+
+/* ───────────────────────── 表单卡（按名安装 / Git 安装） ───────────────────────── */
+
+/* 同一 tab 内的后续卡片间距（如 Git 安装表单与其已装列表） */
+.pkg-gap-card {
+    margin-top: 14px;
+}
+
+/* 类型徽标胶囊：小号紧凑档，语义色由 chip-pr/chip-sc/chip-muted 提供 */
+.pkg-type-chip {
+    font-size: 10px;
+    padding: 1px 7px;
+    font-weight: 600;
+}
+
+/* 中性徽标：依赖库等无语义倾向的类型 */
+.chip-muted {
+    background: var(--bg-s);
+    color: var(--tx-t);
+}
+
+/* 列表加载骨架：与 .pkg-list 同内边距的呼吸占位 */
+.pkg-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px;
+}
+
+.pkg-form-body {
+    padding: 16px 20px;
+}
+
+.pkg-form-desc {
+    font-size: 13px;
+    color: var(--tx-s);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.pkg-form-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pkg-form-row .pkg-mono-input {
+    flex: 1;
+    min-width: 200px;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+}
+
+.pkg-form-hint {
+    font-size: 12px;
+    color: var(--tx-t);
+    margin-top: 8px;
+    line-height: 1.5;
 }
 
 @keyframes spin {
@@ -254,9 +606,9 @@
     right: 0;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 14px 20px;
-    box-shadow: none;
+    box-shadow: var(--shadow-hover);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -279,8 +631,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--wr-bg, var(--bg-s));
-    color: var(--wr-c, #f0ad4e);
+    background: var(--wr-bg);
+    color: var(--wr-c);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -533,7 +885,7 @@
 .upload-select {
     padding: 4px 8px;
     border: 1px solid var(--bd);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-size: 12px;
     background: var(--bg-s);
     color: var(--tx-p);
@@ -735,17 +1087,17 @@
     position: fixed;
     bottom: 24px;
     left: 50%;
-    
+    transform: translateX(-50%);
     background: var(--bg-t);
-    border: 1px solid var(--bd);
-    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--bd));
+    border-radius: var(--radius-lg);
     padding: 10px 20px;
     display: flex;
     align-items: center;
     gap: 16px;
-    box-shadow: none;
+    box-shadow: var(--shadow-hover);
     z-index: 900;
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.2s var(--ease-soft-spring, ease-out);
 }
 
 .store-batch-bar span {
@@ -786,7 +1138,7 @@
     font-size: 11px;
     font-weight: 500;
     padding: 3px 10px;
-    border-radius: 6px;
+    border-radius: 999px;
     background: var(--bg-t);
     color: var(--tx-s);
     border: 1px solid var(--bd);
@@ -799,8 +1151,8 @@
     color: var(--accent);
 }
 .store-tag-chip.active {
-    background: var(--accent);
-    color: #fff;
+    background: var(--accent-soft, rgba(var(--accent-rgb), 0.14));
+    color: var(--accent);
     border-color: var(--accent);
 }
 
@@ -840,7 +1192,7 @@
     font-size: 9px;
     font-weight: 500;
     padding: 1px 6px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     background: var(--bg-s);
     color: var(--tx-t);
     border: 1px solid var(--bd);
@@ -919,7 +1271,7 @@
 .store-cat-chip.active {
     border-color: var(--accent);
     color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: var(--accent-soft, rgba(var(--accent-rgb), 0.14));
 }
 
 .store-cat-count {

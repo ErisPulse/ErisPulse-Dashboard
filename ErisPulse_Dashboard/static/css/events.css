@@ -1,13 +1,54 @@
-/* ErisPulse Dashboard – events (auto-split from dash.css, aligned with js/) */
+/* ErisPulse Dashboard – events（v1.2 重建：工具条收敛 / 行密度分级 / 悬停展开详情） */
+
+/* ════════════════ 工具条：筛选+搜索收敛于左侧，动作收纳于右侧 ════════════════ */
+.ev-toolbar {
+    margin-bottom: 12px;
+}
+
+.ev-toolbar .filter-bar-inputs {
+    max-width: 660px;
+}
+
+/* 搜索输入：宽度区间收敛，避免撑满整行 */
+.ev-toolbar .ev-search {
+    flex: 1;
+    min-width: 160px;
+    max-width: 280px;
+}
+
+.ev-live-btn {
+    gap: 8px;
+}
+
+/* ════════════════ 列表卡：独立滚动视口 ════════════════ */
+.ev-list-card {
+    overflow: hidden;
+}
+
+.ev-list {
+    /* 高度预算：壳层(18+64+18) + 页边距(64) + 标题区(79) + tab(62) + 工具条(48) + 边框(2)
+       ≈ 356px，页面本体不滚动、滚动收敛在列表容器内；上限 680px 防超高分屏比例失衡 */
+    max-height: min(680px, calc(100vh - 356px));
+    min-height: 220px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.ev-list .skeleton {
+    margin: 10px 18px;
+}
+
+/* ════════════════ 事件行：标准密度 ════════════════ */
 .ev-item {
-    border-radius: 0;
+    position: relative;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--bd);
+    gap: 6px 10px;
+    padding: 10px 18px;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
     font-size: 13px;
-    transition: background 0.2s;
+    transition: background-color 0.15s var(--ease-smooth);
 }
 
 .ev-item:last-child {
@@ -19,28 +60,51 @@
 }
 
 .ev-ico {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: none;
-    color: var(--tx-t);
+    border-radius: 50%;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    transition:
+        background-color 0.15s var(--ease-smooth),
+        color 0.15s var(--ease-smooth);
+}
+
+.ev-item:hover .ev-ico {
+    background: var(--accent-soft);
+    color: var(--accent);
 }
 
 .ev-ico svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
 }
 
-/* 高频类型（message/meta）中性弱化，仅通知/请求保留柔和彩 */
+/* 高频类型（message/meta）中性弱化，仅通知/请求保留语义色 */
 .ev-item.ev-notice .ev-ico {
     color: var(--wr-c);
 }
 
 .ev-item.ev-request .ev-ico {
     color: var(--er-c);
+}
+
+/* 类型列：固定宽度保证纵向对齐（表格化列 rhythm） */
+.ev-type-tag {
+    flex: none;
+    width: 54px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--tx-t);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .ev-body {
@@ -99,7 +163,7 @@
     padding: 1px 8px;
     border: 1px solid var(--bd);
     border-radius: 999px;
-    background: var(--bg-s);
+    background: var(--bg-t);
     max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -112,21 +176,77 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* ── 悬停展开详情：次级字段默认收起，hover/focus 时展开（密度分级补充层） ── */
+.ev-detail {
+    flex-basis: 100%;
+    min-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    padding-left: 36px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+        max-height 0.22s var(--ease-smooth),
+        opacity 0.15s var(--ease-smooth),
+        margin-top 0.22s var(--ease-smooth);
+}
+
+.ev-item:hover .ev-detail,
+.ev-item:focus-within .ev-detail {
+    max-height: 108px;
+    opacity: 1;
+    margin-top: 4px;
+}
+
+.ev-detail-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bd) 70%, transparent);
+    background: var(--bg-t);
+    color: var(--tx-p);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ev-detail-item i {
+    font-style: normal;
+    color: var(--tx-t);
+    flex-shrink: 0;
+}
+
+/* ════════════════ 事件行：紧凑密度（设置页 event_density=compact） ════════════════ */
 .ev-item.ev-dense {
-    padding: 4px 16px;
-    gap: 8px;
+    padding: 5px 14px;
+    gap: 4px 8px;
     font-size: 12px;
 }
 
 .ev-item.ev-dense .ev-ico {
-    width: 22px;
-    height: 22px;
-    border-radius: 7px;
+    width: 20px;
+    height: 20px;
+    background: none;
 }
 
 .ev-item.ev-dense .ev-ico svg {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
+}
+
+.ev-item.ev-dense .ev-type-tag {
+    width: 44px;
+    font-size: 9px;
+}
+
+.ev-item.ev-dense .ev-title-text {
+    font-size: 12px;
 }
 
 .ev-item.ev-dense .ev-sub {
@@ -136,6 +256,10 @@
 .ev-item.ev-dense .ev-plat,
 .ev-item.ev-dense .ev-time {
     font-size: 10px;
+}
+
+.ev-item.ev-dense .ev-plat {
+    padding: 0 6px;
 }
 
 .ev-item.ev-dense .ev-hb-count {
@@ -148,29 +272,63 @@ body.privacy-on .ev-item {
     filter: blur(0);
 }
 
+/* ════════════════ 空状态 ════════════════ */
+/* 首页实时卡内嵌迷你空态（复用 .empty-state 基类） */
+.ev-empty-mini {
+    padding: 26px 12px;
+}
+
+.ev-empty-mini p {
+    font-size: 12px;
+}
+
+/* 工具条过滤无结果提示（追加在列表尾部） */
+.ev-filter-empty {
+    border-top: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+}
+
+/* ════════════════ 构建器工具条（与事件流工具条同构的裸工具行） ════════════════ */
 .builder-toolbar {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
     align-items: center;
-    padding: 12px 16px;
-    background: var(--bg-s);
-    border-radius: 12px;
-    border: 1px solid var(--bd);
+}
+
+.builder-toolbar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-p);
+    margin-right: auto;
+}
+
+.builder-toolbar-title svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+}
+
+.builder-toolbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .builder-layout {
     display: grid;
     grid-template-columns: 1fr minmax(350px, 450px);
-    gap: 20px;
+    gap: 14px;
     min-height: 0;
 }
 
 .builder-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 14px;
     min-height: 0;
     overflow-y: auto;
 }
@@ -197,7 +355,7 @@ body.privacy-on .ev-item {
     gap: 8px;
     padding: 16px 12px;
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
     color: var(--tx-s);
     cursor: pointer;
@@ -206,7 +364,8 @@ body.privacy-on .ev-item {
 
 .type-btn:hover {
     border-color: var(--accent);
-    background: var(--bg-t);
+    background: var(--accent-soft, rgba(var(--accent-rgb), 0.14));
+    color: var(--accent);
     transform: none;
     box-shadow: none;
 }
@@ -267,7 +426,7 @@ body.privacy-on .ev-item {
 .segment-type:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-h);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, rgba(var(--accent-rgb), 0.14));
 }
 
 .segment-fields {
@@ -293,13 +452,7 @@ body.privacy-on .ev-item {
 .segment-fields select:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-h);
-}
-
-.segment-fields input:focus,
-.segment-fields select:focus {
-    outline: none;
-    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, rgba(var(--accent-rgb), 0.14));
 }
 
 .segment-remove {
@@ -314,8 +467,8 @@ body.privacy-on .ev-item {
 }
 
 .segment-remove:hover {
-    background: var(--er-c);
-    color: white;
+    background: var(--er-bg);
+    color: var(--er-c);
     transform: none;
 }
 
@@ -358,7 +511,7 @@ body.privacy-on .ev-item {
 .optional-field input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-h);
+    box-shadow: 0 0 0 3.5px var(--accent-soft, rgba(var(--accent-rgb), 0.14));
 }
 
 .optional-field-remove {
@@ -373,8 +526,8 @@ body.privacy-on .ev-item {
 }
 
 .optional-field-remove:hover {
-    background: var(--er-c);
-    color: white;
+    background: var(--er-bg);
+    color: var(--er-c);
     transform: none;
 }
 
@@ -568,18 +721,6 @@ body.privacy-on .ev-item {
         width: 20px;
         height: 20px;
     }
-}
-
-#p-event-builder {
-    padding-top: 28px;
-}
-
-#p-event-builder .page-title {
-    margin-bottom: 8px;
-}
-
-#p-event-builder .page-desc {
-    margin-bottom: 24px;
 }
 
 .card-header .header-actions .btn-icon:hover {

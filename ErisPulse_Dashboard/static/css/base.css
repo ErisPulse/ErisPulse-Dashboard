@@ -152,6 +152,8 @@
     --modal: rgba(0, 0, 0, 0.85);
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
     --shadow-hover: 0 6px 18px -6px rgba(0, 0, 0, 0.75);
+    /* 纯黑底上 14% 太淡，微调透明度保可见性 */
+    --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 @media (prefers-color-scheme: dark) {
     [data-oled="on"][data-theme="auto"],
@@ -165,6 +167,7 @@
         --modal: rgba(0, 0, 0, 0.85);
         --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
         --shadow-hover: 0 6px 18px -6px rgba(0, 0, 0, 0.75);
+        --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
     }
 }
 
@@ -570,6 +573,11 @@ select:focus {
     --radius-lg: 14px;
     --radius-xl: 20px;
     --radius-2xl: 28px;
+    /* 悬浮壳：页面四周呼吸间隙 + 面板圆角 */
+    --radius-panel: 20px;
+    --gap-shell: 18px;
+    /* accent 柔和底（运行时换 accent 自动跟随；派生自 --accent，勿写死色值） */
+    --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
 
     --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -598,5 +606,170 @@ select:focus {
     .app.authed {
         opacity: 1;
     }
+}
+
+/* ── 全局滚动条：镂空胶囊（透明边框镂空技巧，QvQChat 同款） ── */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bd-h) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bd-h);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+    background-clip: content-box;
+}
+
+/* ══ 透感体系：背景图模式下全线表面让利（html.bg-image 由 appearance.js 挂载） ══
+   设计语言 §2.6：表面转半透明 + 悬浮面板局部 blur；文字/边框/语义色不变保对比度。
+   色值与各主题块同源（改动主题时同步此处）。
+   档位（html 上叠加 bg-level-soft / bg-level-strong，标准档无附加类）：
+     轻 soft   —— 表面更实，遮罩更重（浅色机器/复杂底图友好）
+     标准 std  —— 默认值（同各主题基础块）
+     强 strong —— 表面更透，背景图更多露出，blur 相应加深兜底 */
+/* ── 标准档（默认） ── */
+html.bg-image {
+    --bg-p: color-mix(in srgb, #f6f7f9 30%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 62%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 82%, transparent);
+}
+html[data-theme="dark"].bg-image {
+    --bg-p: color-mix(in srgb, #0f1115 28%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 62%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 82%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"].bg-image {
+        --bg-p: color-mix(in srgb, #0f1115 28%, transparent);
+        --bg-s: color-mix(in srgb, #161a20 62%, transparent);
+        --bg-t: color-mix(in srgb, #1c2027 82%, transparent);
+    }
+}
+/* ── 轻档：表面收紧、更接近实底 ── */
+html.bg-image.bg-level-soft {
+    --bg-p: color-mix(in srgb, #f6f7f9 45%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 78%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 92%, transparent);
+}
+html[data-theme="dark"].bg-image.bg-level-soft {
+    --bg-p: color-mix(in srgb, #0f1115 42%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 78%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 92%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"].bg-image.bg-level-soft {
+        --bg-p: color-mix(in srgb, #0f1115 42%, transparent);
+        --bg-s: color-mix(in srgb, #161a20 78%, transparent);
+        --bg-t: color-mix(in srgb, #1c2027 92%, transparent);
+    }
+}
+/* ── 强档：全线更透，背景图持续可见 ── */
+html.bg-image.bg-level-strong {
+    --bg-p: color-mix(in srgb, #f6f7f9 20%, transparent);
+    --bg-s: color-mix(in srgb, #eef0f3 50%, transparent);
+    --bg-t: color-mix(in srgb, #ffffff 72%, transparent);
+}
+html[data-theme="dark"].bg-image.bg-level-strong {
+    --bg-p: color-mix(in srgb, #0f1115 18%, transparent);
+    --bg-s: color-mix(in srgb, #161a20 50%, transparent);
+    --bg-t: color-mix(in srgb, #1c2027 72%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"].bg-image.bg-level-strong {
+        --bg-p: color-mix(in srgb, #0f1115 18%, transparent);
+        --bg-s: color-mix(in srgb, #161a20 50%, transparent);
+        --bg-t: color-mix(in srgb, #1c2027 72%, transparent);
+    }
+}
+/* ── OLED：黑底透明会发灰，各档整体收紧（轻 96 / 标准 92 / 强 88） ── */
+html[data-oled="on"].bg-image,
+html[data-oled="on"][data-theme="dark"].bg-image {
+    --bg-p: color-mix(in srgb, #000000 20%, transparent);
+    --bg-s: color-mix(in srgb, #0a0d12 60%, transparent);
+    --bg-t: color-mix(in srgb, #0a0d12 92%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-oled="on"][data-theme="auto"].bg-image {
+        --bg-p: color-mix(in srgb, #000000 20%, transparent);
+        --bg-s: color-mix(in srgb, #0a0d12 60%, transparent);
+        --bg-t: color-mix(in srgb, #0a0d12 92%, transparent);
+    }
+}
+html[data-oled="on"].bg-image.bg-level-soft,
+html[data-oled="on"][data-theme="dark"].bg-image.bg-level-soft {
+    --bg-p: color-mix(in srgb, #000000 32%, transparent);
+    --bg-s: color-mix(in srgb, #0a0d12 75%, transparent);
+    --bg-t: color-mix(in srgb, #0a0d12 96%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-oled="on"][data-theme="auto"].bg-image.bg-level-soft {
+        --bg-p: color-mix(in srgb, #000000 32%, transparent);
+        --bg-s: color-mix(in srgb, #0a0d12 75%, transparent);
+        --bg-t: color-mix(in srgb, #0a0d12 96%, transparent);
+    }
+}
+html[data-oled="on"].bg-image.bg-level-strong,
+html[data-oled="on"][data-theme="dark"].bg-image.bg-level-strong {
+    --bg-p: color-mix(in srgb, #000000 14%, transparent);
+    --bg-s: color-mix(in srgb, #0a0d12 50%, transparent);
+    --bg-t: color-mix(in srgb, #0a0d12 88%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+    html[data-oled="on"][data-theme="auto"].bg-image.bg-level-strong {
+        --bg-p: color-mix(in srgb, #000000 14%, transparent);
+        --bg-s: color-mix(in srgb, #0a0d12 50%, transparent);
+        --bg-t: color-mix(in srgb, #0a0d12 88%, transparent);
+    }
+}
+/* cel 皮肤例外：纸面风格保持不透明（档位对其无效） */
+html[data-ui-style="cel"].bg-image {
+    --bg-p: #fafaf5;
+    --bg-s: #ffffff;
+    --bg-t: #ffffff;
+}
+html[data-ui-style="cel"][data-theme="dark"].bg-image {
+    --bg-p: #14161d;
+    --bg-s: #1b1e27;
+    --bg-t: #20242f;
+}
+@media (prefers-color-scheme: dark) {
+    html[data-ui-style="cel"][data-theme="auto"].bg-image {
+        --bg-p: #14161d;
+        --bg-s: #1b1e27;
+        --bg-t: #20242f;
+    }
+}
+
+/* 透感可读性兜底（v1.2）：仅真正的浮层（模态/下拉）用轻 blur；
+   header/侧栏/卡片/统计卡保持平面半透明——大面积 backdrop blur 会造成浑浊感 */
+html.bg-image .modal-box,
+html.bg-image .node-dropdown {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+html.bg-image.bg-level-strong .modal-box,
+html.bg-image.bg-level-strong .node-dropdown {
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+}
+html[data-ui-style="cel"].bg-image .modal-box,
+html[data-ui-style="cel"].bg-image .node-dropdown {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 

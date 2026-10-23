@@ -1,150 +1,229 @@
-/* ErisPulse Dashboard – bots (auto-split from dash.css, aligned with js/) */
+/* ErisPulse Dashboard – bots（v1.2 重建：自适应卡片网格 / logo+状态点 / 连接 chip / 元信息收纳） */
+
+/* ════════════════ 卡片网格：auto-fill 自适应，窄屏自动收拢无空轨道 ════════════════ */
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 292px), 1fr));
+    gap: 14px;
+}
+
+/* 空状态横跨整行 */
+.bot-grid > .empty-state {
+    grid-column: 1 / -1;
+}
+
+/* ════════════════ 机器人卡片：扁平双行结构 ════════════════ */
 .bot-card {
     background: var(--bg-t);
-    border-radius: 16px;
-    padding: 20px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: none;
+    transition: border-color 0.15s var(--ease-smooth);
+}
+
+/* 头部行：logo + 身份 + 连接 chip */
+.bot-head {
     display: flex;
     align-items: center;
-    gap: 16px;
-    box-shadow: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    gap: 12px;
+    min-width: 0;
 }
 
-.bot-card:hover {
-    box-shadow: none;
-    transform: none;
-}
-
+/* logo 容器：软底方块 + 右下角状态点（api.js _botAvatarFallback 依赖 .bot-avatar/.has-logo 类名） */
 .bot-avatar {
-    width: 48px;
-    height: 48px;
+    position: relative;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-    background: color-mix(in srgb, var(--accent) 10%, var(--bg-s));
+    background: color-mix(in srgb, var(--accent) 9%, var(--bg-s));
+    color: var(--tx-s);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .bot-avatar img {
-    width: 48px;
-    height: 48px;
+    width: 100%;
+    height: 100%;
     border-radius: 12px;
     object-fit: cover;
+    display: block;
 }
 
-.bot-avatar.has-logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--accent) 10%, var(--bg-s));
-}
-
+/* 平台 logo：等比缩放留出呼吸边距 */
 .bot-avatar.has-logo img {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
     object-fit: contain;
+    padding: 4px;
+    box-sizing: border-box;
+    border-radius: 8px;
 }
 
-.bot-avatar svg {
-    width: 24px;
-    height: 24px;
-    color: var(--tx-p);
-    opacity: 0.7;
+.bot-avatar > svg {
+    width: 22px;
+    height: 22px;
+    opacity: 0.65;
 }
 
+/* 连接状态点：覆盖在 logo 右下角，描边取卡片底色形成环形分隔 */
+.bot-status-dot {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2.5px solid var(--bg-t);
+    background: var(--ok-c);
+    box-sizing: content-box;
+    box-shadow: none;
+}
+
+.bot-card[data-bot-status="offline"] .bot-status-dot {
+    background: var(--tx-t);
+}
+
+/* 身份块 */
 .bot-card-body {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
 }
+
 .bot-name {
     font-size: 14px;
     font-weight: 600;
+    color: var(--tx-p);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .bot-platform-row {
     font-size: 11px;
     color: var(--tx-s);
     display: flex;
     align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
 }
+
 .bot-id-code {
-    font-family: monospace;
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
     font-size: 10px;
     color: var(--tx-t);
     background: var(--bg-s);
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.bot-caps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin-top: 4px;
-}
-.bot-cap-tag {
-    display: inline-block;
-    font-size: 9px;
-    font-weight: 500;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: var(--bg-s);
-    color: var(--tx-s);
-    border: 1px solid var(--bd);
-}
-.bot-cap-tag.bot-cap-more {
-    background: var(--accent);
-    color: #fff;
-    font-weight: 600;
-    border-color: var(--accent);
-}
-.bot-card-right {
-    text-align: right;
+
+/* 连接 chip：语义色胶囊（在线/离线） */
+.bot-conn-chip {
     flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 3px;
+    gap: 6px;
+    font-size: 11px;
 }
-.bot-status-row {
+
+.bot-conn-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+/* ════════════════ 卡底：能力标签 + 元信息收纳行 ════════════════ */
+.bot-foot {
     display: flex;
     align-items: center;
-    gap: 6px;
-    justify-content: flex-end;
+    gap: 8px;
+    min-height: 22px;
 }
+
+.bot-caps {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* 无能力标签时保持底行占位对齐 */
+.bot-caps-empty {
+    flex: 1;
+}
+
+.bot-cap-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--bg-s);
+    color: var(--tx-s);
+    border: 1px solid color-mix(in srgb, var(--bd) 70%, transparent);
+}
+
+.bot-cap-tag.bot-cap-more {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+    border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* 元信息（最近活跃 + 适配器状态）收纳于右侧 */
+.bot-foot-meta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .bot-last-active {
     font-size: 11px;
     color: var(--tx-t);
-}
-.adapter-status-chip {
-    font-size: 10px;
-    padding: 1px 6px;
+    white-space: nowrap;
 }
 
+.adapter-status-chip {
+    font-size: 10px;
+    padding: 1px 8px;
+    white-space: nowrap;
+}
+
+/* 兼容引用（旧结构类名，保留最小定义避免外部引用失效） */
 .bot-card-status {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-@media (max-width: 768px) {
-    .status-icons-grid {
+/* ════════════════ 响应式 ════════════════ */
+@media (max-width: 640px) {
+    .bot-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
     }
 
-    .status-icon-frames.size-lg {
-        width: 56px;
-        height: 56px;
+    /* 窄屏允许连接 chip 换行，身份块占满 */
+    .bot-head {
+        flex-wrap: wrap;
+    }
+
+    .bot-conn-chip {
+        margin-left: 56px;
+        order: 3;
     }
 }
-

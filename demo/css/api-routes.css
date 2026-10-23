@@ -1,9 +1,9 @@
-/* ErisPulse Dashboard – api-routes (auto-split from dash.css, aligned with js/) */
+/* ErisPulse Dashboard – api-routes（v1.2 重建：分组表格 / sticky 表头 / 方法徽标胶囊化） */
 
-/* API 路由样式 */
+/* ════════════════ 消息统计（首页 loadMessageStats 注入） ════════════════ */
 .msg-stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 16px;
 }
@@ -12,29 +12,139 @@
     padding: 8px 0 0;
 }
 
-.route-item {
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--bd);
-    font-size: 13px;
-    transition: background 0.2s;
+/* ════════════════ 分组卡节奏 ════════════════ */
+/* 工具条计数组：HTTP / WS 徽标并排 */
+.route-count-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.route-item:last-child {
-    border-bottom: none;
+#routeModulesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
-.route-item:hover {
+.route-group-card .card-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.route-group-card .card-header:hover {
     background: var(--bg-s);
 }
 
-.method-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
+.route-group-card .route-group-chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s var(--ease-smooth);
+}
+
+.route-group-card.collapsed .route-group-chevron {
+    transform: rotate(0deg);
+}
+
+.route-group-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
     font-weight: 600;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ════════════════ 路由表：sticky 表头 + 行 hover ════════════════ */
+.route-group-body {
+    max-height: 440px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.route-table {
+    width: 100%;
+    /* separate 模式保证 sticky 表头边框滚动时不消失 */
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.route-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-s);
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--tx-t);
+    /* 横向 padding 与 .card-header 对齐（clamp 同参），表格内容不贴卡缘 */
+    padding: 8px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid var(--bd);
+    white-space: nowrap;
+}
+
+.route-table .th-action {
+    width: 1%;
+}
+
+.route-row td {
+    padding: 9px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    vertical-align: middle;
+}
+
+.route-row:last-child td {
+    border-bottom: none;
+}
+
+.route-row {
+    transition: background-color 0.15s var(--ease-smooth);
+}
+
+.route-row:hover {
+    background: var(--bg-s);
+}
+
+.td-method {
+    width: 88px;
+    white-space: nowrap;
+}
+
+.td-action {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.route-path {
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
-    min-width: 40px;
+    font-size: 12px;
+    color: var(--tx-p);
+    word-break: break-all;
+}
+
+.td-path .chip {
+    margin-left: 8px;
+    vertical-align: 1px;
+}
+
+/* ════════════════ 方法徽标：胶囊化 ════════════════ */
+.method-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    min-width: 54px;
     text-align: center;
 }
 
@@ -58,45 +168,43 @@
     color: var(--er-c);
 }
 
+.method-patch {
+    background: var(--wr-bg);
+    color: var(--wr-c);
+}
+
 .method-ws {
     background: var(--sc-bg);
     color: var(--sc-c);
 }
 
-/* API 路由分组样式 */
-.route-group-card .card-header {
-    cursor: pointer;
-    user-select: none;
-}
-
-.route-group-card .card-header:hover {
+.method-options,
+.method-head {
     background: var(--bg-s);
+    color: var(--tx-s);
 }
 
-.route-group-card .route-group-chevron {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    transition: transform 0.2s;
+/* ════════════════ 响应式 ════════════════ */
+@media (max-width: 640px) {
+    .msg-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .route-table thead th,
+    .route-row td {
+        padding: 8px 16px;
+    }
+
+    .td-method {
+        width: auto;
+    }
 }
 
-.route-group-card.collapsed .route-group-chevron {
-    transform: rotate(0deg);
-}
-
-.route-group-body .route-item {
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--bd);
-    font-size: 13px;
-    transition: background 0.2s;
-}
-
-.route-group-body .route-item:last-child {
-    border-bottom: none;
-}
-
-.route-group-body .route-item:hover {
-    background: var(--bg-s);
+@media (prefers-reduced-motion: reduce) {
+    .route-group-card .route-group-chevron,
+    .route-row {
+        transition: none;
+    }
 }
 
 .btn-danger:hover {

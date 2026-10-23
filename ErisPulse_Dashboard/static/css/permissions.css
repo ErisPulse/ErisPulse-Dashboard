@@ -1,22 +1,28 @@
 /* ErisPulse Dashboard – permissions (auto-split from dash.css, aligned with js/) */
 
 /* 命令管理样式 */
+/* 规则卡列表：每条命令一张扁平卡，1px 边框分层、无阴影 */
+#cmdListBody {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .cmd-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--bd);
-    transition: background 0.2s;
+    padding: 12px 16px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-lg);
+    background: var(--bg-t);
+    transition: border-color 0.15s var(--ease-smooth);
     font-size: 13px;
 }
 
-.cmd-row:last-child {
-    border-bottom: none;
-}
-
 .cmd-row:hover {
-    background: var(--bg-s);
+    border-color: var(--bd-h, var(--bd));
 }
 
 .cmd-info {
@@ -61,8 +67,8 @@
 }
 
 .cmd-alias-chip {
-    padding: 1px 6px;
-    border-radius: 3px;
+    padding: 1px 8px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 500;
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
@@ -71,6 +77,7 @@
 .cmd-alias-chip.original {
     background: var(--bg-s);
     color: var(--tx-s);
+    border: 1px solid var(--bd);
 }
 
 .cmd-alias-chip.custom {
@@ -94,23 +101,36 @@
 }
 
 .cmd-platform-chip {
-    padding: 1px 6px;
-    border-radius: 3px;
+    padding: 1px 8px;
+    border-radius: 999px;
     font-size: 10px;
     font-weight: 500;
     background: var(--bg-s);
     color: var(--tx-s);
+    border: 1px solid var(--bd);
 }
 
 .cmd-platform-chip.blocked {
     background: var(--er-bg);
     color: var(--er-c);
+    border-color: var(--er-bd, transparent);
     text-decoration: line-through;
 }
 
 .cmd-platform-chip.allowed {
     background: var(--ok-bg);
     color: var(--ok-c);
+    border-color: var(--ok-bd, transparent);
+}
+
+/* 用法签名：等宽小字 */
+.cmd-usage {
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 11px;
+}
+
+.cmd-meta-empty {
+    color: var(--tx-t);
 }
 
 .cmd-transform {
@@ -152,10 +172,11 @@
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    border-radius: 4px;
+    border-radius: 999px;
     font-size: 12px;
     background: var(--pr-bg);
     color: var(--pr-c);
+    border: 1px solid var(--pr-bd, transparent);
     font-weight: 500;
 }
 
@@ -175,10 +196,11 @@
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    border-radius: 4px;
+    border-radius: 999px;
     font-size: 12px;
     background: var(--bg-s);
     color: var(--tx-s);
+    border: 1px solid var(--bd);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     user-select: none;
@@ -214,11 +236,11 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    margin-top: 16px;
+    margin-top: 14px;
 }
 
 .perm-card {
-    margin-top: 16px;
+    margin-top: 14px;
 }
 
 .perm-addbar {
@@ -448,7 +470,7 @@
 }
 
 .scope-unsupported {
-    margin-top: 16px;
+    margin-top: 14px;
     padding: 12px 16px;
     border: 1px solid color-mix(in srgb, var(--er-c) 35%, transparent);
     border-radius: var(--radius-lg);
@@ -630,7 +652,7 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-top: 16px;
+    margin-top: 14px;
     padding: 4px;
     border: 1px solid var(--bd);
     border-radius: 999px;
@@ -692,23 +714,10 @@
     gap: 8px;
 }
 
+/* 层级缩进占位：仅承担子级行的缩进定位，不绘制竖向装饰线 */
 .scope-tree-guide {
     width: 18px;
     flex-shrink: 0;
-    position: relative;
-}
-
-.scope-tree-guide::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 8px;
-    border-left: 2px solid color-mix(in srgb, var(--bd) 80%, transparent);
-}
-
-.scope-tree-guide.leaf::before {
-    height: 50%;
 }
 
 .scope-tree-row {
@@ -999,4 +1008,279 @@
 #permTabBar {
     width: fit-content;
     max-width: 100%;
+}
+
+/* ========== 主从布局（主人 / 作用域共用）：左列表卡，右详情区 ========== */
+
+/* 主人配置：列表卡整行占满（右侧无伴随面板时避免半宽留空），分布与编辑器沉底 */
+.perm-master-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    margin-top: 14px;
+}
+
+.perm-master-list {
+    min-width: 0;
+    width: 100%;
+}
+
+.perm-master-list .perm-card {
+    margin-top: 0;
+}
+
+.perm-master-detail {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.perm-master-detail .perm-card {
+    margin-top: 0;
+}
+
+/* ---- 编辑器卡内体（scope 风格表单的统一容器） ---- */
+
+.perm-editor-body {
+    padding: 14px 20px 18px;
+}
+
+.perm-editor-hint {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--tx-t);
+    line-height: 1.5;
+}
+
+/* 表单语义标签：白名单 / 黑名单（允许 / 拒绝） */
+.scope-editor-field > label.lab-ok {
+    color: var(--ok-c);
+}
+
+.scope-editor-field > label.lab-er {
+    color: var(--er-c);
+}
+
+/* ---- 作用域维度面板：左导航 + 右面板的主从结构 ---- */
+
+.scope-layout {
+    display: grid;
+    grid-template-columns: 208px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    margin-top: 14px;
+}
+
+/* 维度导航：宽屏为竖向导航列，覆盖此前的横向药丸条 */
+.scope-nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    margin-top: 0;
+    position: sticky;
+    top: 16px;
+}
+
+.scope-nav-item {
+    justify-content: flex-start;
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+}
+
+.scope-panels {
+    min-width: 0;
+}
+
+.scope-panels .perm-card {
+    margin-top: 0;
+}
+
+/* 面板标题下的一句话说明 */
+.scope-panel-desc {
+    padding: 0 20px 4px;
+    font-size: 12px;
+    color: var(--tx-t);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+/* 窄屏折叠：维度导航退化为横向滚动药丸行 */
+@media (max-width: 860px) {
+    .scope-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .scope-nav {
+        position: static;
+        flex-direction: row;
+        overflow-x: auto;
+        border-radius: var(--radius-md);
+        scrollbar-width: none;
+    }
+
+    .scope-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scope-nav-item {
+        white-space: nowrap;
+        padding: 7px 12px;
+        border-radius: 999px;
+    }
+}
+
+/* ---- 编辑器底部操作行：合并开关 + 保存按钮 ---- */
+
+.scope-editor-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--bd);
+    flex-wrap: wrap;
+}
+
+.scope-editor-footer .btn {
+    margin-left: auto;
+}
+
+.scope-merge-label {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+/* ---- 出站黑名单：输入与"全部拒绝"开关并排 ---- */
+
+.scope-deny-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.scope-deny-field .fw-input {
+    flex: 1;
+}
+
+.scope-deny-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--tx-s);
+    cursor: pointer;
+    user-select: none;
+}
+
+.scope-deny-all input {
+    accent-color: var(--accent);
+}
+
+/* ---- 全局默认策略条 ---- */
+
+.scope-default-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    flex-wrap: wrap;
+}
+
+.scope-default-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+}
+
+.scope-default-hint {
+    font-size: 12px;
+    color: var(--tx-t);
+    flex: 1;
+    min-width: 200px;
+}
+
+/* ========== 命令规则页 ========== */
+
+/* 区块节奏：同页卡片间距 14px */
+#p-commands .card + .card {
+    margin-top: 14px;
+}
+
+/* 全局设置体：固定列宽网格，前缀输入通栏；行内标签与控件成组，不跨行甩开 */
+.cmd-settings-body {
+    padding: 16px 20px 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px 28px;
+    align-items: center;
+}
+
+.cmd-settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cmd-settings-field.span-2 {
+    grid-column: 1 / -1;
+}
+
+.cmd-settings-field > label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tx-s);
+}
+
+.cmd-settings-hint {
+    font-size: 11px;
+    color: var(--tx-t);
+}
+
+/* 开关行：标签与开关在同一网格单元内成组 */
+.cmd-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 34px;
+}
+
+.cmd-toggle-row .cmd-toggle-label {
+    font-size: 13px;
+    color: var(--tx-s);
+    flex: 1;
+    min-width: 0;
+}
+
+.cmd-toggle-row .switch {
+    flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+    .cmd-settings-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- 命令编辑模态：表单分组视觉（静态标记位于公共模态区，仅以属性选择器补充分隔线与节奏，
+     不与其内联布局冲突） ---- */
+
+#cmdEditOverlay label[data-i18n="cmd_param_overrides"],
+#cmdEditOverlay label[data-i18n="cmd_acl_allow"],
+#cmdEditOverlay label[data-i18n="cmd_acl_deny"],
+#cmdEditOverlay label[data-i18n="cmd_custom_aliases"],
+#cmdEditOverlay label[data-i18n="cmd_allowed_platforms"],
+#cmdEditOverlay label[data-i18n="cmd_blocked_platforms"],
+#cmdEditOverlay label[data-i18n="cmd_transform_to"] {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--bd);
+    margin-top: 6px;
 }

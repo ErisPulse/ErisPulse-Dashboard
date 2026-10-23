@@ -364,3 +364,43 @@ html[data-ui-style="cel"][data-oled="on"] .sidebar,
 html[data-ui-style="cel"][data-oled="on"] .header {
     background: #000000;
 }
+
+/* ── 悬浮壳适配：面板直角 + 硬位移阴影 + 方形图标卡 ── */
+html[data-ui-style="cel"] {
+    --radius-panel: 0;
+    --gap-shell: 14px;
+    --shadow-hover: 4px 4px 0 var(--cel-shadow);
+}
+html[data-ui-style="cel"] .sidebar {
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    box-shadow: 4px 4px 0 var(--cel-shadow);
+}
+html[data-ui-style="cel"] .header {
+    border: 3px solid var(--cel-ink);
+    border-radius: 0;
+    box-shadow: 4px 4px 0 var(--cel-shadow);
+}
+/* 圆形图标卡在 cel 下为方形纸面小卡，hover 描边、active 黄底 */
+html[data-ui-style="cel"] .nav-ico {
+    border-radius: 0;
+    background: var(--cel-paper);
+    border: 2px solid transparent;
+}
+html[data-ui-style="cel"] .nav-item:hover .nav-ico {
+    border-color: var(--cel-ink);
+    background: var(--bg-t);
+}
+html[data-ui-style="cel"] .nav-item.active .nav-ico {
+    background: var(--cel-yellow);
+    border-color: var(--cel-ink);
+}
+html[data-ui-style="cel"] .nav-item.active .nav-ico svg {
+    color: var(--cel-ink);
+}
+/* 折叠态气泡 tooltip：直角 + 硬阴影 */
+html[data-ui-style="cel"] .sidebar.collapsed .nav-item::after {
+    border-radius: 0;
+    border: 3px solid var(--cel-ink);
+    box-shadow: 3px 3px 0 var(--cel-shadow);
+}

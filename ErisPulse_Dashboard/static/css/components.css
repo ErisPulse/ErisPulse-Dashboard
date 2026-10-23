@@ -1,26 +1,38 @@
 /* ErisPulse Dashboard – components (auto-split from dash.css, aligned with js/) */
+
+/* 主色实底上的前景色（按钮/勾选等），集中定义避免散落硬编码 */
+:root {
+    --fg-on-accent: white;
+}
+
+/* ── 卡片：bg-t + 1px 边框分层，扁平无阴影；hover 只加深边框 ── */
 .card {
     background: var(--bg-t);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     box-shadow: none;
     overflow: hidden;
     transition:
-        box-shadow 0.25s var(--ease),
-        border-color 0.2s ease;
+        border-color 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth),
+        transform 0.15s var(--ease-smooth);
     border: 1px solid var(--bd);
 }
 
-/* 通知提示（toast）：JS 只切 opacity/transform，外观全部由类控制 */
+/* 通知提示（toast）：JS 只切 opacity/transform，外观全部由类控制。
+   JS 写死 transform translateX(-50%)，这里用独立 translate 属性抵消，
+   使定位锚到右下角（right + translate 50% = 净位移 0）。 */
 .toast {
     position: fixed;
     bottom: 24px;
-    left: 50%;
+    right: 24px;
+    left: auto;
+    translate: 50% 0;
     transform: translateX(-50%) translateY(12px);
-    padding: 10px 24px;
-    border-radius: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-lg);
     font-size: 14px;
     font-family: inherit;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-hover);
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
@@ -28,8 +40,8 @@
     color: var(--tx-p);
     border: 1px solid var(--bd);
     transition:
-        opacity 0.25s ease,
-        transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 0.22s var(--ease-smooth),
+        transform 0.22s var(--ease-smooth);
 }
 .toast-ok {
     background: var(--ok-bg);
@@ -45,25 +57,41 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px 10px 24px;
+    padding: 10px 14px 10px 16px;
     pointer-events: auto;
 }
 
-.card:hover {
-    box-shadow: none;
-    border-color: var(--bd);
+/* 多条 toast 纵向堆叠，避免右下角重叠 */
+.toast + .toast {
+    bottom: 74px;
 }
 
+/* 普通卡片：hover 仅边框加深（不上浮不出影） */
+.card:hover {
+    box-shadow: none;
+    border-color: var(--bd-h);
+}
+
+/* 可点卡片（页面按需挂 is-link / is-clickable）：hover 上浮 + 悬浮影 */
+.card.is-clickable {
+    cursor: pointer;
+}
+
+.card.is-clickable:hover {
+    border-color: var(--bd-h);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* ── 卡片头：标题左 + 操作右两段式；透明底，仅底部一条淡化分隔 ── */
 .card-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 16px 22px;
+    padding: clamp(12px, 1.6vw, 15px) clamp(16px, 2.6vw, 20px);
     font-size: 14px;
     font-weight: 600;
     border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
-    
-    background: color-mix(in srgb, var(--bg-p) 30%, var(--bg-t));
 }
 
 /* card-header 左侧竖条装饰已移除 */
@@ -71,24 +99,15 @@
     display: none;
 }
 
-.card-header:hover {
-}
-    
-
 .card-header svg {
     width: 18px;
     height: 18px;
     color: var(--tx-s);
     flex-shrink: 0;
-    
-}
-
-.card:hover .card-header svg {
-    
 }
 
 .card-body {
-    padding: 18px 22px;
+    padding: clamp(14px, 1.8vw, 18px) clamp(16px, 2.6vw, 20px);
 }
 
 .card-header .header-actions {
@@ -102,7 +121,7 @@
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.3px;
@@ -139,6 +158,7 @@
     border: 1px solid var(--sc-bd);
 }
 
+/* ── 按钮体系：radius 10；primary 实底 / secondary(ghost) 透明+边框 / danger 实底红 ── */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -149,13 +169,14 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 8px 16px;
     transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        filter 0.15s ease;
+        background-color 0.15s var(--ease-smooth),
+        border-color 0.15s var(--ease-smooth),
+        color 0.15s var(--ease-smooth),
+        transform 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth);
     white-space: nowrap;
 }
 
@@ -170,6 +191,11 @@
     margin-right: 0 !important;
 }
 
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
 .btn:hover {
     filter: none;
 }
@@ -180,14 +206,21 @@
 
 .btn-primary {
     background: var(--accent-fill);
-    color: #fff;
+    color: var(--fg-on-accent);
     border: none;
 }
 
 .btn-primary:hover {
     background: var(--accent-fill-h);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
 }
 
+.btn-primary:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* ghost：透明底 + 边框，hover 落 accent-soft */
 .btn-secondary {
     background: transparent;
     color: var(--tx-p);
@@ -195,25 +228,35 @@
 }
 
 .btn-secondary:hover {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 32%, transparent);
     color: var(--accent);
 }
 
+/* danger：实底红，hover 朝主题文字色方向压深/提亮 */
 .btn-danger {
     background: var(--er-fill);
-    color: #fff;
+    color: var(--fg-on-accent);
     border: none;
 }
 
+.btn-danger:hover {
+    background: color-mix(in srgb, var(--er-fill) 86%, var(--tx-p));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* 尺寸档位：默认 / small / xs */
 .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .btn-xs {
     padding: 4px 8px;
     font-size: 11px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .list-row {
@@ -221,8 +264,8 @@
     align-items: center;
     gap: 12px;
     padding: 10px 18px;
-    border-bottom: 1px solid var(--bd);
-    transition: background 0.2s;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    transition: background 0.15s var(--ease-smooth);
     font-size: 13px;
 }
 
@@ -261,36 +304,37 @@
 .filter-bar select {
     padding: 8px 14px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
     cursor: pointer;
 }
 
 .filter-bar select:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .filter-bar input[type="text"] {
     padding: 8px 14px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
     max-width: 300px;
 }
 
 .filter-bar input[type="text"]:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .modal-overlay {
@@ -318,27 +362,40 @@
     z-index: 1060;
 }
 
+/* ── 模态：浮层弹入 scale(.96)+8px，卡片 radius-xl + 悬浮影 ── */
 .modal-box {
     background: var(--bg-t);
-    padding: 24px;
-    border-radius: 14px;
+    padding: clamp(18px, 3vw, 24px);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--bd);
     width: 90%;
     max-width: 420px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: none;
-    animation: modalIn 0.34s var(--ease-spring) both;
+    box-shadow: var(--shadow-hover);
+    animation: floatLayerIn 0.22s var(--ease-soft-spring) both;
+}
+
+@keyframes floatLayerIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 @keyframes scaleIn {
     from {
         opacity: 0;
-        
+
     }
 
     to {
         opacity: 1;
-        
+
     }
 }
 
@@ -386,16 +443,17 @@
     width: 100%;
     padding: 9px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
     font-size: 14px;
     color: var(--tx-p);
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
 .modal-form-field input:focus {
-    border-color: var(--accent, #4fa6de);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .output-modal .modal-box {
@@ -406,7 +464,7 @@
     background: var(--bg-s);
     color: var(--tx-p);
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 12px;
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
     line-height: 1.6;
@@ -439,13 +497,13 @@
     width: 100%;
     padding: 10px 14px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
     color: var(--tx-p);
     font-size: 14px;
     font-family: inherit;
     outline: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
 select.form-select {
@@ -466,7 +524,7 @@ select.form-select::-ms-expand {
 .form-select:focus,
 .form-input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .form-input::placeholder {
@@ -484,7 +542,7 @@ select.form-select::-ms-expand {
 }
 
 .btn-link:hover {
-    color: var(--accent-h);
+    color: var(--accent);
 }
 
 .code-editor {
@@ -493,7 +551,7 @@ select.form-select::-ms-expand {
     max-height: 500px;
     padding: 12px 16px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--bg-s);
     color: var(--tx-p);
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
@@ -501,32 +559,36 @@ select.form-select::-ms-expand {
     line-height: 1.5;
     resize: vertical;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
 .code-editor:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
+/* ── 统一空状态：居中 stroke 图标 + 一句话 + 可选行动按钮 ──
+   用法：<div class="empty-state"><svg .../><h3>标题</h3><p>描述</p><button class="empty-action">…</button></div> */
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 20px;
+    gap: 2px;
+    padding: clamp(32px, 6vw, 48px) 20px;
     color: var(--tx-s);
+    text-align: center;
 }
 
 .empty-state svg {
-    width: 48px;
-    height: 48px;
-    opacity: 0.3;
-    margin-bottom: 8px;
+    width: 44px;
+    height: 44px;
+    color: var(--tx-t);
+    margin-bottom: 10px;
 }
 
 .empty-state h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--tx-p);
     margin-bottom: 4px;
@@ -535,44 +597,102 @@ select.form-select::-ms-expand {
 .empty-state p {
     font-size: 13px;
     color: var(--tx-s);
+    line-height: 1.5;
+    max-width: 42em;
 }
 
+/* 行动按钮：flat accent-soft 底（无模糊无渐变），hover 上浮 */
 .empty-action {
     margin-top: 16px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 9px 18px;
-    border-radius: 10px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
     font-size: 13px;
-    font-weight: 700;
-    color: color-mix(in srgb, var(--accent) 62%, var(--tx-p));
-    background: color-mix(in srgb, var(--accent) 30%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    backdrop-filter: blur(14px) saturate(1.4);
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     cursor: pointer;
+    font-family: inherit;
     transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        transform 0.12s ease;
+        border-color 0.15s var(--ease-smooth),
+        transform 0.15s var(--ease-smooth),
+        box-shadow 0.15s var(--ease-smooth);
 }
 .empty-action:hover {
-    background: color-mix(in srgb, var(--accent) 42%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
 }
 .empty-action:active {
-    transform: scale(0.97);
+    transform: translateY(0) scale(0.97);
 }
 .empty-action svg {
     width: 15px;
     height: 15px;
 }
+
+/* ── 统一骨架屏：--bg-s 块 + 呼吸动画（优先于 spinner） ──
+   用法：<div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div>…
+   或整块：<div class="skeleton skeleton-block"></div>；头像/圆形用 .skeleton-circle */
+.skeleton {
+    background: var(--bg-s);
+    border-radius: var(--radius-sm);
+    animation: skeletonBreathe 1.6s ease-in-out infinite;
+}
+
+@keyframes skeletonBreathe {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.55;
+    }
+}
+
+.skeleton-title {
+    height: 14px;
+    width: 42%;
+    border-radius: 999px;
+    margin-bottom: 10px;
+}
+
+.skeleton-text {
+    height: 11px;
+    border-radius: 999px;
+    margin: 5px 0;
+}
+
+.skeleton-text:last-child {
+    width: 64%;
+}
+
+.skeleton-block {
+    height: 84px;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
+        opacity: 1;
+    }
+}
 .overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--modal);
     z-index: 998; /* 高于头部(z:100)，移动端抽屉打开时连头部一起压暗 */
     opacity: 0;
     transition: opacity 0.3s;
@@ -613,8 +733,8 @@ select.form-select::-ms-expand {
     right: 0;
     bottom: 0;
     background: var(--bd);
-    border-radius: 22px;
-    transition: 0.3s;
+    border-radius: 999px;
+    transition: 0.18s var(--ease-smooth);
 }
 
 .switch-slider:before {
@@ -626,7 +746,7 @@ select.form-select::-ms-expand {
     bottom: 3px;
     background: white;
     border-radius: 50%;
-    transition: 0.3s;
+    transition: 0.18s var(--ease-smooth);
 }
 
 .switch input:checked + .switch-slider {
@@ -778,6 +898,7 @@ select.form-select::-ms-expand {
     animation: beam-sweep-up 250ms steps(16) forwards;
 }
 
+/* 扫描蒙层：扁平 accent-soft 纱（渐变已按设计语言禁用归零） */
 .status-icon-frames::after {
     content: "";
     position: absolute;
@@ -785,17 +906,11 @@ select.form-select::-ms-expand {
     left: 0;
     right: 0;
     bottom: 0;
-    background: repeating-linear-gradient(
-        0deg,
-        transparent 0px,
-        transparent 2px,
-        rgba(0, 0, 0, 0.03) 2px,
-        rgba(0, 0, 0, 0.03) 4px
-    );
+    background: var(--accent-soft);
     pointer-events: none;
     z-index: 5;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.2s var(--ease-smooth);
 }
 
 .status-icon-frames.scanning::after {
@@ -819,16 +934,12 @@ select.form-select::-ms-expand {
 .ux-empty-icon {
     width: 46px;
     height: 46px;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--accent) 16%, transparent),
-        color-mix(in srgb, var(--accent) 5%, transparent)
-    );
-    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
     color: var(--accent);
     margin-bottom: 8px;
 }
@@ -887,14 +998,14 @@ select.form-select::-ms-expand {
     gap: 10px;
     max-width: min(92vw, 560px);
     padding: 10px 12px 10px 16px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: var(--bg-t);
     border: 1px solid var(--wr-bd);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-hover);
     z-index: 1150;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.25s var(--ease-smooth), transform 0.25s var(--ease-smooth);
 }
 
 .update-hint-bar.show {
@@ -946,12 +1057,7 @@ select.form-select::-ms-expand {
     margin-bottom: 20px;
     border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--bd));
     border-radius: var(--radius-lg);
-    background:
-        linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--accent) 7%, var(--bg-t)),
-            var(--bg-t) 55%
-        );
+    background: color-mix(in srgb, var(--accent) 4%, var(--bg-t));
     padding: 14px 16px;
 }
 
@@ -1019,7 +1125,7 @@ select.form-select::-ms-expand {
 .onboarding-step.done .onboarding-check {
     border-color: transparent;
     background: var(--ok-c);
-    color: #fff;
+    color: var(--fg-on-accent);
 }
 
 .onboarding-step.done .onboarding-step-label {
@@ -1073,15 +1179,11 @@ select.form-select::-ms-expand {
     flex: none;
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--accent) 16%, transparent),
-        color-mix(in srgb, var(--accent) 5%, transparent)
-    );
+    background: var(--accent-soft);
     color: var(--accent);
 }
 
@@ -1176,7 +1278,7 @@ select.form-select::-ms-expand {
     align-items: center;
     gap: 10px;
     padding: 7px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .intro-row:hover {
