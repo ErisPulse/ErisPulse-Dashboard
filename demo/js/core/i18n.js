@@ -83,24 +83,28 @@ export function toggleLang() {
 }
 
 export function applyI18n() {
+  // 语言字典缺失防御：资源文件加载/解析失败时跳过渲染（保留英文 key 兜底），
+  // 不因 I18N[lang] 为 undefined 连锁崩溃调用方（如模块视图加载）
+  const dict = I18N[lang];
+  if (!dict) return;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const k = el.getAttribute("data-i18n");
-    if (I18N[lang][k]) el.textContent = I18N[lang][k];
+    if (dict[k]) el.textContent = dict[k];
   });
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     const k = el.getAttribute("data-i18n-placeholder");
-    if (I18N[lang][k]) el.placeholder = I18N[lang][k];
+    if (dict[k]) el.placeholder = dict[k];
   });
   document.querySelectorAll("[data-i18n-option]").forEach((el) => {
     const k = el.getAttribute("data-i18n-option");
-    if (I18N[lang][k]) el.textContent = I18N[lang][k];
+    if (dict[k]) el.textContent = dict[k];
   });
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     const k = el.getAttribute("data-i18n-title");
-    if (I18N[lang][k]) el.title = I18N[lang][k];
+    if (dict[k]) el.title = dict[k];
   });
   const ah = document.getElementById("authHint");
-  if (ah && I18N[lang].auth_hint) ah.innerHTML = I18N[lang].auth_hint;
+  if (ah && dict.auth_hint) ah.innerHTML = dict.auth_hint;
   const titles = {
     zh: "ErisPulse 仪表盘",
     "zh-TW": "ErisPulse 儀表盤",
