@@ -488,15 +488,22 @@ export async function loadGlobalAppearance() {
       _ensureFontFace(f.name, f.url);
     });
     if (window._globalSyncEnabled) {
-       
-      window._syncMuted = true;
-      if (app.font) {
-        localStorage.setItem("ep_font", app.font);
-        applyFont(app.font);
+      if (app._device && app._device === _syncDeviceId) {
+         
+         
+        window._syncMuted = false;
+      } else {
+         
+         
+        window._syncMuted = true;
+        if (app.font) {
+          localStorage.setItem("ep_font", app.font);
+          applyFont(app.font);
+        }
+        await _applySyncedSettings(app.settings || {});
+        applyGlobalAppearanceData(app);
+        setTimeout(function () { window._syncMuted = false; }, 2000);
       }
-      await _applySyncedSettings(app.settings || {});
-      applyGlobalAppearanceData(app);
-      setTimeout(function () { window._syncMuted = false; }, 800);
     }
   } catch (e) {
     console.debug("Appearance API unavailable, using local settings");
@@ -1447,6 +1454,9 @@ var SYNC_LOCAL_KEYS = [
   "ep_setting_event_density", "ep_setting_event_auto_top",
 ];
 var _syncPushTimer = null;
+ 
+var _syncDeviceId =
+  Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 export function _globalSyncEnabled() {
   return !!window._globalSyncEnabled;
@@ -1461,6 +1471,7 @@ export async function _pushSyncSnapshot() {
   });
   var payload = {
     _global_enabled: true,
+    _device: _syncDeviceId,
     settings: settings,
     custom_fonts: window._customFonts || [],
     font: getFont(),
@@ -1511,9 +1522,17 @@ var SYNC_APPLIERS = {
     localStorage.setItem("ep_setting_bg_auto_theme", v);
     onThemeChanged();
   },
-  ep_setting_custom_css: function () {
-    var ta = document.getElementById("settingsCustomCss");
-    if (ta) applySettingCustomCss();
+  ep_setting_custom_css: function (v) {
+     
+     
+     
+    var style = document.getElementById("epCustomCss");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "epCustomCss";
+      document.head.appendChild(style);
+    }
+    style.textContent = v || "";
   },
   ep_setting_privacy_mode: function (v) { applyPrivacyMode(v === "1"); },
   ep_setting_density: function (v) { applySettingDensity(v); },
