@@ -80,6 +80,8 @@
     bots_desc: "Discovered bots across platforms",
     events_desc: "Event stream view/builder",
     module: "Module",
+edit: "Edit",
+failed: "Failed",
     adapter: "Adapter",
     modules_desc: "Manage registered modules and adapters",
     runtime: "Runtime",

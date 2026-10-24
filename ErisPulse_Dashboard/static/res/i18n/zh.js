@@ -80,6 +80,8 @@
     bots_desc: "各平台已发现的机器人",
     events_desc: "事件流查看/构建",
     module: "模块",
+edit: "编辑",
+failed: "失败",
     adapter: "适配器",
     modules_desc: "管理已注册的模块和适配器",
     runtime: "运行时",
