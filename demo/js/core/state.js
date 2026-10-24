@@ -90,6 +90,42 @@ window.BG_PATTERNS = [
 ].map(function (n) { return "res/bg_upload/" + n; });
  
 window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
+ 
+window.getTimeFormat = function () {
+  try {
+    return localStorage.getItem("ep_setting_time_format") === "12" ? "12" : "24";
+  } catch (e) {
+    return "24";
+  }
+};
+ 
+window.formatTime = function (ts) {
+  var d = ts instanceof Date ? ts : new Date(Math.abs(Number(ts)) < 1e12 ? Number(ts) * 1000 : Number(ts));
+  if (isNaN(d.getTime())) return "-";
+  try {
+    return d.toLocaleTimeString(getLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: getTimeFormat() === "12",
+    });
+  } catch (e) {
+    return d.toLocaleTimeString();
+  }
+};
+ 
+ 
+(function () {
+  var _nativeLtts = Date.prototype.toLocaleTimeString;
+  Date.prototype.toLocaleTimeString = function (loc, opts) {
+    var merged = opts;
+    if (merged && typeof merged !== "object") merged = undefined;
+    var o = {};
+    if (merged) for (var k in merged) o[k] = merged[k];
+    if (o.hour12 === undefined) o.hour12 = getTimeFormat() === "12";
+    return _nativeLtts.call(this, loc, o);
+  };
+})();
 window.FULL_THEME_VARS = [
   { key:'--bg-p', label:'主背景', group:'bg' },
   { key:'--bg-s', label:'次背景（侧栏）', group:'bg' },

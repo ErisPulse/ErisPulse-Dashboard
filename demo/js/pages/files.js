@@ -767,6 +767,8 @@ export async function fmEditFile(path) {
       },
     });
      
+    window._fmEditor = _fmEditor;
+     
     let hintTimer = null;
     _fmEditor.on("inputRead", function (cm, change) {
       const ch = (change.text && change.text[0]) || "";
