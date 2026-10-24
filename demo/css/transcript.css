@@ -229,6 +229,58 @@
     text-decoration: underline;
 }
 
+/* ---- 消息富媒体：图片缩略图 / 占位符 / 引用回复 / 摘要卡片 ---- */
+
+.tr-img {
+    max-width: 240px;
+    max-height: 160px;
+    border-radius: var(--radius-sm);
+    cursor: zoom-in;
+    display: block;
+    margin-top: 4px;
+}
+
+/* 媒体/未知消息占位符（[图片] [语音] 等） */
+.tr-ph {
+    color: var(--tx-s);
+}
+
+/* 引用回复前缀：淡样式 */
+.tr-reply {
+    font-size: 12px;
+    color: var(--tx-t);
+    margin-bottom: 2px;
+}
+
+/* json/xml 卡片段：摘要卡片 */
+.tr-card {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    background: var(--bg-p);
+    font-size: 12px;
+    color: var(--tx-s);
+    max-width: 100%;
+    word-break: break-word;
+}
+
+/* ---- 切换会话即时反馈：消息区三行骨架 ---- */
+
+.tr-skel {
+    display: flex;
+    padding: 7px 0;
+}
+
+.tr-skel.right {
+    justify-content: flex-end;
+}
+
+.tr-skel .skeleton-text {
+    height: 14px;
+}
+
 /* ========== 空态补充 ========== */
 
 /* 未启用引导：配置段代码提示 */

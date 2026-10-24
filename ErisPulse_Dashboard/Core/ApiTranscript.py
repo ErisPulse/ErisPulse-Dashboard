@@ -9,6 +9,9 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+import json
+import re
+
 from .Helpers import _CoreHelpers
 
 
@@ -19,7 +22,91 @@ _TRANSCRIPT_SESSIONS_LIMIT = 1000
 _TRANSCRIPT_DEFAULT_N = 100
 _TRANSCRIPT_MAX_N = 500
 # 会话摘要的最大长度（字符）
-_TRANSCRIPT_SUMMARY_CHARS = 20
+_TRANSCRIPT_SUMMARY_CHARS = 100
+
+
+# ---- 媒体消息占位归一（仅用于会话列表摘要，与前端渲染管线对齐） ----
+# SDK 存储的 text 可能为 bytes repr / OneBot 消息段 JSON / CQ 码混排，
+# 摘要需将媒体二进制折叠为 [图片] 等占位，避免列表出现 b'...' 乱码。
+_BYTES_REPR_MAGIC_RES = [
+    (re.compile(r"\\x89PNG|\x89PNG"), "[图片]"),
+    (re.compile(r"\\xff\\xd8|JFIF|\xff\xd8"), "[图片]"),
+    (re.compile(r"GIF8"), "[图片]"),
+    (re.compile(r"RIFF"), "[视频]"),
+    (re.compile(r"OggS"), "[音频]"),
+    (re.compile(r"ftyp"), "[视频]"),
+    (re.compile(r"ID3"), "[音频]"),
+    (re.compile(r"PK\\x03\\x04|PK\x03\x04"), "[文件]"),
+]
+_CQ_CODE_RE = re.compile(r"\[CQ:([^\],\s]+)(?:,[^\]]*)?\]")
+_CQ_TYPE_PH = {
+    "image": "[图片]",
+    "record": "[语音]",
+    "voice": "[语音]",
+    "video": "[视频]",
+    "file": "[文件]",
+    "at": "@QQ",
+    "face": "[表情]",
+    "reply": "回复：",
+    "forward": "[合并转发]",
+    "node": "[合并转发]",
+    "json": "[卡片]",
+    "xml": "[卡片]",
+    "share": "[链接]",
+    "location": "[位置]",
+    "music": "[音乐]",
+    "contact": "[联系人]",
+    "rps": "[猜拳]",
+    "dice": "[骰子]",
+    "poke": "[戳一戳]",
+    "shake": "[窗口抖动]",
+    "anonymous": "[匿名]",
+}
+
+
+def _transcript_media_placeholder(text: str) -> str:
+    """{!--< internal-use >!--} 媒体消息归一为占位文本（bytes repr / 消息段 JSON / CQ 码）"""
+    s = str(text or "")
+    stripped = s.strip()
+    # ① bytes repr：b'/b" 开头且含 repr 转义或已知魔数（结尾引号可能被
+    #    存储侧 2000 字符截断，不作要求），按魔数映射占位，无法识别 → [二进制数据]
+    if (
+        len(stripped) > 3
+        and stripped[0] == "b"
+        and stripped[1] in ("'", '"')
+        and (
+            "\\" in stripped
+            or any(pat.search(stripped) for pat, _ in _BYTES_REPR_MAGIC_RES)
+        )
+    ):
+        for pat, ph in _BYTES_REPR_MAGIC_RES:
+            if pat.search(s):
+                return ph
+        return "[二进制数据]"
+    # ② OneBot 消息段 JSON 数组：各段类型拼接（text 段保留原文）
+    if stripped.startswith("["):
+        try:
+            arr = json.loads(stripped)
+        except Exception:
+            arr = None
+        if isinstance(arr, list) and arr and all(
+            isinstance(seg, dict) and isinstance(seg.get("type"), str) for seg in arr
+        ):
+            parts: list[str] = []
+            for seg in arr:
+                if seg["type"] == "text":
+                    data = seg.get("data")
+                    parts.append(str((data or {}).get("text") or ""))
+                else:
+                    parts.append(_CQ_TYPE_PH.get(seg["type"], f"[{seg['type']}]"))
+            return "".join(parts)
+    # ③ CQ 码混排：CQ 码替换为占位，其余文本原样
+    if "[CQ:" in s:
+        return _CQ_CODE_RE.sub(
+            lambda m: _CQ_TYPE_PH.get(m.group(1), f"[{m.group(1)}]"), s
+        )
+    # ④ 纯文本
+    return s
 
 
 class ApiTranscriptMixin:
@@ -140,7 +227,9 @@ class ApiTranscriptMixin:
                 {
                     "count": entry["count"],
                     "last_ts": entry["last_ts"],
-                    "summary": self._summarize(entry["last_text"]),
+                    "summary": self._summarize(
+                        _transcript_media_placeholder(entry["last_text"])
+                    ),
                     "last_role": entry["last_role"],
                 }
             )

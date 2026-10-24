@@ -662,14 +662,11 @@ export function _availableNavPages() {
   return out;
 }
 
-const DP_CHECK_SVG =
-  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-export function _dpClosePanel() {
-  var panel = document.getElementById("dpPanel");
-  if (panel) panel.style.display = "none";
-}
-
-// 默认起始页选择器：主页 pin 选择器同款交互（图标 + 页面/子 tab 层级）
+// 默认起始页选择器：原生 <select> + EP 组件库自动增强（触发器在容器内，菜单挂 body）。
+// 旧私有实现（dpToggle/dpPanel）的面板渲染在设置分区内，而分区入场动画 settingsPaneIn
+// 以 fill-mode:both 永久保留 translateY 变换 → 分区成为 fixed 后代的包含块，
+// EP.positionList 计算的视口坐标被相对化后整板漂移出屏（“下拉打不开”的根因）。
+// 迁移到 ep-select 后菜单挂 body，结构性规避该类问题，并与“刷新间隔”等全站下拉一致。
 export function _renderDefaultPagePicker() {
   var host = document.getElementById("defaultPagePicker");
   if (!host) return;
@@ -678,85 +675,41 @@ export function _renderDefaultPagePicker() {
   var known = pages.some(function (p) {
     return p.value === cur;
   });
-  var curLabel =
-    known || !cur
-      ? (pages.find(function (p) {
-            return p.value === cur;
-          }) || { label: t("dashboard") }).label
-      : cur;
-  if (known && !pages.some(function (p) { return p.value === cur; })) curLabel = t("dashboard");
 
-  var rows = pages
+  var sel = document.getElementById("defaultPageSelect");
+  if (!sel || !sel.isConnected) {
+    host.innerHTML = "";
+    sel = document.createElement("select");
+    sel.id = "defaultPageSelect";
+    sel.className = "settings-select ep-select";
+    // change 挂既有持久化函数：增强/降级为原生两种形态下均触发同一持久化路径
+    sel.addEventListener("change", function () {
+      applySettingDefaultPage(sel.value);
+    });
+    host.appendChild(sel);
+  }
+  sel.setAttribute("aria-label", t("settings_default_page"));
+  // options 同既有数据源：导航页 + 子 tab（“└ ” 标识层级）+ 自定义入口
+  var html = pages
     .map(function (p) {
       return (
-        '<div class="' +
-        (p.isSub ? "home-pin-suboption" : "home-pin-option") +
-        '" data-value="' +
+        '<option value="' +
         esc(p.value) +
         '">' +
-        '<span class="dp-icon">' +
-        (p.icon || "") +
-        "</span>" +
-        '<span class="dp-label">' +
-        esc(p.label) +
-        "</span>" +
-        (p.value === cur ? '<span class="dp-check">' + DP_CHECK_SVG + "</span>" : "") +
-        "</div>"
+        esc((p.isSub ? "\u2514 " : "") + p.label) +
+        "</option>"
       );
     })
     .join("");
-  rows +=
-    '<div class="home-pin-option" data-value="__custom__">' +
-    '<span class="dp-icon"></span>' +
-    '<span class="dp-label">' +
-    esc(t("settings_default_custom")) +
-    "</span>" +
-    (known ? "" : '<span class="dp-check">' + DP_CHECK_SVG + "</span>") +
-    "</div>";
-
-  host.innerHTML =
-    '<button type="button" class="settings-select dp-toggle" id="dpToggle">' +
-    '<span class="dp-toggle-label">' +
-    esc(curLabel) +
-    "</span>" +
-    "</button>" +
-    '<div class="dp-panel" id="dpPanel" style="display:none">' +
-    rows +
-    "</div>";
-
-  document.getElementById("dpToggle").onclick = function () {
-    var panel = document.getElementById("dpPanel");
-    var toggle = document.getElementById("dpToggle");
-    if (panel.style.display !== "none") {
-      panel.style.display = "none";
-      return;
-    }
-    // 复用 EP 组件库的定位逻辑：fixed 定位逃出卡片 overflow 裁剪，空间不足自动上翻
-    panel.style.display = "block";
-    if (window.EP && EP.positionList) {
-      EP.positionList(panel, toggle, 300);
-      panel.style.display = "grid"; // 定位测量用 block，展示恢复 grid 行距
-    }
-  };
-  host.querySelectorAll("[data-value]").forEach(function (row) {
-    row.onclick = function () {
-      _dpClosePanel();
-      applySettingDefaultPage(row.getAttribute("data-value"));
-    };
-  });
+  html += '<option value="__custom__">' + esc(t("settings_default_custom")) + "</option>";
+  // 当前值不在已知页（历史自定义 id）：补一个回显项，避免触发器显示错乱
+  if (!known && cur && cur !== "dashboard") {
+    html = '<option value="' + esc(cur) + '">' + esc(cur) + "</option>" + html;
+  }
+  sel.innerHTML = html;
+  sel.value = cur || "dashboard";
+  if (sel.selectedIndex === -1) sel.value = "dashboard";
 }
-
-// 点击选择器外部或页面滚动时收起面板（fixed 面板不随卡片滚动）
-document.addEventListener("click", function (e) {
-  var picker = document.getElementById("defaultPagePicker");
-  if (!picker || !e.target.closest) return;
-  if (!picker.contains(e.target)) _dpClosePanel();
-});
-window.addEventListener("scroll", function (e) {
-  // 面板自身列表的滚动不关闭；只有页面/容器滚动时才收起
-  if (e.target && e.target.closest && e.target.closest(".default-page-picker")) return;
-  _dpClosePanel();
-}, true);
 
 export function applySettingDefaultPage(val) {
   if (val === "__custom__") {

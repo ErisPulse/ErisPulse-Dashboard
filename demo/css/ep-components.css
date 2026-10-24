@@ -111,7 +111,9 @@
     cursor: not-allowed;
     filter: saturate(0.6);
 }
-/* 下拉列表 v2：radius 12 + shadow-hover 悬浮影 + 弹入动画 + 主题化滚动条 */
+/* 下拉列表 v2：radius 12 + shadow-hover 悬浮影 + 弹入动画 + 主题化滚动条
+   z-index 对齐 EP.Z_MENU=3000（ep-select.js）：高于模态(1300)/搜索面板(1500)，
+   open 时组件还会写行内 z-index 兜底 */
 .ep-combobox-list {
     display: none;
     position: fixed;
@@ -125,7 +127,7 @@
     border: 1px solid var(--bd);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hover);
-    z-index: 1300;
+    z-index: 3000;
     padding: 5px;
     animation: epPop 0.18s var(--ease-soft-spring);
 }
@@ -186,6 +188,15 @@
     color: var(--tx-t);
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+/* 禁用选项：与宿主 select 的 disabled option 同步（data-disabled 由组件写入） */
+.ep-combobox-opt[data-disabled="1"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.ep-combobox-opt[data-disabled="1"]:hover,
+.ep-combobox-opt[data-disabled="1"].ep-kb-active {
+    background: transparent;
 }
 /* 键盘高亮项选中时勾号颜色跟随 */
 .ep-combobox-opt.ep-kb-active[data-selected="1"]::after {
@@ -279,7 +290,7 @@
     border: 1px solid var(--bd);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hover);
-    z-index: 1300;
+    z-index: 3000;
     padding: 8px;
     animation: epPop 0.18s var(--ease-soft-spring);
 }
