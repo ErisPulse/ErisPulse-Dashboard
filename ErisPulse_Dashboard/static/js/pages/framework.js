@@ -1070,8 +1070,14 @@ export async function loadFwReleaseNotes() {
   var v = sel.value;
   if (!v) { notesEl.style.display = "none"; return; }
   notesEl.style.display = "";
+   
   notesEl.innerHTML =
-    '<div class="fw-notes-loading">' + esc(t("loading")) + "...</div>";
+    '<div class="fw-skel" aria-hidden="true">' +
+    '<div class="fw-skel-line"></div>' +
+    '<div class="fw-skel-line" style="width:82%"></div>' +
+    '<div class="fw-skel-line" style="width:64%"></div>' +
+    '<div class="fw-skel-line" style="width:74%"></div>' +
+    "</div>";
 
    
   var changelog = await fetchChangelog();

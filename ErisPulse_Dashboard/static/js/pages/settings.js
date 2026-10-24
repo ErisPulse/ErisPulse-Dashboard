@@ -310,9 +310,13 @@ function _selectSettingsPane(paneId, remember) {
   });
    
   var navSec = pane.dataset.parent || paneId;
+  var activeBtn = null;
   document.querySelectorAll("#settingsNav .settings-nav-item").forEach(function (b) {
     b.classList.toggle("active", b.dataset.sec === navSec);
+    if (b.dataset.sec === navSec) activeBtn = b;
   });
+   
+  if (activeBtn && _settingsMobileMQ.matches) _scrollNavChipIntoView(activeBtn);
   if (remember && !pane.dataset.parent) setSetting("settings_section", paneId);
   var loader = SETTINGS_SEC_LOADERS[paneId];
   if (loader) loader();
@@ -324,12 +328,41 @@ function _selectSettingsPane(paneId, remember) {
 }
 
  
+var _settingsMobileMQ = window.matchMedia("(max-width: 959px)");
+
+ 
+function _clearMobileDetailView() {
+  var shell = document.getElementById("settingsShell");
+  if (shell) shell.classList.remove("show-detail");
+}
+
+ 
+function _scrollNavChipIntoView(btn) {
+  var nav = document.getElementById("settingsNav");
+  if (!nav) return;
+  var nr = nav.getBoundingClientRect();
+  var br = btn.getBoundingClientRect();
+  if (br.left < nr.left + 8) nav.scrollLeft += br.left - nr.left - 8;
+  else if (br.right > nr.right - 8) nav.scrollLeft += br.right - nr.right + 8;
+}
+
+ 
 export function switchSettingsSection(sec) {
   _selectSettingsPane(sec, true);
-  if (window.innerWidth < 960) {
-    var shell = document.getElementById("settingsShell");
-    if (shell) shell.classList.add("show-detail");
-  }
+   
+  if (_settingsMobileMQ.matches) return;
+  _clearMobileDetailView();
+}
+
+ 
+if (typeof _settingsMobileMQ.addEventListener === "function") {
+  _settingsMobileMQ.addEventListener("change", function (e) {
+    if (!e.matches) _clearMobileDetailView();
+  });
+} else if (typeof _settingsMobileMQ.addListener === "function") {
+  _settingsMobileMQ.addListener(function (e) {
+    if (!e.matches) _clearMobileDetailView();
+  });
 }
 
  
@@ -340,8 +373,7 @@ export function settingsGoBack() {
     _selectSettingsPane(parent, true);
     return;
   }
-  var shell = document.getElementById("settingsShell");
-  if (shell) shell.classList.remove("show-detail");
+  _clearMobileDetailView();
 }
 
  
@@ -397,16 +429,36 @@ export function syncSettingsSectionUI() {
     }
     fontVal.textContent = label;
   }
-  var denVal = document.getElementById("densityRowValue");
-  if (denVal) {
-    denVal.textContent = t(
-      getDensity() === "compact" ? "settings_density_compact" : "settings_density_comfortable",
-    );
+   
+  var langSeg = document.getElementById("langSeg");
+  if (langSeg) {
+    langSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
   }
-  var langVal = document.getElementById("langRowValue");
-  if (langVal) {
-    var langCard = document.querySelector('.lang-card[data-lang="' + lang + '"] .lang-name');
-    langVal.textContent = langCard ? langCard.textContent : lang;
+  var tfSeg = document.getElementById("timeFmtSeg");
+  if (tfSeg) {
+    tfSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tf === getTimeFormat());
+    });
+  }
+  var tsSeg = document.getElementById("tabSizeSeg");
+  if (tsSeg) {
+    tsSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.ts === String(getEditorTabSize()));
+    });
+  }
+  var etSeg = document.getElementById("editorThemeSeg");
+  if (etSeg) {
+    etSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.et === getEditorTheme());
+    });
+  }
+  var efsSeg = document.getElementById("editorFontSizeSeg");
+  if (efsSeg) {
+    efsSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.efs === getEditorFontSize());
+    });
   }
 }
 
@@ -767,6 +819,7 @@ export function getDensity() {
 export function applySettingTabSize(val) {
   setSetting("editor_tab_size", val);
   _applyEditorOptions();
+  syncSettingsSectionUI();
 }
 
 export function applySettingLineWrap(on) {
@@ -782,19 +835,88 @@ export function getEditorLineWrap() {
   return getSetting("editor_line_wrap", "1") !== "0";
 }
 
+ 
+ 
+export function getEditorTheme() {
+  var v = getSetting("editor_theme", "auto");
+  return v === "dracula" || v === "default" ? v : "auto";
+}
+
+export function _editorAutoTheme() {
+  return getEffectiveTheme() === "dark" ? "dracula" : "default";
+}
+
+ 
+function _resolveEditorTheme(current) {
+  var pref = getEditorTheme();
+  if (pref === "auto") return current || _editorAutoTheme();
+  return pref;
+}
+
+export function applySettingEditorTheme(v) {
+  setSetting("editor_theme", v === "dracula" || v === "default" ? v : "auto");
+  _applyEditorOptions();
+  syncSettingsSectionUI();
+}
+
+ 
+var EDITOR_FONT_SIZES = { s: "12px", m: "", l: "16px" };
+
+export function getEditorFontSize() {
+  var v = getSetting("editor_font_size", "m");
+  return EDITOR_FONT_SIZES[v] !== undefined ? v : "m";
+}
+
+ 
+ 
+function _applyEditorFontSize() {
+  var px = EDITOR_FONT_SIZES[getEditorFontSize()];
+  if (px) document.documentElement.style.setProperty("--ep-cm-font-size", px);
+  else document.documentElement.style.removeProperty("--ep-cm-font-size");
+  [window._cfgSourceCM, window._fmEditor].forEach(function (cm) {
+    if (cm && cm.refresh) cm.refresh();
+  });
+}
+
+export function applySettingEditorFontSize(v) {
+  setSetting("editor_font_size", EDITOR_FONT_SIZES[v] !== undefined ? v : "m");
+  _applyEditorFontSize();
+  syncSettingsSectionUI();
+}
+
+ 
+ 
+(function _patchCodeMirrorEditorPrefs() {
+  if (typeof CodeMirror === "undefined" || CodeMirror.__epEditorPrefs) return;
+  CodeMirror.__epEditorPrefs = true;
+  var _fromTextArea = CodeMirror.fromTextArea;
+  CodeMirror.fromTextArea = function () {
+    var cm = _fromTextArea.apply(this, arguments);
+    try {
+      cm.setOption("theme", _resolveEditorTheme(cm.getOption("theme")));
+      if (getEditorFontSize() !== "m") cm.refresh();
+    } catch (e) {}
+    return cm;
+  };
+  var _setOption = CodeMirror.prototype.setOption;
+  CodeMirror.prototype.setOption = function (opt, val) {
+     
+    if (opt === "theme") val = _resolveEditorTheme(val);
+    return _setOption.call(this, opt, val);
+  };
+})();
+
 export function _applyEditorOptions() {
   var tab = getEditorTabSize(),
     wrap = getEditorLineWrap();
-  if (_cfgSourceCM) {
-    _cfgSourceCM.setOption("tabSize", tab);
-    _cfgSourceCM.setOption("indentUnit", tab);
-    _cfgSourceCM.setOption("lineWrapping", wrap);
-  }
-  if (_fmEditor) {
-    _fmEditor.setOption("tabSize", tab);
-    _fmEditor.setOption("indentUnit", tab);
-    _fmEditor.setOption("lineWrapping", wrap);
-  }
+  [window._cfgSourceCM, window._fmEditor].forEach(function (cm) {
+    if (!cm) return;
+    cm.setOption("tabSize", tab);
+    cm.setOption("indentUnit", tab);
+    cm.setOption("lineWrapping", wrap);
+    cm.setOption("theme", _resolveEditorTheme(cm.getOption("theme")));
+  });
+  _applyEditorFontSize();
 }
 
 export function applySettingCustomCss() {
@@ -966,10 +1088,6 @@ export function syncSettingsUI() {
     var label = autoCard.querySelector(".theme-card-label-sm");
     if (label) label.textContent = eff === "dark" ? "跟随系统 · 深色" : "跟随系统 · 浅色";
   }
-   
-  document.querySelectorAll(".lang-card").forEach(function(card) {
-    card.classList.toggle("active", card.dataset.lang === lang);
-  });
   var sbEl = document.getElementById("settingsSidebar");
   if (sbEl) {
     var _sidebarColl = localStorage.getItem("ep_sidebar_collapsed");
@@ -1002,10 +1120,17 @@ export function syncSettingsUI() {
   _renderDefaultPagePicker();
   var dnEl = document.getElementById("settingsDensity");
   if (dnEl) dnEl.value = getDensity();
-  var tsEl = document.getElementById("settingsTabSize");
-  if (tsEl) tsEl.value = String(getEditorTabSize());
   var lwEl = document.getElementById("settingsLineWrap");
   if (lwEl) lwEl.checked = getEditorLineWrap();
+   
+   
+  var ntEl = document.getElementById("settingsDesktopNotify");
+  if (ntEl) {
+    ntEl.checked = getDesktopNotify();
+    ntEl.disabled = _desktopNotifyBlocked();
+  }
+  var nvEl = document.getElementById("notifyRowValue");
+  if (nvEl) nvEl.textContent = _notifyStateText();
   var ccEl = document.getElementById("settingsCustomCss");
   if (ccEl) ccEl.value = getSetting("custom_css", "");
   var pmEl = document.getElementById("settingsPrivacyMode");
@@ -1031,9 +1156,7 @@ export function applySettingLang(v) {
   localStorage.setItem("ep_lang", lang);
   applyI18n();
    
-  document.querySelectorAll(".lang-card").forEach(function(card) {
-    card.classList.toggle("active", card.dataset.lang === lang);
-  });
+  syncSettingsSectionUI();
   loadAll();
 }
 
@@ -1075,6 +1198,14 @@ export function getEventDensity() {
   return getSetting("event_density", "comfy");
 }
 
+ 
+export function applySettingTimeFormat(v) {
+  setSetting("time_format", v === "12" ? "12" : "24");
+   
+  refreshEventViews();
+  syncSettingsUI();
+}
+
 export function applySettingEventDensity(val) {
   setSetting("event_density", val === "compact" ? "compact" : "comfy");
   refreshEventViews();
@@ -1087,6 +1218,135 @@ export function getEventAutoTop() {
 
 export function applySettingEventAutoTop(on) {
   setSetting("event_auto_top", on ? "1" : "0");
+}
+
+ 
+
+export function getDesktopNotify() {
+  return getSetting("desktop_notify", "0") === "1";
+}
+
+ 
+export function _desktopNotifyBlocked() {
+  return (
+    typeof Notification === "undefined" || Notification.permission === "denied"
+  );
+}
+
+export function applySettingDesktopNotify(on) {
+  if (!on) {
+    setSetting("desktop_notify", "0");
+    syncSettingsUI();
+    return;
+  }
+  if (typeof Notification === "undefined") {
+    toast(t("settings_notify_unsupported"), "er");
+    syncSettingsUI();
+    return;
+  }
+  if (Notification.permission === "denied") {
+    toast(t("settings_notify_denied"), "er");
+    syncSettingsUI();
+    return;
+  }
+  setSetting("desktop_notify", "1");
+  if (Notification.permission === "default") {
+    Notification.requestPermission().then(function (p) {
+      if (p !== "granted") {
+         
+        setSetting("desktop_notify", "0");
+        toast(t("settings_notify_denied"), "er");
+      } else {
+        toast(t("settings_notify_enabled"), "ok");
+      }
+      syncSettingsUI();
+    });
+  }
+  syncSettingsUI();
+}
+
+ 
+function _notifyStateText() {
+  if (_desktopNotifyBlocked()) return t("settings_notify_denied");
+  if (getDesktopNotify()) return t("settings_notify_enabled");
+  return t("settings_notify_desc");
+}
+
+var _notifyLastTs = 0;
+var _notifySuppressed = 0;
+
+ 
+function _maybeDesktopNotify(type, raw) {
+  if (!getDesktopNotify()) return;
+  if (!document.hidden) return;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  var m = null;
+  try {
+    m = JSON.parse(raw);
+  } catch (e) {
+    return;
+  }
+  if (!m || typeof m !== "object") return;
+  var title = document.title || "ErisPulse Dashboard";
+  var body = "";
+  if (type === "event") {
+     
+    var now = Date.now();
+    if (now - _notifyLastTs < 10000) {
+      _notifySuppressed++;
+      return;
+    }
+    _notifyLastTs = now;
+    var d = m.data || {};
+    body =
+      t(d.type || "meta") +
+      " · " +
+      String(d.alt_message || d.detail_type || "-") +
+      (d.platform ? " · " + d.platform : "");
+    if (_notifySuppressed > 0) {
+      body += " (+" + _notifySuppressed + ")";
+      _notifySuppressed = 0;
+    }
+  } else if (type === "install_progress" && (m.status === "success" || m.status === "error")) {
+    body =
+      (m.packages || []).join(", ") +
+      " · " +
+      (m.status === "success" ? t("install_success") : t("install_failed"));
+  } else if (type === "module_changed" && m.data && m.data.action === "installed") {
+    body = m.data.name + " · " + t("module_loaded_dynamic");
+  } else {
+    return;
+  }
+  try {
+    var n = new Notification(title, { body: body, tag: "ep-dashboard" });
+    n.onclick = function () {
+       
+      try {
+        window.focus();
+      } catch (e) {}
+      n.close();
+    };
+  } catch (e) {}
+}
+
+ 
+ 
+function _installDesktopNotifyHook() {
+  if (window.__epNotifyHooked) return;
+  window.__epNotifyHooked = true;
+  var orig = window.wsLogPush;
+  if (typeof orig !== "function") return;
+  window.wsLogPush = function (type, raw) {
+    try {
+      _maybeDesktopNotify(type, raw);
+    } catch (e) {}
+    return orig.apply(this, arguments);
+  };
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", _installDesktopNotifyHook);
+} else {
+  _installDesktopNotifyHook();
 }
 
 export function resetAppearanceSettings() {
@@ -1228,6 +1488,8 @@ var SYNC_LOCAL_KEYS = [
   "ep_setting_accent_color", "ep_setting_bg_auto_theme", "ep_setting_custom_css",
   "ep_setting_privacy_mode", "ep_setting_density", "ep_setting_default_page",
   "ep_setting_editor_tab_size", "ep_setting_editor_line_wrap",
+  "ep_setting_editor_theme", "ep_setting_editor_font_size",
+  "ep_setting_time_format", "ep_setting_desktop_notify",
   "ep_setting_refresh_interval", "ep_setting_event_limit",
   "ep_setting_event_density", "ep_setting_event_auto_top",
 ];
@@ -1305,6 +1567,11 @@ var SYNC_APPLIERS = {
   ep_setting_default_page: function (v) { setSetting("default_page", v); },
   ep_setting_editor_tab_size: function (v) { applySettingTabSize(parseInt(v, 10) || 4); },
   ep_setting_editor_line_wrap: function (v) { applySettingLineWrap(v === "1"); },
+  ep_setting_editor_theme: function (v) { applySettingEditorTheme(v); },
+  ep_setting_editor_font_size: function (v) { applySettingEditorFontSize(v); },
+  ep_setting_time_format: function (v) { applySettingTimeFormat(v); },
+   
+  ep_setting_desktop_notify: function (v) { setSetting("desktop_notify", v === "1" ? "1" : "0"); syncSettingsUI(); },
   ep_setting_refresh_interval: function (v) { applySettingRefresh(v); },
   ep_setting_event_limit: function (v) { applySettingEventLimit(v); },
   ep_setting_event_density: function (v) { applySettingEventDensity(v); },
@@ -1426,73 +1693,6 @@ export function loadGeneralTab() {
   loadLoginLockout();
 }
 
- 
-function _tokenArtSvg(tk) {
-   
-  var h = 1779033703 ^ tk.length;
-  for (var i = 0; i < tk.length; i++) {
-    h = Math.imul(h ^ tk.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  var seed = (h ^= h >>> 16) >>> 0;
-  function rnd() {
-    seed = (seed + 0x6d2b79f5) | 0;
-    var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  }
-  var W = 340, H = 84, s = "";
-   
-  var cols = 22, rows = 5;
-  for (var r = 0; r < rows; r++) {
-    for (var c = 0; c < cols; c++) {
-      var x = 14 + c * ((W - 28) / (cols - 1));
-      var y = 14 + r * ((H - 28) / (rows - 1));
-      var rad = 0.8 + rnd() * 2.1;
-      var roll = rnd();
-      var fill = "var(--tx-t)";
-      var op = 0.16 + rnd() * 0.2;
-      if (roll > 0.93) {
-        fill = "var(--accent)";
-        op = 0.85;
-        rad = 2.3 + rnd() * 1.6;
-      } else if (roll > 0.87) {
-        fill = "var(--ok-c)";
-        op = 0.6;
-      } else if (roll > 0.81) {
-        fill = "var(--wr-c)";
-        op = 0.55;
-      }
-      s +=
-        '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
-        '" r="' + rad.toFixed(2) + '" fill="' + fill +
-        '" opacity="' + op.toFixed(2) + '"/>';
-    }
-  }
-   
-  for (var l = 0; l < 2; l++) {
-    var d = "M -6 " + (16 + rnd() * (H - 32)).toFixed(1);
-    var px = -6;
-    while (px < W + 6) {
-      px += 24 + rnd() * 22;
-      var mx = (px - 12).toFixed(1);
-      var my = (10 + rnd() * (H - 20)).toFixed(1);
-      var ex = Math.min(px, W + 6).toFixed(1);
-      var ey = (10 + rnd() * (H - 20)).toFixed(1);
-      d += " S " + mx + " " + my + " " + ex + " " + ey;
-    }
-    var lc = l === 0 ? "var(--accent)" : "var(--wr-c)";
-    s +=
-      '<path d="' + d + '" fill="none" stroke="' + lc +
-      '" stroke-width="' + (1 + rnd() * 1.2).toFixed(2) +
-      '" opacity="0.45" stroke-linecap="round"/>';
-  }
-  return (
-    '<svg class="token-art" viewBox="0 0 ' + W + " " + H +
-    '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + "</svg>"
-  );
-}
-
 export function loadAccessTokenCard() {
   var host = document.getElementById("generalTokenCard");
   if (!host) return;
@@ -1510,9 +1710,6 @@ export function loadAccessTokenCard() {
     "</span>" +
     "</div>" +
     '<div class="settings-card-body">' +
-    '<div class="token-art-wrap" title="' + esc(t("sec_token_label")) + '">' +
-    _tokenArtSvg(tk) +
-    "</div>" +
     '<div class="settings-item"><div>' +
     '<div class="settings-item-label">' +
     esc(t("sec_token_label")) +
