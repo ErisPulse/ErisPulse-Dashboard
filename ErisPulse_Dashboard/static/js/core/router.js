@@ -119,6 +119,13 @@ export function go(name, el, opts) {
     "event-stream": function () {
       loadEvents();
     },
+    transcript: function () {
+       
+      return import("../pages/transcript.js").then(function (m) {
+        Object.assign(window, m);
+        return m.loadTranscript();
+      });
+    },
     "module-mgmt": loadModules,
     adapter: loadAdapterConfigPage,
     store: function () {

@@ -103,6 +103,7 @@ API_TO_CAPABILITY_MAP = {
     "/api/scope/import": "master",
     "/api/topology": "topology",
     "/api/views": "module_views",
+    "/api/transcript/info": "transcript",
     "/api/cluster/nodes": "cluster_nodes",
     "/api/cluster/overview": "cluster_overview",
 }
@@ -112,6 +113,7 @@ PAGE_CAPABILITY_MAP: dict[str, str | None] = {
     "bots": "bots",
     "topology": "topology",
     "event-stream": "events",
+    "transcript": "transcript",
     "event-builder": "event_builder",
     "commands": "commands",
     "master": "master",

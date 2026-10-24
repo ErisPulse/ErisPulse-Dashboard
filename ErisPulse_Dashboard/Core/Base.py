@@ -161,6 +161,14 @@ class MainBase:
                 pass
         self._ws_clients.clear()
         self._unregister_routes()
+         
+         
+        try:
+            unregister_i18n = getattr(self.sdk.i18n, "unregister_domain", None)
+            if unregister_i18n:
+                unregister_i18n("dashboard")
+        except Exception:
+            pass
         self.logger.info("WebUI module unloaded")
         return True
 

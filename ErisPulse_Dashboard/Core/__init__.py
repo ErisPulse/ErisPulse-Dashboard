@@ -22,9 +22,11 @@ from .ApiStore import ApiStoreMixin
 from .ApiBuilder import ApiBuilderMixin
 from .ApiFramework import ApiFrameworkMixin
 from .ApiObservability import ApiObservabilityMixin
+from .ApiTranscript import ApiTranscriptMixin
 from .ApiFiles import ApiFilesMixin
 from .ApiScope import ApiScopeMixin
 from .ApiCluster import ApiClusterMixin
+from .ApiStorage import ApiStorageMixin
 
 
 class Main(
@@ -43,9 +45,11 @@ class Main(
     ApiBuilderMixin,
     ApiFrameworkMixin,
     ApiObservabilityMixin,
+    ApiTranscriptMixin,
     ApiFilesMixin,
     ApiScopeMixin,
     ApiClusterMixin,
+    ApiStorageMixin,
     BaseModule,
 ):
     """
