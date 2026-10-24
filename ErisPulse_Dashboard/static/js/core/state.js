@@ -90,6 +90,42 @@ window.BG_PATTERNS = [
 ].map(function (n) { return "/Dashboard/static/res/bg_upload/" + n; });
 // 透感档位（ep_setting_bg_trans）：soft 轻 / standard 标准（默认，无附加类） / strong 强
 window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
+// ══════════ 时间显示格式（ep_setting_time_format："24" 默认 / "12" 12 小时制） ══════════
+window.getTimeFormat = function () {
+  try {
+    return localStorage.getItem("ep_setting_time_format") === "12" ? "12" : "24";
+  } catch (e) {
+    return "24";
+  }
+};
+// t 系时间格式化工具：ts 支持 UNIX 秒 / 毫秒 / Date 实例，按用户时间格式偏好输出时分秒
+window.formatTime = function (ts) {
+  var d = ts instanceof Date ? ts : new Date(Math.abs(Number(ts)) < 1e12 ? Number(ts) * 1000 : Number(ts));
+  if (isNaN(d.getTime())) return "-";
+  try {
+    return d.toLocaleTimeString(getLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: getTimeFormat() === "12",
+    });
+  } catch (e) {
+    return d.toLocaleTimeString();
+  }
+};
+// 历史渲染点（事件流 evHtml / 审计 / 任务面板等）分散在各页且直接调用
+// toLocaleTimeString，统一在原型层注入 hour12 偏好，避免逐文件侵入
+(function () {
+  var _nativeLtts = Date.prototype.toLocaleTimeString;
+  Date.prototype.toLocaleTimeString = function (loc, opts) {
+    var merged = opts;
+    if (merged && typeof merged !== "object") merged = undefined;
+    var o = {};
+    if (merged) for (var k in merged) o[k] = merged[k];
+    if (o.hour12 === undefined) o.hour12 = getTimeFormat() === "12";
+    return _nativeLtts.call(this, loc, o);
+  };
+})();
 window.FULL_THEME_VARS = [
   { key:'--bg-p', label:'主背景', group:'bg' },
   { key:'--bg-s', label:'次背景（侧栏）', group:'bg' },

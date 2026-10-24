@@ -283,11 +283,57 @@
     }
 }
 
+/* ── 编辑器字号偏好：全局下发 CodeMirror 实例（文件管理 / 配置源码） ──
+   --ep-cm-font-size 由 settings.js 写入 :root；缺省 1em 保持既有继承字号 */
+.CodeMirror {
+    font-size: var(--ep-cm-font-size, 1em);
+}
+
 /* ════════════════ 设置页：索引 + 详情两栏（OS 设置范式） ════════════════
    桌面（≥960px）：左侧分区菜单 sticky，右侧当前分区详情；
    移动（<960px）：单栏索引 → 点击行滑入详情，返回按钮退回索引 */
 .settings-shell {
     display: block;
+}
+
+/* ── 左栏：页头标题块 + 分区索引，桌面端作为一个整体 sticky 固定 ──
+   右栏详情滚动时左栏纹丝不动；移动端保持常规文档流（标题在上、chips 次之） */
+.settings-aside {
+    display: block;
+    min-width: 0;
+}
+
+.settings-aside-head {
+    padding: 0 2px;
+}
+
+/* 标题块收窄到索引栏宽度内的字号节奏（覆盖页级 32px 大标题） */
+.settings-aside-head .page-title {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.settings-aside-head .page-desc {
+    margin: 0 0 12px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* 行内控件降级后允许换行（如 5 语言分段在窄屏放不下时折到标题下方） */
+.set-row--wrap {
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+/* 换行行内的右侧控件区允许收缩，分段控件随之折行，避免窄屏横向溢出卡片 */
+.set-row--wrap .set-end {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.set-row--wrap .settings-seg {
+    flex-wrap: wrap;
 }
 
 .settings-nav {
@@ -313,11 +359,20 @@
     font-family: inherit;
     text-align: left;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s var(--ease-smooth, ease), color 0.15s var(--ease-smooth, ease);
 }
 
 .settings-nav-item:hover {
     background: var(--bg-s);
+}
+
+.settings-nav-item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
+.settings-nav-item:active {
+    transform: scale(0.985);
 }
 
 .settings-nav-item svg {
@@ -400,19 +455,34 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     flex: none;
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: transparent;
     color: var(--tx-s);
     cursor: pointer;
+    transition:
+        background-color 0.15s var(--ease-smooth, ease),
+        border-color 0.15s var(--ease-smooth, ease),
+        color 0.15s var(--ease-smooth, ease),
+        transform 0.08s var(--ease-smooth, ease);
 }
 
 .settings-back:hover {
     background: var(--bg-s);
+    border-color: var(--bd-h);
     color: var(--tx-p);
+}
+
+.settings-back:active {
+    transform: scale(0.92);
+}
+
+.settings-back:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .settings-back svg {
@@ -427,9 +497,23 @@
         gap: 14px;
         align-items: start;
     }
-    .settings-nav {
+    /* 左栏（页头 + 索引）整体 sticky：滚动容器是 .page，钉驻于页面内容缘 +14px；
+       索引自身高于视口时转为内部滚动（标题块常驻，flex 列 + min-height:0） */
+    .settings-aside {
         position: sticky;
         top: 14px;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100dvh - 28px);
+    }
+    .settings-aside-head {
+        flex: none;
+    }
+    .settings-nav {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
         margin-bottom: 0;
     }
     /* 桌面顶级面板无需返回按钮（导航常驻）；子面板的返回仍可见 */
@@ -438,19 +522,70 @@
     }
 }
 
+/* ── 移动端（≤959px）：顶部 tab 形态 ──
+   导航转为横向 chips 行置于标题下方；详情面板常驻，点击 tab 直切分区，
+   无滑入二级视图；顶级分区返回键隐藏（tab 即入口），子面板返回保留 */
 @media (max-width: 959px) {
     .settings-detail {
-        display: none;
+        display: block;
     }
+    /* 残留的移动端二级视图状态类一并失效（JS 侧在断点切换时清理） */
     .settings-shell.show-detail .settings-nav {
-        display: none;
+        display: flex;
     }
     .settings-shell.show-detail .settings-detail {
         display: block;
     }
+    .settings-nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 2px 10px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        /* chips 行不占纵向滚动条，横滑手势即可达 */
+        scrollbar-width: none;
+    }
+    .settings-nav::-webkit-scrollbar {
+        display: none;
+    }
+    /* 双类选择器对齐 .settings-nav-item.pkg-tab 的兼容覆写优先级 */
+    .settings-nav-item,
+    .settings-nav-item.pkg-tab {
+        width: auto;
+        flex: none;
+        min-height: 40px;
+        padding: 6px 14px;
+        border: 1px solid var(--bd);
+        border-radius: 999px;
+        background: var(--bg-t);
+        font-size: 13px;
+    }
+    .settings-nav-item.active,
+    .settings-nav-item.pkg-tab.active {
+        /* 与全站 tab 激活语言一致：accent-soft 柔和底 + accent 文字 */
+        border-color: color-mix(in srgb, var(--accent) 35%, var(--bd));
+        color: var(--accent);
+        font-weight: 600;
+    }
+    .settings-nav-item svg {
+        width: 14px;
+        height: 14px;
+    }
+    .settings-nav-sep {
+        display: none;
+    }
+    .settings-back-top {
+        display: none;
+    }
 }
 
-/* ── 行条目（OS 设置签名样式）：图标 + 标题/副标题 + 行内控件或值 + chevron ── */
+/* ── 行条目（OS 设置签名样式）：图标 + 标题/副标题 + 行内控件或值 + chevron ──
+   对位规范：图标卡 28px 与标题行光学居中对齐（line-height 1.4 锚定基线）；
+   右侧控件经 .set-end 统一垂直居中；hairline 只出现在行与行之间（首末行无线） */
 .set-group {
     padding: 6px 8px;
     margin: 0 0 14px;
@@ -472,6 +607,10 @@
     text-align: left;
     width: 100%;
     box-sizing: border-box;
+    border-radius: var(--radius-md);
+    transition:
+        background-color 0.15s var(--ease-smooth, ease),
+        transform 0.08s var(--ease-smooth, ease);
 }
 
 @media (pointer: coarse) {
@@ -484,13 +623,27 @@
     border-top: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
 }
 
+/* 块状行内嵌的子行（如语言卡下的同步行）：分隔线由显式修饰类提供 */
+.set-row--divided {
+    border-top: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
+}
+
 button.set-row {
     cursor: pointer;
-    border-radius: 10px;
 }
 
 button.set-row:hover {
     background: var(--bg-s);
+}
+
+/* 按压反馈：轻缩放（reduced-motion 下退化为纯色反馈） */
+button.set-row:active {
+    transform: scale(0.985);
+}
+
+button.set-row:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    outline-offset: -2px;
 }
 
 .set-row--block {
@@ -507,7 +660,7 @@ button.set-row:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
     color: var(--accent);
 }
@@ -530,6 +683,7 @@ button.set-row:hover {
     font-weight: 500;
     color: var(--tx-p);
     letter-spacing: -0.01em;
+    line-height: 1.4;
 }
 
 .set-sub {
@@ -543,14 +697,17 @@ button.set-row:hover {
 
 .set-end {
     flex: none;
+    align-self: center;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
+/* 子面板导航行右侧当前值：右对齐次级文字，超长截断 */
 .set-value {
     font-size: 13px;
     color: var(--tx-s);
+    text-align: right;
     max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -560,11 +717,18 @@ button.set-row:hover {
 .set-chevron {
     display: flex;
     color: var(--tx-t);
+    transition: transform 0.15s var(--ease-smooth, ease), color 0.15s var(--ease-smooth, ease);
 }
 
 .set-chevron svg {
     width: 16px;
     height: 16px;
+}
+
+/* 可点行 hover：chevron 指向性微移 2px 并提亮 */
+button.set-row:hover .set-chevron {
+    transform: translateX(2px);
+    color: var(--tx-s);
 }
 
 /* 强调色行内当前值色点 */
@@ -647,27 +811,29 @@ button.set-row:hover {
     justify-content: center;
 }
 
-/* ── 分段选择器（透感三档等互斥选项）── */
+/* ── 分段选择器（透感三档等互斥选项）：胶囊式分段控件 ──
+   容器为 bg-s 胶囊凹槽，选中项 accent-soft 柔和底 + accent 字 + 600 字重；
+   键盘可达（focus-visible 柔光环），触屏档位整体 ≥40px */
 .settings-seg {
     display: inline-flex;
-    border: 1px solid var(--bd);
-    border-radius: var(--radius-sm);
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
     background: var(--bg-s);
-    overflow: hidden;
 }
 .settings-seg button {
     appearance: none;
     border: none;
     background: transparent;
-    padding: 6px 14px;
+    min-height: 32px;
+    padding: 5px 14px;
+    border-radius: 999px;
     font-size: 12px;
     font-family: inherit;
     color: var(--tx-s);
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-.settings-seg button + button {
-    border-left: 1px solid var(--bd);
+    transition: background-color 0.15s var(--ease-smooth, ease), color 0.15s var(--ease-smooth, ease);
 }
 .settings-seg button:hover {
     color: var(--tx-p);
@@ -676,6 +842,38 @@ button.set-row:hover {
     background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
     color: var(--accent);
     font-weight: 600;
+}
+.settings-seg button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+    z-index: 1;
+}
+/* 触屏：选中胶囊 + 凹槽上下 padding 合计 ≥40px 触控目标 */
+@media (pointer: coarse) {
+    .settings-seg button {
+        min-height: 38px;
+        padding: 6px 16px;
+    }
+}
+
+/* ── 开关（.switch）全站统一审计补充 ──
+   视觉规格（轨道 40×22 / 旋钮 16 / 选中 accent / 0.18s 过渡）由 components.css 全局定义，
+   此处仅补齐触屏 ≥44px 命中区与键盘焦点环，不改变视觉尺寸（cel 方轨样式不受影响） */
+@media (pointer: coarse) {
+    .switch::after {
+        content: "";
+        position: absolute;
+        inset: -11px -12px;
+    }
+}
+
+.switch input:focus-visible + .switch-slider {
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
+/* 触屏下开关行内不与扩展命中区外的控件争抢点击 */
+.set-end .switch {
+    position: relative;
 }
 
 /* ════════════════ 背景与透感（所见即所得预览卡） ════════════════ */
@@ -1066,7 +1264,6 @@ button.set-row:hover {
         padding: 0;
     }
 }
-
 
 /* 关于页面 */
 /* hero：看板娘大图直接铺入（不裁圆、不包底框），文本与版本信息居中对齐 */
@@ -2013,24 +2210,11 @@ button.set-row:hover {
     user-select: all;
 }
 
-/* ── 令牌生成艺术（确定性 SVG，随令牌变化） ── */
-.token-art-wrap {
-    margin-bottom: 14px;
-    border: 1px solid var(--bd);
-    border-radius: var(--radius-md);
-    background: var(--bg-s);
-    overflow: hidden;
-    line-height: 0;
-}
-.token-art {
-    display: block;
-    width: 100%;
-    height: 84px;
-}
-
 /* ══════════ 移动端/触屏：设置页触控目标 + 字体卡删除按钮常显 ══════════ */
 @media (max-width: 768px) {
-    .settings-nav-item {
+    /* 顶部 tab chips：与全站 tab 触控目标一致（44px） */
+    .settings-nav-item,
+    .settings-nav-item.pkg-tab {
         min-height: 44px;
     }
 
@@ -2060,5 +2244,20 @@ button.set-row:hover {
     .settings-back {
         width: 40px;
         height: 40px;
+    }
+}
+
+/* ── 动效克制：reduced-motion 下按压缩放与 chevron 微移退化为纯色反馈 ── */
+@media (prefers-reduced-motion: reduce) {
+    button.set-row:active,
+    .settings-nav-item:active,
+    .settings-back:active {
+        transform: none;
+    }
+    .set-chevron {
+        transition: none;
+    }
+    button.set-row:hover .set-chevron {
+        transform: none;
     }
 }
