@@ -67,7 +67,12 @@ class ApiDashboardMixin:
         return JSONResponse({"bots": bots})
 
     async def _api_events(self, request: Request) -> JSONResponse:
-        limit = int(request.query_params.get("limit", "50"))
+         
+        try:
+            limit = int(request.query_params.get("limit") or 50)
+        except ValueError:
+            limit = 50
+        limit = max(1, min(limit, 500))
         et = request.query_params.get("type")
         ep = request.query_params.get("platform")
         evts = list(self._event_log)

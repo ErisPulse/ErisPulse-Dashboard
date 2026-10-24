@@ -1056,7 +1056,7 @@ export function syncSettingsUI() {
   var rfEl = document.getElementById("settingsRefresh");
   if (rfEl) rfEl.value = getSetting("refresh_interval", "5000");
   var elEl = document.getElementById("settingsEventLimit");
-  if (elEl) elEl.value = getSetting("event_limit", "100");
+  if (elEl) elEl.value = getSetting("event_limit", "100") || "100";
   var animEl = document.getElementById("settingsAnimStyle");
   if (animEl) animEl.value = getAnimStyle();
   var dtEl = document.getElementById("settingsDashTitle");

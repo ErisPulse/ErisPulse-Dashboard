@@ -246,7 +246,7 @@ export function filterEventRows() {
 export async function loadEvents() {
   const tf = document.getElementById("eTypeFilter")?.value || "";
   const pf = document.getElementById("ePlatFilter")?.value || "";
-  const limit = getSetting("event_limit", "100");
+  const limit = getSetting("event_limit", "100") || "100";
   const u = new URLSearchParams({ limit });
   if (tf) u.set("type", tf);
   if (pf) u.set("platform", pf);
