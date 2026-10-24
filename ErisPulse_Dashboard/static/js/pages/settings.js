@@ -662,13 +662,10 @@ export function _availableNavPages() {
   return out;
 }
 
-const DP_CHECK_SVG =
-  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-export function _dpClosePanel() {
-  var panel = document.getElementById("dpPanel");
-  if (panel) panel.style.display = "none";
-}
-
+ 
+ 
+ 
+ 
  
 export function _renderDefaultPagePicker() {
   var host = document.getElementById("defaultPagePicker");
@@ -678,85 +675,41 @@ export function _renderDefaultPagePicker() {
   var known = pages.some(function (p) {
     return p.value === cur;
   });
-  var curLabel =
-    known || !cur
-      ? (pages.find(function (p) {
-            return p.value === cur;
-          }) || { label: t("dashboard") }).label
-      : cur;
-  if (known && !pages.some(function (p) { return p.value === cur; })) curLabel = t("dashboard");
 
-  var rows = pages
+  var sel = document.getElementById("defaultPageSelect");
+  if (!sel || !sel.isConnected) {
+    host.innerHTML = "";
+    sel = document.createElement("select");
+    sel.id = "defaultPageSelect";
+    sel.className = "settings-select ep-select";
+     
+    sel.addEventListener("change", function () {
+      applySettingDefaultPage(sel.value);
+    });
+    host.appendChild(sel);
+  }
+  sel.setAttribute("aria-label", t("settings_default_page"));
+   
+  var html = pages
     .map(function (p) {
       return (
-        '<div class="' +
-        (p.isSub ? "home-pin-suboption" : "home-pin-option") +
-        '" data-value="' +
+        '<option value="' +
         esc(p.value) +
         '">' +
-        '<span class="dp-icon">' +
-        (p.icon || "") +
-        "</span>" +
-        '<span class="dp-label">' +
-        esc(p.label) +
-        "</span>" +
-        (p.value === cur ? '<span class="dp-check">' + DP_CHECK_SVG + "</span>" : "") +
-        "</div>"
+        esc((p.isSub ? "\u2514 " : "") + p.label) +
+        "</option>"
       );
     })
     .join("");
-  rows +=
-    '<div class="home-pin-option" data-value="__custom__">' +
-    '<span class="dp-icon"></span>' +
-    '<span class="dp-label">' +
-    esc(t("settings_default_custom")) +
-    "</span>" +
-    (known ? "" : '<span class="dp-check">' + DP_CHECK_SVG + "</span>") +
-    "</div>";
-
-  host.innerHTML =
-    '<button type="button" class="settings-select dp-toggle" id="dpToggle">' +
-    '<span class="dp-toggle-label">' +
-    esc(curLabel) +
-    "</span>" +
-    "</button>" +
-    '<div class="dp-panel" id="dpPanel" style="display:none">' +
-    rows +
-    "</div>";
-
-  document.getElementById("dpToggle").onclick = function () {
-    var panel = document.getElementById("dpPanel");
-    var toggle = document.getElementById("dpToggle");
-    if (panel.style.display !== "none") {
-      panel.style.display = "none";
-      return;
-    }
-     
-    panel.style.display = "block";
-    if (window.EP && EP.positionList) {
-      EP.positionList(panel, toggle, 300);
-      panel.style.display = "grid";  
-    }
-  };
-  host.querySelectorAll("[data-value]").forEach(function (row) {
-    row.onclick = function () {
-      _dpClosePanel();
-      applySettingDefaultPage(row.getAttribute("data-value"));
-    };
-  });
-}
-
- 
-document.addEventListener("click", function (e) {
-  var picker = document.getElementById("defaultPagePicker");
-  if (!picker || !e.target.closest) return;
-  if (!picker.contains(e.target)) _dpClosePanel();
-});
-window.addEventListener("scroll", function (e) {
+  html += '<option value="__custom__">' + esc(t("settings_default_custom")) + "</option>";
    
-  if (e.target && e.target.closest && e.target.closest(".default-page-picker")) return;
-  _dpClosePanel();
-}, true);
+  if (!known && cur && cur !== "dashboard") {
+    html = '<option value="' + esc(cur) + '">' + esc(cur) + "</option>" + html;
+  }
+  sel.innerHTML = html;
+  sel.value = cur || "dashboard";
+  if (sel.selectedIndex === -1) sel.value = "dashboard";
+}
 
 export function applySettingDefaultPage(val) {
   if (val === "__custom__") {

@@ -111,7 +111,9 @@
     cursor: not-allowed;
     filter: saturate(0.6);
 }
- 
+
+
+
 .ep-combobox-list {
     display: none;
     position: fixed;
@@ -125,7 +127,7 @@
     border: 1px solid var(--bd);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hover);
-    z-index: 1300;
+    z-index: 3000;
     padding: 5px;
     animation: epPop 0.18s var(--ease-soft-spring);
 }
@@ -186,6 +188,15 @@
     color: var(--tx-t);
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+ 
+.ep-combobox-opt[data-disabled="1"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.ep-combobox-opt[data-disabled="1"]:hover,
+.ep-combobox-opt[data-disabled="1"].ep-kb-active {
+    background: transparent;
 }
  
 .ep-combobox-opt.ep-kb-active[data-selected="1"]::after {
@@ -279,7 +290,7 @@
     border: 1px solid var(--bd);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-hover);
-    z-index: 1300;
+    z-index: 3000;
     padding: 8px;
     animation: epPop 0.18s var(--ease-soft-spring);
 }

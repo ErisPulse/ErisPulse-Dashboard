@@ -1,8 +1,10 @@
  
  
+ 
+ 
 
 window.EP = window.EP || {};;
-EP.version = "2.0";;
+EP.version = "2.1";;
  
 EP._finePointer = !!(
   window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches
@@ -14,6 +16,35 @@ EP._enhanced = [];;
 EP._pendingSelects = [];;
 
 EP._multis = [];;
+
+ 
+ 
+EP.Z_MENU = 3000;;
+
+ 
+EP._enhancedApiFor = function (sel) {
+  if (!sel) return null;
+  for (var i = 0; i < EP._enhanced.length; i++) {
+    var a = EP._enhanced[i];
+    if (a && a.select === sel) return a;
+  }
+  return null;
+};;
+
+ 
+ 
+ 
+ 
+ 
+EP._needsEnhance = function (s) {
+  if (!s || s.nodeType !== 1 || s.tagName !== "SELECT" || s.multiple) return false;
+  var api = s.dataset.epEnhanced ? EP._enhancedApiFor(s) : null;
+  if (api && api.wrap && api.wrap.isConnected && api.list && api.list.isConnected)
+    return false;
+  if (api) return true;
+  if (s.closest && s.closest(".ep-combobox")) return true;
+  return !s.dataset.epEnhanced;
+};;
 
 EP.positionList = function (el, anchor, maxH) {
   var rc = anchor.getBoundingClientRect();
@@ -50,9 +81,51 @@ EP.positionList = function (el, anchor, maxH) {
 };;
 
 EP.enhanceSelect = function (sel) {
-  if (!sel || sel.tagName !== "SELECT" || sel.dataset.epEnhanced) return sel;
-  if (sel.closest(".ep-combobox")) return sel;
-  sel.dataset.epEnhanced = "1";
+  try {
+    return EP._enhanceSelectInner(sel);
+  } catch (e) {
+     
+    try {
+      if (sel) {
+        delete sel.dataset.epEnhanced;
+        sel.classList.remove("ep-native-hidden");
+        var stale = sel.nextElementSibling;
+        if (stale && stale.classList && stale.classList.contains("ep-combobox"))
+          stale.parentNode && stale.parentNode.removeChild(stale);
+      }
+      if (window.console && console.warn)
+        console.warn("[ep-select] enhance failed, fallback to native:", e);
+    } catch (e2) {}
+    return sel;
+  }
+};;
+
+EP._enhanceSelectInner = function (sel) {
+  if (!sel || sel.nodeType !== 1 || sel.tagName !== "SELECT") return sel;
+   
+  if (sel.multiple) return sel;
+
+  var staleWrap = sel.closest ? sel.closest(".ep-combobox") : null;
+  var api = sel.dataset.epEnhanced ? EP._enhancedApiFor(sel) : null;
+   
+  if (
+    api &&
+    api.wrap === staleWrap &&
+    api.wrap.isConnected &&
+    api.list &&
+    api.list.isConnected
+  )
+    return api;
+   
+  if (staleWrap && staleWrap.parentNode) staleWrap.parentNode.removeChild(staleWrap);
+   
+  if (api) {
+    if (api.list && api.list.parentNode) api.list.parentNode.removeChild(api.list);
+    if (api.wrap && api.wrap.parentNode) api.wrap.parentNode.removeChild(api.wrap);
+    sel.classList.remove("ep-native-hidden");
+  } else {
+    api = { select: sel, _last: sel.value };
+  }
 
   var wrap = document.createElement("div");
   wrap.className = "ep-combobox";
@@ -80,10 +153,17 @@ EP.enhanceSelect = function (sel) {
   wrap.appendChild(btn);
   sel.parentNode.insertBefore(wrap, sel.nextSibling);
    
+   
+   
+   
   document.body.appendChild(list);
   sel.classList.add("ep-native-hidden");
+  sel.dataset.epEnhanced = "1";
 
-  var api = { select: sel, wrap: wrap, list: list, label: lbl, _last: sel.value };
+  api.wrap = wrap;
+  api.list = list;
+  api.label = lbl;
+  api.btn = btn;
 
   function appendOpt(opt) {
     var o = document.createElement("div");
@@ -91,20 +171,26 @@ EP.enhanceSelect = function (sel) {
     o.setAttribute("role", "option");
     o.textContent = opt.textContent || opt.value || "\u00a0";
     o.dataset.value = opt.value;
+     
+    if (opt.disabled) {
+      o.dataset.disabled = "1";
+      o.setAttribute("aria-disabled", "true");
+    }
     o.addEventListener("click", function (e) {
       e.stopPropagation();
+      if (opt.disabled) return;
       selectValue(opt.value);
     });
-    list.appendChild(o);
+    api.list.appendChild(o);
   }
   function build() {
-    list.innerHTML = "";
+    api.list.innerHTML = "";
     Array.prototype.forEach.call(sel.children, function (child) {
       if (child.tagName === "OPTGROUP") {
         var gl = document.createElement("div");
         gl.className = "ep-combobox-group-label";
         gl.textContent = child.label || "";
-        list.appendChild(gl);
+        api.list.appendChild(gl);
         Array.prototype.forEach.call(child.children, function (opt) {
           if (opt.tagName === "OPTION") appendOpt(opt);
         });
@@ -124,31 +210,47 @@ EP.enhanceSelect = function (sel) {
       label = first ? first.textContent || first.value : "";
     }
     api.label.textContent = label || "\u00a0";
-    Array.prototype.forEach.call(list.querySelectorAll(".ep-combobox-opt"), function (o) {
+     
+    wrap.classList.toggle("disabled", !!sel.disabled);
+    btn.disabled = !!sel.disabled;
+    Array.prototype.forEach.call(api.list.querySelectorAll(".ep-combobox-opt"), function (o) {
       o.dataset.selected = String(o.dataset.value) === String(v) ? "1" : "0";
     });
   }
   var wheelGuard = function (e) {
-    var canDown = list.scrollHeight - list.scrollTop - list.clientHeight > 1;
-    var canUp = list.scrollTop > 1;
+    var canDown = api.list.scrollHeight - api.list.scrollTop - api.list.clientHeight > 1;
+    var canUp = api.list.scrollTop > 1;
     if ((e.deltaY > 0 && !canDown) || (e.deltaY < 0 && !canUp)) {
       e.preventDefault();
     }
   };
   function open() {
+     
+    EP._enhanced.forEach(function (other) {
+      if (other !== api && other.wrap && other.wrap.dataset && other.wrap.dataset.open === "1") {
+        try {
+          other.close();
+        } catch (e) {}
+      }
+    });
     build();
     syncUI();
-    EP.positionList(list, btn, 260);
-    list.addEventListener("wheel", wheelGuard);
+     
+     
+    EP.positionList(api.list, btn, 260);
+     
+    api.list.style.zIndex = String(EP.Z_MENU);
+    api.list.addEventListener("wheel", wheelGuard);
     wrap.dataset.open = "1";
     btn.setAttribute("aria-expanded", "true");
-    var active = list.querySelector('.ep-combobox-opt[data-selected="1"]');
-    if (active) list.scrollTop = active.offsetTop - list.clientHeight / 2;
+    var active = api.list.querySelector('.ep-combobox-opt[data-selected="1"]');
+    if (active && active.offsetTop != null)
+      api.list.scrollTop = active.offsetTop - api.list.clientHeight / 2;
   }
   function close() {
     delete wrap.dataset.open;
-    list.removeEventListener("wheel", wheelGuard);
-    list.style.display = "none";
+    api.list.removeEventListener("wheel", wheelGuard);
+    api.list.style.display = "none";
     btn.setAttribute("aria-expanded", "false");
     kbHighlight(null);
   }
@@ -172,7 +274,7 @@ EP.enhanceSelect = function (sel) {
 
    
   function kbHighlight(opt) {
-    var opts = list.querySelectorAll(".ep-combobox-opt");
+    var opts = api.list.querySelectorAll(".ep-combobox-opt");
     Array.prototype.forEach.call(opts, function (o) {
       o.classList.remove("ep-kb-active");
     });
@@ -183,9 +285,13 @@ EP.enhanceSelect = function (sel) {
     }
   }
   function kbMove(dir) {
-    var opts = Array.prototype.slice.call(list.querySelectorAll(".ep-combobox-opt"));
+    var all = Array.prototype.slice.call(api.list.querySelectorAll(".ep-combobox-opt"));
+     
+    var opts = all.filter(function (o) {
+      return o.dataset.disabled !== "1";
+    });
     if (!opts.length) return;
-    var cur = list.querySelector(".ep-combobox-opt.ep-kb-active");
+    var cur = api.list.querySelector(".ep-combobox-opt.ep-kb-active");
     var idx = cur ? opts.indexOf(cur) + dir : dir > 0 ? 0 : opts.length - 1;
     idx = Math.max(0, Math.min(opts.length - 1, idx));
     kbHighlight(opts[idx]);
@@ -196,8 +302,8 @@ EP.enhanceSelect = function (sel) {
       if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         open();
-        var sel = list.querySelector('.ep-combobox-opt[data-selected="1"]');
-        kbHighlight(sel);
+        var first = api.list.querySelector('.ep-combobox-opt[data-selected="1"]');
+        kbHighlight(first);
       }
       return;
     }
@@ -209,8 +315,8 @@ EP.enhanceSelect = function (sel) {
       kbMove(-1);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      var hit = list.querySelector(".ep-combobox-opt.ep-kb-active");
-      if (hit) {
+      var hit = api.list.querySelector(".ep-combobox-opt.ep-kb-active");
+      if (hit && hit.dataset.disabled !== "1") {
         selectValue(hit.dataset.value);
       } else {
         close();
@@ -218,20 +324,26 @@ EP.enhanceSelect = function (sel) {
     }
   });
 
-  var obs = new MutationObserver(function () {
-    clearTimeout(api._buildTimer);
-    api._buildTimer = setTimeout(function () {
-      build();
-      syncUI();
-    }, 30);
-  });
-  obs.observe(sel, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ["disabled"],
-  });
+   
+   
+  if (!api._obs) {
+    api._obs = new MutationObserver(function () {
+      clearTimeout(api._buildTimer);
+      api._buildTimer = setTimeout(function () {
+        try {
+          if (api.build) api.build();
+          if (api.syncUI) api.syncUI();
+        } catch (e) {}
+      }, 30);
+    });
+    api._obs.observe(sel, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["disabled", "value", "selected", "label", "hidden", "title"],
+    });
+  }
 
   api.syncUI = syncUI;
   api.close = close;
@@ -239,15 +351,22 @@ EP.enhanceSelect = function (sel) {
   api.build = build;
   build();
   syncUI();
-  EP._enhanced.push(api);
-  return sel;
+  if (EP._enhanced.indexOf(api) === -1) EP._enhanced.push(api);
+  return api;
 };;
 
 EP.enhanceAll = function (scope) {
   var root = scope || document;
+  var count = 0;
   Array.prototype.forEach.call(root.querySelectorAll("select"), function (s) {
-    if (!s.dataset.epEnhanced) EP.enhanceSelect(s);
+    if (EP._needsEnhance(s)) {
+      try {
+        EP.enhanceSelect(s);
+        count++;
+      } catch (e) {}
+    }
   });
+  return count;
 };;
 
 EP.createMultiSelect = function (opts) {
@@ -354,7 +473,16 @@ EP.createMultiSelect = function (opts) {
     }
   };
   function open() {
+     
+    EP._multis.forEach(function (other) {
+      if (other !== mApi && other.wrap && other.wrap.dataset && other.wrap.dataset.open === "1") {
+        try {
+          other.close();
+        } catch (e) {}
+      }
+    });
     EP.positionList(panel, trigger, 320);
+    panel.style.zIndex = String(EP.Z_MENU);
     panel.addEventListener("wheel", wheelGuard);
     wrap.dataset.open = "1";
      
@@ -415,16 +543,31 @@ EP.createMultiSelect = function (opts) {
   return mApi;
 };;
 
+ 
 document.addEventListener(
   "mousedown",
   function (e) {
     EP._enhanced.forEach(function (api) {
-      if (api.wrap.dataset.open === "1" && !api.wrap.contains(e.target) && !(api.list && api.list.contains(e.target)))
-        api.close();
+      try {
+        if (
+          api.wrap &&
+          api.wrap.dataset.open === "1" &&
+          !api.wrap.contains(e.target) &&
+          !(api.list && api.list.contains(e.target))
+        )
+          api.close();
+      } catch (err) {}
     });
     EP._multis.forEach(function (m) {
-      if (m.wrap.dataset.open === "1" && !m.wrap.contains(e.target) && !(m.panel && m.panel.contains(e.target)))
-        m.close();
+      try {
+        if (
+          m.wrap &&
+          m.wrap.dataset.open === "1" &&
+          !m.wrap.contains(e.target) &&
+          !(m.panel && m.panel.contains(e.target))
+        )
+          m.close();
+      } catch (err) {}
     });
   },
   true,
@@ -432,28 +575,39 @@ document.addEventListener(
 
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
+     
     EP._enhanced.forEach(function (api) {
-      api.close();
+      try {
+        if (api.wrap && api.wrap.dataset.open === "1") api.close();
+      } catch (err) {}
     });
     EP._multis.forEach(function (m) {
-      m.close();
+      try {
+        if (m.wrap && m.wrap.dataset.open === "1") m.close();
+      } catch (err) {}
     });
   }
 });;
 
+ 
+ 
 window.addEventListener(
   "scroll",
   function (e) {
     var t = e.target;
     EP._enhanced.forEach(function (api) {
-      if (api.wrap.dataset.open !== "1") return;
-      if (t && t.nodeType === 1 && api.list.contains(t)) return;
-      api.close();
+      try {
+        if (!api.wrap || api.wrap.dataset.open !== "1") return;
+        if (t && t.nodeType === 1 && api.list && api.list.contains(t)) return;
+        api.close();
+      } catch (err) {}
     });
     EP._multis.forEach(function (m) {
-      if (m.wrap.dataset.open !== "1") return;
-      if (t && t.nodeType === 1 && m.panel.contains(t)) return;
-      m.close();
+      try {
+        if (!m.wrap || m.wrap.dataset.open !== "1") return;
+        if (t && t.nodeType === 1 && m.panel && m.panel.contains(t)) return;
+        m.close();
+      } catch (err) {}
     });
   },
   true,
@@ -461,78 +615,143 @@ window.addEventListener(
 
  
  
+ 
 var _epLastW = window.innerWidth;
+EP._repositionOpenMenus = function (widthChanged) {
+  EP._enhanced.forEach(function (api) {
+    try {
+      if (!api.wrap || api.wrap.dataset.open !== "1") return;
+      if (widthChanged) {
+        api.close();
+        return;
+      }
+      if (api.btn && api.btn.isConnected && api.list && api.list.isConnected)
+        EP.positionList(api.list, api.btn, 260);
+    } catch (err) {}
+  });
+  EP._multis.forEach(function (m) {
+    try {
+      if (!m.wrap || m.wrap.dataset.open !== "1") return;
+      if (widthChanged) {
+        m.close();
+        return;
+      }
+      var trg = m.wrap.querySelector(".ep-multiselect-trigger");
+      if (trg) EP.positionList(m.panel, trg, 320);
+    } catch (err) {}
+  });
+};
 window.addEventListener("resize", function () {
   var w = window.innerWidth;
   var widthChanged = Math.abs(w - _epLastW) > 2;
   _epLastW = w;
-  EP._enhanced.forEach(function (api) {
-    if (api.wrap.dataset.open !== "1") return;
-    if (widthChanged) {
-      api.close();
-      return;
-    }
-    var trg = api.wrap.querySelector(".ep-combobox-trigger");
-    if (trg) EP.positionList(api.list, trg, 260);
-  });
-  EP._multis.forEach(function (m) {
-    if (m.wrap.dataset.open !== "1") return;
-    if (widthChanged) {
-      m.close();
-      return;
-    }
-    var trg = m.wrap.querySelector(".ep-multiselect-trigger");
-    if (trg) EP.positionList(m.panel, trg, 320);
-  });
+  EP._repositionOpenMenus(widthChanged);
 });;
+if (window.visualViewport) {
+  var _epLastVVW = window.visualViewport.width;
+  window.visualViewport.addEventListener("resize", function () {
+    var w = window.visualViewport.width;
+    var widthChanged = Math.abs(w - _epLastVVW) > 2;
+    _epLastVVW = w;
+    EP._repositionOpenMenus(widthChanged);
+  });
+   
+  window.visualViewport.addEventListener("scroll", function () {
+    EP._repositionOpenMenus(false);
+  });
+}
 
+ 
+ 
 EP._autoObserver = new MutationObserver(function (muts) {
-  muts.forEach(function (m) {
-    Array.prototype.forEach.call(m.addedNodes, function (n) {
-      if (n.nodeType !== 1) return;
-      if (n.tagName === "SELECT" && !n.dataset.epEnhanced) EP._pendingSelects.push(n);
-      else if (n.querySelectorAll) {
-        Array.prototype.forEach.call(n.querySelectorAll("select"), function (s) {
-          if (!s.dataset.epEnhanced) EP._pendingSelects.push(s);
-        });
-      }
-    });
-  });
-  if (EP._pendingSelects.length) {
-    clearTimeout(_epAutoTimer);
-    _epAutoTimer = setTimeout(function () {
-      EP._pendingSelects.forEach(function (s) {
-        if (!s.dataset.epEnhanced) EP.enhanceSelect(s);
+  try {
+    muts.forEach(function (m) {
+      Array.prototype.forEach.call(m.addedNodes, function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.tagName === "SELECT") {
+          if (EP._needsEnhance(n) && EP._pendingSelects.indexOf(n) === -1)
+            EP._pendingSelects.push(n);
+        } else if (n.querySelectorAll) {
+          Array.prototype.forEach.call(n.querySelectorAll("select"), function (s) {
+            if (EP._needsEnhance(s) && EP._pendingSelects.indexOf(s) === -1)
+              EP._pendingSelects.push(s);
+          });
+        }
       });
-      EP._pendingSelects = [];
-      EP._cleanupOrphans();
-    }, 40);
-  }
+    });
+    if (EP._pendingSelects.length) {
+      clearTimeout(EP._autoTimer);
+      EP._autoTimer = setTimeout(function () {
+        var pending = EP._pendingSelects;
+        EP._pendingSelects = [];
+        pending.forEach(function (s) {
+          try {
+            if (s.isConnected) EP.enhanceSelect(s);
+          } catch (e) {}
+        });
+        EP._cleanupOrphans();
+      }, 50);
+    }
+  } catch (e) {}
 });;
 
-EP._autoObserver.observe(document.body, { childList: true, subtree: true });;
-
-EP._cleanupOrphans = function () {
-  var live = new Set();
-  EP._enhanced.forEach(function (api) {
-    live.add(api.list);
-  });
-  EP._multis.forEach(function (m) {
-    live.add(m.panel);
-  });
-  document
-    .querySelectorAll(".ep-combobox-list[data-ep-owner], .ep-multiselect-panel[data-ep-owner]")
-    .forEach(function (el) {
-      if (!live.has(el)) el.remove();
-    });
+ 
+ 
+ 
+EP._startAutoEnhance = function () {
+  if (EP._autoStarted || !document.body) return false;
+  EP._autoStarted = true;
+  EP._autoObserver.observe(document.body, { childList: true, subtree: true });
+  try {
+    EP.enhanceAll(document);
+  } catch (e) {}
+  try {
+    if (EP._cleanupOrphans) EP._cleanupOrphans();
+  } catch (e) {}
+  return true;
+};;
+if (!EP._startAutoEnhance()) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+      EP._startAutoEnhance();
+    },
+    { once: true },
+  );
 };;
 
+EP._cleanupOrphans = function () {
+  try {
+    var live = new Set();
+    EP._enhanced.forEach(function (api) {
+      if (api.list && api.list.isConnected) live.add(api.list);
+    });
+    EP._multis.forEach(function (m) {
+      if (m.panel && m.panel.isConnected) live.add(m.panel);
+    });
+    document
+      .querySelectorAll(".ep-combobox-list[data-ep-owner], .ep-multiselect-panel[data-ep-owner]")
+      .forEach(function (el) {
+        if (!live.has(el)) el.remove();
+      });
+  } catch (e) {}
+};;
+
+ 
 EP._tick = setInterval(function () {
   EP._enhanced.forEach(function (api) {
-    if (api.select.value !== api._last) {
-      api._last = api.select.value;
-      api.syncUI();
-    }
+    try {
+      if (!api.select || !api.select.isConnected) return;
+       
+      if (api.wrap && !api.wrap.isConnected) {
+        EP.enhanceSelect(api.select);
+        return;
+      }
+      if (api.select.value !== api._last) {
+        api._last = api.select.value;
+        api.syncUI();
+      }
+    } catch (e) {}
   });
 }, 500);;
 

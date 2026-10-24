@@ -7,6 +7,7 @@ var _trSessions = [];
 var _trCurSession = "";  
 var _trHours = 24;  
 var _trTraceId = "";  
+var _trMsgSeq = 0;  
 
 function _trEl(id) {
   return document.getElementById(id);
@@ -153,6 +154,7 @@ export async function loadTranscriptSessions() {
 export function selectTranscriptSession(key, keepMobile) {
   _trCurSession = key;
   _trTraceId = "";  
+  _trMsgSeq++;  
    
   if (!keepMobile) {
     var layout = _trEl("transcriptLayout");
@@ -170,6 +172,329 @@ export function selectTranscriptSession(key, keepMobile) {
 export function showTranscriptList() {
   var layout = _trEl("transcriptLayout");
   if (layout) layout.classList.remove("show-detail");
+}
+
+ 
+ 
+ 
+ 
+ 
+
+function _trPh(label) {
+  return '<span class="tr-ph">[' + esc(label) + "]</span>";
+}
+
+ 
+function _trSafeLinkUrl(u) {
+  var s = String(u || "").trim();
+  return /^https?:\/\//i.test(s) ? s : "";
+}
+
+ 
+function _trBase64ToDataUri(u) {
+  var b64 = String(u || "").slice(9).replace(/\s+/g, "");
+  if (!b64) return "";
+  var probe = b64.slice(0, 32);
+  probe = probe.slice(0, probe.length - (probe.length % 4));
+  var head = "";
+  try {
+    head = atob(probe);
+  } catch (e) {
+    return "";
+  }
+  var mime = "";
+  if (head.indexOf("\x89PNG") === 0) mime = "image/png";
+  else if (head.indexOf("\xff\xd8") === 0) mime = "image/jpeg";
+  else if (head.indexOf("GIF8") === 0) mime = "image/gif";
+  else if (head.indexOf("RIFF") === 0 && head.indexOf("WEBP") === 8)
+    mime = "image/webp";
+  else if (head.indexOf("BM") === 0) mime = "image/bmp";
+  return mime ? "data:" + mime + ";base64," + b64 : "";
+}
+
+ 
+ 
+function _trImgHtml(url) {
+  var u = String(url || "").trim();
+  var src = "";
+  if (/^base64:\/\//i.test(u)) src = _trBase64ToDataUri(u);
+  else if (/^https?:\/\//i.test(u)) src = u;
+  else if (/^data:image\//i.test(u)) src = u;
+  if (!src) return _trPh("图片");
+  return (
+    '<img class="tr-img" src="' +
+    esc(src) +
+    '" alt="' +
+    esc("图片") +
+    '" loading="lazy" onclick="openTranscriptImage(this.src)">'
+  );
+}
+
+ 
+function _trLinkHtml(url, label) {
+  var u = _trSafeLinkUrl(url);
+  if (!u) return esc(String(label == null ? url : label));
+  return (
+    '<a href="' +
+    esc(u) +
+    '" target="_blank" rel="noopener noreferrer">' +
+    esc(String(label || u)) +
+    "</a>"
+  );
+}
+
+ 
+function _trExtractUrl(text) {
+  var m = String(text || "").match(/https?:\/\/[^\s"'\\<>]+/);
+  if (!m) return "";
+  return m[0].replace(/[)\]}>,.!?'"]+$/, "");
+}
+
+ 
+ 
+var _trBytesMagic = [
+  [/\\x89PNG|\x89PNG/, "图片"],
+  [/\\xff\\xd8|JFIF|\xff\xd8/, "图片"],
+  [/GIF8/, "图片"],
+  [/RIFF/, "视频"],
+  [/OggS/, "音频"],
+  [/ftyp/, "视频"],
+  [/ID3/, "音频"],
+  [/PK\\x03\\x04|PK\x03\x04/, "文件"],
+];
+
+ 
+ 
+ 
+function _trLooksLikeBytesRepr(text) {
+  var t = text.trim();
+  if (t.length < 4) return false;
+  var q = t.charAt(1);
+  if (t.charAt(0) !== "b" || (q !== "'" && q !== '"')) return false;
+  if (t.indexOf("\\") >= 0) return true;
+  for (var i = 0; i < _trBytesMagic.length; i++) {
+    if (_trBytesMagic[i][0].test(t)) return true;
+  }
+  return false;
+}
+
+function _trRenderBytesRepr(text) {
+  var label = "二进制数据";
+  for (var i = 0; i < _trBytesMagic.length; i++) {
+    if (_trBytesMagic[i][0].test(text)) {
+      label = _trBytesMagic[i][1];
+      break;
+    }
+  }
+  var html = _trPh(label);
+   
+  var url = _trExtractUrl(text);
+  if (url) html += " " + _trLinkHtml(url, url);
+  return html;
+}
+
+ 
+function _trCqUnescape(s) {
+  return String(s || "")
+    .replace(/&#44;/g, ",")
+    .replace(/&#91;/g, "[")
+    .replace(/&#93;/g, "]")
+    .replace(/&amp;/g, "&");
+}
+
+function _trCqParams(raw) {
+  var data = {};
+  var parts = String(raw || "").split(",");
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i];
+    if (!p) continue;
+    var eq = p.indexOf("=");
+    if (eq < 0) continue;
+    data[p.slice(0, eq).trim()] = _trCqUnescape(p.slice(eq + 1));
+  }
+  return data;
+}
+
+ 
+ 
+function _trRenderCq(text) {
+  var re = /\[CQ:([^\],\s]+)((?:,[^\]]*)?)\]/g;
+  var out = "";
+  var last = 0;
+  var m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out += esc(text.slice(last, m.index));
+    out += _trRenderSegment({ type: m[1], data: _trCqParams(m[2]) });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out += esc(text.slice(last));
+  return out;
+}
+
+ 
+ 
+function _trTryParseSegments(text) {
+  var t = text.replace(/^\s+|\s+$/g, "");
+  if (t.charAt(0) !== "[") return null;
+  var arr;
+  try {
+    arr = JSON.parse(t);
+  } catch (e) {
+    return null;
+  }
+  if (!Array.isArray(arr) || !arr.length) return null;
+  for (var i = 0; i < arr.length; i++) {
+    var seg = arr[i];
+    if (
+      !seg ||
+      typeof seg !== "object" ||
+      Array.isArray(seg) ||
+      typeof seg.type !== "string"
+    )
+      return null;
+  }
+  return arr;
+}
+
+ 
+function _trCardHtml(data) {
+  var raw = data.data != null ? data.data : data;
+  var title = "";
+  var desc = "";
+  if (typeof raw === "string") {
+    try {
+      var obj = JSON.parse(raw);
+      if (obj && typeof obj === "object") {
+        title = obj.title || obj.prompt || "";
+        desc = obj.desc || obj.text || "";
+      }
+    } catch (e) {
+      title = "";
+    }
+  } else if (raw && typeof raw === "object") {
+    title = raw.title || raw.prompt || "";
+    desc = raw.desc || raw.text || "";
+  }
+  var body = title ? esc(String(title)) : "";
+  if (desc && desc !== title) body += (body ? " · " : "") + esc(String(desc));
+  return (
+    '<div class="tr-card">' + _trPh("卡片") + (body ? " " + body : "") + "</div>"
+  );
+}
+
+ 
+function _trRenderSegment(seg) {
+  var type = String(seg.type || "");
+  var data = seg.data && typeof seg.data === "object" ? seg.data : {};
+  switch (type) {
+    case "text":
+      return esc(String(data.text == null ? "" : data.text));
+    case "image":
+      return _trImgHtml(data.url || data.file);
+    case "record":
+    case "voice":
+      return _trPh("语音");
+    case "video":
+      return _trPh("视频");
+    case "file": {
+      var name = String(data.name || data.file_name || data.file || "");
+      return _trPh(name ? "文件 " + name : "文件");
+    }
+    case "at":
+      return "@" + esc(String(data.qq == null ? "" : data.qq));
+    case "face":
+      return _trPh("表情");
+    case "reply": {
+       
+      var quoted = "";
+      var content = data.content != null ? data.content : data.message;
+      if (Array.isArray(content)) {
+        for (var i = 0; i < content.length; i++) {
+          var c = content[i];
+          if (c && c.type === "text" && c.data && c.data.text)
+            quoted += String(c.data.text);
+        }
+      } else if (typeof content === "string") {
+        quoted = content;
+      }
+      return (
+        '<div class="tr-reply">' +
+        esc("回复：" + (quoted ? " " + quoted : "")) +
+        "</div>"
+      );
+    }
+    case "forward":
+    case "node":
+      return _trPh("合并转发");
+    case "json":
+    case "xml":
+      return _trCardHtml(data);
+    case "share":
+      return (
+        _trPh("链接") +
+        (data.url ? " " + _trLinkHtml(data.url, String(data.title || data.url)) : "")
+      );
+    case "location":
+      return _trPh("位置") + (data.title ? " " + esc(String(data.title)) : "");
+    case "music":
+      return _trPh("音乐") + (data.title ? " " + esc(String(data.title)) : "");
+    case "contact":
+      return _trPh("联系人卡片");
+    case "rps":
+      return _trPh("猜拳");
+    case "dice":
+      return _trPh("骰子");
+    case "shake":
+      return _trPh("窗口抖动");
+    case "poke":
+      return _trPh("戳一戳");
+    case "anonymous":
+      return _trPh("匿名消息");
+    default:
+      return _trPh(type || "未知消息");
+  }
+}
+
+function _trRenderSegments(arr) {
+  var out = "";
+  for (var i = 0; i < arr.length; i++) out += _trRenderSegment(arr[i]);
+  return out;
+}
+
+ 
+export function _trFormatMessageText(raw) {
+  var text = raw == null ? "" : String(raw);
+  if (!text) return "";
+  if (_trLooksLikeBytesRepr(text)) return _trRenderBytesRepr(text);
+  var segs = _trTryParseSegments(text);
+  if (segs) return _trRenderSegments(segs);
+  if (text.indexOf("[CQ:") >= 0) return _trRenderCq(text);
+  return esc(text);
+}
+
+ 
+ 
+export function openTranscriptImage(src) {
+  src = String(src || "");
+  var w = window.open("", "_blank");
+  if (!w) return;
+  if (/^https?:\/\//i.test(src)) {
+    w.location.href = src;
+    return;
+  }
+  var doc = w.document;
+  doc.open();
+  doc.write(
+    '<!doctype html><meta charset="utf-8"><title>' +
+      esc("图片") +
+      "</title>" +
+      '<body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#000">' +
+      '<img src="' +
+      src.replace(/"/g, "&quot;") +
+      '" style="max-width:100%;max-height:100%;object-fit:contain">' +
+      "</body>"
+  );
+  doc.close();
 }
 
  
@@ -229,11 +554,28 @@ export function exitTranscriptTrace() {
   loadTranscriptMessages();
 }
 
+ 
+function _trShowListSkeleton(listEl) {
+  var row = function (width, right) {
+    return (
+      '<div class="tr-skel' +
+      (right ? " right" : "") +
+      '"><div class="skeleton skeleton-text" style="width:' +
+      width +
+      '%"></div></div>'
+    );
+  };
+  listEl.innerHTML = row(58, false) + row(76, true) + row(42, false);
+}
+
 export async function loadTranscriptMessages() {
   var card = _trEl("transcriptMsgsCard");
   var emptyEl = _trEl("transcriptDetailEmpty");
   var listEl = _trEl("transcriptMsgList");
   if (!card || !listEl) return;
+
+   
+  var seq = ++_trMsgSeq;
 
   if (_trTraceId) {
      
@@ -242,9 +584,11 @@ export async function loadTranscriptMessages() {
     _trRenderTraceBanner();
     var head = _trEl("transcriptCurHead");
     if (head) head.innerHTML = "";
+    _trShowListSkeleton(listEl);
     var dTrace = await api(
       "/api/transcript/trace?trace_id=" + encodeURIComponent(_trTraceId)
     );
+    if (seq !== _trMsgSeq) return;  
     var traceMsgs = dTrace && dTrace.supported !== false ? dTrace.messages || [] : [];
     if (!traceMsgs.length) {
       listEl.innerHTML =
@@ -263,12 +607,14 @@ export async function loadTranscriptMessages() {
   card.style.display = "";
   _trRenderTraceBanner();
   _trSessionHeader(_trCurSession);
+  _trShowListSkeleton(listEl);  
 
   var d = await api(
     "/api/transcript?session=" +
       encodeURIComponent(_trCurSession) +
       "&n=100"
   );
+  if (seq !== _trMsgSeq) return;  
   var msgs = d && d.supported !== false ? d.messages || [] : [];
   if (!msgs.length) {
     listEl.innerHTML =
@@ -301,7 +647,7 @@ function _trRenderMsgList(listEl, msgs) {
         ? '<div class="tr-sender">' + esc(sender) + "</div>"
         : "") +
       '<div class="tr-text">' +
-      esc(m.text || "") +
+      _trFormatMessageText(m.text) +
       "</div>" +
       '<div class="tr-meta">' +
       "<span>" +

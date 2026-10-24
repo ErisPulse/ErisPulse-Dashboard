@@ -231,6 +231,58 @@
 
  
 
+.tr-img {
+    max-width: 240px;
+    max-height: 160px;
+    border-radius: var(--radius-sm);
+    cursor: zoom-in;
+    display: block;
+    margin-top: 4px;
+}
+
+ 
+.tr-ph {
+    color: var(--tx-s);
+}
+
+ 
+.tr-reply {
+    font-size: 12px;
+    color: var(--tx-t);
+    margin-bottom: 2px;
+}
+
+ 
+.tr-card {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-sm);
+    background: var(--bg-p);
+    font-size: 12px;
+    color: var(--tx-s);
+    max-width: 100%;
+    word-break: break-word;
+}
+
+ 
+
+.tr-skel {
+    display: flex;
+    padding: 7px 0;
+}
+
+.tr-skel.right {
+    justify-content: flex-end;
+}
+
+.tr-skel .skeleton-text {
+    height: 14px;
+}
+
+ 
+
  
 .tr-cfg-hint {
     display: inline-block;
