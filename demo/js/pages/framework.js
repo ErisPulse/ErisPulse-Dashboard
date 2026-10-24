@@ -1070,8 +1070,14 @@ export async function loadFwReleaseNotes() {
   var v = sel.value;
   if (!v) { notesEl.style.display = "none"; return; }
   notesEl.style.display = "";
+  // 加载态：骨架占位（bg-s 呼吸块），避免文字闪烁跳变
   notesEl.innerHTML =
-    '<div class="fw-notes-loading">' + esc(t("loading")) + "...</div>";
+    '<div class="fw-skel" aria-hidden="true">' +
+    '<div class="fw-skel-line"></div>' +
+    '<div class="fw-skel-line" style="width:82%"></div>' +
+    '<div class="fw-skel-line" style="width:64%"></div>' +
+    '<div class="fw-skel-line" style="width:74%"></div>' +
+    "</div>";
 
   // 1. 尝试从 CHANGELOG.md 提取并结构化渲染（正式版聚合其 dev 分组）
   var changelog = await fetchChangelog();

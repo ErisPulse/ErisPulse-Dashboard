@@ -1,27 +1,25 @@
 /* ErisPulse Dashboard – framework (auto-split from dash.css, aligned with js/) */
+/* 框架更新卡：设置页更新分区内的全宽卡（卡头规范见 .card-header） */
 .fw-update-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
     border-radius: var(--radius-lg);
     padding: 0;
     overflow: hidden;
-    max-width: 720px;
-    margin: 20px auto 0;
+    margin: 0;
 }
 
-/* 框架更新 */
-.fw-hero {
-    padding: 22px 24px 20px;
-    border-bottom: 1px solid var(--bd);
+/* 卡头右侧操作区：状态徽标与刷新按钮成组（图标尺寸独立于卡头标题图标） */
+.fw-update-card .card-header-actions {
+    gap: 8px;
 }
 
-.fw-hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
+.fw-update-card .card-header-actions svg {
+    width: 15px;
+    height: 15px;
 }
 
+/* 状态徽标：最新 = ok 语义柔和底；有更新 = accent 柔和底（正向引导而非警告） */
 .fw-status-badge {
     display: inline-flex;
     align-items: center;
@@ -49,27 +47,33 @@
 }
 
 .fw-status-badge.update {
-    color: var(--wr-c);
-    background: color-mix(in srgb, var(--wr-c) 12%, transparent);
+    color: var(--accent);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
 .fw-refresh-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: 1px solid var(--bd);
-    background: var(--bg-t);
+    background: transparent;
     color: var(--tx-s);
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .fw-refresh-btn:hover {
     color: var(--tx-p);
     border-color: var(--tx-t);
+    background: var(--bg-s);
+}
+
+.fw-refresh-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
 .fw-refresh-btn.spinning svg {
@@ -82,12 +86,16 @@
     }
 }
 
-/* 版本区：最新版本大字主导，当前版本小字陪衬（尺寸对比制造层级，不用箭头） */
+/* 版本区：卡头之下直接呈现版本数字，无额外边框堆叠；
+   最新版本大字 tabular-nums 主导，当前版本小字陪衬（尺寸对比制造层级） */
+.fw-hero {
+    padding: 18px 20px 8px;
+}
+
 .fw-hero-nums {
     display: flex;
     align-items: flex-end;
     gap: 32px;
-    margin-top: 14px;
 }
 
 .fw-ver-block {
@@ -105,7 +113,7 @@
 }
 
 .fw-ver-big {
-    font-size: 34px;
+    font-size: 32px;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -115,7 +123,7 @@
 }
 
 .fw-ver-big.has-update {
-    color: var(--wr-c);
+    color: var(--accent);
 }
 
 .fw-ver-cur {
@@ -131,7 +139,7 @@
 }
 
 .fw-update-body {
-    padding: 18px 24px 22px;
+    padding: 14px 20px 20px;
 }
 
 /* 显示密度：紧凑模式 */
@@ -160,29 +168,28 @@
     padding: 8px 0;
 }
 [data-density="compact"] .fw-hero {
-    padding: 16px 18px 14px;
+    padding: 14px 18px 6px;
 }
 [data-density="compact"] .fw-update-body {
-    padding: 14px 18px 16px;
-}
-[data-density="compact"] .fw-hero-nums {
-    margin-top: 10px;
+    padding: 12px 18px 16px;
 }
 [data-density="compact"] .fw-ver-big {
-    font-size: 28px;
+    font-size: 26px;
 }
 
+/* Windows 提示条：语义 wr 三件套（低透明底 + 同色边 + 实色字） */
 .fw-win-warn {
     font-size: 12px;
     color: var(--wr-c);
-    padding: 10px 14px;
+    padding: 9px 12px;
     border-radius: var(--radius-sm);
     background: var(--wr-bg);
     border: 1px solid var(--wr-bd);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     line-height: 1.5;
 }
 
+/* 工具条：左组（版本选择 + pre 开关）与右组（GitHub 链接 + 更新按钮）基线对齐 */
 .fw-toolbar {
     display: flex;
     align-items: center;
@@ -199,8 +206,21 @@
     flex-wrap: wrap;
 }
 
+.fw-toolbar .settings-select {
+    min-width: 170px;
+}
+
 .fw-toolbar .ep-select {
     min-width: 200px;
+}
+
+/* pre 开关组：开关与 --pre 标签合并为单一命中区 */
+.fw-pre-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .fw-pre-label {
@@ -212,23 +232,18 @@
 .fw-toolbar-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     margin-left: auto;
 }
 
+/* GitHub 链接：ghost 小按钮（.btn-secondary 承载主样式，此处仅补充锚点重置） */
 .fw-gh-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--tx-s);
     text-decoration: none;
     white-space: nowrap;
 }
 
-.fw-gh-link:hover {
-    color: var(--tx-p);
-    text-decoration: underline;
+.fw-gh-link svg {
+    flex-shrink: 0;
 }
 
 /* 发行说明 */
@@ -236,6 +251,43 @@
     font-size: 13px;
 }
 
+/* 加载态：骨架占位（bg-s 块 + 呼吸动画），优先于文字 spinner */
+.fw-skel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 6px 0 10px;
+}
+
+.fw-skel-line {
+    height: 12px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-s);
+    animation: fw-skel-pulse 1.4s ease-in-out infinite;
+}
+
+.fw-skel-line:first-child {
+    width: 36%;
+    height: 16px;
+}
+
+@keyframes fw-skel-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-skel-line {
+        animation: none;
+    }
+}
+
+/* 回退态（无发行说明）：链接引导 */
 .fw-notes-loading {
     padding: 24px 0;
     text-align: center;
@@ -480,21 +532,21 @@
 
 .fw-notes code {
     font-size: 12px;
-    background: color-mix(in srgb, var(--accent) 8%, var(--bg-p));
+    background: var(--bg-s);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
     color: var(--tx-p);
 }
 
 .fw-notes pre {
     font-size: 12px;
-    background: var(--bg-p);
+    background: var(--bg-s);
     padding: 12px 14px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow-x: auto;
     margin: 8px 0;
-    border: 1px solid color-mix(in srgb, var(--bd) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
     line-height: 1.45;
 }
 
@@ -538,9 +590,11 @@
 }
 
 @media (max-width: 768px) {
+    .fw-update-card .card-header {
+        flex-wrap: wrap;
+    }
     .fw-hero-nums {
         gap: 24px;
-        margin-top: 12px;
     }
     .fw-ver-big {
         font-size: 26px;

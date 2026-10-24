@@ -485,3 +485,364 @@
         min-height: 40px;
     }
 }
+
+/* ══════════ 模块已注册命令清单（模块卡展开详情） ══════════ */
+.modcmd-item {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+.modcmd-item strong {
+    flex-shrink: 0;
+}
+
+.modcmd-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+    min-width: 0;
+}
+
+.modcmd-list.modcmd-pending::after {
+    content: "…";
+    color: var(--tx-t);
+}
+
+.modcmd-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.modcmd-name {
+    font-size: 11px;
+}
+
+.modcmd-badge {
+    font-size: 10px;
+    padding: 1px 7px;
+    flex-shrink: 0;
+}
+
+.modcmd-aliases {
+    color: var(--tx-t);
+    font-size: 11px;
+}
+
+.modcmd-help {
+    color: var(--tx-t);
+    font-size: 11px;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ══════════ 资源归属审计（监控/诊断页） ══════════ */
+.ownership-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ownership-head-spacer {
+    flex: 1;
+}
+
+/* 孤儿 owner 警告行（wr 语义色三件套） */
+.ownership-orphan-warn {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: var(--wr-bg);
+    border: 1px solid var(--wr-bd);
+    color: var(--wr-c);
+    font-size: 12.5px;
+}
+
+.ownership-orphan-warn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ownership-orphan-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ownership-orphan-text strong {
+    font-weight: 600;
+}
+
+.ownership-table-wrap {
+    overflow-x: auto;
+    border: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.ownership-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 1.6fr) repeat(7, minmax(56px, 0.6fr));
+    gap: 10px;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 45%, transparent);
+    font-size: 12.5px;
+    transition: background 0.15s var(--ease-smooth);
+}
+
+.ownership-row:last-child {
+    border-bottom: none;
+}
+
+.ownership-row:not(.ownership-head):hover {
+    background: var(--bg-s);
+}
+
+.ownership-row.ownership-head {
+    color: var(--tx-t);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px 16px;
+    background: color-mix(in srgb, var(--bg-s) 55%, transparent);
+}
+
+.ownership-row > span {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--tx-s);
+}
+
+.ownership-row .ownership-owner {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    color: var(--tx-p);
+    font-weight: 500;
+    font-family: var(--font-mono, monospace);
+    font-size: 11.5px;
+}
+
+.ownership-row .ownership-other {
+    color: var(--tx-t);
+}
+
+.ownership-row.is-orphan .ownership-owner {
+    color: var(--wr-c);
+}
+
+.ownership-orphan-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--wr-c);
+    flex-shrink: 0;
+}
+
+/* ══════════ 影子测试模态 ══════════ */
+.shadow-modal {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.shadow-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.shadow-modal-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--tx-p);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shadow-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bd);
+    background: var(--bg-s);
+    color: var(--tx-s);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+        border-color 0.15s var(--ease-smooth),
+        color 0.15s var(--ease-smooth);
+}
+
+.shadow-modal-close:hover {
+    border-color: var(--bd-h);
+    color: var(--tx-p);
+}
+
+.shadow-modal-close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.shadow-modal-desc {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--tx-s);
+}
+
+.shadow-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    flex-wrap: wrap;
+}
+
+.shadow-state-chip {
+    flex-shrink: 0;
+}
+
+.shadow-owner-name {
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    color: var(--tx-p);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shadow-start-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.shadow-start-row .ep-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.shadow-diff-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.shadow-diff-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.shadow-diff-count {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.shadow-diff-pre {
+    margin: 0;
+    padding: 12px 14px;
+    max-height: 260px;
+    overflow: auto;
+    border-radius: var(--radius-md);
+    background: var(--bg-s);
+    border: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--tx-s);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.shadow-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 影子源 whl 上传区（与手填路径方式并列） */
+.shadow-upload-sec {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--bd) 60%, transparent);
+}
+
+.shadow-upload-label {
+    font-size: 12px;
+    color: var(--tx-t);
+}
+
+.shadow-upload-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.shadow-upload-fname {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--tx-s);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shadow-upload-progress {
+    margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+    .shadow-start-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .shadow-upload-row {
+        align-items: stretch;
+    }
+
+    .shadow-upload-row .btn {
+        justify-content: center;
+    }
+
+    .shadow-upload-fname {
+        white-space: normal;
+    }
+
+    .ownership-row {
+        grid-template-columns: minmax(120px, 1.4fr) repeat(7, minmax(52px, 0.6fr));
+        gap: 6px;
+        padding: 8px 10px;
+    }
+}

@@ -400,3 +400,179 @@ export async function clearLifecycle() {
   loadLifecycle();
 }
 
+// ════════════════ 服务端日志导出（sdk.logger.save_logs → 临时文件 → FileResponse） ════════════════
+
+export async function exportServerLogs() {
+  try {
+    const tk = localStorage.getItem(TK);
+    const resp = await fetch(API + "/api/logs/export", {
+      headers: tk ? { Authorization: "Bearer " + tk } : {},
+    });
+    if (!resp.ok) {
+      let msg = "";
+      try {
+        const j = await resp.json();
+        msg = j && j.error ? j.error : "";
+      } catch (e) {}
+      if (resp.status === 404) msg = t("no_logs");
+      toast(msg || t("server_error") + " (" + resp.status + ")", "er");
+      return;
+    }
+    // 文件名优先取响应头（后端已按日期命名），缺失时本地补齐
+    const cd = resp.headers.get("Content-Disposition") || "";
+    let name = "";
+    const mStar = cd.match(/filename\*=UTF-8''([^;]+)/i);
+    const mPlain = cd.match(/filename="([^"]+)"/);
+    if (mStar) name = decodeURIComponent(mStar[1]);
+    else if (mPlain) name = mPlain[1];
+    if (!name) {
+      const p = (n) => String(n).padStart(2, "0");
+      const now = new Date();
+      name =
+        "erispulse-logs-" +
+        now.getFullYear() +
+        "-" +
+        p(now.getMonth() + 1) +
+        "-" +
+        p(now.getDate()) +
+        ".log";
+    }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast(t("logs_export_ok"), "ok");
+  } catch (e) {
+    toast(t("logs_export_failed"), "er");
+  }
+}
+
+// ════════════════ 实时连接面板（连接注册表 list + stats） ════════════════
+
+export async function loadConnections() {
+  const listEl = document.getElementById("connList");
+  if (!listEl) return;
+  const statsEl = document.getElementById("connStatsRow");
+  const countEl = document.getElementById("connTotalCount");
+  const unsupportedEl = document.getElementById("connUnsupported");
+  const d = await api("/api/connections");
+
+  // 旧 SDK 无 connections 模块：显示不支持态（与归属审计 tab 同构）
+  if (!d || d.supported === false) {
+    listEl.innerHTML = "";
+    if (statsEl) statsEl.innerHTML = "";
+    if (countEl) countEl.textContent = "0";
+    if (unsupportedEl) {
+      unsupportedEl.innerHTML = "<p>" + esc(t("conn_unsupported")) + "</p>";
+      unsupportedEl.style.display = "";
+    }
+    return;
+  }
+  if (unsupportedEl) unsupportedEl.style.display = "none";
+
+  const conns = d.connections || [];
+  const stats = d.stats || {};
+  if (countEl)
+    countEl.textContent = String(
+      stats.total !== undefined ? stats.total : conns.length,
+    );
+
+  // stats 概览行：总数 / 各 kind / 命名空间数 / 分组数
+  if (statsEl) {
+    const byKind = stats.by_kind || {};
+    const nsNames = Object.keys(stats.by_namespace || {}).length;
+    const groupNames = Object.keys(stats.groups || {}).length;
+    const cells = [
+      [t("conn_stat_total"), stats.total !== undefined ? stats.total : conns.length],
+      ["server", byKind.server || 0],
+      ["client", byKind.client || 0],
+      ["sse", byKind.sse || 0],
+      [t("conn_stat_namespaces"), nsNames],
+      [t("conn_stat_groups"), groupNames],
+    ];
+    statsEl.innerHTML = cells
+      .map(function (c) {
+        return (
+          '<div class="conn-stat-cell"><span class="conn-stat-val">' +
+          esc(String(c[1])) +
+          '</span><span class="conn-stat-label">' +
+          esc(c[0]) +
+          "</span></div>"
+        );
+      })
+      .join("");
+  }
+
+  if (conns.length === 0) {
+    listEl.innerHTML =
+      '<div class="empty-state"><p>' + esc(t("conn_empty")) + "</p></div>";
+    return;
+  }
+
+  // kind 语义 chip：server=sc / client=pr / sse=ok
+  var kindClass = { server: "chip-sc", client: "chip-pr", sse: "chip-ok" };
+  listEl.innerHTML = conns
+    .map(function (c) {
+      var kind = c.kind || "server";
+      var kindCls = kindClass[kind] || "chip-sc";
+      var groupsTxt = c.groups && c.groups.length ? esc(c.groups.join(", ")) : "";
+      var ownerTxt = c.owner || "-";
+      return (
+        '<div class="conn-row">' +
+        '<span class="conn-id" title="' +
+        esc(c.id || "") +
+        '">' +
+        esc(c.id || "") +
+        "</span>" +
+        '<span class="conn-ns">' +
+        esc(c.namespace || ownerTxt) +
+        "</span>" +
+        '<span class="chip ' +
+        kindCls +
+        ' conn-kind-chip">' +
+        esc(kind) +
+        "</span>" +
+        '<span class="conn-owner" title="' +
+        esc(t("conn_owner")) +
+        '">' +
+        esc(ownerTxt) +
+        "</span>" +
+        '<span class="conn-groups"' +
+        (groupsTxt ? ' title="' + groupsTxt + '"' : "") +
+        ">" +
+        (groupsTxt || "-") +
+        "</span>" +
+        '<button class="btn btn-secondary btn-xs conn-close-btn" onclick="closeConnection(\'' +
+        esc(c.id || "") +
+        "')\">" +
+        esc(t("conn_disconnect")) +
+        "</button>" +
+        "</div>"
+      );
+    })
+    .join("");
+}
+
+export async function closeConnection(id) {
+  const ok = await confirm2(
+    t("conn_disconnect_title"),
+    t("conn_disconnect_confirm").replace("{id}", id),
+  );
+  if (!ok) return;
+  const d = await api("/api/connections/close", {
+    method: "POST",
+    body: JSON.stringify({ id: id }),
+  });
+  if (d && d.success) {
+    toast(t("conn_disconnect_ok"), "ok");
+  } else {
+    toast((d && d.error) || t("conn_disconnect_failed"), "er");
+  }
+  loadConnections();
+}
+

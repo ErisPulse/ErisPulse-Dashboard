@@ -178,10 +178,88 @@
     color: var(--sc-c);
 }
 
+/* kind 徽标三色语义：http=pr / ws=sc / sse=ok */
+.method-http {
+    background: var(--pr-bg);
+    color: var(--pr-c);
+}
+
+.method-sse {
+    background: var(--ok-bg);
+    color: var(--ok-c);
+}
+
 .method-options,
 .method-head {
     background: var(--bg-s);
     color: var(--tx-s);
+}
+
+/* 路由完整 URL：path 下方小字提示（get_module_urls 派生，缺省不渲染） */
+.route-url {
+    display: block;
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 10.5px;
+    color: var(--tx-t);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 460px;
+}
+
+/* ════════════════ 首页健康行（loadHealthStatus 注入） ════════════════ */
+/* 渲染语境：性能卡 .perf-health 区（原独立系统状态卡已并入，容器样式见 dashboard.css） */
+
+.health-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s var(--ease-smooth);
+    min-width: 0;
+}
+
+.health-row:hover {
+    background: var(--bg-s);
+}
+
+/* 状态标识：静态色点（全站纪律：状态点禁止脉冲动画） */
+.health-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.health-dot.is-ok {
+    background: var(--ok-c);
+}
+
+.health-dot.is-warn {
+    background: var(--wr-c);
+}
+
+.health-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+    flex-shrink: 0;
+}
+
+.health-sub {
+    flex: 1;
+    min-width: 0;
+    font-size: 11.5px;
+    color: var(--tx-t);
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.health-row .chip {
+    flex-shrink: 0;
 }
 
 /* ════════════════ 响应式 ════════════════ */

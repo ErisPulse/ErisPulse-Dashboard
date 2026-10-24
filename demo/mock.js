@@ -348,6 +348,21 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         });
     };
 
+    API_MAP['/api/health'] = function () {
+        // 形状对齐真实后端 ApiObservability._api_health：{storage, adapters, modules, router, detail}
+        return _json({
+            storage: true,
+            adapters: true,
+            modules: true,
+            router: true,
+            detail: {
+                storage: { backend: 'MockStorage' },
+                adapters: { total: 3, started: 3, online_bots: 5 },
+                modules: { loaded: 7 },
+            },
+        });
+    };
+
     API_MAP['/api/audit'] = function () { return _json({ logs: _genAudit(20) }); };
     API_MAP['/api/audit/clear'] = function () { return _json({ success: true }); };
 

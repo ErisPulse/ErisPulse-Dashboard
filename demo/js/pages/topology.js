@@ -18,6 +18,47 @@ var _topoTipW = 0;
 var _topoTipH = 0;
 var _topoThemeTimer = 0;
 var _topoMql = null;
+var _topoFitPending = false;   // 移动端首次布局收敛后待执行的 fit-view
+var _topoMobileFit = false;    // 移动端 fit 模式（画布宽 <600px 自动适配后启用，放宽标签阈值）
+var _topoUserViewed = false;   // 用户是否已手动平移/缩放（是则不再自动 fit，尊重用户视图）
+
+// 窄屏判定：以画布容器宽为准（移动端竖屏与小窗口均命中；桌面宽容器不受影响）
+function _topoIsNarrow() {
+  var canvas = document.getElementById("topoCanvas");
+  return !!(canvas && canvas.parentElement && canvas.parentElement.clientWidth < 600);
+}
+
+// fit-view：遍历节点 bounding box，缩放并居中使全部节点可见
+// （scale 下限 0.15 / 上限 1；低缩放时额外留出标签宽度）
+export function _topoFitView() {
+  var canvas = document.getElementById("topoCanvas");
+  if (!canvas || !_topoGraph.nodes.length) return;
+  var wrap = canvas.parentElement;
+  var w = wrap.clientWidth;
+  var h = canvas.clientHeight || 560;
+  var nodes = _topoGraph.nodes;
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (var i = 0; i < nodes.length; i++) {
+    var nd = nodes[i];
+    var m = _topoNodeRadius(nd) + 10; // 节点半径 + 描边余量
+    if (nd.x - m < minX) minX = nd.x - m;
+    if (nd.x + m > maxX) maxX = nd.x + m;
+    if (nd.y - m < minY) minY = nd.y - m;
+    if (nd.y + m > maxY) maxY = nd.y + m;
+  }
+  var bw = maxX - minX;
+  var bh = maxY - minY;
+  if (bw <= 0 || bh <= 0) return;
+  var k = Math.min(w / bw, h / bh);
+  k = Math.max(0.15, Math.min(1, k));
+  // 低缩放区间标签以屏幕常驻字号绘制，按比例收缩留出标签空间
+  if (k < 0.3) k *= 0.78;
+  k = Math.max(0.15, k);
+  var cx = (minX + maxX) / 2;
+  var cy = (minY + maxY) / 2;
+  _topoView = { x: -cx * k, y: -cy * k, k: k };
+  _topoDraw(0);
+}
 
 function _topoT(key, zh, en) {
   // i18n 词条缺失时的兜底文案（语言包文件不在本页可编辑范围）
@@ -180,6 +221,9 @@ export function _topoTypeLabel(type) {
 export function _topoRebuild(reset) {
   var canvas = document.getElementById("topoCanvas");
   if (!canvas) return;
+  // 移动端首次布局（画布尚无节点）或显式重排：布局收敛后自动 fit-view；
+  // 增量刷新（已有节点）不改变视图
+  _topoFitPending = _topoIsNarrow() && (reset || _topoGraph.nodes.length === 0);
   var showRes = document.getElementById("topoShowCommands");
   var showScope = document.getElementById("topoShowScope");
   var showDep = document.getElementById("topoShowDepends");
@@ -448,6 +492,14 @@ export function _startTopoSim() {
         else _topoSim.still = 0;
         if (_topoSim.ticks >= _topoMaxTicks() || _topoSim.still >= 30) _topoSim.settled = true;
       }
+      // 首次布局收敛后执行待定的移动端 fit-view（节点位置已定，bbox 才有意义）
+      if (_topoSim.settled && _topoFitPending) {
+        _topoFitPending = false;
+        if (_topoIsNarrow() && !_topoUserViewed) {
+          _topoMobileFit = true;
+          _topoFitView();
+        }
+      }
       _topoDraw(ts || 0);
       // 布局已定格且无流动动画 → 停止常驻循环，之后由交互事件按需单帧重绘
       if (_topoSim.settled && !_topoFlowOn) {
@@ -694,9 +746,13 @@ export function _topoDraw(ts) {
 
   var nodes = _topoGraph.nodes;
   var total = nodes.length;
-  // 缩放过深/图过大时隐藏小节点标签，主节点标签低缩放仍保留
-  var showSmallLabels = k >= 0.65 && total <= 240;
-  var showMainLabels = k >= 0.3;
+  // 缩放过深/图过大时隐藏小节点标签，主节点标签低缩放仍保留；
+  // 移动端 fit 模式放宽阈值（fit 后 scale 常落在 0.12-0.3 区间），保证缩小后标签默认全显示
+  var showSmallLabels = k >= (_topoMobileFit ? 0.12 : 0.65) && total <= 240;
+  var showMainLabels = k >= (_topoMobileFit ? 0.2 : 0.3);
+  // fit 模式低缩放下按 1/k 补偿字号（封顶 5 倍），标签在屏幕上保持常驻可读；
+  // 桌面端（非 fit 模式）字号仍随缩放缩小，行为不变
+  var lblScale = _topoMobileFit && k < 0.3 ? Math.min(1 / k, 5) : 1;
   for (i = 0; i < total; i++) {
     var node = nodes[i];
     var nx = node.x;
@@ -736,16 +792,18 @@ export function _topoDraw(ts) {
       node._lbl = lbl;
     }
     ctx.globalAlpha = dim ? 0.12 : 0.95;
-    ctx.font = isMain ? "600 11px sans-serif" : "10px sans-serif";
+    ctx.font = isMain
+      ? "600 " + Math.round(11 * lblScale) + "px sans-serif"
+      : Math.round(10 * lblScale) + "px sans-serif";
     ctx.textAlign = "center";
     var tw = ctx.measureText(lbl).width;
-    var ly = ny + r + 12;
+    var ly = ny + r + 12 * lblScale;
     ctx.fillStyle = _topoColors.surface;
     ctx.globalAlpha = dim ? 0.12 : 0.75;
-    ctx.fillRect(nx - tw / 2 - 4, ly - 8, tw + 8, 13);
+    ctx.fillRect(nx - tw / 2 - 4 * lblScale, ly - 8 * lblScale, tw + 8 * lblScale, 13 * lblScale);
     ctx.globalAlpha = dim ? 0.12 : 0.95;
     ctx.fillStyle = _topoColors.text;
-    ctx.fillText(lbl, nx, ly + 2);
+    ctx.fillText(lbl, nx, ly + 2 * lblScale);
   }
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -813,6 +871,7 @@ export function _topoBindEvents() {
       _topoDrag.y = pos.y;
       _startTopoSim();
     } else if (_topoPanning && canvas._panStart) {
+      _topoUserViewed = true; // 手动平移后不再自动 fit，尊重用户视图
       _topoView.x = canvas._panStart.vx + (ev.clientX - canvas._panStart.x);
       _topoView.y = canvas._panStart.vy + (ev.clientY - canvas._panStart.y);
       _topoDraw();
@@ -838,6 +897,7 @@ export function _topoBindEvents() {
   });
   canvas.addEventListener("wheel", function (ev) {
     ev.preventDefault();
+    _topoUserViewed = true; // 手动缩放后不再自动 fit
     var factor = ev.deltaY < 0 ? 1.12 : 0.9;
     var newK = Math.max(0.15, Math.min(3.5, _topoView.k * factor));
     var rect = canvas.getBoundingClientRect();
@@ -853,7 +913,10 @@ export function _topoBindEvents() {
     _topoDraw();
   }, { passive: false });
   canvas.addEventListener("dblclick", function () {
-    _topoView = { x: 0, y: 0, k: 1 };
+    _topoUserViewed = true;
+    // 窄屏双击复位 = 重新 fit-view；桌面端保持复位到默认视图
+    if (_topoIsNarrow()) _topoFitView();
+    else _topoView = { x: 0, y: 0, k: 1 };
     _topoDraw();
   });
   canvas.addEventListener("mouseleave", function () {
@@ -902,6 +965,7 @@ export function _topoBindEvents() {
 
   canvas.addEventListener("touchmove", function (ev) {
     if (ev.touches.length === 2 && canvas._pinch) {
+      _topoUserViewed = true; // 双指缩放后不再自动 fit
       var a = ev.touches[0];
       var b = ev.touches[1];
       var p = canvas._pinch;
@@ -934,6 +998,7 @@ export function _topoBindEvents() {
         _startTopoSim();
         ev.preventDefault();
       } else if (_topoPanning && canvas._panStart) {
+        _topoUserViewed = true; // 手动平移后不再自动 fit，尊重用户视图
         _topoView.x = canvas._panStart.vx + (tch.clientX - canvas._panStart.x);
         _topoView.y = canvas._panStart.vy + (tch.clientY - canvas._panStart.y);
         _topoDraw();
@@ -958,7 +1023,10 @@ export function _topoBindEvents() {
     if (moved < 10) {
       var now = Date.now();
       if (now - (canvas._lastTap || 0) < 300) {
-        _topoView = { x: 0, y: 0, k: 1 };
+        _topoUserViewed = true;
+        // 窄屏双击复位 = 重新 fit-view；宽屏保持复位到默认视图
+        if (_topoIsNarrow()) _topoFitView();
+        else _topoView = { x: 0, y: 0, k: 1 };
         _topoDraw();
         canvas._lastTap = 0;
       } else {
@@ -1129,5 +1197,17 @@ export function _topoStopSim() {
 }
 
 window.addEventListener("resize", function () {
-  if (_topoIsVisible(document.getElementById("topoCanvas"))) _topoDraw();
+  var canvas = document.getElementById("topoCanvas");
+  if (!_topoIsVisible(canvas)) return;
+  // 窄屏（含旋转方向变化）：用户未手动交互过视图时重新 fit；
+  // 回到宽屏则退出 fit 模式（标签阈值回到桌面档），视图位置不动
+  if (_topoIsNarrow()) {
+    if (!_topoUserViewed && _topoGraph.nodes.length) {
+      _topoMobileFit = true;
+      _topoFitView();
+    }
+  } else {
+    _topoMobileFit = false;
+  }
+  _topoDraw();
 });;

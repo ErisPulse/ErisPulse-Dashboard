@@ -766,6 +766,8 @@ export async function fmEditFile(path) {
         "Ctrl-S": function (cm) { fmSaveFile(); },
       },
     });
+    // 设置页编辑器偏好（主题/字号/缩进）需要触达实例，模块私有变量经 window 暴露
+    window._fmEditor = _fmEditor;
     // 词法补全：输入单词字符 800ms 后自动弹出（Esc/点选关闭）
     let hintTimer = null;
     _fmEditor.on("inputRead", function (cm, change) {

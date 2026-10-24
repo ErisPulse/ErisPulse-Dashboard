@@ -46,6 +46,13 @@ export function toggleLang() {
       dashboard: window.refreshDashboard,
       bots: loadBots,
       "event-stream": loadEvents,
+      transcript: function () {
+        // 会话收件箱：动态加载页面模块并挂载到 window（与 router.js 的 go() loader 一致）
+        return import("../pages/transcript.js").then(function (m) {
+          Object.assign(window, m);
+          return m.loadTranscript();
+        });
+      },
       "module-mgmt": loadModules,
       adapter: loadAdapterConfigPage,
       store: function () {

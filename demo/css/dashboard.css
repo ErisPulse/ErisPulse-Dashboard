@@ -169,6 +169,37 @@
     margin-bottom: 14px;
 }
 
+/* ── 性能卡右栏：上下两段——指标格（上）+ 健康行区（下）──
+   原独立"系统状态卡"已并入性能卡；健康行渲染目标 #dashHealthRows 不变 */
+.perf-side {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 健康项并入指标格同一网格：与 perf-extra-cell 同语言（无胶囊无大色点），
+   语义色仅用于状态字；异常格加 wr 色左边条点缀 */
+.perf-health {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 14px;
+    min-width: 0;
+}
+
+.perf-health .health-cell.is-abnormal {
+    box-shadow: inset 2px 0 0 var(--wr-c);
+}
+
+.health-state.is-ok {
+    color: var(--ok-c);
+}
+
+.health-state.is-warn {
+    color: var(--wr-c);
+}
+
 .perf-card .card-body.perf-card-body {
     display: flex;
     flex-direction: row;
@@ -268,9 +299,9 @@
 }
 
 /* ── 轻量指标格：2 列自适应小格（label 上 / value 下），格间 14px gap，无通栏分隔线 ── */
-/* ── 轻量指标格：居右铺满剩余宽度（auto-fit 4-5 列自适应小格，无分隔线） ── */
+/* ── 轻量指标格：居右铺满剩余宽度（auto-fit 4-5 列自适应小格，无分隔线）──
+   处于 .perf-side 纵向 flex 内，宽度由 stretch 铺满，不再自占 flex:1 */
 .perf-extra {
-    flex: 1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
     gap: 14px;

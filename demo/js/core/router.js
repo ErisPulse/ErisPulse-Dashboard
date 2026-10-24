@@ -119,6 +119,13 @@ export function go(name, el, opts) {
     "event-stream": function () {
       loadEvents();
     },
+    transcript: function () {
+      // 会话收件箱：动态加载页面模块并挂载到 window（拉取式页面，无 WS 推送）
+      return import("../pages/transcript.js").then(function (m) {
+        Object.assign(window, m);
+        return m.loadTranscript();
+      });
+    },
     "module-mgmt": loadModules,
     adapter: loadAdapterConfigPage,
     store: function () {

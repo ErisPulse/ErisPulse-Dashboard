@@ -1,30 +1,81 @@
 // ErisPulse Dashboard – pages/api-routes (auto-split from dash.js)
 
+import {
+  refreshDashboard as _dashboardRefresh,
+  loadPerformance,
+} from "./dashboard.js";
+
 export async function loadApiRoutes() {
   const d = await api("/api/routes");
   if (!d) return;
 
-  const httpRoutes = d.http_routes || [];
-  const wsRoutes = d.ws_routes || [];
-
-  document.getElementById("httpRouteCount").textContent = httpRoutes.length;
-  document.getElementById("wsRouteCount").textContent = wsRoutes.length;
-
   var groups = {};
 
-  httpRoutes.forEach(function (r) {
-    var m = r.module || "System";
-    if (!groups[m]) groups[m] = { http: [], ws: [] };
-    groups[m].http.push(r);
-  });
+  // 主路径：kind 分组数据（list_namespaces + get_module_routes/urls 派生）
+  if (d.namespaces && typeof d.namespaces === "object") {
+    Object.keys(d.namespaces).forEach(function (ns) {
+      var kinds = d.namespaces[ns] || {};
+      groups[ns] = {
+        http: (kinds.http || []).map(function (row) {
+          return {
+            paths: [row.path || ""],
+            methods: (row.methods || []).slice(),
+            url: row.url || "",
+          };
+        }),
+        websocket: (kinds.websocket || []).map(function (row) {
+          return { path: row.path || "", url: row.url || "", auth: !!row.auth };
+        }),
+        sse: (kinds.sse || []).map(function (row) {
+          return { path: row.path || "", url: row.url || "" };
+        }),
+      };
+    });
+  } else {
+    // 回退：旧版扁平字段（集群旧节点 / demo mock 等旧数据源）
+    const httpRoutes = d.http_routes || [];
+    const wsRoutes = d.ws_routes || [];
+    httpRoutes.forEach(function (r) {
+      var m = r.module || "System";
+      if (!groups[m]) groups[m] = { http: [], websocket: [], sse: [] };
+      groups[m].http.push({
+        paths: [r.full_path || r.path || ""],
+        methods: [r.method || "GET"],
+        url: "",
+      });
+    });
+    wsRoutes.forEach(function (r) {
+      var m = r.module || "System";
+      if (!groups[m]) groups[m] = { http: [], websocket: [], sse: [] };
+      groups[m].websocket.push({
+        path: r.full_path || r.path || "",
+        url: "",
+        auth: !!r.has_auth,
+      });
+    });
+  }
 
-  wsRoutes.forEach(function (r) {
-    var m = r.module || "System";
-    if (!groups[m]) groups[m] = { http: [], ws: [] };
-    groups[m].ws.push(r);
+  // 头部计数（HTTP 按方法行计数，与表格行数一致）
+  var httpCount = 0,
+    wsCount = 0,
+    sseCount = 0;
+  Object.keys(groups).forEach(function (ns) {
+    groups[ns].http.forEach(function (r) {
+      httpCount += Math.max(r.methods.length, 1);
+    });
+    wsCount += groups[ns].websocket.length;
+    sseCount += groups[ns].sse.length;
   });
+  document.getElementById("httpRouteCount").textContent = httpCount;
+  document.getElementById("wsRouteCount").textContent = wsCount;
+  var sseEl = document.getElementById("sseRouteCount");
+  if (sseEl) sseEl.textContent = sseCount;
 
-  var moduleNames = Object.keys(groups).sort(function (a, b) {
+  var moduleNames = Object.keys(groups).filter(function (ns) {
+    var g = groups[ns];
+    return g.http.length + g.websocket.length + g.sse.length > 0;
+  });
+  moduleNames.sort(function (a, b) {
     if (a === "System") return 1;
     if (b === "System") return -1;
     return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -42,14 +93,12 @@ export async function loadApiRoutes() {
 
   var html = "";
 
-  moduleNames.forEach(function (mod, idx) {
+  moduleNames.forEach(function (mod) {
     var g = groups[mod];
-    var totalRoutes = g.http.length + g.ws.length;
-    if (totalRoutes === 0) return;
+    var totalRoutes = g.http.length + g.websocket.length + g.sse.length;
 
     html += '<div class="card route-group-card collapsed">';
-    html +=
-      '<div class="card-header" onclick="toggleRouteGroup(this)">';
+    html += '<div class="card-header" onclick="toggleRouteGroup(this)">';
     html +=
       '<svg class="route-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
     html += '<span class="route-group-name">' + esc(mod) + "</span>";
@@ -62,11 +111,16 @@ export async function loadApiRoutes() {
         '<span class="chip chip-pr" style="margin:0">' +
         g.http.length +
         " HTTP</span>";
-    if (g.ws.length > 0)
+    if (g.websocket.length > 0)
       html +=
         '<span class="chip chip-sc" style="margin:0">' +
-        g.ws.length +
+        g.websocket.length +
         " WS</span>";
+    if (g.sse.length > 0)
+      html +=
+        '<span class="chip chip-ok" style="margin:0">' +
+        g.sse.length +
+        " SSE</span>";
     html += "</div>";
 
     // 表格化：sticky 表头 + 行 hover + 方法徽标胶囊
@@ -77,33 +131,59 @@ export async function loadApiRoutes() {
       "</tr></thead><tbody>";
 
     g.http.forEach(function (r) {
-      var mc = methodColor[r.method] || "method-get";
-      html += '<tr class="route-row">';
-      html += '<td class="td-method"><span class="method-badge ' + mc + '">' + esc(r.method) + "</span></td>";
-      html += '<td class="td-path"><code class="route-path">' + esc(r.full_path) + "</code></td>";
-      html +=
-        '<td class="td-action"><button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' +
-        esc(r.method) +
-        "','" +
-        esc(r.full_path) +
-        "')\">" +
-        t("test") +
-        "</button></td>";
-      html += "</tr>";
+      r.methods.forEach(function (method, mi) {
+        var mc = methodColor[method] || "method-get";
+        var path = r.paths[0] || "";
+        html += '<tr class="route-row">';
+        html +=
+          '<td class="td-method"><span class="method-badge ' +
+          mc +
+          '">' +
+          esc(method) +
+          "</span></td>";
+        html +=
+          '<td class="td-path"><code class="route-path">' +
+          esc(path) +
+          "</code>" +
+          (mi === 0 && r.url
+            ? '<span class="route-url" title="' + esc(r.url) + '">' + esc(r.url) + "</span>"
+            : "") +
+          "</td>";
+        html +=
+          '<td class="td-action"><button class="btn btn-secondary btn-xs" onclick="openRouteTest(\'' +
+          esc(method) +
+          "','" +
+          esc(path) +
+          "')\">" +
+          t("test") +
+          "</button></td>";
+        html += "</tr>";
+      });
     });
 
-    g.ws.forEach(function (r) {
-      var authBadge = r.has_auth
+    g.websocket.forEach(function (r) {
+      var authBadge = r.auth
         ? '<span class="chip chip-wr">' + t("requires_auth") + "</span>"
         : "";
       html += '<tr class="route-row">';
-      html += '<td class="td-method"><span class="method-badge method-ws">WS</span></td>';
+      html +=
+        '<td class="td-method"><span class="method-badge method-ws">WS</span></td>';
       html +=
         '<td class="td-path"><code class="route-path">' +
-        esc(r.full_path) +
+        esc(r.path) +
         "</code>" +
         authBadge +
         "</td>";
+      html += '<td class="td-action"></td>';
+      html += "</tr>";
+    });
+
+    g.sse.forEach(function (r) {
+      html += '<tr class="route-row">';
+      html +=
+        '<td class="td-method"><span class="method-badge method-sse">SSE</span></td>';
+      html +=
+        '<td class="td-path"><code class="route-path">' + esc(r.path) + "</code></td>";
       html += '<td class="td-action"></td>';
       html += "</tr>";
     });
@@ -250,13 +330,96 @@ export async function loadMessageStats() {
     ":00</span></div>";
 }
 
-const _originalRefreshDashboard = window.refreshDashboard;;
+// ════════════════ 首页系统状态区（/api/health 健康行） ════════════════
 
-window.refreshDashboard = async function () {
-  await _originalRefreshDashboard();
+var _lastStorageOk = null;
+
+// 健康项 = 与指标格同语言的小格（label 上 / 状态值下），语义色仅用于状态字与异常点缀，
+// 不再用胶囊/大色点——与 perf-extra 视觉统一
+function _healthCell(name, ok, sub, err) {
+  var okText = esc(t("health_ok"));
+  var badText = esc(t("health_abnormal"));
+  var stateVal = ok ? okText : badText;
+  var titleAttr = err ? ' title="' + esc(err) + '"' : "";
+  var subHtml = sub
+    ? '<div class="perf-extra-label"' + titleAttr + ">" + esc(sub) + "</div>"
+    : "";
+  return (
+    '<div class="perf-extra-cell health-cell' +
+    (ok ? "" : " is-abnormal") +
+    '">' +
+    '<div class="perf-extra-label">' +
+    esc(name) +
+    "</div>" +
+    '<div class="perf-extra-val health-state' +
+    (ok ? " is-ok" : " is-warn") +
+    '"' +
+    titleAttr +
+    ">" +
+    stateVal +
+    "</div>" +
+    subHtml +
+    "</div>"
+  );
+}
+
+export async function loadHealthStatus() {
+  const el = document.getElementById("dashHealthRows");
+  if (!el) return;
+  const d = await api("/api/health");
+  if (!d || typeof d.storage === "undefined") {
+    el.innerHTML =
+      '<div class="empty-state"><p>' + esc(t("health_unknown")) + "</p></div>";
+    _lastStorageOk = null;
+    return;
+  }
+
+  // 断连检测：存储状态翻转时 toast（事件流同时经 WS 广播，桌面通知链路自动生效）
+  if (_lastStorageOk === true && !d.storage) {
+    toast(t("health_storage_lost"), "er");
+  } else if (_lastStorageOk === false && d.storage) {
+    toast(t("health_storage_recovered"), "ok");
+  }
+  _lastStorageOk = !!d.storage;
+
+  const detail = d.detail || {};
+  const storageDetail = detail.storage || {};
+  const adapterDetail = detail.adapters || {};
+  const moduleDetail = detail.modules || {};
+
+  var storageSub = storageDetail.backend || "";
+  if (!d.storage && storageDetail.error) {
+    storageSub = (storageSub ? storageSub + " · " : "") + storageDetail.error;
+  }
+  var adapterSub = adapterDetail.total
+    ? adapterDetail.started + " / " + adapterDetail.total
+    : "";
+  var moduleSub = moduleDetail.loaded !== undefined
+    ? String(moduleDetail.loaded)
+    : "";
+
+  el.innerHTML =
+    _healthCell(t("health_storage"), d.storage, storageSub, storageDetail.error || "") +
+    _healthCell(t("health_adapters"), d.adapters, adapterSub, "") +
+    _healthCell(t("health_modules"), d.modules, moduleSub, "") +
+    _healthCell(t("health_router"), d.router, "", "");
+}
+
+// ── refreshDashboard 包装链（首页性能环 / 消息统计 / 系统状态健康行）──
+// 时序契约：main.js 在全部页面模块求值完成后，按 __namespaces 顺序
+// Object.assign(window, ns) 挂载各页面导出，且 m_pages_dashboard 先于
+// m_pages_api_routes。旧实现（本模块体求值期 window.refreshDashboard = 包装）
+// 有两个致命点：求值期 window.refreshDashboard 尚未挂载（_original 拿到
+// undefined），且随后 dashboard 命名空间的赋值会把包装整个覆盖——
+// loadHealthStatus 永远不被调用，首页健康卡停在骨架态。
+// 改为具名导出组合函数：本命名空间在 dashboard 之后安装，组合版必然
+// 最后落位，window.refreshDashboard 即含健康行的完整刷新链。
+export async function refreshDashboard() {
+  await _dashboardRefresh();
   await loadPerformance();
   await loadMessageStats();
-};;
+  await loadHealthStatus();
+}
 
 export function openRouteTest(method, fullPath) {
   _rtMethod = method;

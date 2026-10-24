@@ -340,11 +340,12 @@
         flex-wrap: wrap;
     }
 
+    /* 控制浮层上移：给底部图例条让位 */
     .topo-float-tr {
         left: 10px;
         right: 10px;
         top: auto;
-        bottom: 10px;
+        bottom: 48px;
         max-width: none;
         justify-content: center;
         flex-wrap: wrap;
@@ -352,8 +353,17 @@
         gap: 6px 12px;
     }
 
+    /* 图例移动端保持可见：底部单行胶囊，横向滚动，不再隐藏 */
     .topo-float-bl {
-        display: none;
+        display: flex;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        max-width: none;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 5px 10px;
+        scrollbar-width: thin;
     }
 
     .topo-detail {

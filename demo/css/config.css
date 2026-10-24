@@ -522,3 +522,254 @@
         flex: 0 0 100%;
     }
 }
+
+/* ════════════════ 存储表浏览器（Storage Table Browser）════════════════
+   KV 之上的表级浏览：表清单卡网格 / 数据分页表 / 危险清空。
+   全部走 token，遵守 EP 设计语言（无渐变、无硬编码色值、明暗/透感通用）。 */
+
+/* 工具行：搜索 + 后端徽标 */
+.st-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid var(--bd);
+}
+
+.st-search {
+    flex: 1;
+    max-width: 320px;
+    height: 34px;
+}
+
+.st-toolbar .chip {
+    flex-shrink: 0;
+}
+
+/* 表清单：自适应卡网格 */
+.st-table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    padding: 14px clamp(16px, 2.6vw, 20px);
+}
+
+.st-table-card {
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease-smooth),
+        transform 0.15s var(--ease-smooth);
+}
+
+.st-table-card:hover {
+    border-color: var(--bd-h);
+    transform: translateY(-1px);
+}
+
+.st-table-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.st-table-card-name {
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.st-builtin {
+    flex-shrink: 0;
+    font-size: 10px;
+}
+
+.st-table-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.st-table-card-rows {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.st-table-card-view {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.st-table-card-view:hover {
+    text-decoration: underline;
+}
+
+/* 数据视图头部：返回 / 表名 / 行数 / 清空 */
+.st-view-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid var(--bd);
+}
+
+.st-table-name {
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.st-head-spacer {
+    flex: 1;
+}
+
+/* 数据表：sticky 表头 + 行 hover（与 route-table 同手法） */
+.st-data-scroll {
+    max-height: 55vh;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.st-data-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+}
+
+.st-data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-s);
+    text-align: left;
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--tx-t);
+    padding: 8px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid var(--bd);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.st-data-table td {
+    padding: 8px clamp(16px, 2.6vw, 20px);
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.st-data-table tbody tr {
+    transition: background-color 0.15s var(--ease-smooth);
+}
+
+.st-data-table tbody tr:hover {
+    background: var(--bg-s);
+}
+
+.st-data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.st-cell {
+    color: var(--tx-p);
+}
+
+.st-cell-null {
+    color: var(--tx-t);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.st-cell-blob {
+    display: inline-block;
+    padding: 1px 6px;
+    margin-right: 6px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-s);
+    border: 1px solid var(--bd);
+    font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+    font-size: 10px;
+    color: var(--tx-s);
+}
+
+.st-cell-truncated {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* 分页器 */
+.st-pager {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px clamp(16px, 2.6vw, 20px);
+    border-top: 1px solid var(--bd);
+}
+
+.st-pagesize {
+    width: auto;
+    min-width: 76px;
+}
+
+.st-pager-info {
+    font-size: 12px;
+    color: var(--tx-s);
+}
+
+.st-pager-btns {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.st-pager-btns .btn {
+    min-width: 32px;
+    padding: 4px 8px;
+}
+
+.st-pager-btns .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .st-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .st-table-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .st-view-head {
+        flex-wrap: wrap;
+    }
+
+    .st-data-scroll {
+        max-height: 50vh;
+    }
+}

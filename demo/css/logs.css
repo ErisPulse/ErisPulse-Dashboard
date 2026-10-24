@@ -645,6 +645,139 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* ───────────────────────── 实时连接面板（mon-connections tab） ───────────────────────── */
+
+/* 页面高度链：tab-section > card 已收敛为纵向弹性布局，面板本体吃满剩余高度 */
+.conn-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* stats 概览行：自适应网格（总数 / server / client / sse / 命名空间 / 分组） */
+.conn-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0;
+}
+
+.conn-stat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    background: var(--bg-s);
+    border-radius: var(--radius-sm);
+}
+
+.conn-stat-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--tx-p);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.conn-stat-label {
+    font-size: 10.5px;
+    color: var(--tx-t);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* 连接清单：命名空间 / kind 语义 chip / owner / 分组 / 断开操作 */
+.conn-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    font-size: 12.5px;
+}
+
+.conn-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--bd) 45%, transparent);
+    transition: background-color 0.15s var(--ease-smooth);
+    min-width: 0;
+}
+
+.conn-row:last-child {
+    border-bottom: none;
+}
+
+.conn-row:hover {
+    background: var(--bg-s);
+}
+
+.conn-id {
+    flex: 1.4;
+    min-width: 0;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    font-size: 11.5px;
+    color: var(--tx-p);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conn-ns {
+    flex: 0.8;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--tx-s);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conn-kind-chip {
+    flex-shrink: 0;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.conn-owner {
+    flex: 0.7;
+    min-width: 0;
+    color: var(--tx-s);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conn-groups {
+    flex: 1;
+    min-width: 0;
+    color: var(--tx-t);
+    font-size: 11.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conn-close-btn {
+    flex-shrink: 0;
+}
+
+.conn-close-btn:hover {
+    border-color: color-mix(in srgb, var(--er-c) 50%, transparent);
+    color: var(--er-c);
+}
+
 /* ───────────────────────── 窄屏适配 ───────────────────────── */
 
 @media (max-width: 640px) {
@@ -714,6 +847,28 @@
 
     .audit-time {
         font-size: 11px;
+    }
+
+    /* 连接行窄屏换行：id + kind 首行，owner / 分组次行，断开按钮右对齐 */
+    .conn-row {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    .conn-id {
+        flex: 1 1 100%;
+    }
+
+    .conn-groups {
+        display: none;
+    }
+
+    .conn-close-btn {
+        margin-left: auto;
+    }
+
+    .log-export-btn {
+        min-height: 30px;
     }
 }
 

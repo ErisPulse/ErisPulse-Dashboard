@@ -1360,3 +1360,22 @@
         cursor: pointer;
     }
 }
+
+/* ── 多选模式：默认隐藏复选框，工具条"多选"进入后浮现（html.store-selecting）── */
+.store-card-check {
+    display: none;
+}
+
+html.store-selecting .store-card-check {
+    display: block;
+}
+
+html.store-selecting .store-card:has(.store-card-check:checked) {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* 多选模式下批量栏置底吸附不遮卡片尾部交互 */
+html.store-selecting .store-grid {
+    padding-bottom: 64px;
+}

@@ -774,9 +774,14 @@ export async function doInstallWithOptions(pkg, defaultForce, isUpgrade) {
 }
 
 export function updateBatchBar() {
+  // 多选模式（html.store-selecting）下底栏常驻；非模式严格按勾选数显隐
+  const selecting = document.documentElement.classList.contains(
+    "store-selecting",
+  );
   const checked = document.querySelectorAll(".store-card-check:checked");
   const bar = document.getElementById("storeBatchBar");
-  if (checked.length > 0) {
+  if (!bar) return;
+  if (selecting || checked.length > 0) {
     bar.style.display = "flex";
     document.getElementById("storeBatchCount").textContent = t(
       "batch_install_count",
@@ -784,6 +789,35 @@ export function updateBatchBar() {
   } else {
     bar.style.display = "none";
   }
+}
+
+// ── 多选模式：点击工具条"多选"进入（复选框浮现），"完成"或再点按钮退出 ──
+export function toggleStoreSelecting(force) {
+  const on =
+    typeof force === "boolean"
+      ? force
+      : !document.documentElement.classList.contains("store-selecting");
+  document.documentElement.classList.toggle("store-selecting", on);
+  const btn = document.getElementById("storeSelectBtn");
+  if (btn) {
+    btn.classList.toggle("btn-primary", on);
+    btn.classList.toggle("btn-secondary", !on);
+    btn.textContent = t(on ? "store_done" : "store_select");
+  }
+  if (!on) {
+    document
+      .querySelectorAll(".store-card-check")
+      .forEach((c) => (c.checked = false));
+  }
+  updateBatchBar();
+}
+
+export function toggleStoreSelectAll() {
+  const boxes = document.querySelectorAll(".store-card-check");
+  const allChecked =
+    boxes.length > 0 && Array.from(boxes).every((c) => c.checked);
+  boxes.forEach((c) => (c.checked = !allChecked));
+  updateBatchBar();
 }
 
 export async function batchInstall() {
