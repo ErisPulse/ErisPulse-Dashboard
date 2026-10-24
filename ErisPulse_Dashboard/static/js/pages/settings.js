@@ -488,15 +488,22 @@ export async function loadGlobalAppearance() {
       _ensureFontFace(f.name, f.url);
     });
     if (window._globalSyncEnabled) {
-      // 全局同步开启：本机静音，应用远端快照（设置 + 字体），并同步开关 UI
-      window._syncMuted = true;
-      if (app.font) {
-        localStorage.setItem("ep_font", app.font);
-        applyFont(app.font);
+      if (app._device && app._device === _syncDeviceId) {
+        // 本机推送的广播回声：跳过应用并解除静音，
+        // 打断 "异步尾部写回 → 推送 → 广播 → 应用" 的自激回环
+        window._syncMuted = false;
+      } else {
+        // 其它设备变更：本机静音，应用远端快照（设置 + 字体），并同步开关 UI。
+        // 静音窗 2s：覆盖应用器异步尾部（自动取色回写等）的落盘窗口
+        window._syncMuted = true;
+        if (app.font) {
+          localStorage.setItem("ep_font", app.font);
+          applyFont(app.font);
+        }
+        await _applySyncedSettings(app.settings || {});
+        applyGlobalAppearanceData(app);
+        setTimeout(function () { window._syncMuted = false; }, 2000);
       }
-      await _applySyncedSettings(app.settings || {});
-      applyGlobalAppearanceData(app);
-      setTimeout(function () { window._syncMuted = false; }, 800);
     }
   } catch (e) {
     console.debug("Appearance API unavailable, using local settings");
@@ -1447,6 +1454,9 @@ var SYNC_LOCAL_KEYS = [
   "ep_setting_event_density", "ep_setting_event_auto_top",
 ];
 var _syncPushTimer = null;
+// 本机同步会话标识：随快照上行，广播回声按此跳过——打断 push→broadcast→apply→push 回环
+var _syncDeviceId =
+  Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 export function _globalSyncEnabled() {
   return !!window._globalSyncEnabled;
@@ -1461,6 +1471,7 @@ export async function _pushSyncSnapshot() {
   });
   var payload = {
     _global_enabled: true,
+    _device: _syncDeviceId,
     settings: settings,
     custom_fonts: window._customFonts || [],
     font: getFont(),
@@ -1511,9 +1522,17 @@ var SYNC_APPLIERS = {
     localStorage.setItem("ep_setting_bg_auto_theme", v);
     onThemeChanged();
   },
-  ep_setting_custom_css: function () {
-    var ta = document.getElementById("settingsCustomCss");
-    if (ta) applySettingCustomCss();
+  ep_setting_custom_css: function (v) {
+    // 远端应用：直接注入同步值，静默——不读 textarea、不 toast
+    // （原实现走 applySettingCustomCss 会读本机 textarea 并弹"配置已保存"，
+    //   是同步开启后右下角持续刷"配置已保存"的直接来源）
+    var style = document.getElementById("epCustomCss");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "epCustomCss";
+      document.head.appendChild(style);
+    }
+    style.textContent = v || "";
   },
   ep_setting_privacy_mode: function (v) { applyPrivacyMode(v === "1"); },
   ep_setting_density: function (v) { applySettingDensity(v); },
