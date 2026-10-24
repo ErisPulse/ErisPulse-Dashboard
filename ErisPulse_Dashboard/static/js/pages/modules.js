@@ -144,10 +144,12 @@ export function renderPluginRow(m, isAd) {
       t("enable_module") +
       "</button> ";
   }
-  // ⋯ 菜单：重载（仅模块）、禁用/启用、卸载（仅模块）
+  // ⋯ 菜单：重载（仅模块）、影子测试（仅模块且 SDK 支持）、禁用/启用、卸载（仅模块）
   var menuItems = [];
   if (m.loaded && !isAd)
     menuItems.push({ label: t("reload"), action: "reload", danger: false });
+  if (m.loaded && !isAd && m.shadow)
+    menuItems.push({ label: t("shadow_menu"), action: "shadow", danger: false });
   if (m.enabled) {
     menuItems.push({
       label: t("disable_module"),
@@ -183,6 +185,8 @@ export function renderPluginRow(m, isAd) {
       (m.enabled ? 1 : 0) +
       '" data-isad="' +
       (isAd ? 1 : 0) +
+      '" data-shadow="' +
+      (!isAd && m.shadow ? 1 : 0) +
       '" onclick="toggleModuleMenu(event, this)"><svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>';
   }
 
@@ -311,6 +315,15 @@ export function renderPluginRow(m, isAd) {
       detailItems.push(
         '<span class="module-detail-item"><span class="chip chip-pr module-git-chip">Git</span></span>',
       );
+    // 已注册命令清单：展开时按需拉取；模块未注册命令时移除占位不渲染
+    if (m.name)
+      detailItems.push(
+        '<span class="module-detail-item modcmd-item" data-modcmd="' +
+          _jsq(m.name) +
+          '"><strong>' +
+          t("modcmd_title") +
+          ':</strong><span class="modcmd-list modcmd-pending"></span></span>',
+      );
   }
   if (detailItems.length) {
     detailHtml =
@@ -405,6 +418,9 @@ export function toggleModuleDetail(el) {
   if (detail.classList.contains("hidden")) {
     detail.classList.remove("hidden");
     wrap.classList.add("expanded");
+    // 首次展开时按需拉取已注册命令清单（空集 / 不支持时移除占位）
+    var cmdItem = wrap.querySelector("[data-modcmd]");
+    if (cmdItem) _loadModuleCommands(cmdItem.dataset.modcmd, cmdItem);
   } else {
     detail.classList.add("hidden");
     wrap.classList.remove("expanded");
@@ -443,10 +459,13 @@ export function toggleModuleMenu(ev, btn) {
     pkg = btn.dataset.pkg,
     loaded = btn.dataset.loaded === "1",
     enabled = btn.dataset.enabled === "1",
-    isAd = btn.dataset.isad === "1";
+    isAd = btn.dataset.isad === "1",
+    shadow = btn.dataset.shadow === "1";
   var items = [];
   if (loaded && !isAd)
     items.push({ action: "reload", label: t("reload"), danger: false });
+  if (loaded && !isAd && shadow)
+    items.push({ action: "shadow", label: t("shadow_menu"), danger: false });
   if (enabled) {
     items.push({
       action: "disable",
@@ -470,15 +489,17 @@ export function toggleModuleMenu(ev, btn) {
   menu.innerHTML = items
     .map(function (it) {
       var call =
-        "closeModuleMenu();moduleAction('" +
-        _jsq(name) +
-        "','" +
-        it.action +
-        "','" +
-        _jsq(type) +
-        "'" +
-        (it.action === "uninstall" ? ",'" + _jsq(pkg) + "'" : "") +
-        ")";
+        it.action === "shadow"
+          ? "closeModuleMenu();openShadowModal('" + _jsq(name) + "')"
+          : "closeModuleMenu();moduleAction('" +
+            _jsq(name) +
+            "','" +
+            it.action +
+            "','" +
+            _jsq(type) +
+            "'" +
+            (it.action === "uninstall" ? ",'" + _jsq(pkg) + "'" : "") +
+            ")";
       return (
         '<button class="module-menu-item' +
         (it.danger ? " danger" : "") +
@@ -554,4 +575,469 @@ export function goToModuleConfig() {
   var btn = document.querySelector('[data-tab="cfg-module"]');
   if (btn) btn.click();
 }
+
+// ════════════════ 模块已注册命令清单 ════════════════
+
+async function _loadModuleCommands(name, itemEl) {
+  if (!itemEl || itemEl.dataset.loaded === "1") return;
+  itemEl.dataset.loaded = "1";
+  var d = await api("/api/modules/" + encodeURIComponent(name) + "/commands");
+  var list = itemEl.querySelector(".modcmd-list");
+  if (!list) return;
+  // SDK 无命令总览能力 / 模块未注册命令：移除占位项（空则不渲染）
+  if (!d || !d.supported) {
+    itemEl.remove();
+    return;
+  }
+  var cmds = d.commands || [];
+  if (!cmds.length) {
+    itemEl.remove();
+    return;
+  }
+  list.classList.remove("modcmd-pending");
+  list.innerHTML = cmds.map(_renderModuleCommand).join("");
+}
+
+function _renderModuleCommand(c) {
+  var html = '<span class="modcmd-entry">';
+  html +=
+    '<code class="dep-code modcmd-name">' + esc(c.name) + "</code>";
+  if (c.master)
+    html +=
+      '<span class="chip chip-er modcmd-badge">' +
+      esc(t("modcmd_master")) +
+      "</span>";
+  if (c.hidden)
+    html +=
+      '<span class="chip chip-pr modcmd-badge">' +
+      esc(t("modcmd_hidden")) +
+      "</span>";
+  if (c.aliases && c.aliases.length)
+    html +=
+      '<span class="modcmd-aliases">' +
+      esc(t("modcmd_aliases")) +
+      ": " +
+      c.aliases.map(esc).join(", ") +
+      "</span>";
+  if (c.help)
+    html +=
+      '<span class="modcmd-help" title="' +
+      esc(c.help) +
+      '">' +
+      esc(c.help) +
+      "</span>";
+  html += "</span>";
+  return html;
+}
+
+// ════════════════ 资源归属审计（诊断页） ════════════════
+
+// 计数面主列覆盖的资源类；其余归入"其他"列并以 tooltip 展示明细
+const _OWN_KNOWN_KINDS = [
+  "tasks",
+  "timers",
+  "threads",
+  "connections",
+  "routes_http",
+  "routes_ws",
+  "routes_sse",
+  "commands",
+  "handlers_message",
+  "handlers_notice",
+  "handlers_request",
+  "handlers_meta",
+  "adapter_handlers",
+];
+
+function _sumRes(res, kinds) {
+  var n = 0;
+  for (var i = 0; i < kinds.length; i++) n += res[kinds[i]] || 0;
+  return n;
+}
+
+export async function loadOwnershipAudit() {
+  if (!authed) return showLogin();
+  var rowsEl = document.getElementById("ownershipRows");
+  if (!rowsEl) return;
+  var d = await api("/api/ownership");
+  if (!d) return;
+  var wrapEl = document.getElementById("ownershipTableWrap");
+  var emptyEl = document.getElementById("ownershipEmpty");
+  var unsupEl = document.getElementById("ownershipUnsupported");
+  var warnEl = document.getElementById("ownershipWarn");
+  var countEl = document.getElementById("ownershipOwnerCount");
+  if (!d.supported) {
+    if (wrapEl) wrapEl.style.display = "none";
+    if (emptyEl) emptyEl.style.display = "none";
+    if (warnEl) warnEl.style.display = "none";
+    if (unsupEl) {
+      unsupEl.style.display = "flex";
+      unsupEl.innerHTML =
+        "<p>" + esc(t("diag_ownership_unsupported")) + "</p>";
+    }
+    if (countEl) countEl.textContent = "0";
+    return;
+  }
+  if (unsupEl) unsupEl.style.display = "none";
+  var owners = d.owners || [];
+  var orphans = d.orphans || [];
+  if (countEl) countEl.textContent = String(owners.length);
+  var orphanSet = {};
+  orphans.forEach(function (o) {
+    orphanSet[o.owner] = true;
+  });
+  if (warnEl) {
+    if (orphans.length) {
+      warnEl.style.display = "flex";
+      warnEl.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+        '<span class="ownership-orphan-text"><strong>' +
+        esc(t("diag_ownership_orphans_title")) +
+        "</strong><span>" +
+        esc(t("diag_ownership_orphans").replace("{n}", orphans.length)) +
+        " " +
+        orphans
+          .map(function (o) {
+            return esc(o.owner);
+          })
+          .join(", ") +
+        "</span></span>";
+    } else {
+      warnEl.style.display = "none";
+    }
+  }
+  if (!owners.length) {
+    if (wrapEl) wrapEl.style.display = "none";
+    if (emptyEl) {
+      emptyEl.style.display = "flex";
+      emptyEl.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><p>' +
+        esc(t("diag_ownership_empty")) +
+        "</p>";
+    }
+    return;
+  }
+  if (wrapEl) wrapEl.style.display = "block";
+  rowsEl.innerHTML = owners
+    .map(function (o) {
+      return _renderOwnershipRow(o, orphanSet);
+    })
+    .join("");
+}
+
+function _renderOwnershipRow(o, orphanSet) {
+  var res = o.resources || {};
+  var tasks = _sumRes(res, ["tasks", "timers"]);
+  var threads = res.threads || 0;
+  var conns = res.connections || 0;
+  var routes = _sumRes(res, ["routes_http", "routes_ws", "routes_sse"]);
+  var commands = res.commands || 0;
+  var handlers = _sumRes(res, [
+    "handlers_message",
+    "handlers_notice",
+    "handlers_request",
+    "handlers_meta",
+    "adapter_handlers",
+  ]);
+  var otherKeys = Object.keys(res).filter(function (k) {
+    return _OWN_KNOWN_KINDS.indexOf(k) === -1;
+  });
+  var other = otherKeys.reduce(function (acc, k) {
+    return acc + (res[k] || 0);
+  }, 0);
+  var tip = otherKeys
+    .map(function (k) {
+      return k + ": " + res[k];
+    })
+    .join("\n");
+  var isOrphan = orphanSet && orphanSet[o.owner];
+  return (
+    '<div class="ownership-row' +
+    (isOrphan ? " is-orphan" : "") +
+    '"' +
+    (tip ? ' title="' + esc(tip) + '"' : "") +
+    ">" +
+    '<span class="ownership-owner">' +
+    (isOrphan ? '<span class="ownership-orphan-dot"></span>' : "") +
+    esc(o.owner) +
+    "</span>" +
+    "<span>" +
+    tasks +
+    "</span><span>" +
+    threads +
+    "</span><span>" +
+    conns +
+    "</span><span>" +
+    routes +
+    "</span><span>" +
+    commands +
+    "</span><span>" +
+    handlers +
+    '</span><span class="ownership-other">' +
+    other +
+    "</span></div>"
+  );
+}
+
+// ════════════════ 影子测试 ════════════════
+
+var _shadowModalModule = "";
+var _shadowWhlFile = null;
+var _SHADOW_DIFF_MAX = 50; // JSON 对比块最多渲染条数（账本环形上限 500，防长列表卡顿）
+var _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024; // 与后端 whl 大小限制一致
+
+export function closeShadowModal() {
+  var ov = document.getElementById("shadowOv");
+  if (ov) ov.classList.remove("show");
+  _shadowModalModule = "";
+}
+
+function _shadowResetUpload() {
+  _shadowWhlFile = null;
+  var input = document.getElementById("shadowWhlInput");
+  if (input) input.value = "";
+  var nameEl = document.getElementById("shadowWhlName");
+  if (nameEl) nameEl.textContent = "";
+  var btn = document.getElementById("shadowWhlUploadBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = t("shadow_upload_start");
+  }
+  var prog = document.getElementById("shadowUploadProgress");
+  if (prog) prog.style.display = "none";
+  var fill = document.getElementById("shadowUploadFill");
+  if (fill) fill.style.width = "0%";
+  var pct = document.getElementById("shadowUploadPct");
+  if (pct) pct.textContent = "0%";
+}
+
+export async function openShadowModal(name) {
+  if (!authed) return showLogin();
+  var ov = document.getElementById("shadowOv");
+  if (!ov) return;
+  _shadowModalModule = name;
+  ov.classList.add("show");
+  var titleEl = document.getElementById("shadowModalTitle");
+  if (titleEl) titleEl.textContent = t("shadow_title") + " · " + name;
+  _shadowResetUpload();
+  _setShadowStateRow(
+    '<span class="chip chip-pr">' + esc(t("loading")) + "</span>"
+  );
+  var pre = document.getElementById("shadowDiffPre");
+  if (pre) pre.textContent = "";
+  await refreshShadowDiff();
+}
+
+function _setShadowStateRow(html) {
+  var el = document.getElementById("shadowStateRow");
+  if (el) el.innerHTML = html;
+}
+
+function _setShadowActionButtons(active) {
+  var promoteBtn = document.getElementById("shadowPromoteBtn");
+  var dismissBtn = document.getElementById("shadowDismissBtn");
+  if (promoteBtn) promoteBtn.style.display = active ? "inline-flex" : "none";
+  if (dismissBtn) dismissBtn.style.display = active ? "inline-flex" : "none";
+}
+
+export async function refreshShadowDiff() {
+  var name = _shadowModalModule;
+  if (!name) return;
+  var d = await api("/api/modules/" + encodeURIComponent(name) + "/shadow/diff");
+  if (!d) return;
+  var startRow = document.getElementById("shadowStartRow");
+  if (!d.supported) {
+    _setShadowStateRow(
+      '<span class="chip chip-pr">' + esc(t("shadow_unsupported")) + "</span>"
+    );
+    _setShadowActionButtons(false);
+    _toggleShadowDiff(false, 0, null);
+    if (startRow) startRow.style.display = "none";
+    return;
+  }
+  var active = !!d.active;
+  if (active) {
+    _setShadowStateRow(
+      '<span class="chip chip-ok shadow-state-chip">' +
+        esc(t("shadow_active")) +
+        '</span><span class="shadow-owner-name">' +
+        esc(d.shadow_owner) +
+        "</span>"
+    );
+  } else {
+    _setShadowStateRow(
+      '<span class="chip chip-pr shadow-state-chip">' +
+        esc(t("shadow_inactive")) +
+        "</span>"
+    );
+  }
+  _setShadowActionButtons(active);
+  _toggleShadowDiff(active, d.count || 0, active ? d.aligned || [] : null);
+  // 已有影子运行时隐藏启动表单与上传区（SDK 不允许并发影子）
+  if (startRow) startRow.style.display = active ? "none" : "flex";
+  var upSec = document.getElementById("shadowUploadSec");
+  if (upSec) upSec.style.display = active ? "none" : "block";
+}
+
+function _toggleShadowDiff(active, count, aligned) {
+  var wrapEl = document.getElementById("shadowDiffWrap");
+  var countEl = document.getElementById("shadowDiffCount");
+  var pre = document.getElementById("shadowDiffPre");
+  if (!wrapEl || !pre) return;
+  if (!active) {
+    wrapEl.style.display = "none";
+    return;
+  }
+  wrapEl.style.display = "block";
+  if (countEl)
+    countEl.textContent = t("shadow_diff_count").replace("{n}", count);
+  var entries = aligned || [];
+  var truncated = entries.length > _SHADOW_DIFF_MAX;
+  var shown = truncated ? entries.slice(0, _SHADOW_DIFF_MAX) : entries;
+  pre.textContent = shown.length
+    ? JSON.stringify(shown, null, 2) +
+      (truncated
+        ? "\n… +" + (entries.length - _SHADOW_DIFF_MAX)
+        : "")
+    : t("shadow_diff_empty");
+}
+
+export async function shadowAction(action) {
+  if (!authed) return showLogin();
+  var name = _shadowModalModule;
+  if (!name) return;
+  var body = { action: action };
+  if (action === "start") {
+    var input = document.getElementById("shadowSourceInput");
+    var src = input ? input.value.trim() : "";
+    if (!src) return toast(t("shadow_source_required"), "wr");
+    body.source = src;
+  }
+  var d = await api("/api/modules/" + encodeURIComponent(name) + "/shadow", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  if (d && d.success) {
+    toast(t("shadow_done"), "ok");
+    if (action === "start") {
+      var inputEl = document.getElementById("shadowSourceInput");
+      if (inputEl) inputEl.value = "";
+    }
+    refreshShadowDiff();
+    loadModules();
+  } else {
+    toast((d && d.error) || t("action_failed"), "er");
+  }
+}
+
+export async function shadowPromote() {
+  if (!_shadowModalModule) return;
+  // 转正语义：卸载当前版本 → 影子以真名注册加载；失败自动回滚旧实例
+  var ok = await confirm2(t("shadow_promote_title"), t("shadow_promote_confirm"));
+  if (!ok) return;
+  shadowAction("promote");
+}
+
+export async function shadowDismiss() {
+  if (!_shadowModalModule) return;
+  var ok = await confirm2(t("shadow_dismiss_title"), t("shadow_dismiss_confirm"));
+  if (!ok) return;
+  shadowAction("dismiss");
+}
+
+// ════════════════ 影子源 whl 上传 ════════════════
+// 流程：选择 .whl → POST /api/modules/{name}/shadow/upload（XHR 带进度）→
+// 成功后把返回的 source 填入路径输入框并自动启动影子
+
+export function shadowPickWhl() {
+  var input = document.getElementById("shadowWhlInput");
+  if (input) input.click();
+}
+
+export function shadowWhlSelected(input) {
+  var file = input && input.files && input.files[0];
+  if (!file) return;
+  if (!/\.whl$/i.test(file.name)) {
+    toast(t("shadow_upload_invalid"), "er");
+    input.value = "";
+    return;
+  }
+  if (file.size > _SHADOW_WHL_MAX_BYTES) {
+    toast(t("shadow_upload_too_large"), "er");
+    input.value = "";
+    return;
+  }
+  _shadowWhlFile = file;
+  var nameEl = document.getElementById("shadowWhlName");
+  if (nameEl)
+    nameEl.textContent =
+      file.name + " (" + formatFileSize(file.size) + ")";
+  var btn = document.getElementById("shadowWhlUploadBtn");
+  if (btn) btn.disabled = false;
+}
+
+export function shadowUploadWhl() {
+  if (!authed) return showLogin();
+  var name = _shadowModalModule;
+  if (!name) return;
+  var file = _shadowWhlFile;
+  if (!file) return toast(t("shadow_upload_no_file"), "wr");
+  var btn = document.getElementById("shadowWhlUploadBtn");
+  if (btn) btn.disabled = true;
+  var prog = document.getElementById("shadowUploadProgress");
+  var fill = document.getElementById("shadowUploadFill");
+  var pct = document.getElementById("shadowUploadPct");
+  if (prog) prog.style.display = "flex";
+  var fd = new FormData();
+  fd.append("file", file);
+  var xhr = new XMLHttpRequest();
+  xhr.upload.onprogress = function (e) {
+    if (!e.lengthComputable) return;
+    var p = Math.round((e.loaded / e.total) * 100);
+    if (fill) fill.style.width = p + "%";
+    if (pct) pct.textContent = p + "%";
+  };
+  xhr.onload = function () {
+    var d = null;
+    try {
+      d = JSON.parse(xhr.responseText);
+    } catch (err) {
+      d = null;
+    }
+    if (d && d.success && d.source) {
+      if (fill) fill.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      toast(t("shadow_upload_done"), "ok");
+      // 填充 source 输入框并自动启动影子；启动失败时输入框已就绪可重试
+      var input = document.getElementById("shadowSourceInput");
+      if (input) input.value = d.source;
+      _shadowWhlFile = null;
+      shadowAction("start");
+    } else {
+      _shadowResetUpload();
+      toast((d && d.error) || t("shadow_upload_failed"), "er");
+    }
+  };
+  xhr.onerror = function () {
+    _shadowResetUpload();
+    toast(t("shadow_upload_failed"), "er");
+  };
+  xhr.open(
+    "POST",
+    API + "/api/modules/" + encodeURIComponent(name) + "/shadow/upload"
+  );
+  xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem(TK));
+  xhr.send(fd);
+}
+
+// 遮罩空白处点击 / Esc 关闭影子模态（confirm2 等上层弹窗以捕获阶段优先处理 Esc）
+document.addEventListener("click", function (e) {
+  var ov = document.getElementById("shadowOv");
+  if (ov && ov.classList.contains("show") && e.target === ov) closeShadowModal();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Escape") return;
+  var ov = document.getElementById("shadowOv");
+  if (ov && ov.classList.contains("show")) closeShadowModal();
+});
 

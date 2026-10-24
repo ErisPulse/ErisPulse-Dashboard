@@ -139,6 +139,33 @@ class RoutesMixin:
             methods=["POST"],
         )
         r.register_http_route(
+            mn, "/api/ownership", handler=self._api_ownership, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/modules/{name}/commands",
+            handler=self._api_module_commands,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/modules/{name}/shadow",
+            handler=self._api_module_shadow,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/modules/{name}/shadow/upload",
+            handler=self._api_module_shadow_upload,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/modules/{name}/shadow/diff",
+            handler=self._api_module_shadow_diff,
+            methods=["GET"],
+        )
+        r.register_http_route(
             mn,
             "/api/module/{name}/config",
             handler=self._api_module_config_get,
@@ -156,6 +183,44 @@ class RoutesMixin:
         )
         r.register_http_route(
             mn, "/api/events/clear", handler=self._api_events_clear, methods=["POST"]
+        )
+
+        # 会话收件箱（transcript）相关 API
+        r.register_http_route(
+            mn, "/api/transcript/info", handler=self._api_transcript_info, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/transcript/sessions",
+            handler=self._api_transcript_sessions,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn, "/api/transcript", handler=self._api_transcript_messages, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/transcript/trace",
+            handler=self._api_transcript_trace,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/transcript/clear",
+            handler=self._api_transcript_clear,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/transcript/retention",
+            handler=self._api_transcript_retention,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/transcript/retention",
+            handler=self._api_transcript_retention_set,
+            methods=["PUT"],
         )
         r.register_http_route(
             mn, "/api/config", handler=self._api_config, methods=["GET"]
@@ -201,6 +266,25 @@ class RoutesMixin:
             "/api/storage/delete",
             handler=self._api_storage_delete,
             methods=["POST"],
+        )
+        # 存储表浏览器（注意：具体路径须在参数化路径 /api/storage/table 之前注册）
+        r.register_http_route(
+            mn,
+            "/api/storage/tables",
+            handler=self._api_storage_tables,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/storage/table/clear",
+            handler=self._api_storage_table_clear,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/storage/table",
+            handler=self._api_storage_table,
+            methods=["GET"],
         )
         r.register_http_route(
             mn, "/api/store/remote", handler=self._api_store_remote, methods=["GET"]
@@ -337,6 +421,9 @@ class RoutesMixin:
         r.register_http_route(
             mn, "/api/logs/clear", handler=self._api_logs_clear, methods=["POST"]
         )
+        r.register_http_route(
+            mn, "/api/logs/export", handler=self._api_logs_export, methods=["GET"]
+        )
 
         # 生命周期相关 API
         r.register_http_route(
@@ -357,6 +444,22 @@ class RoutesMixin:
         # API 路由列表相关 API
         r.register_http_route(
             mn, "/api/routes", handler=self._api_routes, methods=["GET"]
+        )
+
+        # 健康聚合 API（核心组件状态，进程内直接组装）
+        r.register_http_route(
+            mn, "/api/health", handler=self._api_health, methods=["GET"]
+        )
+
+        # 连接注册表面板 API（具体路径 /api/connections/close 无参数化冲突）
+        r.register_http_route(
+            mn, "/api/connections", handler=self._api_connections, methods=["GET"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/connections/close",
+            handler=self._api_connections_close,
+            methods=["POST"],
         )
 
         # 消息统计相关 API

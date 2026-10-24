@@ -161,6 +161,14 @@ class MainBase:
                 pass
         self._ws_clients.clear()
         self._unregister_routes()
+        # i18n 翻译以 domain="dashboard"（小写）注册为独立 owner，
+        # 不随路由注销而注销会残留为孤儿资源（ownership audit 报泄漏）
+        try:
+            unregister_i18n = getattr(self.sdk.i18n, "unregister_domain", None)
+            if unregister_i18n:
+                unregister_i18n("dashboard")
+        except Exception:
+            pass
         self.logger.info("WebUI module unloaded")
         return True
 

@@ -1,9 +1,18 @@
 """ApiObservabilityMixin：配置源码 / 日志 / 审计 / 生命周期 / 性能 / 路由 / 备份 API"""
 
+import os
 import time
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi import Request, Response
+from fastapi.responses import FileResponse, JSONResponse
+
+
+def _remove_temp_file(path: str) -> None:
+    """响应完成后删除日志导出临时文件（后台任务调用，失败静默）"""
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 class ApiObservabilityMixin:
@@ -194,93 +203,408 @@ class ApiObservabilityMixin:
         )
 
     async def _api_routes(self, request: Request) -> JSONResponse:
-        """获取所有注册的 API 路由"""
+        """获取所有注册的 API 路由（kind 分组）。
 
-        # 获取路由管理器中的内部路由信息
+        优先使用路由管理器公开枚举 API（list_namespaces / get_module_routes /
+        get_module_urls），私有 _http_routes / _websocket_routes 仅作旧 SDK 回退；
+        同时输出旧版扁平字段 http_routes / ws_routes，保持旧前端与集群旧节点兼容。
+        """
+
         router_manager = self.sdk.router
-        http_routes_dict = router_manager._http_routes
-        ws_routes_dict = router_manager._websocket_routes
+        base_url = ""
+        namespaces: dict = {}
 
-        http_routes = []
-        for module_name, paths in http_routes_dict.items():
-            for path, methods in paths.items():
-                for method, handler in methods.items():
-                    # 获取处理器信息
-                    import inspect
+        list_namespaces = getattr(router_manager, "list_namespaces", None)
+        get_module_routes = getattr(router_manager, "get_module_routes", None)
+        get_module_urls = getattr(router_manager, "get_module_urls", None)
 
-                    handler_name = (
-                        handler.__name__ if hasattr(handler, "__name__") else "unknown"
+        if list_namespaces is not None:
+            try:
+                ns_map = list_namespaces() or {}
+            except Exception:
+                ns_map = {}
+
+            for ns, kind_paths in ns_map.items():
+                kind_paths = kind_paths or {}
+                detail: dict = {}
+                urls: dict = {}
+                if get_module_routes is not None:
+                    try:
+                        detail = get_module_routes(ns) or {}
+                    except Exception:
+                        detail = {}
+                if get_module_urls is not None:
+                    try:
+                        urls = get_module_urls(ns) or {}
+                        base_url = urls.get("base_url", "") or base_url
+                    except Exception:
+                        urls = {}
+
+                # HTTP 行：path + methods + url（get_module_routes 为主，list_namespaces 纯路径兜底）
+                url_http = {
+                    i.get("path"): i.get("url", "") for i in (urls.get("http") or [])
+                }
+                http_rows: dict = {}
+                for item in detail.get("http") or []:
+                    row_path = item.get("path", "")
+                    row = http_rows.setdefault(
+                        row_path,
+                        {
+                            "path": row_path,
+                            "methods": [],
+                            "url": url_http.get(row_path, ""),
+                        },
                     )
-                    handler_file = (
-                        inspect.getfile(handler)
-                        if inspect.isfunction(handler)
-                        else "unknown"
-                    )
-                    handler_line = (
-                        inspect.getsourcelines(handler)[0]
-                        if inspect.isfunction(handler)
-                        else "unknown"
+                    for m in item.get("methods") or []:
+                        if m not in row["methods"]:
+                            row["methods"].append(m)
+                for path in kind_paths.get("http") or []:
+                    http_rows.setdefault(
+                        path, {"path": path, "methods": [], "url": url_http.get(path, "")}
                     )
 
+                # WS / SSE 行：detail 提供认证与流式标记，list_namespaces 提供路径兜底
+                detail_ws = {
+                    i.get("path"): bool(i.get("auth"))
+                    for i in detail.get("websocket") or []
+                }
+                ws_paths = list(
+                    dict.fromkeys(
+                        [i.get("path") for i in detail.get("websocket") or []]
+                        + list(kind_paths.get("websocket") or [])
+                    )
+                )
+                sse_paths = list(
+                    dict.fromkeys(
+                        [i.get("path") for i in detail.get("sse") or []]
+                        + list(kind_paths.get("sse") or [])
+                    )
+                )
+                url_ws = {
+                    i.get("path"): i.get("url", "") for i in (urls.get("websocket") or [])
+                }
+                url_sse = {
+                    i.get("path"): i.get("url", "") for i in (urls.get("sse") or [])
+                }
+
+                namespaces[ns] = {
+                    "http": sorted(
+                        (
+                            {**row, "methods": sorted(row["methods"])}
+                            for row in http_rows.values()
+                        ),
+                        key=lambda r: r["path"],
+                    ),
+                    "websocket": [
+                        {"path": p, "url": url_ws.get(p, ""), "auth": detail_ws.get(p, False)}
+                        for p in ws_paths
+                    ],
+                    "sse": [{"path": p, "url": url_sse.get(p, "")} for p in sse_paths],
+                }
+        else:
+            # 旧 SDK 回退：私有路由表内省（仅结构化信息，不再 inspect 处理器源码）
+            http_routes_dict = getattr(router_manager, "_http_routes", None) or {}
+            ws_routes_dict = getattr(router_manager, "_websocket_routes", None) or {}
+            if isinstance(http_routes_dict, dict):
+                for module_name, paths in http_routes_dict.items():
+                    entry = namespaces.setdefault(
+                        module_name, {"http": [], "websocket": [], "sse": []}
+                    )
+                    for path, methods in paths.items():
+                        entry["http"].append(
+                            {"path": path, "methods": sorted(methods.keys()), "url": ""}
+                        )
+            if isinstance(ws_routes_dict, dict):
+                for module_name, paths in ws_routes_dict.items():
+                    entry = namespaces.setdefault(
+                        module_name, {"http": [], "websocket": [], "sse": []}
+                    )
+                    for path, route_info in paths.items():
+                        auth_handler = (
+                            route_info[1]
+                            if isinstance(route_info, tuple) and len(route_info) > 1
+                            else None
+                        )
+                        entry["websocket"].append(
+                            {"path": path, "url": "", "auth": auth_handler is not None}
+                        )
+
+        # 旧版扁平字段：由 kind 分组数据派生（移除模块前缀的展示路径与原字段保持一致）
+        http_routes: list = []
+        ws_routes: list = []
+        for ns, kinds in namespaces.items():
+            for row in kinds["http"]:
+                for method in row["methods"]:
                     http_routes.append(
                         {
-                            "path": path.replace("/" + module_name, "", 1)
-                            or "/",  # 移除模块前缀
-                            "full_path": path,
+                            "path": row["path"].replace("/" + ns, "", 1) or "/",
+                            "full_path": row["path"],
                             "method": method,
-                            "module": module_name,
-                            "handler": {
-                                "name": handler_name,
-                                "file": handler_file,
-                                "line": handler_line,
-                            },
+                            "module": ns,
                         }
                     )
-
-        ws_routes = []
-        for module_name, paths in ws_routes_dict.items():
-            for path, route_info in paths.items():
-                if isinstance(route_info, tuple):
-                    handler = route_info[0]
-                    auth_handler = route_info[1] if len(route_info) > 1 else None
-                    auto_accept = route_info[2] if len(route_info) > 2 else True
-                else:
-                    handler = route_info
-                    auth_handler = None
-                    auto_accept = True
-                import inspect
-
-                handler_name = (
-                    handler.__name__ if hasattr(handler, "__name__") else "unknown"
-                )
-                handler_file = (
-                    inspect.getfile(handler)
-                    if inspect.isfunction(handler)
-                    else "unknown"
-                )
-                handler_line = (
-                    inspect.getsourcelines(handler)[0]
-                    if inspect.isfunction(handler)
-                    else "unknown"
-                )
-
+            for row in kinds["websocket"]:
                 ws_routes.append(
                     {
-                        "path": path.replace("/" + module_name, "", 1)
-                        or "/",  # 移除模块前缀
-                        "full_path": path,
-                        "module": module_name,
-                        "has_auth": auth_handler is not None,
-                        "auto_accept": auto_accept,
-                        "handler": {
-                            "name": handler_name,
-                            "file": handler_file,
-                            "line": handler_line,
-                        },
+                        "path": row["path"].replace("/" + ns, "", 1) or "/",
+                        "full_path": row["path"],
+                        "module": ns,
+                        "has_auth": bool(row.get("auth")),
+                        "auto_accept": True,
                     }
                 )
 
-        return JSONResponse({"http_routes": http_routes, "ws_routes": ws_routes})
+        return JSONResponse(
+            {
+                "kind_grouped": True,
+                "base_url": base_url,
+                "namespaces": namespaces,
+                "http_routes": http_routes,
+                "ws_routes": ws_routes,
+            }
+        )
+
+    # ════════════════ API · 健康聚合 / 连接注册表 / 日志导出 ════════════════
+
+    async def _api_health(self, request: Request) -> JSONResponse:
+        """框架核心组件健康聚合（对齐 SDK /health 语义，进程内直接组装，不做 HTTP 自调用）。
+
+        返回 {storage, adapters, modules, router, detail}；storage 经 _is_ready 探测，
+        旧 SDK 无该方法时回退兜底查询测试。
+        """
+
+        s = self.sdk
+        detail: dict = {}
+        storage_error = ""
+
+        # ---- storage：优先 _is_ready 探测（与 SDK /health 同源），无则兜底查询 ----
+        storage_ok: bool | None = None
+        is_ready = getattr(s.storage, "_is_ready", None)
+        if is_ready is not None:
+            try:
+                storage_ok = bool(is_ready())
+            except Exception as e:
+                storage_ok = False
+                storage_error = str(e)
+        if storage_ok is None:
+            try:
+                s.storage.get("__ep_dashboard_health_probe__")
+                storage_ok = True
+            except Exception as e:
+                storage_ok = False
+                storage_error = str(e)
+        detail["storage"] = {
+            "backend": type(s.storage).__name__,
+        }
+        if storage_error:
+            detail["storage"]["error"] = storage_error
+
+        # ---- adapters：get_status_summary 为主，_started_instances 计数兜底 ----
+        adapters_summary: dict = {}
+        summary_fn = getattr(s.adapter, "get_status_summary", None)
+        if summary_fn is not None:
+            try:
+                adapters_summary = summary_fn().get("adapters", {}) or {}
+            except Exception:
+                adapters_summary = {}
+        started_instances = getattr(s.adapter, "_started_instances", None)
+        if started_instances is not None:
+            adapters_ok = len(started_instances) > 0
+            started_count = len(started_instances)
+        else:
+            started_count = sum(
+                1
+                for a in adapters_summary.values()
+                if isinstance(a, dict) and a.get("status") == "started"
+            )
+            adapters_ok = started_count > 0
+        online_bots = 0
+        for a in adapters_summary.values():
+            if not isinstance(a, dict):
+                continue
+            for bot in (a.get("bots") or {}).values():
+                if isinstance(bot, dict) and bot.get("status") == "online":
+                    online_bots += 1
+        detail["adapters"] = {
+            "total": len(adapters_summary),
+            "started": started_count,
+            "online_bots": online_bots,
+        }
+
+        # ---- modules：_loaded_modules 计数，公开 list_loaded 兜底 ----
+        loaded_modules = getattr(s.module, "_loaded_modules", None)
+        if not isinstance(loaded_modules, (set, list, tuple)):
+            try:
+                loaded_modules = s.module.list_loaded()
+            except Exception:
+                loaded_modules = []
+        modules_ok = len(loaded_modules) > 0
+        detail["modules"] = {"loaded": len(loaded_modules)}
+
+        # ---- router：_uvicorn_server 探测；属性缺失时以"本请求已被路由"为真 ----
+        uvicorn_server = getattr(s.router, "_uvicorn_server", None)
+        router_ok = True if uvicorn_server is None else uvicorn_server is not None
+        detail["router"] = {"listening": router_ok}
+
+        return JSONResponse(
+            {
+                "storage": bool(storage_ok),
+                "adapters": bool(adapters_ok),
+                "modules": bool(modules_ok),
+                "router": bool(router_ok),
+                "status": "ok"
+                if (storage_ok and adapters_ok and modules_ok and router_ok)
+                else "degraded",
+                "detail": detail,
+                "timestamp": time.time(),
+            }
+        )
+
+    def _get_connections_mgr(self):
+        """连接注册表单例：位于 ErisPulse.Core.connections（Core 包级单例，
+        非 sdk 属性——sdk.connections 不存在，访问会触发 __getattr__ 报错）"""
+        try:
+            from ErisPulse.Core import connections as conn_mgr
+
+            if hasattr(conn_mgr, "list"):
+                return conn_mgr
+        except Exception:
+            pass
+        return None
+
+    async def _api_connections(self, request: Request) -> JSONResponse:
+        """连接注册表面板数据：list() + stats()（旧 SDK 无 connections 模块时返回 supported=false）。"""
+
+        conn_mgr = self._get_connections_mgr()
+        if conn_mgr is None or not hasattr(conn_mgr, "list"):
+            return JSONResponse(
+                {"supported": False, "connections": [], "stats": {}}
+            )
+
+        try:
+            conns = conn_mgr.list()
+        except Exception as e:
+            return JSONResponse(
+                {"supported": True, "connections": [], "stats": {}, "error": str(e)}
+            )
+
+        items = []
+        for conn in conns:
+            try:
+                groups = getattr(conn, "groups", None) or ()
+                meta = getattr(conn, "_conn_meta", None) or {}
+                items.append(
+                    {
+                        "id": getattr(conn, "id", ""),
+                        "namespace": getattr(conn, "namespace", "") or "",
+                        "owner": getattr(conn, "owner", "") or "",
+                        "kind": getattr(conn, "kind", "") or "",
+                        "groups": sorted(str(g) for g in groups),
+                        "meta": dict(meta) if isinstance(meta, dict) else {},
+                    }
+                )
+            except Exception:
+                continue
+        items.sort(key=lambda c: (c["namespace"], c["kind"], c["id"]))
+
+        stats: dict = {}
+        if hasattr(conn_mgr, "stats"):
+            try:
+                stats = conn_mgr.stats() or {}
+            except Exception:
+                stats = {}
+
+        return JSONResponse(
+            {"supported": True, "connections": items, "stats": stats}
+        )
+
+    async def _api_connections_close(self, request: Request) -> JSONResponse:
+        """关闭指定连接（管理面操作，记审计）。"""
+
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        conn_id = ""
+        if isinstance(body, dict):
+            conn_id = str(body.get("id", "") or "")
+        if not conn_id:
+            conn_id = str(request.query_params.get("id", "") or "")
+        if not conn_id:
+            return JSONResponse({"error": "Missing connection id"}, status_code=400)
+
+        conn_mgr = self._get_connections_mgr()
+        if conn_mgr is None or not hasattr(conn_mgr, "close"):
+            return JSONResponse(
+                {"success": False, "error": "connections API unavailable"},
+                status_code=501,
+            )
+
+        success = False
+        error = ""
+        try:
+            success = bool(await conn_mgr.close(conn_id))
+        except Exception as first_err:
+            # 跨 owner 关闭被权限校验拒绝时，按管理面语义强制关闭（框架回收路径同参）
+            try:
+                success = bool(await conn_mgr.close(conn_id, force=True))
+            except Exception as second_err:
+                error = str(second_err) if second_err else str(first_err)
+
+        self._add_audit_log(
+            "connection_close",
+            f"{conn_id}" + ("" if success else f" failed: {error}"),
+            request,
+        )
+        return JSONResponse({"success": success, "error": error})
+
+    async def _api_logs_export(self, request: Request) -> Response:
+        """导出框架内存日志为可下载文件。
+
+        经 sdk.logger.save_logs 落临时文件后由 FileResponse 流式返回，
+        临时文件随响应完成在后台任务中删除（FileResponse 惰性读取，
+        不能在 handler 返回前删除）。
+        """
+
+        import tempfile
+        from datetime import datetime
+
+        from starlette.background import BackgroundTask
+
+        from .ApiFiles import _content_disposition
+
+        save_logs = getattr(self.sdk.logger, "save_logs", None)
+        if save_logs is None:
+            return JSONResponse(
+                {"error": "logger.save_logs unavailable"}, status_code=501
+            )
+
+        fd, tmp_path = tempfile.mkstemp(prefix="erispulse-logs-", suffix=".log")
+        os.close(fd)
+        try:
+            ok = save_logs(tmp_path)
+        except Exception as e:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+            return JSONResponse({"error": str(e)}, status_code=500)
+
+        if not ok:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+            return JSONResponse({"error": "no logs to export"}, status_code=404)
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"erispulse-logs-{date_str}.log"
+        return FileResponse(
+            tmp_path,
+            media_type="text/plain; charset=utf-8",
+            headers={"Content-Disposition": _content_disposition(filename)},
+            background=BackgroundTask(_remove_temp_file, tmp_path),
+        )
 
     async def _api_message_stats(self, request: Request) -> JSONResponse:
         """获取消息统计"""

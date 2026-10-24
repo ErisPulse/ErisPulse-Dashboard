@@ -128,6 +128,24 @@ class EventLogMixin:
                 self._lifecycle_counts.get(event_type, 0) + 1
             )
 
+        # 存储生命周期事件（storage.ready / unreachable / recovered）：
+        # 写入事件缓冲并经 WS 广播，供前端健康区与桌面通知链路感知；
+        # 旧 SDK 无 lifecycle API 或无存储事件时静默跳过
+        lifecycle_api = getattr(self.sdk, "lifecycle", None)
+        if lifecycle_api is not None and hasattr(lifecycle_api, "on"):
+            _storage_levels = {
+                "storage.ready": "info",
+                "storage.unreachable": "warning",
+                "storage.recovered": "warning",
+            }
+            for _sev, _slvl in _storage_levels.items():
+
+                @lifecycle_api.on(_sev)
+                async def _on_storage_event(data: dict, _name=_sev, _level=_slvl):
+                    self._add_storage_event_log(
+                        _name, data if isinstance(data, dict) else {}, _level
+                    )
+
     def _add_event_log(self, data: dict):
         entry = {
             "id": data.get("id", ""),
@@ -188,6 +206,41 @@ class EventLogMixin:
             # 按时间排序
             trimmed.sort(key=lambda x: x.get("timestamp", 0))
             self._lifecycle_log = trimmed[-self._max_lifecycle_log :]
+
+    def _add_storage_event_log(self, event: str, data: dict, level: str = "warning"):
+        """存储生命周期事件写入事件缓冲并经 WS 广播。
+
+        与消息事件共用 _event_log 缓冲（type=storage），但不折算消息总数，
+        避免污染消息统计；同时输出框架日志留痕。
+        """
+        backend = str(data.get("backend", "") or "")
+        error = str(data.get("error", "") or "")
+        action = event.split(".", 1)[-1] if "." in event else event
+        entry = {
+            "id": "",
+            "time": time.time(),
+            "type": "storage",
+            "detail_type": action,
+            "platform": backend or "storage",
+            "sub_type": level,
+            "self_id": "",
+            "user_id": "",
+            "group_id": "",
+            "alt_message": error or action,
+        }
+        self._event_log.append(entry)
+        if len(self._event_log) > self._max_log:
+            self._event_log = self._event_log[-self._max_log :]
+        self._events_dirty = True
+        asyncio.ensure_future(self._broadcast_event(entry))
+
+        msg = f"storage {action}: backend={backend or 'unknown'}"
+        if error:
+            msg += f" error={error}"
+        if event == "storage.ready":
+            self.logger.info(msg)
+        else:
+            self.logger.warning(msg)
 
     async def _broadcast_event(self, event: dict):
         if not self._ws_clients:
