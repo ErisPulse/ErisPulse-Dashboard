@@ -14,6 +14,22 @@
 
 ---
 
+## 界面预览
+
+| | |
+|---|---|
+| **仪表盘** | **模块商店** |
+| ![](.github/screenshots/dashboard.png) | ![](.github/screenshots/store.png) |
+| **模块管理** | **会话收件箱** |
+| ![](.github/screenshots/modules.png) | ![](.github/screenshots/transcript.png) |
+| **设置** | **文件管理** |
+| ![](.github/screenshots/settings.png) | ![](.github/screenshots/files.png) |
+| **拓扑图谱** | |
+| ![](.github/screenshots/topology.png) | |
+
+> 截图含用户自定义背景与强调色，实际外观随你的配置自由变化。
+
+
 ## 简介
 
 **不用命令行，也能管好一个 bot。** 机器人挂在服务器上运行之后，看状态、开关模块、改配置、翻事件日志、清理数据这些日常操作，都可以在浏览器面板里完成。

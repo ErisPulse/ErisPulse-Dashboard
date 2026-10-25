@@ -14,6 +14,22 @@
 
 ---
 
+## 介面預覽
+
+| | |
+|---|---|
+| **儀表板** | **模組商店** |
+| ![](.github/screenshots/dashboard.png) | ![](.github/screenshots/store.png) |
+| **模組管理** | **會話收件匣** |
+| ![](.github/screenshots/modules.png) | ![](.github/screenshots/transcript.png) |
+| **設定** | **檔案管理** |
+| ![](.github/screenshots/settings.png) | ![](.github/screenshots/files.png) |
+| **拓撲圖譜** | |
+| ![](.github/screenshots/topology.png) | |
+
+> 截圖含使用者自訂背景與強調色，實際外觀會隨你的設定自由變化。
+
+
 ## 簡介
 
 ErisPulse Dashboard 是 ErisPulse 框架的官方 Web 管理面板模組。透過瀏覽器即可監控框架執行狀態、管理模組與適配器、檢視即時事件流、編輯設定和儲存資料，無需依賴任何外部前端建置工具。
