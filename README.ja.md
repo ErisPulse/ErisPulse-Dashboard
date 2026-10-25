@@ -14,6 +14,22 @@
 
 ---
 
+## スクリーンショット
+
+| | |
+|---|---|
+| **ダッシュボード** | **モジュールストア** |
+| ![](.github/screenshots/dashboard.png) | ![](.github/screenshots/store.png) |
+| **モジュール管理** | **セッション受信箱** |
+| ![](.github/screenshots/modules.png) | ![](.github/screenshots/transcript.png) |
+| **設定** | **ファイル管理** |
+| ![](.github/screenshots/settings.png) | ![](.github/screenshots/files.png) |
+| **トポロジーマップ** | |
+| ![](.github/screenshots/topology.png) | |
+
+> スクリーンショットにはユーザー独自の背景とアクセントカラーが含まれます。実際の見た目は設定によって自由に変わります。
+
+
 ## 概要
 
 ErisPulse Dashboard は、ErisPulse フレームワークの公式 Web 管理パネルモジュールです。ブラウザからフレームワークの実行状態の監視、モジュールとアダプターの管理、リアルタイムイベントストリームの表示、設定やストレージデータの編集が行えます。外部フロントエンドビルドツールは不要です。
