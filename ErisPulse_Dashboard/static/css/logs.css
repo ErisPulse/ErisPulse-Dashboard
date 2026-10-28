@@ -874,6 +874,33 @@
 
  
 @media (max-width: 768px) {
+    
+
+
+    #p-logs.active {
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    #p-logs .tab-section[style*="block"] {
+        overflow: visible;
+    }
+
+    #p-logs .tab-section > .card {
+        overflow: visible;
+    }
+
+    .log-console-card {
+        margin-top: 14px;
+        overflow: visible;
+    }
+
+    .log-console {
+        min-height: 55dvh;
+        max-height: 70dvh;
+        overflow-y: auto;
+    }
+
     .log-tool-btn {
         width: 40px;
         height: 40px;
