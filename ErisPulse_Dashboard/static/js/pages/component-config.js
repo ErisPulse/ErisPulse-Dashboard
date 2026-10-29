@@ -1,3 +1,4 @@
+import { openAccountWizard } from "../components/account-wizard.js";
 // ErisPulse Dashboard – pages/component-config (auto-split from dash.js)
 
 // ── 未保存修改跟踪 ──
@@ -1461,6 +1462,15 @@ export async function saveAdapterAccount(platform, accountName) {
 }
 
 export async function addAdapterAccount(platform) {
+  // 分步向导：手动配置 / 适配器注册的扩展接入方式（如扫码）
+  var done = await openAccountWizard(platform);
+  if (!done) return;
+  window._cfgNewAccountFlash = true;
+  loadAdapterConfigDetail(platform);
+  return;
+}
+
+async function _addAdapterAccountLegacy(platform) {
   var name = await prompt2(
     t("add_account"),
     t("account_name"),

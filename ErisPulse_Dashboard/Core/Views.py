@@ -183,3 +183,71 @@ class ViewsMixin:
 
     def verify_request(self, request: Request) -> bool:
         return self.verify_token(self._get_token_from_request(request))
+
+    # ════════════════ 扩展区注册（向导/面板挂载点）════════════════
+
+    def register_section(
+        self,
+        *,
+        id: str,
+        target: str,
+        title: str = "",
+        title_en: str = "",
+        icon_svg: str = "",
+        html: str = "",
+        platforms: list = None,
+        order: int = 100,
+    ) -> bool:
+        """注册一个界面扩展区（挂载到指定挂载点）。
+
+        与 register_view（独立视窗）不同，section 是嵌入既定交互流程的
+        自包含 HTML 片段：由挂载点所在的通用界面（如账户添加向导）以
+        iframe srcdoc 方式渲染。HTML 内可 fetch 同源 API，与父页面通过
+        postMessage 通信。
+
+        :param id: 区块唯一标识（重复注册覆盖）
+        :param target: 挂载点标识（如 "account_wizard" 账户添加向导）
+        :param title: 卡片标题（zh/zh-TW；其余语言用 title_en）
+        :param icon_svg: 卡片图标（SVG 字符串）
+        :param html: 自包含 HTML（内联脚本/样式）
+        :param platforms: 仅在这些适配器平台下出现（None = 所有平台）
+        :param order: 排序权重
+        """
+        if not id or not target:
+            self.logger.warning("register_section: id and target are required")
+            return False
+        self._registered_sections[id] = {
+            "id": id,
+            "target": target,
+            "title": title or id,
+            "title_en": title_en or title or id,
+            "icon_svg": icon_svg,
+            "html": html,
+            "platforms": platforms or [],
+            "order": order,
+        }
+        self._safe_broadcast(
+            {"type": "sections_changed", "data": {"action": "register", "id": id}}
+        )
+        return True
+
+    def unregister_section(self, id: str) -> bool:
+        if id not in self._registered_sections:
+            return False
+        del self._registered_sections[id]
+        self._safe_broadcast(
+            {"type": "sections_changed", "data": {"action": "unregister", "id": id}}
+        )
+        return True
+
+    def get_sections(self, target: str = "", platform: str = "") -> list:
+        out = []
+        for sec in self._registered_sections.values():
+            if target and sec.get("target") != target:
+                continue
+            plats = sec.get("platforms") or []
+            if platform and plats and platform not in plats:
+                continue
+            out.append(sec)
+        out.sort(key=lambda s: (s.get("order", 100), s.get("id", "")))
+        return out

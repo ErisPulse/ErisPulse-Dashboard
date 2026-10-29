@@ -1,0 +1,275 @@
+/* ══════════════════════════════════════════════════════════
+   ep-subnav：通用「左侧子导航 + 右侧内容」布局组件
+   ──────────────────────────────────────────────────────────
+   桌面（≥960px）：grid 264px / 1fr，左栏 sticky，内容独立滚动
+   移动（≤959px）：导航转顶部横向 chips（横滑），内容全宽
+   归属层级：最多一层子项（.is-child，缩进 + 树线）；pane 用
+   data-parent 声明归属，激活时高亮父项。
+   设置页（.settings-shell）通过双选择器映射共用本样式表。
+   ══════════════════════════════════════════════════════════ */
+
+.ep-subnav,
+.settings-shell {
+  display: block;
+}
+
+/* ── 左栏 ── */
+.ep-subnav-aside,
+.settings-aside {
+  min-width: 0;
+}
+
+.ep-subnav-head,
+.settings-aside-head {
+  flex: none;
+}
+
+/* ── 导航列表 ── */
+.ep-subnav-nav,
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.ep-subnav-item,
+.settings-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tx-p);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease-smooth, ease),
+    color 0.15s var(--ease-smooth, ease);
+}
+
+.ep-subnav-item:hover,
+.settings-nav-item:hover {
+  background: var(--bg-s);
+}
+
+.ep-subnav-item:focus-visible,
+.settings-nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3.5px var(--accent-soft);
+}
+
+.ep-subnav-item:active,
+.settings-nav-item:active {
+  transform: scale(0.985);
+}
+
+.ep-subnav-item svg,
+.settings-nav-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--tx-t);
+  flex: none;
+}
+
+.ep-subnav-item.active,
+.settings-nav-item.active {
+  background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+}
+
+.ep-subnav-item.active svg,
+.settings-nav-item.active svg {
+  color: var(--accent);
+}
+
+.ep-subnav-sep,
+.settings-nav-sep {
+  height: 1px;
+  margin: 10px 12px;
+  background: color-mix(in srgb, var(--bd) 60%, transparent);
+}
+
+/* ── 子项归属（缩进 + 树线，仅一层）── */
+.ep-subnav-item.is-child {
+  padding-left: 30px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--tx-s);
+}
+
+.ep-subnav-item.is-child::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: -2px;
+  bottom: 50%;
+  width: 1px;
+  background: color-mix(in srgb, var(--bd) 90%, transparent);
+}
+
+.ep-subnav-item.is-child:first-child::after {
+  top: 50%;
+}
+
+.ep-subnav-item.is-child.active {
+  color: var(--accent);
+}
+
+/* ── 徽标（状态点 / 计数）── */
+.ep-subnav-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--tx-t);
+}
+
+.ep-subnav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tx-t);
+  flex: none;
+}
+
+.ep-subnav-dot.ok {
+  background: var(--ok-c);
+}
+
+.ep-subnav-dot.er {
+  background: var(--er-c);
+}
+
+.ep-subnav-dot.wr {
+  background: var(--wr-c);
+}
+
+/* ── 右栏 pane ── */
+.ep-subnav-body,
+.settings-detail {
+  min-width: 0;
+}
+
+.ep-subnav-pane,
+.settings-pane {
+  display: none;
+}
+
+.ep-subnav-pane.active,
+.settings-pane.active {
+  display: block;
+  animation: epSubnavPaneIn 0.18s var(--ease-smooth, ease) both;
+}
+
+@keyframes epSubnavPaneIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ══════════════ 桌面（≥960px）：两栏 + 左栏 sticky ══════════════ */
+@media (min-width: 960px) {
+  .ep-subnav,
+  .settings-shell {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .ep-subnav-aside,
+  .settings-aside {
+    position: sticky;
+    top: 14px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 28px);
+  }
+
+  .ep-subnav-nav,
+  .settings-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin-bottom: 0;
+    /* 细滚动条（悬停显形） */
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* ══════════════ 移动（≤959px）：顶部横向 chips ══════════════ */
+@media (max-width: 959px) {
+  .ep-subnav-nav,
+  .settings-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 2px 10px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ep-subnav-nav::-webkit-scrollbar,
+  .settings-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ep-subnav-item,
+  .settings-nav-item {
+    width: auto;
+    flex: none;
+    min-height: 44px;
+    padding: 8px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    background: var(--bg-t);
+    white-space: nowrap;
+  }
+
+  .ep-subnav-item.active,
+  .settings-nav-item.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* 子项在 chips 行不再缩进，用「·」前缀轻量表达归属 */
+  .ep-subnav-item.is-child {
+    padding: 8px 14px;
+    color: var(--tx-s);
+  }
+
+  .ep-subnav-item.is-child::after {
+    display: none;
+  }
+
+  .ep-subnav-sep,
+  .settings-nav-sep {
+    display: none;
+  }
+}
+
+/* 动效可及性 */
+@media (prefers-reduced-motion: reduce) {
+  .ep-subnav-pane.active,
+  .settings-pane.active {
+    animation: none;
+  }
+}

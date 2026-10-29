@@ -396,3 +396,11 @@ class ApiAdaptersMixin:
         except Exception as e:
             self.logger.error(f"适配器重载失败: {e}")
         return False
+
+    async def _api_dashboard_sections(self, request: Request) -> JSONResponse:
+        """扩展区列表（GET /api/dashboard/sections?target=xx&platform=yy）"""
+        target = request.query_params.get("target") or ""
+        platform = request.query_params.get("platform") or ""
+        sections = self.get_sections(target, platform)
+        # html 体积可能较大，前端渲染时按需取；列表一并返回（section 数量少）
+        return JSONResponse({"success": True, "sections": sections})
