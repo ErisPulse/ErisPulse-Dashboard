@@ -390,3 +390,7 @@
         min-height: 40px;
     }
 }
+
+/* 配置组件：字段绑定禁用态（disabled_if） */
+.cfg-bind-disabled .fw-control{opacity:.45;pointer-events:none;}
+.cfg-bind-disabled .switch{opacity:.45;pointer-events:none;}
