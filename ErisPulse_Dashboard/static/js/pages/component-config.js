@@ -1,3 +1,4 @@
+import { openAccountWizard } from "../components/account-wizard.js";
  
 
  
@@ -1461,6 +1462,15 @@ export async function saveAdapterAccount(platform, accountName) {
 }
 
 export async function addAdapterAccount(platform) {
+   
+  var done = await openAccountWizard(platform);
+  if (!done) return;
+  window._cfgNewAccountFlash = true;
+  loadAdapterConfigDetail(platform);
+  return;
+}
+
+async function _addAdapterAccountLegacy(platform) {
   var name = await prompt2(
     t("add_account"),
     t("account_name"),

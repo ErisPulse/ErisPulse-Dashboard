@@ -11,6 +11,8 @@ import * as m_components_toast from "./components/toast.js";
 import * as m_components_popover from "./components/popover.js";
 import * as m_components_ep_select from "./components/ep-select.js";
 import * as m_components_tabs from "./components/tabs.js";
+import * as m_components_subnav from "./components/subnav.js";
+import * as m_components_account_wizard from "./components/account-wizard.js";
 import * as m_components_kv from "./components/kv.js";
 import * as m_components_tasks from "./components/tasks.js";
 import * as m_components_update_hint from "./components/update-hint.js";
@@ -52,6 +54,8 @@ const __namespaces = [
   m_components_popover,
   m_components_ep_select,
   m_components_tabs,
+  m_components_subnav,
+  m_components_account_wizard,
   m_components_kv,
   m_components_tasks,
   m_components_update_hint,

@@ -127,6 +127,12 @@ class RoutesMixin:
             mn, "/api/adapter-logos", handler=self._api_adapter_logos, methods=["GET"]
         )
         r.register_http_route(
+            mn,
+            "/api/dashboard/sections",
+            handler=self._api_dashboard_sections,
+            methods=["GET"],
+        )
+        r.register_http_route(
             mn, "/api/adapters", handler=self._api_adapters, methods=["GET"]
         )
         r.register_http_route(
