@@ -503,14 +503,17 @@ var _cfgWidgets = {
 
   slider: function (name, schema, value, fullKey, ctx) {
     var v = value != null ? value : schema.min != null ? schema.min : 0;
+    var sMin = schema.min != null ? Number(schema.min) : 0;
+    var sMax = schema.max != null ? Number(schema.max) : 100;
+    var pct = sMax > sMin ? ((v - sMin) / (sMax - sMin)) * 100 : 0;
     return (
-      '<div style="display:flex;gap:8px;align-items:center;max-width:420px"><input type="range" value="' +
+      '<div class="cfg-slider"><input type="range" value="' +
       esc(String(v)) +
       '"' +
       _cfgAttrs(fullKey, ctx.tp, "slider") +
       _cfgNumAttrs(schema) +
-      ' style="flex:1" oninput="this.dataset.sliderval!==undefined||(this.dataset.sliderval=\'\');var s=this.parentElement.querySelector(\'[data-sliderval]\');if(s)s.textContent=this.value">' +
-      '<span data-sliderval style="min-width:36px;text-align:right">' +
+      ' style="--pct:' + Math.max(0, Math.min(100, pct)) + '%" oninput="cfgSliderPaint(this)">' +
+      '<span class="cfg-slider-val" data-sliderval>' +
       esc(String(v)) +
       "</span>" +
       ctx.saveBtn +
@@ -520,16 +523,40 @@ var _cfgWidgets = {
 
   color: function (name, schema, value, fullKey, ctx) {
     var v = String(value != null ? value : "");
-    if (!/^#[0-9a-fA-F]{6}$/.test(v)) v = "#000000";
+    if (!/^#[0-9a-fA-F]{6}$/.test(v)) v = "#4aa3dd";
+    var presets = schema.presets || [
+      "#4aa3dd", "#22c55e", "#f59e0b", "#ef4444",
+      "#a855f7", "#ec4899", "#64748b", "#111418",
+    ];
+    var dots = presets
+      .map(function (c) {
+        return (
+          '<button type="button" class="cfg-color-dot" style="background:' +
+          esc(c) +
+          '" data-colortarget="' +
+          esc(fullKey) +
+          '" data-colorval="' +
+          esc(c) +
+          '" onclick="colorPick(this)" title="' +
+          esc(c) +
+          '"></button>'
+        );
+      })
+      .join("");
     return (
-      '<div style="display:flex;gap:4px;align-items:center"><input type="color" value="' +
+      '<div class="cfg-color"><input type="color" value="' +
       v +
       '"' +
       _cfgAttrs(fullKey, "string", "color") +
-      ' style="width:42px;height:28px;padding:0;border:none;background:none;cursor:pointer">' +
-      '<span style="color:var(--tx-s);font-size:12px">' +
+      ' oninput="colorPaint(this)">' +
+      '<input type="text" class="fw-input cfg-color-hex" value="' +
       esc(v) +
-      "</span>" +
+      '" data-colorhex="' +
+      esc(fullKey) +
+      '" maxlength="7" spellcheck="false" oninput="colorHex(this)">' +
+      '<div class="cfg-color-dots">' +
+      dots +
+      "</div>" +
       ctx.saveBtn +
       "</div>"
     );
@@ -537,7 +564,7 @@ var _cfgWidgets = {
 
   date: function (name, schema, value, fullKey, ctx) {
     return (
-      '<div style="display:flex;gap:4px"><input class="fw-input" type="date" value="' +
+      '<div class="cfg-native"><input class="fw-input" type="date" value="' +
       esc(String(value != null ? value : "")) +
       '"' +
       _cfgAttrs(fullKey, "string", "date") +
@@ -549,7 +576,7 @@ var _cfgWidgets = {
 
   time: function (name, schema, value, fullKey, ctx) {
     return (
-      '<div style="display:flex;gap:4px"><input class="fw-input" type="time" value="' +
+      '<div class="cfg-native"><input class="fw-input" type="time" value="' +
       esc(String(value != null ? value : "")) +
       '"' +
       _cfgAttrs(fullKey, "string", "time") +
@@ -561,7 +588,7 @@ var _cfgWidgets = {
 
   datetime: function (name, schema, value, fullKey, ctx) {
     return (
-      '<div style="display:flex;gap:4px"><input class="fw-input" type="datetime-local" value="' +
+      '<div class="cfg-native"><input class="fw-input" type="datetime-local" value="' +
       esc(String(value != null ? value : "")) +
       '"' +
       _cfgAttrs(fullKey, "string", "datetime") +
@@ -629,13 +656,15 @@ var _cfgWidgets = {
         var ol = typeof o === "object" ? o.label : o;
         var on = sel.indexOf(String(ov)) !== -1;
         return (
-          '<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 12px 2px 0"><input type="checkbox" data-msvalue="' +
+          '<label class="cfg-ms-chip' +
+          (on ? " is-on" : "") +
+          '"><input type="checkbox" data-msvalue="' +
           esc(String(ov)) +
           '" data-mskey="' +
           esc(fullKey) +
           '"' +
           (on ? " checked" : "") +
-          ' onchange="msSync(this)"><span>' +
+          ' onchange="msSync(this)"><span class="cfg-ms-box"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="cfg-ms-label">' +
           esc(String(ol)) +
           "</span></label>"
         );
@@ -643,9 +672,9 @@ var _cfgWidgets = {
       .join("");
     var ser = _cfgMsSerialize(items, valueType);
     return (
-      '<div data-msgroup="' +
+      '<div class="cfg-ms" data-msgroup="' +
       esc(fullKey) +
-      '" style="display:flex;flex-wrap:wrap;max-width:680px">' +
+      '">' +
       boxes +
       "</div>" +
       '<input type="hidden"' +
@@ -672,36 +701,34 @@ var _cfgWidgets = {
     var rows = Object.keys(obj)
       .map(function (k) {
         return (
-          '<div class="cfg-kv-row" style="display:flex;gap:4px;margin:2px 0">' +
-          '<input class="fw-input" type="text" value="' +
+          '<div class="cfg-row">' +
+          '<input class="fw-input cfg-row-key" type="text" value="' +
           esc(k) +
-          '" data-kvkey style="min-width:110px" placeholder="' +
+          '" data-kvkey placeholder="' +
           esc(t("cfg_kv_key")) +
           '">' +
-          '<input class="fw-input" type="text" value="' +
+          '<input class="fw-input cfg-row-val" type="text" value="' +
           esc(String(obj[k] != null ? obj[k] : "")) +
           '" data-kvval placeholder="' +
           esc(t("cfg_kv_value")) +
           '">' +
-          '<button class="kv-btn" type="button" onclick="this.parentElement.remove();kvSync(this.dataset.target||this.closest(\'[data-kvgroup]\').querySelector(\'input[type=hidden]\'))" data-target="' +
-          esc(fullKey) +
-          '" title="' +
+          '<button class="cfg-row-del" type="button" onclick="this.parentElement.remove();kvSync(this.closest(\'[data-kvgroup]\').querySelector(\'input[type=hidden]\'))" title="' +
           esc(t("cfg_remove_row")) +
-      '">✕</button></div>'
+          '">✕</button></div>'
         );
       })
       .join("");
     return (
-      '<div data-kvgroup="' +
+      '<div class="cfg-ed" data-kvgroup="' +
       esc(fullKey) +
-      '" style="max-width:680px">' +
+      '">' +
       (rows ||
-        '<div class="cfg-empty-hint" style="color:var(--tx-s);font-size:12px">' +
+        '<div class="cfg-empty-hint">' +
         esc(t("cfg_empty_list")) +
         "</div>") +
-      '<div><button class="btn btn-sm" type="button" onclick="kvAddRow(this)" style="margin-top:4px">+ ' +
+      '<button class="cfg-add-row" type="button" onclick="kvAddRow(this)">+ ' +
       esc(t("cfg_add_row")) +
-      "</button></div>" +
+      "</button>" +
       '<input type="hidden"' +
       _cfgAttrs(fullKey, "object", "kv") +
       ' value="' +
@@ -728,16 +755,16 @@ var _cfgWidgets = {
       })
       .join("");
     return (
-      '<div data-listgroup="' +
+      '<div class="cfg-ed cfg-ed-list" data-listgroup="' +
       esc(fullKey) +
-      '" style="max-width:720px">' +
+      '">' +
       (rows ||
-        '<div class="cfg-empty-hint" style="color:var(--tx-s);font-size:12px">' +
+        '<div class="cfg-empty-hint">' +
         esc(t("cfg_empty_list")) +
         "</div>") +
-      '<div><button class="btn btn-sm" type="button" onclick="listAddRow(this)" style="margin-top:4px">+ ' +
+      '<button class="cfg-add-row" type="button" onclick="listAddRow(this)">+ ' +
       esc(t("cfg_add_row")) +
-      "</button></div>" +
+      "</button>" +
       '<input type="hidden"' +
       _cfgAttrs(fullKey, "object", "list") +
       ' value="' +
@@ -783,8 +810,8 @@ function _cfgListRow(fullKey, item, rowValue) {
       }
     }
     return (
-      '<div class="cfg-list-row" style="display:flex;gap:4px;align-items:flex-start;margin:2px 0;padding:6px;border:1px solid rgba(128,128,128,.25);border-radius:8px">' +
-      '<div style="flex:1;display:grid;gap:4px">' +
+      '<div class="cfg-row cfg-row-obj">' +
+      '<div class="cfg-row-fields">' +
       inner +
       "</div>" +
       delBtn +
@@ -800,14 +827,67 @@ function _cfgListRow(fullKey, item, rowValue) {
     { fieldSave: false, saveFn: "", saveBtn: "", onChg: "", tp: w === "number" ? "number" : "string" },
   ).replace(/data-ackey="/g, 'data-itemvalue="');
   return (
-    '<div class="cfg-list-row" style="display:flex;gap:4px;margin:2px 0">' +
+    '<div class="cfg-row">' +
     html +
     delBtn +
     "</div>"
   );
 }
 
-// ── 复合控件编辑操作（全局函数，经 main.js Object.assign(window, ns) 暴露）──
+// ── 单控件交互（全局函数，经 main.js Object.assign(window, ns) 暴露）──
+
+// slider 拖动：进度填充 + 数值徽标即时刷新
+export function cfgSliderPaint(el) {
+  var min = el.min !== "" ? Number(el.min) : 0;
+  var max = el.max !== "" ? Number(el.max) : 100;
+  var pct = max > min ? ((Number(el.value) - min) / (max - min)) * 100 : 0;
+  el.style.setProperty("--pct", Math.max(0, Math.min(100, pct)) + "%");
+  var val = el.parentElement.querySelector("[data-sliderval]");
+  if (val) val.textContent = el.value;
+}
+
+// color 色板拖动 → 同步 hex 输入
+export function colorPaint(el) {
+  var hex = el.parentElement.querySelector("[data-colorhex]");
+  if (hex && hex.value.toLowerCase() !== el.value.toLowerCase()) hex.value = el.value;
+}
+
+// hex 文本输入 → 合法时同步色板
+export function colorHex(el) {
+  var v = el.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    var picker = el.parentElement.querySelector('input[type="color"]');
+    if (picker) picker.value = v.toLowerCase();
+  }
+}
+
+// 预设色点选 → 设值并触发隐藏链保存
+export function colorPick(dot) {
+  var key = dot.dataset.colortarget;
+  var v = dot.dataset.colorval;
+  var wrap = dot.closest(".cfg-color");
+  if (!wrap) return;
+  var picker = wrap.querySelector('input[type="color"]');
+  var hex = wrap.querySelector("[data-colorhex]");
+  if (picker) picker.value = v;
+  if (hex) hex.value = v;
+  if (picker) _cfgCommitHidden(picker);
+}
+
+// ── 复合控件编辑操作 ──
+
+// kv/list 增行统一构造（带删除按钮；group 为容器元素）
+function _cfgNewRow(kind, itemHtml) {
+  var row = document.createElement("div");
+  row.className = "cfg-row";
+  row.innerHTML =
+    itemHtml +
+    '<button class="cfg-row-del" type="button" onclick="this.parentElement.remove();var g=this.closest(\'[data-kvgroup],[data-listgroup]\');if(g){var h=g.querySelector(\'input[type=hidden]\');if(h){(typeof kvSync===\'function\'&&g.hasAttribute(\'data-kvgroup\')?kvSync(h):listSync(h));}}" title="' +
+    esc(t("cfg_remove_row")) +
+    '">✕</button>';
+  return row;
+}
+
 
 export function msSync(box) {
   var key = box.dataset && box.dataset.mskey;
@@ -842,21 +922,9 @@ export function kvAddRow(btn) {
   if (!group) return;
   var hint = group.querySelector(".cfg-empty-hint");
   if (hint) hint.remove();
-  var row = document.createElement("div");
-  row.className = "cfg-kv-row";
-  row.style.cssText = "display:flex;gap:4px;margin:2px 0";
-  row.innerHTML =
-    '<input class="fw-input" type="text" data-kvkey style="min-width:110px" placeholder="' +
-    esc(t("cfg_kv_key")) +
-    '">' +
-    '<input class="fw-input" type="text" data-kvval placeholder="' +
-    esc(t("cfg_kv_value")) +
-    '">' +
-    '<button class="kv-btn" type="button" onclick="this.parentElement.remove();kvSync(this.closest(\'[data-kvgroup]\').querySelector(\'input[type=hidden]\'))" title="' +
-    esc(t("cfg_remove_row")) +
-    '">✕</button>';
-  group.insertBefore(row, btn.parentElement);
-  row.querySelector("[data-kvkey]").focus();
+  group.insertBefore(_cfgNewRow("kv", ""), btn);
+  var last = group.querySelectorAll("[data-kvkey]");
+  if (last.length) last[last.length - 1].focus();
 }
 
 export function kvSync(hidden) {
@@ -864,7 +932,7 @@ export function kvSync(hidden) {
   var group = hidden.closest("[data-kvgroup]");
   if (!group) return;
   var obj = {};
-  group.querySelectorAll(".cfg-kv-row").forEach(function (r) {
+  group.querySelectorAll(".cfg-row").forEach(function (r) {
     var k = r.querySelector("[data-kvkey]").value.trim();
     if (!k) return;
     obj[k] = r.querySelector("[data-kvval]").value;
@@ -884,9 +952,13 @@ export function listAddRow(btn) {
   } catch (e) {}
   var hint = group.querySelector(".cfg-empty-hint");
   if (hint) hint.remove();
-  var wrap = document.createElement("div");
-  wrap.innerHTML = _cfgListRow("", item, item.fields ? {} : "");
-  group.insertBefore(wrap.firstChild, btn.parentElement);
+  var inner = _cfgListRow("", item, item.fields ? {} : "");
+  // _cfgListRow 自带行壳（.cfg-row），抽出其 innerHTML 复用 _cfgNewRow 统一删除按钮
+  var tmp = document.createElement("div");
+  tmp.innerHTML = inner;
+  var innerFields = tmp.querySelector(".cfg-row-fields");
+  var payload = innerFields ? innerFields.innerHTML : tmp.querySelector(".cfg-row").innerHTML;
+  group.insertBefore(_cfgNewRow("list", payload), btn);
 }
 
 export function listSync(hidden) {
@@ -894,7 +966,7 @@ export function listSync(hidden) {
   var group = hidden.closest("[data-listgroup]");
   if (!group) return;
   var arr = [];
-  group.querySelectorAll(".cfg-list-row").forEach(function (r) {
+  group.querySelectorAll(".cfg-row").forEach(function (r) {
     if (r.querySelector("[data-itemvalue]")) {
       var el = r.querySelector("[data-itemvalue]");
       var v = el.type === "checkbox" ? el.checked : el.value;
