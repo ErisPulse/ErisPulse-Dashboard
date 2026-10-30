@@ -136,6 +136,12 @@ class RoutesMixin:
             mn, "/api/adapters", handler=self._api_adapters, methods=["GET"]
         )
         r.register_http_route(
+            mn,
+            "/api/master/candidates",
+            handler=self._api_master_candidates,
+            methods=["GET"],
+        )
+        r.register_http_route(
             mn, "/api/modules", handler=self._api_modules, methods=["GET"]
         )
         r.register_http_route(

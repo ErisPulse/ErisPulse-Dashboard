@@ -128,6 +128,46 @@ class MyConfig(BaseConfig):
     retry: RetryConfig  # → 可折叠分组，字段键 mymod.retry.retries
 ```
 
+## 自动推断（适配器零声明的默认体验）
+
+适配器只需按常规声明 dataclass 配置（类型 / required / secret / options），面板自动推断全部基础交互：
+
+| 推断来源 | 面板行为 |
+|---------|---------|
+| 字段 `type` 为 boolean | switch 开关 |
+| `secret: True` | 密码框 |
+| `type` 为 integer/float | 数字输入（配合 min/max/step） |
+| `options` 存在且 type 为 string | 下拉单选 |
+| 嵌套 dataclass | 折叠分组，递归以上规则 |
+| **唯一账户 + required 字段存在空值** | **首配置引导条**：提示"账户尚未完成配置"并一键进入配置向导（编辑该账户而非新建） |
+
+首配置引导完全由 schema 推断触发，适配器无需任何额外代码；多账户或已配置时不出现。
+
+## 账户添加向导与扩展区（register_section）
+
+「+ 添加账户」为分步向导：方式选择 → 配置 → 完成。手动步骤按账户 schema 的必填字段自动生成表单；适配器可注册**自包含 HTML 扩展区**提供一键接入能力（如扫码）：
+
+```python
+sdk.Dashboard.register_section(
+    id="my-quick-connect",
+    target="account_wizard",          # 挂载点：账户添加向导
+    title="扫码一键接入",
+    title_en="Scan to connect",
+    icon_svg="<svg>...</svg>",
+    platforms=["qqbot"],              # 仅在这些平台下出现；省略则所有平台
+    html="<!DOCTYPE html>...",        # 自包含 HTML（内联脚本/样式）
+    order=10,
+)
+```
+
+扩展区由向导以 iframe srcdoc 渲染，约定：
+
+- HTML 内可 `fetch` 同源 API（相对路径）；如需面板鉴权 API，携带 `Authorization: Bearer <localStorage token>`
+- 完成后通知父页：`parent.postMessage({type: "ep_section_done", success: true}, "*")`（`success:false` 时可附 `message` 提示）
+- 退出页面用 `sdk.Dashboard.unregister_section(id)`
+
+未注册任何扩展区的适配器，向导自动跳过方式选择直达手动配置——**基础体验零声明，特殊能力才写 section**。
+
 ## 兼容性
 
 - **旧 widget**：`text/password/switch/select` 及类型推断行为与 2.3.x 完全一致
