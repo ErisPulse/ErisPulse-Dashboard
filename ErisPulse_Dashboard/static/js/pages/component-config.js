@@ -411,6 +411,21 @@ function _cfgCommitHidden(hidden) {
 }
 
  
+ 
+function _cfgMsInferType(schema) {
+  var tp = String(schema.type || "").toLowerCase();
+  var opts = schema.options || [];
+  var numericOpts = opts.length > 0 && opts.every(function (o) {
+    var v = typeof o === "object" ? o.value : o;
+    return typeof v === "number" || /^\d+$/.test(String(v));
+  });
+  if ((tp === "integer" || tp === "number" || tp === "int" || tp === "float") && numericOpts)
+    return "mask";
+  if (tp === "array" || tp === "list") return "array";
+  return "json";
+}
+
+ 
 function _cfgMsRead(value, valueType) {
   var items = [];
   if (valueType === "mask") {
@@ -648,7 +663,8 @@ var _cfgWidgets = {
   },
 
   multiselect: function (name, schema, value, fullKey, ctx) {
-    var valueType = schema.value_type || "json";
+     
+    var valueType = schema.value_type || _cfgMsInferType(schema);
     var items = _cfgMsRead(value, valueType);
     var sel = items.map(String);
     var boxes = (schema.options || [])
