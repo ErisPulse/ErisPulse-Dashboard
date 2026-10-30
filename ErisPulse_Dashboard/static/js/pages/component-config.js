@@ -1248,6 +1248,33 @@ export async function loadAdapterAccounts(platform) {
 
   var accounts = d.accounts || {};
   var schema = d.schema;
+
+  // 首配置引导（通用推断）：唯一账户且声明为必填的字段存在空值 →
+  // 提示用户完成配置（扫码扩展区若注册则一并给出）。适配器无需任何额外声明。
+  var setupGuide = _accountNeedsSetup(accounts, schema);
+  if (setupGuide) {
+    html +=
+      '<div class="account-setup-guide">' +
+      '<div class="account-setup-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
+      '<div class="account-setup-texts">' +
+      '<div class="account-setup-title">' +
+      esc(t("account_setup_guide_title")) +
+      "</div>" +
+      '<div class="account-setup-desc">' +
+      esc(t("account_setup_guide_desc")) +
+      " · " +
+      esc(setupGuide) +
+      "</div></div>" +
+      '<div style="display:flex;gap:8px;flex:none">' +
+      '<button class="btn btn-primary btn-sm" onclick="openAccountWizard(\'' +
+      esc(platform) +
+      "', {editAccount:'" +
+      esc(setupGuide) +
+      "'})\">" +
+      esc(t("account_setup_guide_btn")) +
+      "</button></div></div>";
+  }
+
   for (var aname in accounts) {
     var adata = accounts[aname] || {};
     html += renderAdapterAccountCard(platform, aname, adata, schema);
@@ -1307,6 +1334,32 @@ export async function loadAdapterAccounts(platform) {
       }, 2600);
     }
   }
+}
+
+// 唯一账户且必填字段存在空值 → 返回该账户名（否则 null）。纯 schema 推断，零适配器声明。
+function _accountNeedsSetup(accounts, schema) {
+  var keys = Object.keys(accounts || {});
+  if (keys.length !== 1) return null;
+  var name = keys[0];
+  var adata = accounts[name] || {};
+  if (!schema || !schema.fields) return null;
+  for (var fname in schema.fields) {
+    var fs = schema.fields[fname] || {};
+    if (!fs.required) continue;
+    var v = adata[fname];
+    if (v === undefined || v === null || v === "") return name;
+  }
+  return null;
+}
+
+// 向导入口包装（全局）：供内联 onclick 使用
+export function openAccountWizardEntry(platform, opts) {
+  openAccountWizard(platform, opts).then(function (done) {
+    if (done) {
+      window._cfgNewAccountFlash = true;
+      loadAdapterConfigDetail(platform);
+    }
+  });
 }
 
 export function renderAdapterAccountCard(platform, accountName, accountData, schema) {

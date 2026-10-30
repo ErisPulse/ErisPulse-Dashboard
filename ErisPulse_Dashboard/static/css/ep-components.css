@@ -453,10 +453,11 @@
 .cfg-native input{color-scheme:light dark;}
 
 /* ── multiselect：chips 胶囊多选 ── */
-.cfg-ms{display:flex;flex-wrap:wrap;gap:8px;max-width:680px;}
+.cfg-ms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-width:760px;}
 .cfg-ms-chip{
   display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 8px;
   border-radius:999px;background:var(--bg-s);border:1px solid var(--bd);
+  min-width:0;overflow:hidden;
   cursor:pointer;user-select:none;position:relative;
   transition:background 150ms,border-color 150ms,transform 150ms var(--ease-smooth,ease-out);
 }
@@ -469,7 +470,7 @@
   transition:background 150ms,border-color 150ms;
 }
 .cfg-ms-box svg{opacity:0;transition:opacity 150ms;}
-.cfg-ms-label{font-size:12.5px;color:var(--tx-p);line-height:1.3;}
+.cfg-ms-label{font-size:12.5px;color:var(--tx-p);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cfg-ms-chip.is-on{background:var(--accent-soft);border-color:var(--accent);}
 .cfg-ms-chip.is-on .cfg-ms-box{background:var(--accent-fill,var(--accent));border-color:var(--accent-fill,var(--accent));}
 .cfg-ms-chip.is-on .cfg-ms-box svg{opacity:1;}
@@ -513,7 +514,7 @@
 .aw-steps span{flex:1;text-align:center;font-size:11.5px;color:var(--tx-t);padding:5px 0;border-radius:8px;background:var(--bg-s);border:1px solid var(--bd);transition:all .15s;}
 .aw-steps span.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);font-weight:600;}
 .aw-body{min-height:220px;display:flex;flex-direction:column;gap:10px;}
-.aw-cards{display:grid;gap:10px;}
+.aw-cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));}
 .aw-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--bd);border-radius:12px;background:var(--bg-t);cursor:pointer;text-align:left;font-family:inherit;transition:border-color .15s,transform .15s var(--ease-smooth,ease-out);}
 .aw-card:hover{border-color:var(--accent);transform:translateY(-1px);}
 .aw-card:focus-visible{outline:none;box-shadow:0 0 0 3.5px var(--accent-soft);}
@@ -529,4 +530,12 @@
 .aw-section-hint{font-size:12.5px;color:var(--tx-s);}
 .aw-frame{flex:1;width:100%;min-height:300px;border:1px solid var(--bd);border-radius:12px;background:var(--bg-t);}
 .aw-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--tx-p);font-size:14px;}
-@media (max-width:600px){.aw-cards{grid-template-columns:1fr;}}
+@media (max-width:560px){.aw-cards{grid-template-columns:1fr;}}
+
+/* ── 账户首配置引导（schema 推断触发，零适配器声明）── */
+.account-setup-guide{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--wr-bd,var(--wr-c));border-radius:14px;background:color-mix(in srgb,var(--wr-c) 8%,var(--bg-t));}
+.account-setup-icon{width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:10px;background:color-mix(in srgb,var(--wr-c) 15%,transparent);color:var(--wr-c);}
+.account-setup-texts{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.account-setup-title{font-size:13.5px;font-weight:600;color:var(--tx-p);}
+.account-setup-desc{font-size:12px;color:var(--tx-s);}
+@media (max-width:600px){.account-setup-guide{flex-wrap:wrap;}}

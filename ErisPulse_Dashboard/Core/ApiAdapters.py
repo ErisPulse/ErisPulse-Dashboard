@@ -370,7 +370,16 @@ class ApiAdaptersMixin:
         del accounts_data[account_name]
         self.sdk.config.setConfig(accounts_key, accounts_data)
 
-        reloaded = await self._reload_adapter_if_running(adapter_instance, platform)
+        # 适配器刷新放后台执行：运行中账户的连接收敛可能较慢，
+        # 同步等待会让请求超时被前端误报为删除失败（配置此刻已落库）
+        if adapter_instance in getattr(self.sdk.adapter, "_started_instances", set()):
+            import asyncio as _asyncio
+
+            _bg_reload = self._reload_adapter_if_running(adapter_instance, platform)
+            _asyncio.get_running_loop().create_task(_bg_reload)
+            reloaded = True
+        else:
+            reloaded = False
 
         self._add_audit_log(
             "adapter_account_delete", f"{platform}/{account_name}", request
@@ -404,3 +413,100 @@ class ApiAdaptersMixin:
         sections = self.get_sections(target, platform)
         # html 体积可能较大，前端渲染时按需取；列表一并返回（section 数量少）
         return JSONResponse({"success": True, "sections": sections})
+
+    # ════════════════ 最近消息发送者（主人快速选择数据源）════════════════
+
+    def _setup_recent_sender_collector(self):
+        """注册消息监听，收集最近发送者（昵称/ID/平台，内存环形，容量200）"""
+        import time as _time
+
+        async def _collect(event):
+            try:
+                if not isinstance(event, dict):
+                    return
+                if str(event.get("type") or "message") != "message":
+                    return
+                platform = str(event.get("platform") or "")
+                user_id = str(event.get("user_id") or "")
+                if not platform or not user_id:
+                    return
+                # 昵称多源兼容：sender.nickname/name（OneBot12 通用）、
+                # sender.username、事件顶层 user_nickname/user_name（QQ 官方适配器）
+                sender = event.get("sender") or {}
+                nickname = ""
+                if isinstance(sender, dict):
+                    nickname = str(
+                        sender.get("nickname")
+                        or sender.get("name")
+                        or sender.get("username")
+                        or ""
+                    )
+                if not nickname:
+                    nickname = str(
+                        event.get("user_nickname") or event.get("user_name") or ""
+                    )
+                key = platform + ":" + user_id
+                self._recent_senders[key] = {
+                    "platform": platform,
+                    "user_id": user_id,
+                    "nickname": nickname,
+                    "ts": _time.time(),
+                }
+                if len(self._recent_senders) > 200:
+                    # 淘汰最旧
+                    for k in sorted(self._recent_senders, key=lambda x: self._recent_senders[x]["ts"])[: len(self._recent_senders) - 200]:
+                        self._recent_senders.pop(k, None)
+            except Exception:
+                pass
+
+        try:
+            self.sdk.adapter.on_message()(_collect)
+        except Exception as e:
+            self.logger.debug(f"最近发送者收集器注册失败: {e}")
+
+    async def _api_master_candidates(self, request: Request) -> JSONResponse:
+        """最近消息发送者候选（运行期收集 + 收件箱历史，合并去重）"""
+        import time as _time
+
+        out: dict[str, dict] = {}
+        # 运行期收集
+        for it in self._recent_senders.values():
+            out[it["platform"] + ":" + it["user_id"]] = dict(it)
+        # 收件箱历史（若启用）补全更早的昵称
+        try:
+            tr = getattr(self.sdk, "transcript", None)
+            if tr is not None and getattr(tr, "enabled", False):
+                rows = tr.recent(48 * 3600.0, 400) or []
+                for row in rows:
+                    if not isinstance(row, dict) or row.get("role") != "user":
+                        continue
+                    key = str(row.get("session_key") or "")
+                    if not key:
+                        continue
+                    parts = key.split(":", 2)
+                    if len(parts) < 3:
+                        continue
+                    platform, _dt, target = parts[0], parts[1], parts[2]
+                    sender = str(row.get("sender") or "")
+                    user_id = sender or target
+                    if not user_id:
+                        continue
+                    k = platform + ":" + user_id
+                    meta = row.get("meta") or {}
+                    nickname = str((meta or {}).get("nickname") or "") if isinstance(meta, dict) else ""
+                    cur = out.get(k)
+                    if cur is None:
+                        out[k] = {
+                            "platform": platform,
+                            "user_id": user_id,
+                            "nickname": nickname,
+                            "ts": float(row.get("ts") or 0),
+                        }
+                    else:
+                        if nickname and not cur.get("nickname"):
+                            cur["nickname"] = nickname
+        except Exception:
+            pass
+        candidates = sorted(out.values(), key=lambda x: -x.get("ts", 0))[:60]
+        return JSONResponse({"success": True, "candidates": candidates})
+

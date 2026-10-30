@@ -38,13 +38,18 @@ async function _awSections(platform) {
   return (d && d.sections) || [];
 }
 
+async function _awLoadAccounts(platform) {
+  var d = await api("/api/adapter/" + encodeURIComponent(platform) + "/accounts");
+  return (d && d.accounts) || {};
+}
+
 async function _awAccountSchema(platform) {
   var d = await api("/api/adapter/" + encodeURIComponent(platform) + "/accounts");
   return (d && d.schema) || null;
 }
 
 // 手动步骤表单：账户名 + 必填字段（schema required 且无默认值）
-function _awManualForm(platform, schema) {
+function _awManualForm(platform, schema, ctx) {
   var fields = "";
   if (schema && schema.fields) {
     Object.entries(schema.fields).forEach(function (en) {
@@ -55,12 +60,15 @@ function _awManualForm(platform, schema) {
       var hasDefault = fs.default !== undefined && fs.default !== "" && fs.default !== null;
       if (!required || hasDefault) return;
       var type = fs.secret || fs.widget === "password" ? "password" : "text";
+      var initVal = ctx && ctx.values ? String(ctx.values[fname] != null ? ctx.values[fname] : "") : "";
       fields +=
         '<label class="aw-field"><span>' +
         esc(fname) +
         (required ? ' <i style="color:var(--er-c)">*</i>' : "") +
         '</span><input class="fw-input" type="' +
         type +
+        '" value="' +
+        esc(initVal) +
         '" data-aw-field="' +
         esc(fname) +
         '" autocomplete="new-password"></label>';
@@ -70,13 +78,15 @@ function _awManualForm(platform, schema) {
     '<div class="aw-form">' +
     '<label class="aw-field"><span>' +
     esc(t("account_name")) +
-    ' <i style="color:var(--er-c)">*</i></span><input class="fw-input" type="text" id="awAccountName"></label>' +
+    ' <i style="color:var(--er-c)">*</i></span><input class="fw-input" type="text" id="awAccountName" value="' +
+    esc((ctx && ctx.editAccount) || "") +
+    '"></label>' +
     fields +
     "</div>"
   );
 }
 
-async function _awSubmitManual(platform, box) {
+async function _awSubmitManual(platform, box, ctx) {
   var name = (box.querySelector("#awAccountName") || {}).value || "";
   name = name.trim();
   if (!name) {
@@ -88,11 +98,12 @@ async function _awSubmitManual(platform, box) {
     toast(t("save_failed"), "er");
     return false;
   }
-  if (d.accounts[name] !== undefined) {
+  var isEdit = name === (ctx && ctx.editAccount);
+  if (d.accounts[name] !== undefined && !isEdit) {
     toast(t("account_wizard_name_exists"), "er");
     return false;
   }
-  var account = { enabled: true, name: "" };
+  var account = isEdit && d.accounts[name] ? d.accounts[name] : { enabled: true, name: "" };
   box.querySelectorAll("[data-aw-field]").forEach(function (inp) {
     account[inp.dataset.awField] = inp.value;
   });
@@ -157,8 +168,9 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
       "</button>";
   } else if (step === 2) {
     if (chosen === "manual") {
-      _awAccountSchema(platform).then(function (schema) {
-        body.innerHTML = _awManualForm(platform, schema);
+      Promise.all([_awAccountSchema(platform), _awLoadAccounts(platform)]).then(function (rs) {
+        ctx.values = (rs[1] && rs[1][ctx.editAccount]) || {};
+        body.innerHTML = _awManualForm(platform, rs[0], ctx);
         var first = body.querySelector("input");
         if (first) first.focus();
       });
@@ -166,7 +178,7 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
         '<button class="btn btn-secondary" data-aw-back>' +
         esc(t("account_wizard_back")) +
         '</button><button class="btn btn-primary" data-aw-next>' +
-        esc(t("account_wizard_create")) +
+        esc(t(ctx.editAccount ? "account_wizard_save" : "account_wizard_create")) +
         "</button>";
     } else {
       var sec = chosen;
@@ -223,7 +235,7 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
     );
   });
   bind("[data-aw-next]", async function () {
-    var ok = await _awSubmitManual(platform, body);
+    var ok = await _awSubmitManual(platform, body, ctx);
     if (ok) _awRender(ov, platform, 3, sections, ctx.chosen, ctx);
   });
 }
@@ -232,7 +244,8 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
  * 打开账户添加向导。
  * @returns Promise<boolean> 用户是否完成添加（true 时调用方应刷新配置页）
  */
-export async function openAccountWizard(platform) {
+export async function openAccountWizard(platform, opts) {
+  opts = opts || {};
   var sections = [];
   try {
     sections = await _awSections(platform);
@@ -256,6 +269,8 @@ export async function openAccountWizard(platform) {
 
   var ctx = {
     chosen: "manual",
+    editAccount: opts.editAccount || "",
+    values: {},
     onSectionMsg: null,
     close: function (done) {
       if (ctx.onSectionMsg) window.removeEventListener("message", ctx.onSectionMsg);
