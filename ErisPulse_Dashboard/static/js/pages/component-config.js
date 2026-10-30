@@ -410,6 +410,21 @@ function _cfgCommitHidden(hidden) {
   }
 }
 
+// 值形态推断：字段为整数/数字且选项为数字 → mask（位掩码）；数组字段 → array；
+// 其余按 JSON 字符串。使多选在旧版 SDK 未透传 value_type 时仍写入正确类型。
+function _cfgMsInferType(schema) {
+  var tp = String(schema.type || "").toLowerCase();
+  var opts = schema.options || [];
+  var numericOpts = opts.length > 0 && opts.every(function (o) {
+    var v = typeof o === "object" ? o.value : o;
+    return typeof v === "number" || /^\d+$/.test(String(v));
+  });
+  if ((tp === "integer" || tp === "number" || tp === "int" || tp === "float") && numericOpts)
+    return "mask";
+  if (tp === "array" || tp === "list") return "array";
+  return "json";
+}
+
 // multiselect 值形态：json（默认，存 JSON 字符串）/ array（存原生数组）/ mask（存位掩码整数）
 function _cfgMsRead(value, valueType) {
   var items = [];
@@ -648,7 +663,8 @@ var _cfgWidgets = {
   },
 
   multiselect: function (name, schema, value, fullKey, ctx) {
-    var valueType = schema.value_type || "json";
+    // 值形态：显式 value_type 优先；缺省时按字段类型推断（旧 SDK 未透传时仍正确）
+    var valueType = schema.value_type || _cfgMsInferType(schema);
     var items = _cfgMsRead(value, valueType);
     var sel = items.map(String);
     var boxes = (schema.options || [])
