@@ -6,7 +6,7 @@
 
 # ErisPulse-Dashboard
 
-**Web admin panel for ErisPulse — system monitor, module management, config editor & event stream**
+**ErisPulse Web 管理面板 — 系统监控、模块管理、配置编辑、事件流查看**
 
 <p>
   <a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
@@ -17,56 +17,25 @@
 
 ---
 
-## 界面预览
-
-| | |
-|---|---|
-| **仪表盘** | **模块商店** |
-| ![](.github/screenshots/dashboard.png) | ![](.github/screenshots/store.png) |
-| **模块管理** | **会话收件箱** |
-| ![](.github/screenshots/modules.png) | ![](.github/screenshots/transcript.png) |
-| **设置** | **文件管理** |
-| ![](.github/screenshots/settings.png) | ![](.github/screenshots/files.png) |
-| **拓扑图谱** | |
-| ![](.github/screenshots/topology.png) | |
-
-> 截图含用户自定义背景与强调色，实际外观随你的配置自由变化。
-
-
 ## 简介
 
-ErisPulse Dashboard 是 ErisPulse 的官方 Web 管理面板：机器人挂在服务器上之后，看状态、管模块、改配置、翻日志这些事都在浏览器里完成，不用碰命令行。
+ErisPulse Dashboard 是 ErisPulse 框架的官方 Web 管理面板模块。通过浏览器即可监控框架运行状态、管理模块与适配器、查看实时事件流、编辑配置和存储数据，无需依赖任何外部前端构建工具。
 
-在线演示：[dashdemo.erisdev.com](https://dashdemo.erisdev.com)（Token 填 `demo`，演示数据，可以随便点）。
+## 核心特性
 
-## 功能
-
-**监控**
-
-- 系统概览：框架版本、运行时长、CPU / 内存、存储与连接状态
-- 事件流：实时事件与消息，可过滤搜索，也能自己构造事件发给适配器
-- 拓扑图谱：模块 / 适配器 / Bot 和资源的归属关系，可拖拽缩放
-- Bot 管理：各平台 Bot 的连接状态
-
-**管理**
-
-- 模块与适配器：启停、重载、改配置，支持影子测试
-- 模块商店：在线安装，批量多选
-- 包管理：pip 包升级、卸载、whl 上传安装
-- 权限控制：主人列表与三维作用域（模块 / 身份 / 出站）
-- 命令管理：命令规则、别名、参数覆写
-
-**数据与运维**
-
-- 会话收件箱：各会话近期的用户与机器人消息（需 ErisPulse 2.11.0+）
-- 存储浏览：键值数据与数据库表的查看和清理
-- 文件管理：在线编辑代码，图片视频直接预览
-- 系统日志：实时日志、生命周期事件、审计记录，可导出
-- 集群管理：接入远程节点，跨节点操作
-
-## 外观与移动端
-
-深色 / 浅色 / OLED 纯黑，赛璐璐动画皮肤，8 种强调色，背景图随便换（界面会为背景让利，半透明展示），字体也能上传替换。设置支持多设备同步。手机浏览器打开一样能用。
+- **系统概览** — 框架版本、运行时间、适配器与模块状态一目了然
+- **Bot 管理** — 查看所有平台的 Bot 连接状态与信息
+- **拓扑图谱** — 可视化模块 / 适配器 / Bot 及其资源与作用域的归属连线关系（需 ErisPulse 2.8.0+）
+- **模块管理** — 启用、禁用、加载模块与适配器
+- **插件商店** — 浏览远程包仓库，在线安装依赖包
+- **主人系统** — 管理框架主人，支持全局或按平台设置权限，展示身份源 Provider 归属
+- **作用域管理** — 三维控制面（模块绑定 / 身份准入 / 出站限制）、全局兜底开关、运行统计、运行时绑定归属权管理与判定测试器（需 ErisPulse 2.8.0+）
+- **命令管理** — 命令规则编辑，支持归属模块展示、ACL 用户黑白名单、参数覆写（master / hidden）与命令转换
+- **配置编辑** — 运行时查看与修改框架配置
+- **存储管理** — 查看、编辑、删除持久化存储的键值数据
+- **远程重启** — 通过 Web 界面安全重启框架
+- **集群管理** — 多节点集群监控与管理
+- **统一 UI 组件** — 自定义下拉与可搜索多选替代原生控件，且保持向后兼容
 
 ## 安装
 
@@ -77,7 +46,7 @@ pip install ErisPulse-Dashboard
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse-Dashboard
 ```
 
-安装后模块将被 ErisPulse 框架自动发现并加载。面板前端资源内置于 pip 包中，开箱即用，不依赖任何外部前端构建工具。
+安装后模块将被 ErisPulse 框架自动发现并加载。
 
 ## 访问地址
 
@@ -121,20 +90,6 @@ max_event_log = 500
 | `Dashboard.max_event_log` | `int` | `500` | 事件日志最大保留条数 |
 | `Dashboard.token` | `str` | 自动生成 | 访问 Token |
 
-## 下一步
-
-- **想先试用** → 打开[在线演示](https://dashdemo.erisdev.com)，Token 输入 `demo`
-- **想部署** → 到 [erisdev.com](https://www.erisdev.com) 阅读 ErisPulse 安装与部署文档，再回到上方「安装」一节装上面板
-- **想提需求 / 报问题** → 到 [Issues](https://github.com/ErisPulse/ErisPulse-Dashboard/issues) 告诉我们
-
 ## 许可证
 
 MIT
-
-## 字体归属 / Font Attribution
-
-Dashboard 默认使用系统字体栈（覆盖中/繁/日/俄/英全部界面语言，零外部请求）。
-
-用户可在 **设置 → 外观** 中上传自定义字体（`.ttf` / `.otf` / `.woff` / `.woff2`，≤15MB）自由替换界面字体；上传的字体保存在服务端 `static/res/fonts_upload/`，可随全局同步分发到所有设备。
-
-字体文件的版权归各自作者所有，使用上传功能时请确认你拥有相应字体的合法授权。
