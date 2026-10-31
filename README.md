@@ -6,7 +6,7 @@
 
 # ErisPulse-Dashboard
 
-**ErisPulse Web 管理面板 — 系统监控、模块管理、配置编辑、事件流查看**
+**Web admin panel for ErisPulse — system monitor, module management, config editor & event stream**
 
 <p>
   <a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
@@ -17,63 +17,63 @@
 
 ---
 
-## 简介
+## Overview
 
-ErisPulse Dashboard 是 ErisPulse 框架的官方 Web 管理面板模块。通过浏览器即可监控框架运行状态、管理模块与适配器、查看实时事件流、编辑配置和存储数据，无需依赖任何外部前端构建工具。
+ErisPulse Dashboard is the official web admin panel for the ErisPulse framework. Monitor framework status, manage modules and adapters, watch the live event stream, edit config and storage — all from a browser, with no external frontend toolchain.
 
-## 核心特性
+## Core Features
 
-- **系统概览** — 框架版本、运行时间、适配器与模块状态一目了然
-- **Bot 管理** — 查看所有平台的 Bot 连接状态与信息
-- **拓扑图谱** — 可视化模块 / 适配器 / Bot 及其资源与作用域的归属连线关系（需 ErisPulse 2.8.0+）
-- **模块管理** — 启用、禁用、加载模块与适配器
-- **插件商店** — 浏览远程包仓库，在线安装依赖包
-- **主人系统** — 管理框架主人，支持全局或按平台设置权限，展示身份源 Provider 归属
-- **作用域管理** — 三维控制面（模块绑定 / 身份准入 / 出站限制）、全局兜底开关、运行统计、运行时绑定归属权管理与判定测试器（需 ErisPulse 2.8.0+）
-- **命令管理** — 命令规则编辑，支持归属模块展示、ACL 用户黑白名单、参数覆写（master / hidden）与命令转换
-- **配置编辑** — 运行时查看与修改框架配置
-- **存储管理** — 查看、编辑、删除持久化存储的键值数据
-- **远程重启** — 通过 Web 界面安全重启框架
-- **集群管理** — 多节点集群监控与管理
-- **统一 UI 组件** — 自定义下拉与可搜索多选替代原生控件，且保持向后兼容
+- **System overview** — framework version, uptime, adapter and module status at a glance
+- **Bot management** — connection status and info for bots on every platform
+- **Topology graph** — visualizes ownership links between modules / adapters / bots and their resources & scopes (ErisPulse 2.8.0+)
+- **Module management** — enable, disable and load modules and adapters
+- **Plugin store** — browse the remote registry and install packages online
+- **Master system** — manage framework masters, global or per-platform permissions, identity-provider attribution
+- **Scope management** — three-axis control plane (module binding / identity admission / outbound limits), global fallback switches, runtime stats, runtime binding ownership and a decision tester (ErisPulse 2.8.0+)
+- **Command management** — edit command rules with owning-module display, ACL user allow/deny lists, argument overrides (`master` / `hidden`) and command conversion
+- **Config editor** — view and modify framework config at runtime
+- **Storage manager** — view, edit and delete persisted key-value data
+- **Remote restart** — safely restart the framework from the web UI
+- **Cluster management** — monitor and manage multi-node clusters
+- **Unified UI components** — custom dropdowns and searchable multi-selects replace native controls while staying backward compatible
 
-## 安装
+## Install
 
 ```bash
 pip install ErisPulse-Dashboard
 
-# 国内镜像
+# China mirror
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse-Dashboard
 ```
 
-安装后模块将被 ErisPulse 框架自动发现并加载。
+Once installed, the module is auto-discovered and loaded by the ErisPulse framework.
 
-## 访问地址
+## Access
 
-安装并启动 ErisPulse 框架后，在浏览器中打开：
+After starting ErisPulse, open in your browser:
 
 ```
 http://<host>:<port>/Dashboard/
 ```
 
-其中 `<host>` 和 `<port>` 为 ErisPulse 框架的监听地址与端口。
+where `<host>` and `<port>` are the framework's listen address and port.
 
-## 认证
+## Authentication
 
-模块首次加载时会自动生成一个访问 Token，并输出到框架日志中：
+On first load the module generates an access token and prints it to the framework log:
 
 ```
 [Dashboard] ╔══════════════════════════════════════════════╗
 [Dashboard] ║           ErisPulse Dashboard                ║
-[Dashboard] ║  访问地址: /Dashboard                       ║
-[Dashboard] ║  访问令牌: <your-token-here>                 ║
-[Dashboard] ║  令牌已保存至配置文件 Dashboard.token         ║
+[Dashboard] ║  URL: /Dashboard                             ║
+[Dashboard] ║  Token: <your-token-here>                    ║
+[Dashboard] ║  Token saved to config key Dashboard.token   ║
 [Dashboard] ╚══════════════════════════════════════════════╝
 ```
 
-为避免令牌泄露，仅在首次生成时在日志中明文输出。
+The token is printed in plain text only once, at first generation.
 
-打开 Dashboard 时需输入该 Token 完成认证。您也可以在配置文件中预设 Token：
+Enter it when opening the Dashboard. You can also preset it in the config file:
 
 ```toml
 [Dashboard]
@@ -82,14 +82,14 @@ title = "ErisPulse Dashboard"
 max_event_log = 500
 ```
 
-## 配置项
+## Configuration
 
-| 配置键 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `Dashboard.title` | `str` | `"ErisPulse Dashboard"` | 面板标题 |
-| `Dashboard.max_event_log` | `int` | `500` | 事件日志最大保留条数 |
-| `Dashboard.token` | `str` | 自动生成 | 访问 Token |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `Dashboard.title` | `str` | `"ErisPulse Dashboard"` | Panel title |
+| `Dashboard.max_event_log` | `int` | `500` | Max retained event log entries |
+| `Dashboard.token` | `str` | auto-generated | Access token |
 
-## 许可证
+## License
 
 MIT
