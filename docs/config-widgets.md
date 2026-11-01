@@ -1,6 +1,8 @@
 # 配置组件系统（Config Widgets）
 
-> 版本：Dashboard 2.4.0 起。适配器/模块在 dataclass 配置的 `metadata["ui"]` 中声明控件元数据，SDK `get_config_schema()` 透传为 JSON Schema，本面板按 widget 分发渲染。完整 schema 约定与全部控件参考见本文档。
+> 版本：Dashboard 2.4.0 起。适配器/模块在 dataclass 配置的 `metadata["ui"]` 中声明控件元数据，SDK `get_config_schema()` 透传为 JSON Schema，本面板按 widget 分发渲染。
+
+> **规范归属**：字段元数据、widget 语义、值形态、条件算子与兼容性契约以框架文档《[配置与 UI 元数据](https://github.com/ErisPulse/ErisPulse/tree/Develop/v2/docs/zh-CN/developer-guide/configuration.md)》为准；本文描述 ErisPulse Dashboard 的具体实现（控件视觉与交互）。
 
 ## 总览
 
