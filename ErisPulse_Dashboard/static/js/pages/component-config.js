@@ -1397,7 +1397,7 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
         fschema,
         fval,
         "accounts." + accountName + "." + platform,
-        { fieldSave: false },
+        { fieldSave: false, bindValues: accountData },
       );
     }
   }

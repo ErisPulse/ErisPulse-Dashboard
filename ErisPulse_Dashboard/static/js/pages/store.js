@@ -1,3 +1,4 @@
+import { cmpVer } from "../core/utils.js";
  
 
 export function debounceStore() {
@@ -670,11 +671,12 @@ export async function openPkgDetail(name, pkg, type) {
       .join("");
   }
 
-  const versions = d.versions || [];
+  const versions = (d.versions || []).slice().sort(function (a, b) {
+    return cmpVer(b, a);  
+  });
   if (versions.length) {
     document.getElementById("pkgDetailVersionsSection").style.display = "";
     document.getElementById("pkgDetailVersions").innerHTML = versions
-      .slice(0, 20)
       .map(
         (v) =>
           "<span style=\"display:inline-block;margin:2px 6px;cursor:pointer;color:var(--tx-s)\" onclick=\"document.getElementById('detailVersionSelect').value='" +
@@ -691,7 +693,6 @@ export async function openPkgDetail(name, pkg, type) {
       esc(d.latest_version || "") +
       ")</option>" +
       versions
-        .slice(0, 30)
         .map((v) => '<option value="' + esc(v) + '">' + esc(v) + "</option>")
         .join("");
   }
