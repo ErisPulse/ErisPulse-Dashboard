@@ -179,6 +179,30 @@ export async function loadPackageUpdates(forceRefresh) {
   document.getElementById("pkgUpdateList").innerHTML = html;
 }
 
+// 有可用更新时的安静提示：包管理导航红点 + 活动中心可点击条目（不弹气泡）
+export async function checkPkgUpdateBadge(forceRefresh) {
+  try {
+    const force = forceRefresh === true;
+    const d = await api("/api/packages/updates" + (force ? "?force=true" : ""));
+    const updates = (d && d.updates) || [];
+    const nav = document.querySelector('.nav-item[data-page="packages"]');
+    if (updates.length > 0) {
+      if (nav) nav.classList.add("show-update");
+      addOrUpdateTask(
+        "pkg-update-available",
+        t("pkg_update_available_msg").replace("{count}", updates.length),
+        "info",
+        [],
+      );
+    } else {
+      if (nav) nav.classList.remove("show-update");
+      removeTask("pkg-update-available");
+    }
+  } catch (e) {
+    /* 静默失败：不打扰用户 */
+  }
+}
+
 export async function upgradePkg(pkgName) {
   if (!authed) return showLogin();
   const ok = await confirm2(
@@ -230,9 +254,14 @@ export async function installNewPkg() {
     t("install") + " <strong>" + esc(packages.join(", ")) + "</strong>?",
   );
   if (!ok) return;
+  const body = { packages };
+  const extra = (
+    document.getElementById("pkgInstallExtraArgs")?.value || ""
+  ).trim();
+  if (extra) body.extra_args = extra;
   const d = await api("/api/packages/install", {
     method: "POST",
-    body: JSON.stringify({ packages }),
+    body: JSON.stringify(body),
   });
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, packages.join(", "));
@@ -257,9 +286,12 @@ export async function installNewGitPkg() {
     t("install") + " <strong>" + esc(val) + "</strong>?",
   );
   if (!ok) return;
+  const body = { packages: [val] };
+  const extra = (document.getElementById("pkgGitExtraArgs")?.value || "").trim();
+  if (extra) body.extra_args = extra;
   const d = await api("/api/packages/install", {
     method: "POST",
-    body: JSON.stringify({ packages: [val] }),
+    body: JSON.stringify(body),
   });
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, val);

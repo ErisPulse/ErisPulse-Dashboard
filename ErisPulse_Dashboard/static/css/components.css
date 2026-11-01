@@ -1027,6 +1027,12 @@ select.form-select::-ms-expand {
     color: var(--tx-p);
 }
 
+.update-hint-bar .update-hint-actions {
+    display: flex;
+    flex: none;
+    gap: 8px;
+}
+
 .update-hint-bar .update-hint-restart {
     flex: none;
 }

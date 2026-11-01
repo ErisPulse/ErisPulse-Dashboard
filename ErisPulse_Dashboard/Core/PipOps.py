@@ -19,6 +19,7 @@ class PipOpsMixin:
         task_id: str,
         force: bool = False,
         index_url: str = None,
+        extra_args: str = None,
     ):
         backend = self._get_pkg_manager().get_pip_backend()
         cmd = backend + ["install"]
@@ -26,6 +27,8 @@ class PipOpsMixin:
             cmd.append("--force-reinstall")
         if index_url:
             cmd.extend(["--index-url", index_url])
+        if extra_args:
+            cmd.extend(extra_args.split())
         cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",
@@ -244,7 +247,11 @@ class PipOpsMixin:
             )
 
     def _run_pip_upgrade(
-        self, packages: list[str], task_id: str, index_url: str = None
+        self,
+        packages: list[str],
+        task_id: str,
+        index_url: str = None,
+        extra_args: str = None,
     ):
         backend = self._get_pkg_manager().get_pip_backend()
         cmd = backend + ["install", "--upgrade"]
@@ -265,6 +272,8 @@ class PipOpsMixin:
                     cmd.append("--pre")
             except Exception:
                 pass
+        if extra_args:
+            cmd.extend(extra_args.split())
         cmd.extend(packages)
         self._install_tasks[task_id] = {
             "status": "running",
@@ -411,6 +420,7 @@ class PipOpsMixin:
         task_id: str,
         force: bool = False,
         index_url: str = None,
+        extra_args: str = None,
     ):
         self._install_tasks[task_id] = {
             "status": "running",
@@ -433,6 +443,8 @@ class PipOpsMixin:
                 pip_cmd.append("--force-reinstall")
             if index_url:
                 pip_cmd.extend(["--index-url", index_url])
+            if extra_args:
+                pip_cmd.extend(extra_args.split())
             pip_cmd.extend(packages)
             proc = subprocess.Popen(
                 pip_cmd,

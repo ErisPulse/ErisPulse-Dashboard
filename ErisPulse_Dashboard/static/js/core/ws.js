@@ -29,15 +29,20 @@ function clearFwUpdateIntent() {
     localStorage.removeItem("ep_fw_task");
   } catch (e) {}
 }
-// Dashboard 更新完成后强制刷新（带时间戳绕过 HTML 缓存）
-function reloadAfterDashboardUpdate() {
-  // 埋下持久化提示：刷新后展示"已自动重载模块，异常可重启"引导
+// Dashboard 更新完成后引导刷新：不再自动刷新页面，由用户确认（底部引导条作为未刷新时的持久入口）
+var _dashRefreshPromptShown = false;
+function promptDashboardRefresh() {
+  if (_dashRefreshPromptShown) return;
+  _dashRefreshPromptShown = true;
   try { showUpdateHint("dashboard", ""); } catch (e) {}
   toast(t("dashboard_updated_reload"), "ok");
-  setTimeout(function () {
+  confirm2(t("dashboard_updated_reload"), t("dashboard_updated_refresh_confirm")).then(function (ok) {
+    if (!ok) return;
+    try { sessionStorage.setItem("ep_dash_updated", "1"); } catch (e) {}
+    clearUpdateHint();
     location.href =
       location.pathname + "?_r=" + Date.now() + (location.hash || "");
-  }, 1800);
+  });
 }
 
 export function wsConnect() {
@@ -146,7 +151,7 @@ export function wsConnect() {
             isDashboardPkg(pkg) ||
             (m.packages || []).some((p) => isDashboardPkg(p))
           ) {
-            reloadAfterDashboardUpdate();
+            promptDashboardRefresh();
           } else if (
             isFrameworkPkg(pkg) ||
             (m.packages || []).some((p) => isFrameworkPkg(p))
@@ -164,6 +169,7 @@ export function wsConnect() {
             loadModules();
             loadPackages(true);
             loadStore(true);
+            checkPkgUpdateBadge(true);
           }
         } else if (m.status === "error") {
           _installTaskIds.delete(m.task_id);
@@ -208,11 +214,12 @@ export function wsConnect() {
             [],
           );
           loadPackages(true);
+          checkPkgUpdateBadge(true);
         }
         loadModules();
       } else if (m.type === "dashboard_reloaded") {
-        // 后端已完成 Dashboard 模块重载：强制刷新以加载全新资源
-        reloadAfterDashboardUpdate();
+        // 后端已完成 Dashboard 模块重载：引导用户刷新（确认制，不自动刷）
+        promptDashboardRefresh();
       } else if (m.type === "ping") {
         ws.send(JSON.stringify({ type: "pong" }));
       } else if (m.type === "views_changed") {
@@ -265,6 +272,7 @@ export function loadAll() {
   loadPerformance();
   loadEvents();
   checkFwUpdateBadge();
+  checkPkgUpdateBadge();
   loadModuleViews();
   restartRefreshTimer();
 }

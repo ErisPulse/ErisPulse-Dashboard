@@ -168,6 +168,12 @@ export function openTaskTarget(id) {
     showSettings();
     var btn = document.querySelector('.pkg-tab[data-tab="settings-update"]');
     if (btn) switchSettingsTab("settings-update", btn);
+  } else if (id === "pkg-update-available") {
+    closeTaskPanel();
+    var nav = document.querySelector('.nav-item[data-page="packages"]');
+    if (nav) go("packages", nav);
+    var pkBtn = document.querySelector('#p-packages .pkg-tab[data-tab="pk-updates"]');
+    if (pkBtn) switchPkgTab("pk-updates", pkBtn);
   }
 }
 

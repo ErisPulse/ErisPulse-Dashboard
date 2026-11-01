@@ -172,14 +172,18 @@ export async function loadAdapterConfigDetail(platform) {
 
   var html = '<div class="adapter-config-detail">';
 
-  if (d.has_config && d.schema) {
+  // 全局配置卡片：仅在适配器声明了可用配置项时渲染，未声明 Schema 不再显示空卡片
+  if (
+    d.has_config &&
+    d.schema &&
+    d.schema.fields &&
+    Object.keys(d.schema.fields).length > 0
+  ) {
     var globalFieldsHtml = renderAdapterSchemaFields(
       d.schema.fields,
       d.values || {},
       d.config_key,
     );
-    var hasRenderableFields =
-      d.schema.fields && Object.keys(d.schema.fields).length > 0;
     html +=
       '<div class="fw-section"><div class="fw-section-title">' +
       t("adapter_global_config") +
@@ -189,19 +193,17 @@ export async function loadAdapterConfigDetail(platform) {
       esc(d.config_key) +
       '" data-cfgbind-root data-cfgbind-prefix="' +
       esc(d.config_key) +
-      '.">' +
+      '">' +
       globalFieldsHtml +
       "</div>";
-    if (hasRenderableFields) {
-      html +=
-        '<div class="cfg-fields-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
-        esc(d.config_key) +
-        '." onclick="saveAdapterConfigAll(\'' +
-        esc(platform) +
-        "')\">" +
-        t("save_adapter_config") +
-        "</button></div>";
-    }
+    html +=
+      '<div class="cfg-fields-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '." onclick="saveAdapterConfigAll(\'' +
+      esc(platform) +
+      "')\">" +
+      t("save_adapter_config") +
+      "</button></div>";
     html += "</div></div>";
   }
 
@@ -1424,7 +1426,11 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     t("remove_account") +
     "</button>" +
     "</div>" +
-    '<div class="account-card-body">' +
+    '<div class="account-card-body" data-cfgbind-root data-cfgbind-prefix="accounts.' +
+    esc(accountName) +
+    "." +
+    esc(platform) +
+    '">' +
     fieldsHtml +
     "</div>" +
     '<div class="account-card-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="accounts.' +
