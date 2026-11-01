@@ -49,39 +49,42 @@ async function _awAccountSchema(platform) {
 }
 
  
+ 
 function _awManualForm(platform, schema, ctx) {
-  var fields = "";
+  var fieldsHtml = "";
   if (schema && schema.fields) {
-    Object.entries(schema.fields).forEach(function (en) {
-      var fname = en[0],
-        fs = en[1] || {};
-      if (fname === "enabled" || fname === "name") return;
-      var required = !!fs.required;
-      var hasDefault = fs.default !== undefined && fs.default !== "" && fs.default !== null;
-      if (!required || hasDefault) return;
-      var type = fs.secret || fs.widget === "password" ? "password" : "text";
-      var initVal = ctx && ctx.values ? String(ctx.values[fname] != null ? ctx.values[fname] : "") : "";
-      fields +=
-        '<label class="aw-field"><span>' +
-        esc(fname) +
-        (required ? ' <i style="color:var(--er-c)">*</i>' : "") +
-        '</span><input class="fw-input" type="' +
-        type +
-        '" value="' +
-        esc(initVal) +
-        '" data-aw-field="' +
-        esc(fname) +
-        '" autocomplete="new-password"></label>';
+    var items = Object.entries(schema.fields).sort(function (a, b) {
+      var oa = (a[1] || {}).order || 100,
+        ob = (b[1] || {}).order || 100;
+      return oa - ob;
     });
+    for (var i = 0; i < items.length; i++) {
+      var fname = items[i][0],
+        fschema = items[i][1] || {};
+      if (fname === "enabled" || fname === "name") continue;
+      var fval =
+        ctx && ctx.values && ctx.values[fname] !== undefined
+          ? ctx.values[fname]
+          : fschema.default;
+      fieldsHtml += renderAdapterConfigField(
+        fname,
+        fschema,
+        fval,
+        "aw." + platform,
+        { fieldSave: false, bindValues: (ctx && ctx.values) || {} },
+      );
+    }
   }
   return (
-    '<div class="aw-form">' +
+    '<div class="aw-form" data-cfgbind-root data-cfgbind-prefix="aw.' +
+    esc(platform) +
+    '">' +
     '<label class="aw-field"><span>' +
     esc(t("account_name")) +
     ' <i style="color:var(--er-c)">*</i></span><input class="fw-input" type="text" id="awAccountName" value="' +
     esc((ctx && ctx.editAccount) || "") +
     '"></label>' +
-    fields +
+    fieldsHtml +
     "</div>"
   );
 }
@@ -104,8 +107,23 @@ async function _awSubmitManual(platform, box, ctx) {
     return false;
   }
   var account = isEdit && d.accounts[name] ? d.accounts[name] : { enabled: true, name: "" };
-  box.querySelectorAll("[data-aw-field]").forEach(function (inp) {
-    account[inp.dataset.awField] = inp.value;
+  var awPrefix = "aw." + platform + ".";
+  box.querySelectorAll("[data-ackey]").forEach(function (inp) {
+    var key = inp.dataset.ackey || "";
+    if (key.indexOf(awPrefix) !== 0) return;
+    var fname = key.slice(awPrefix.length);
+    if (!fname || fname.indexOf(".") !== -1) return;
+    var tp = inp.dataset.adapterTp || "string";
+    var val = inp.type === "checkbox" ? inp.checked : inp.value;
+    if (tp === "number" || tp === "integer" || tp === "float") val = Number(val);
+    else if (tp === "object") {
+      try {
+        val = JSON.parse(val);
+      } catch (e) {
+        return;
+      }
+    }
+    account[fname] = val;
   });
   d.accounts[name] = account;
   var result = await api(
@@ -249,7 +267,27 @@ export async function openAccountWizard(platform, opts) {
   var sections = [];
   try {
     sections = await _awSections(platform);
-  } catch (e) {}
+    if (!sections.length) {
+       
+      await new Promise(function (r) {
+        setTimeout(r, 800);
+      });
+      sections = await _awSections(platform);
+    }
+  } catch (e) {
+     
+    await new Promise(function (r) {
+      setTimeout(r, 600);
+    });
+    try {
+      sections = await _awSections(platform);
+    } catch (e2) {
+      console.warn(
+        "[ErisPulse Dashboard] 获取账户向导扩展接入方式失败，已回退到手动配置：",
+        e2,
+      );
+    }
+  }
 
   if (_awCleanup) _awCleanup();
   var ov = _awEl(

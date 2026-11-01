@@ -54,6 +54,7 @@ class MainBase:
         self._command_middleware_func = None
         self._registered_views: dict[str, dict] = {}
         self._registered_sections: dict[str, dict] = {}
+        self._upload_tokens: dict[str, dict] = {}
         self._recent_senders: dict[str, dict] = {}
         self._cluster: ClusterManager | None = None
         self._lifecycle_counts: dict[str, int] = {}
@@ -78,6 +79,7 @@ class MainBase:
         self._loop = asyncio.get_running_loop()
         self._register_i18n()
         self._restore_persisted_data()
+        self._restore_registrations()
         self._purge_old_logs()
         self._restore_audit_data()
         self._load_command_rules()

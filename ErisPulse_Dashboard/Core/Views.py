@@ -156,6 +156,7 @@ class ViewsMixin:
         }
         self._registered_views[id] = view_data
         self.logger.info(f"Module view registered: {id}")
+        self._persist_registrations()
         self._safe_broadcast(
             {"type": "views_changed", "data": {"action": "register", "id": id}}
         )
@@ -166,6 +167,7 @@ class ViewsMixin:
             return False
         del self._registered_views[id]
         self.logger.info(f"Module view unregistered: {id}")
+        self._persist_registrations()
         self._safe_broadcast(
             {"type": "views_changed", "data": {"action": "unregister", "id": id}}
         )
@@ -173,6 +175,36 @@ class ViewsMixin:
 
     def get_registered_views(self) -> list[dict]:
         return list(self._registered_views.values())
+
+     
+     
+     
+
+    def _persist_registrations(self):
+        try:
+            self.storage.set(
+                "__ep_dashboard_registrations__",
+                {
+                    "views": self._registered_views,
+                    "sections": self._registered_sections,
+                },
+            )
+        except Exception:
+            pass
+
+    def _restore_registrations(self):
+        try:
+            data = self.storage.get("__ep_dashboard_registrations__")
+        except Exception:
+            return
+        if not isinstance(data, dict):
+            return
+        views = data.get("views")
+        sections = data.get("sections")
+        if isinstance(views, dict) and views:
+            self._registered_views.update(views)
+        if isinstance(sections, dict) and sections:
+            self._registered_sections.update(sections)
 
      
 
@@ -226,28 +258,73 @@ class ViewsMixin:
             "platforms": platforms or [],
             "order": order,
         }
+        self._remember_section_catalog(id, self._registered_sections[id])
+        self._persist_registrations()
         self._safe_broadcast(
             {"type": "sections_changed", "data": {"action": "register", "id": id}}
         )
         return True
 
+    def _remember_section_catalog(self, id: str, data: dict):
+        """持久化 section 目录（只增不减）：适配器 shutdown 会注销 section，
+        若目录随之清除，冷启动/适配器重载的瞬态窗口内向导将拉不到扩展方式。
+        展示时按"平台适配器是否仍处于注册状态"过滤，卸载不会残留幽灵卡片。"""
+        try:
+            catalog = self.storage.get("__ep_section_catalog__")
+            if not isinstance(catalog, dict):
+                catalog = {}
+            catalog[id] = data
+            self.storage.set("__ep_section_catalog__", catalog)
+        except Exception:
+            pass
+
     def unregister_section(self, id: str) -> bool:
         if id not in self._registered_sections:
             return False
         del self._registered_sections[id]
+         
+        self._persist_registrations()
         self._safe_broadcast(
             {"type": "sections_changed", "data": {"action": "unregister", "id": id}}
         )
         return True
 
     def get_sections(self, target: str = "", platform: str = "") -> list:
-        out = []
+        merged: dict = {}
         for sec in self._registered_sections.values():
             if target and sec.get("target") != target:
                 continue
             plats = sec.get("platforms") or []
             if platform and plats and platform not in plats:
                 continue
-            out.append(sec)
+            merged[sec.get("id")] = sec
+
+         
+         
+        try:
+            catalog = self.storage.get("__ep_section_catalog__")
+        except Exception:
+            catalog = None
+        if isinstance(catalog, dict) and catalog:
+            try:
+                registered_adapters = set(self.sdk.adapter.list_registered())
+            except Exception:
+                registered_adapters = None
+            for sec_id, sec in catalog.items():
+                if sec_id in merged or not isinstance(sec, dict):
+                    continue
+                if target and sec.get("target") != target:
+                    continue
+                plats = sec.get("platforms") or []
+                if platform and plats and platform not in plats:
+                    continue
+                if registered_adapters is not None:
+                    if plats and not any(p in registered_adapters for p in plats):
+                        continue   
+                    if not plats and not registered_adapters:
+                        continue
+                merged[sec_id] = sec
+
+        out = list(merged.values())
         out.sort(key=lambda s: (s.get("order", 100), s.get("id", "")))
         return out

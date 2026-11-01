@@ -309,6 +309,12 @@ class RoutesMixin:
         )
         r.register_http_route(
             mn,
+            "/api/store/upload/install",
+            handler=self._api_store_upload_install,
+            methods=["POST"],
+        )
+        r.register_http_route(
+            mn,
             "/api/store/install/status",
             handler=self._api_store_install_status,
             methods=["GET"],

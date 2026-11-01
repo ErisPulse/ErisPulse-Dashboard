@@ -434,9 +434,15 @@
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
+ 
+.page.page-module-frame {
+    overflow: hidden;
+}
+
 .module-view-iframe {
+    display: block;
     width: 100%;
-    height: calc(100vh - 120px);
+    height: 100%;
     border: none;
     border-radius: var(--radius-md);
     background: var(--bg-s);

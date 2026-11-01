@@ -395,6 +395,13 @@ export function showInstallConfirm(pkg, isBatch) {
       '</div><select class="upload-select" id="installConfirmMirror" style="width:160px">' +
       mirrorOptionsHtml() +
       "</select></div>" +
+      '<details class="adv-opts"><summary>' +
+      t("advanced_options") +
+      '</summary><div class="adv-opts-body"><div class="install-confirm-option-label">' +
+      t("pip_extra_args") +
+      '</div><input type="text" class="ep-input" id="installConfirmExtra" placeholder="' +
+      esc(t("pip_extra_args_desc")) +
+      '" style="width:100%"/></div></details>' +
       "</div>";
     const ac = document.getElementById("modalActions");
     ac.innerHTML = "";
@@ -413,8 +420,11 @@ export function showInstallConfirm(pkg, isBatch) {
         document.getElementById("installConfirmForce")?.checked || false;
       const mirror =
         document.getElementById("installConfirmMirror")?.value || "";
+      const extra_args = (
+        document.getElementById("installConfirmExtra")?.value || ""
+      ).trim();
       ov.classList.remove("show");
-      r({ force, index_url: mirror });
+      r({ force, index_url: mirror, extra_args });
     };
     ac.append(b1, b2);
     ov.classList.add("show");
@@ -441,6 +451,7 @@ export async function installPkg(pkg) {
   const body = { packages: [pkg] };
   if (opts.force) body.force = true;
   if (opts.index_url) body.index_url = opts.index_url;
+  if (opts.extra_args) body.extra_args = opts.extra_args;
   const d = await api("/api/store/install", {
     method: "POST",
     body: JSON.stringify(body),
@@ -455,7 +466,7 @@ export async function installPkg(pkg) {
 
 export function openUploadModal() {
   if (!authed) return showLogin();
-  _uploadState = { file: null, taskId: null, uploaded: false };
+  _uploadState = { file: null, token: null, uploaded: false };
   initMirrorSelects();
   const ov = document.getElementById("uploadOv");
   document.getElementById("uploadProgressSection").style.display = "none";
@@ -466,6 +477,8 @@ export function openUploadModal() {
   document.getElementById("uploadForceInstall").checked = false;
   const ms = document.getElementById("uploadMirrorSelect");
   if (ms) ms.value = "";
+  const ex = document.getElementById("uploadExtraArgs");
+  if (ex) ex.value = "";
   document.getElementById("uploadDropZone").classList.remove("drag-over");
   ov.classList.add("show");
 }
@@ -521,12 +534,9 @@ export function formatFileSize(bytes) {
 }
 
 export function doUpload(file) {
+   
   const fd = new FormData();
   fd.append("file", file);
-  const force = document.getElementById("uploadForceInstall").checked;
-  const mirror = document.getElementById("uploadMirrorSelect")?.value || "";
-  if (force) fd.append("force", "true");
-  if (mirror) fd.append("index_url", mirror);
   const xhr = new XMLHttpRequest();
   document.getElementById("uploadProgressSection").style.display = "flex";
   document.getElementById("uploadInstallBtn").disabled = true;
@@ -540,10 +550,9 @@ export function doUpload(file) {
   xhr.onload = () => {
     try {
       const d = JSON.parse(xhr.responseText);
-      if (d && d.success && d.task_id) {
-        _uploadState.taskId = d.task_id;
+      if (d && d.success && d.token) {
+        _uploadState.token = d.token;
         _uploadState.uploaded = true;
-        _installTaskIds.set(d.task_id, file.name);
         document.getElementById("uploadProgressFill").style.width = "100%";
         document.getElementById("uploadProgressText").textContent =
           t("upload_complete");
@@ -566,9 +575,28 @@ export function doUpload(file) {
   xhr.send(fd);
 }
 
-export function startUploadInstall() {
-  closeUploadModal();
-  toast(t("installing"), "");
+export async function startUploadInstall() {
+   
+  if (!_uploadState.token) return;
+  const body = {
+    token: _uploadState.token,
+    force: document.getElementById("uploadForceInstall")?.checked || false,
+    index_url: document.getElementById("uploadMirrorSelect")?.value || undefined,
+    extra_args:
+      (document.getElementById("uploadExtraArgs")?.value || "").trim() ||
+      undefined,
+  };
+  const d = await api("/api/store/upload/install", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  if (d && d.success && d.task_id) {
+    _installTaskIds.set(d.task_id, _uploadState.file?.name || "");
+    closeUploadModal();
+    toast(t("installing"), "");
+  } else {
+    toast(t("install_failed") + ": " + (d?.error || ""), "er");
+  }
 }
 
 export async function openPkgDetail(name, pkg, type) {
@@ -586,6 +614,8 @@ export async function openPkgDetail(name, pkg, type) {
   document.getElementById("detailForceInstall").checked = false;
   const ms = document.getElementById("detailMirrorSelect");
   if (ms) ms.value = "";
+  const dex = document.getElementById("detailExtraArgs");
+  if (dex) dex.value = "";
   const vs = document.getElementById("detailVersionSelect");
   vs.innerHTML = '<option value="">' + t("latest_version") + "</option>";
   const ac = document.getElementById("pkgDetailActions");
@@ -746,16 +776,21 @@ export async function doInstallWithOptions(pkg, defaultForce, isUpgrade) {
       : document.getElementById("detailForceInstall")?.checked || false;
   const mirror = document.getElementById("detailMirrorSelect")?.value || "";
   const version = document.getElementById("detailVersionSelect")?.value || "";
+  const extra = (
+    document.getElementById("detailExtraArgs")?.value || ""
+  ).trim();
   const pkgSpec = version ? pkg + "==" + version : pkg;
   const body = { packages: [pkgSpec] };
   if (force) body.force = true;
   if (mirror) body.index_url = mirror;
+  if (extra) body.extra_args = extra;
   if (isUpgrade) {
     const d = await api("/api/packages/upgrade", {
       method: "POST",
       body: JSON.stringify({
         packages: [pkgSpec],
         index_url: mirror || undefined,
+        extra_args: extra || undefined,
       }),
     });
     if (d && d.success && d.task_id) {
@@ -831,6 +866,7 @@ export async function batchInstall() {
   const body = { packages: pkgs };
   if (opts.force) body.force = true;
   if (opts.index_url) body.index_url = opts.index_url;
+  if (opts.extra_args) body.extra_args = opts.extra_args;
   const d = await api("/api/store/install", {
     method: "POST",
     body: JSON.stringify(body),

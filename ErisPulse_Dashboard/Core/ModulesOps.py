@@ -63,17 +63,17 @@ class ModulesOpsMixin:
                                 asyncio.run_coroutine_threadsafe(
                                     self.sdk.module.load(ep_name), self._loop
                                 )
+                             
+                            self._safe_broadcast(
+                                {
+                                    "type": "module_changed",
+                                    "data": {"name": ep_name, "action": "installed"},
+                                }
+                            )
                         else:
                             self.logger.info(
                                 f"Module {ep_name} is disabled, skip loading"
                             )
-
-                        self._safe_broadcast(
-                            {
-                                "type": "module_changed",
-                                "data": {"name": ep_name, "action": "installed"},
-                            }
-                        )
                     except Exception as e:
                         self.logger.warning(
                             f"Failed to dynamic load module {ep_name}: {e}"
@@ -147,6 +147,12 @@ class ModulesOpsMixin:
                 asyncio.run_coroutine_threadsafe(_startup_new_adapters(), self._loop)
 
             for ep_name in new_adapter_names:
+                 
+                if not self.sdk.adapter.is_enabled(ep_name):
+                    self.logger.info(
+                        f"Adapter {ep_name} is disabled, skip loaded notice"
+                    )
+                    continue
                 self._safe_broadcast(
                     {
                         "type": "module_changed",
@@ -168,15 +174,25 @@ class ModulesOpsMixin:
                 return
 
             async def _reload():
+                 
+                 
+                 
+                reloaded = False
                 try:
-                    await self.sdk.module.unload("Dashboard")
-                except Exception:
-                    pass
-                try:
-                    await self.sdk.module.load("Dashboard")
+                    reloaded = await self.sdk.module.reload("Dashboard")
                 except Exception as e:
-                    self.logger.warning(f"Dashboard self-reload failed: {e}")
-                    return
+                    self.logger.warning(f"Dashboard hot reload error: {e}")
+                if not reloaded:
+                     
+                    try:
+                        await self.sdk.module.unload("Dashboard")
+                    except Exception:
+                        pass
+                    try:
+                        await self.sdk.module.load("Dashboard")
+                    except Exception as e:
+                        self.logger.warning(f"Dashboard self-reload failed: {e}")
+                        return
                 self._safe_broadcast({"type": "dashboard_reloaded"})
 
             asyncio.run_coroutine_threadsafe(_reload(), self._loop)
@@ -196,12 +212,13 @@ class ModulesOpsMixin:
             norm.add(p.split("==", 1)[0].strip().lower().replace("_", "-"))
         if not norm:
             return
+        module_targets = []
+        adapter_targets = []
         try:
             from ErisPulse.finders import ModuleFinder
 
             mf = ModuleFinder()
             mf.clear_cache()
-            targets = []
             for ep_name, ep in mf.get_entry_point_map().items():
                 if ep_name == "Dashboard":
                     continue
@@ -209,28 +226,75 @@ class ModulesOpsMixin:
                     continue
                 dist_name = (ep.dist.name if ep else "") or ""
                 if dist_name.lower().replace("_", "-") in norm:
-                    targets.append(ep_name)
+                    module_targets.append(ep_name)
         except Exception as e:
             self.logger.warning(f"resolve upgraded modules failed: {e}")
-            return
-        if not targets or not self._loop or self._loop.is_closed():
+        try:
+            from ErisPulse.finders import AdapterFinder
+
+            af = AdapterFinder()
+            af.clear_cache()
+            registered_adapters = set(self.sdk.adapter.list_registered())
+            for ep_name, ep in af.get_entry_point_map().items():
+                if ep_name not in registered_adapters:
+                    continue
+                dist_name = (ep.dist.name if ep else "") or ""
+                if dist_name.lower().replace("_", "-") in norm:
+                    adapter_targets.append(ep_name)
+        except Exception as e:
+            self.logger.warning(f"resolve upgraded adapters failed: {e}")
+        if (
+            not module_targets
+            and not adapter_targets
+        ) or not self._loop or self._loop.is_closed():
             return
 
         async def _reload_all():
-            for name in targets:
+            for name in module_targets:
                 if not self.sdk.module.is_enabled(name):
                     self.logger.info(
                         f"Module {name} is disabled, skip reload after upgrade"
                     )
                     continue
                 try:
-                    was_loaded = self.sdk.module.is_loaded(name)
-                    if was_loaded:
+                    if not self.sdk.module.is_loaded(name):
+                        continue
+                    reloaded = False
+                    try:
+                        reloaded = await self.sdk.module.reload(name)
+                    except Exception as e:
+                        self.logger.warning(f"Hot reload module {name} error: {e}")
+                    if not reloaded:
                         await self.sdk.module.unload(name)
                         await self.sdk.module.load(name)
-                        self.logger.info(f"Module {name} reloaded after upgrade")
+                    self.logger.info(f"Module {name} reloaded after upgrade")
                 except Exception as e:
                     self.logger.warning(f"Reload module {name} after upgrade failed: {e}")
+            for name in adapter_targets:
+                if not self.sdk.adapter.is_enabled(name):
+                    self.logger.info(
+                        f"Adapter {name} is disabled, skip reload after upgrade"
+                    )
+                    continue
+                try:
+                    reloaded = False
+                    try:
+                        reloaded = await self.sdk.adapter.reload(name)
+                    except Exception as e:
+                        self.logger.warning(f"Hot reload adapter {name} error: {e}")
+                    if not reloaded:
+                         
+                        try:
+                            await self.sdk.adapter.shutdown(name)
+                        except Exception:
+                            pass
+                        try:
+                            await self.sdk.adapter.startup(name)
+                        except Exception as e:
+                            self.logger.warning(f"Adapter {name} restart failed: {e}")
+                    self.logger.info(f"Adapter {name} reloaded after upgrade")
+                except Exception as e:
+                    self.logger.warning(f"Reload adapter {name} after upgrade failed: {e}")
 
         asyncio.run_coroutine_threadsafe(_reload_all(), self._loop)
 

@@ -38,6 +38,15 @@ export function showUpdateHint(kind, version) {
 
  
 export function restoreUpdateHint() {
+   
+  try {
+    if (sessionStorage.getItem("ep_dash_updated")) {
+      sessionStorage.removeItem("ep_dash_updated");
+      clearUpdateHint();
+      toast(t("dashboard_updated_done"), "ok");
+      return;
+    }
+  } catch (e) {}
   renderUpdateHint(getUpdateHint());
 }
 
@@ -64,8 +73,27 @@ export function renderUpdateHint(hint) {
     : t("update_hint_dashboard");
   bar.appendChild(msg);
 
+  var actions = document.createElement("span");
+  actions.className = "update-hint-actions";
+  bar.appendChild(actions);
+
+  if (!isFw) {
+     
+    var reloadBtn = document.createElement("button");
+    reloadBtn.className = "btn btn-primary btn-xs update-hint-restart";
+    reloadBtn.textContent = t("update_hint_reload_page");
+    reloadBtn.onclick = function () {
+      clearUpdateHint();
+      location.href =
+        location.pathname + "?_r=" + Date.now() + (location.hash || "");
+    };
+    actions.appendChild(reloadBtn);
+  }
+
   var btn = document.createElement("button");
-  btn.className = "btn btn-primary btn-xs update-hint-restart";
+  btn.className = isFw
+    ? "btn btn-primary btn-xs update-hint-restart"
+    : "btn btn-secondary btn-xs update-hint-restart";
   btn.textContent = t("update_hint_restart");
   btn.onclick = async function () {
     var ok = await confirm2(t("restart"), t("restart_confirm"));
@@ -75,7 +103,7 @@ export function renderUpdateHint(hint) {
     var d = await api("/api/restart", { method: "POST" });
     if (!d || !d.success) toast(t("restart_failed"), "er");
   };
-  bar.appendChild(btn);
+  actions.appendChild(btn);
 
   var close = document.createElement("button");
   close.className = "btn-icon update-hint-close";
