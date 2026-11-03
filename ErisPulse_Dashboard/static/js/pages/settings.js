@@ -1766,19 +1766,13 @@ export function loadGeneralTab() {
 export function loadAccessTokenCard() {
   var host = document.getElementById("generalTokenCard");
   if (!host) return;
-  var tk = localStorage.getItem("__ep_tk__") || "";
-  var masked =
-    tk.length > 12
-      ? tk.slice(0, 6) + "••••••" + tk.slice(-4)
-      : "••••••";
   // 单行：标题 + 掩码 + 复制 + 重新生成（按钮保持同行不换行）
   host.innerHTML =
     '<div class="card set-group">' +
     '<div class="set-row set-row--wrap"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>' +
     '<span class="set-main"><span class="set-title" data-i18n="sec_token_label"></span><span class="set-sub" data-i18n="sec_token_primary_desc"></span></span>' +
-    '<span class="set-end" style="gap:8px;flex-wrap:nowrap"><code style="user-select:all;white-space:nowrap">' +
-    esc(masked) +
-    '</code><button class="btn btn-secondary btn-sm" onclick="copyAccessToken()"><span data-i18n="sec_copy"></span></button>' +
+    '<span class="set-end" style="gap:8px;flex-wrap:nowrap">' +
+    '<button class="btn btn-secondary btn-sm" onclick="copyAccessToken()"><span data-i18n="sec_copy"></span></button>' +
     '<button class="btn btn-danger btn-sm" onclick="regenAccessToken()"><span data-i18n="sec_token_regen"></span></button>' +
     "</span></div>" +
     "</div>";
@@ -1842,7 +1836,7 @@ export async function loadApiKeyCard() {
         "</span>" +
         (k.enabled ? "" : ' <span class="chip" style="font-size:10px;opacity:.6">' + esc(t("sec_key_disabled")) + "</span>") +
         "</span>" +
-        '<span class="set-sub"><code style="user-select:all">' +
+        '<span class="set-sub"><code>' +
         esc(k.key_prefix || "") +
         "…</code> · " +
         (k.role === "viewer" && k.pages && k.pages.length
