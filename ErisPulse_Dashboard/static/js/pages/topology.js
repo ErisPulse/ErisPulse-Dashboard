@@ -71,6 +71,8 @@ function _topoT(key, zh, en) {
 }
 
 export async function loadTopology() {
+  // 每次进入页面重新测量画布尺寸（display:none → block 时缓存可能过期）
+  _topoInvalidateSize();
   var d = await api("/api/topology");
   _topoRaw = d;
   var unsupported = document.getElementById("topoUnsupported");
@@ -648,29 +650,69 @@ export function _topoQuadPoint(p0, c, p1, t) {
   };
 }
 
+// 网格点：用离屏 pattern 一次填充（原先每帧约 800 次 fillRect，低端设备掉帧明显）
+var _topoGridPattern = null;
+var _topoGridPatternColor = "";
+
 export function _topoDrawGrid(ctx, w, h) {
   var gap = 30;
+  var color = _topoColors.grid;
+  if (!_topoGridPattern || _topoGridPatternColor !== color) {
+    var tile = document.createElement("canvas");
+    tile.width = tile.height = gap;
+    var tg = tile.getContext("2d");
+    tg.fillStyle = color;
+    tg.fillRect(0, 0, 1.2, 1.2);
+    _topoGridPattern = ctx.createPattern(tile, "repeat");
+    _topoGridPatternColor = color;
+  }
+  if (!_topoGridPattern) return;
   var ox = (((w / 2 + _topoView.x) % gap) + gap) % gap;
   var oy = (((h / 2 + _topoView.y) % gap) + gap) % gap;
   ctx.save();
   ctx.globalAlpha = 0.5;
-  ctx.fillStyle = _topoColors.grid;
-  for (var gx = ox; gx < w; gx += gap) {
-    for (var gy = oy; gy < h; gy += gap) {
-      ctx.fillRect(gx, gy, 1.2, 1.2);
-    }
-  }
+  ctx.translate(ox, oy);
+  ctx.fillStyle = _topoGridPattern;
+  ctx.fillRect(-ox, -oy, w + gap, h + gap);
   ctx.restore();
+}
+
+// 画布尺寸缓存：避免每帧读取 clientWidth/clientHeight 触发同步重排
+// （动画/拖拽时 60fps 会变成每秒 60 次强制布局，低端设备明显掉帧）
+var _topoCachedW = 0;
+var _topoCachedH = 0;
+var _topoSizeObserver = null;
+
+export function _topoInvalidateSize() {
+  _topoCachedW = 0;
+  _topoCachedH = 0;
+}
+
+function _topoEnsureSizeObserver(canvas) {
+  if (_topoSizeObserver || typeof ResizeObserver === "undefined") return;
+  var wrap = canvas.parentElement;
+  if (!wrap) return;
+  _topoSizeObserver = new ResizeObserver(function () {
+    _topoInvalidateSize();
+  });
+  _topoSizeObserver.observe(wrap);
+  _topoSizeObserver.observe(canvas);
 }
 
 export function _topoDraw(ts) {
   ts = ts || 0;
   var canvas = document.getElementById("topoCanvas");
   if (!canvas) return;
-  var wrap = canvas.parentElement;
+  _topoEnsureSizeObserver(canvas);
   var dpr = window.devicePixelRatio || 1;
-  var w = wrap.clientWidth;
-  var h = canvas.clientHeight || 560;
+  if (!_topoCachedW || !_topoCachedH || typeof ResizeObserver === "undefined") {
+    var wrapEl = canvas.parentElement;
+    _topoCachedW = wrapEl ? wrapEl.clientWidth : 0;
+    _topoCachedH = canvas.clientHeight || 560;
+  }
+  var w = _topoCachedW;
+  var h = _topoCachedH;
+  if (!w || !h) return; // 页面不可见（display:none）时不绘制
   var bw = Math.round(w * dpr);
   var bh = Math.round(h * dpr);
   if (canvas.width !== bw || canvas.height !== bh) {
@@ -862,6 +904,9 @@ export function _topoBindEvents() {
     }
   });
   window.addEventListener("mousemove", function (ev) {
+    // 廉价可见性判断（class 读取，无布局开销）：页面不可见时直接返回，
+    // 避免每次鼠标移动都触发 getBoundingClientRect 强制重排（全局卡顿主因）
+    if (!canvas.closest(".page.active")) return;
     var rect = canvas.getBoundingClientRect();
     var px = ev.clientX - rect.left;
     var py = ev.clientY - rect.top;
@@ -1078,7 +1123,12 @@ export function _topoHideTooltip() {
 }
 
 export function _topoIsVisible(canvas) {
-  return canvas && canvas.offsetParent !== null;
+  if (!canvas) return false;
+  // 优先用 class 判断（无布局开销）：动画循环每帧都会调用，
+  // offsetParent 读取会触发同步重排，低端设备上明显拖慢帧率
+  var page = canvas.closest ? canvas.closest(".page") : null;
+  if (page) return page.classList.contains("active");
+  return canvas.offsetParent !== null;
 }
 
 export function _showTopoDetail(node) {
@@ -1197,6 +1247,7 @@ export function _topoStopSim() {
 }
 
 window.addEventListener("resize", function () {
+    if (typeof _topoInvalidateSize === "function") _topoInvalidateSize();
   var canvas = document.getElementById("topoCanvas");
   if (!_topoIsVisible(canvas)) return;
   // 窄屏（含旋转方向变化）：用户未手动交互过视图时重新 fit；
