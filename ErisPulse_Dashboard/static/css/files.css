@@ -397,21 +397,28 @@
 }
 
  
+
+
 .fm-editor-modal .fm-editor-box {
-    width: min(920px, 92vw);
-    height: min(640px, 84vh);
+    width: min(1180px, 94vw);
+    max-width: none;
+    height: min(780px, 88vh);
+    max-height: none;
     display: flex;
     flex-direction: column;
     padding: 0;
     overflow: hidden;
+    box-shadow:
+        0 24px 64px -16px rgba(0, 0, 0, 0.5);
 }
 
 .fm-editor-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
+    gap: 12px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--bd);
+    background: color-mix(in srgb, var(--bg-p) 25%, var(--bg-t));
     flex-shrink: 0;
 }
 
@@ -576,8 +583,10 @@
 
  
 .fm-editor-modal .fm-editor-box {
-    width: min(1040px, 94vw);
-    height: min(680px, 86vh);
+    width: min(1180px, 94vw);
+    max-width: none;
+    height: min(780px, 88vh);
+    max-height: none;
 }
 
 .fm-editor-statusbar {
