@@ -1497,5 +1497,7 @@ settings_tab_colorfont: "颜色与字体",
     sec_key_pages: "权限",
     sec_key_pages_count: "限 {n} 个页面",
     sec_key_pages_hint: "勾选该密钥可访问的页面（全不勾 = 全部页面只读）",
+    sec_key_pages_no_api: "（无数据接口）",
+    sec_key_pages_override_hint: "映射可在配置项 {k} 中按页面调整（页面 id → API 前缀数组）",
   };
 })();

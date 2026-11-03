@@ -1527,5 +1527,7 @@ settings_tab_colorfont: "Colors & Font",
     sec_key_pages: "Permissions",
     sec_key_pages_count: "{n} pages",
     sec_key_pages_hint: "Select pages this key may access (none selected = all pages, read-only)",
+    sec_key_pages_no_api: "(no data APIs)",
+    sec_key_pages_override_hint: "Mapping can be overridden per page in config key {k} (page id → API prefixes)",
   };
 })();

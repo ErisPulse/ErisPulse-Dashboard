@@ -437,6 +437,12 @@ class RoutesMixin:
 
          
         r.register_http_route(
+            mn,
+            "/api/security/pages",
+            handler=self._api_security_pages,
+            methods=["GET"],
+        )
+        r.register_http_route(
             mn, "/api/security/keys", handler=self._api_keys_list, methods=["GET"]
         )
         r.register_http_route(
