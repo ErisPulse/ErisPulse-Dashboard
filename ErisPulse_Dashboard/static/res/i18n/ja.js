@@ -1518,5 +1518,7 @@ adapter: "アダプター",
     sec_key_pages: "権限",
     sec_key_pages_count: "{n} ページ",
     sec_key_pages_hint: "このキーがアクセスできるページを選択（未選択 = すべてのページを閲覧のみ）",
+    sec_key_pages_no_api: "（データ API なし）",
+    sec_key_pages_override_hint: "マッピングは設定 {k} でページ単位に上書きできます（ページ id → API プレフィックス）",
   };
 })();

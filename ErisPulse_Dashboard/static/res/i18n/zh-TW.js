@@ -1494,5 +1494,7 @@ adapter: "介面卡",
     sec_key_pages: "權限",
     sec_key_pages_count: "限 {n} 個頁面",
     sec_key_pages_hint: "勾選該金鑰可存取的頁面（全不勾 = 全部頁面唯讀）",
+    sec_key_pages_no_api: "（無資料介面）",
+    sec_key_pages_override_hint: "對應可在設定項 {k} 中按頁面調整（頁面 id → API 前綴陣列）",
   };
 })();

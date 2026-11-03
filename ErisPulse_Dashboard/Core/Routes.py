@@ -437,6 +437,12 @@ class RoutesMixin:
 
         # 多密钥体系（Dashboard.keys；写入操作 handler 内要求 admin）
         r.register_http_route(
+            mn,
+            "/api/security/pages",
+            handler=self._api_security_pages,
+            methods=["GET"],
+        )
+        r.register_http_route(
             mn, "/api/security/keys", handler=self._api_keys_list, methods=["GET"]
         )
         r.register_http_route(

@@ -20,7 +20,9 @@ _VALID_ROLES = (ROLE_ADMIN, ROLE_VIEWER)
 
 # 页面 → 其数据 API 前缀映射（viewer 密钥页面白名单的后端拦截依据；
 # /api/auth*、/api/capabilities、/api/appearance、/api/adapter-logos 等全局端点恒放行）
-PAGE_API_PREFIXES: dict[str, tuple[str, ...]] = {
+# 可在配置 Dashboard.rbac.page_api_map 中按页覆盖（值为前缀数组），
+# 用于模块新增页面或自定义端点前缀；页面 id 与导航 data-page 一致。
+DEFAULT_PAGE_API_PREFIXES: dict[str, tuple[str, ...]] = {
     "dashboard": ("/api/status", "/api/health", "/api/performance", "/api/message-stats", "/api/dashboard/"),
     "event-stream": ("/api/events",),
     "transcript": ("/api/transcript",),
@@ -133,12 +135,33 @@ class ApiKeysMixin:
         ok, role, _, _ = self._resolve_access(provided)
         return ok and role == ROLE_ADMIN
 
+    def _page_api_map(self) -> dict[str, tuple[str, ...]]:
+        """页面 → API 前缀映射：内置默认 + Dashboard.rbac.page_api_map 覆盖。
+
+        覆盖项为 dict（页面 id → 前缀数组/字符串）；未列出的页面沿用默认。
+        """
+        out: dict[str, tuple[str, ...]] = dict(DEFAULT_PAGE_API_PREFIXES)
+        try:
+            custom = self.sdk.config.getConfig("Dashboard.rbac.page_api_map") or {}
+        except Exception:
+            custom = {}
+        if isinstance(custom, dict):
+            for page, prefixes in custom.items():
+                if isinstance(prefixes, str):
+                    prefixes = [prefixes]
+                if isinstance(prefixes, (list, tuple)):
+                    out[str(page)] = tuple(
+                        str(p) for p in prefixes if isinstance(p, str)
+                    )
+        return out
+
     def _page_allowed(self, pages: list, api_path: str) -> bool:
         """viewer 页面白名单下的 API 放行判定（api_path 为 /Dashboard 相对路径）。"""
         if not pages:
             return True  # 无白名单 = 全部只读页
+        page_map = self._page_api_map()
         for page in pages:
-            prefixes = PAGE_API_PREFIXES.get(page)
+            prefixes = page_map.get(page)
             if not prefixes:
                 continue
             for pfx in prefixes:
@@ -164,6 +187,25 @@ class ApiKeysMixin:
         # viewer 也能看列表（脱敏）；写入操作在 handler 内要求 admin
         keys = [self._sanitize_key(k) for k in self._load_keys()]
         return JSONResponse({"keys": keys})
+
+    async def _api_security_pages(self, request: Request) -> JSONResponse:
+        """对外暴露 页面 → API 前缀 映射（密钥权限编辑器与文档的单一数据源）。
+
+        含内置默认与 Dashboard.rbac.page_api_map 覆盖结果，便于前端展示
+        "该页面能访问哪些接口"，也便于用户核对自定义映射。
+        """
+        page_map = self._page_api_map()
+        return JSONResponse(
+            {
+                "pages": {k: list(v) for k, v in page_map.items()},
+                "rbac": {
+                    "roles": [ROLE_ADMIN, ROLE_VIEWER],
+                    "viewer_denies_non_get": True,
+                    "empty_pages_means_all_readonly": True,
+                    "override_key": "Dashboard.rbac.page_api_map",
+                },
+            }
+        )
 
     async def _api_keys_create(self, request: Request) -> JSONResponse:
         try:

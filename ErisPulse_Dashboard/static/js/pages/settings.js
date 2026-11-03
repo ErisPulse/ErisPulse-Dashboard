@@ -1925,23 +1925,43 @@ export async function createApiKey() {
 }
 
 // viewer 密钥的页面白名单编辑（空 = 全部只读页）
-var _KEY_PAGE_OPTIONS = [
-  ["dashboard", "仪表盘"],
-  ["event-stream", "事件流"],
-  ["transcript", "会话收件箱"],
-  ["bots", "机器人"],
-  ["module-mgmt", "模块管理"],
-  ["store", "模块商店"],
-  ["packages", "包管理"],
-  ["config", "配置管理"],
-  ["framework", "框架更新"],
-  ["logs", "系统日志"],
-  ["api-routes", "API 路由"],
-  ["permissions", "权限控制"],
-  ["files", "文件管理"],
-  ["cluster", "集群"],
-  ["topology", "拓扑图谱"],
-];
+// 页面清单与"页面 → API 前缀"映射由后端 /api/security/pages 提供（单一数据源），
+// 标签用前端 i18n 页面名；后端可在 Dashboard.rbac.page_api_map 覆盖映射。
+var _PAGE_LABELS = {
+  dashboard: "仪表盘",
+  "event-stream": "事件流",
+  transcript: "会话收件箱",
+  bots: "机器人",
+  "module-mgmt": "模块管理",
+  store: "模块商店",
+  packages: "包管理",
+  config: "配置管理",
+  framework: "框架更新",
+  logs: "系统日志",
+  "api-routes": "API 路由",
+  permissions: "权限控制",
+  files: "文件管理",
+  cluster: "集群",
+  topology: "拓扑图谱",
+  settings: "仪表盘设置",
+  about: "关于",
+};
+
+async function _loadPagePermissionMap() {
+  var d;
+  try {
+    d = await api("/api/security/pages");
+  } catch (e) {
+    d = null;
+  }
+  var pages = (d && d.pages) || null;
+  if (!pages) {
+    // 后端不支持时退回内置清单（旧版仅自护）
+    pages = {};
+    Object.keys(_PAGE_LABELS).forEach(function (k) { pages[k] = []; });
+  }
+  return { pages: pages, rbac: (d && d.rbac) || null };
+}
 
 export async function editKeyPages(id) {
   var d = await api("/api/security/keys");
@@ -1952,16 +1972,43 @@ export async function editKeyPages(id) {
   }
   if (!key) return;
   var cur = key.pages || [];
+  var pmap = await _loadPagePermissionMap();
+  var ids = Object.keys(pmap.pages);
+  // 稳定的页面顺序：内置标签顺序优先，未知页面追加在后
+  ids.sort(function (a, b) {
+    var ia = Object.prototype.hasOwnProperty.call(_PAGE_LABELS, a) ? Object.keys(_PAGE_LABELS).indexOf(a) : 999;
+    var ib = Object.prototype.hasOwnProperty.call(_PAGE_LABELS, b) ? Object.keys(_PAGE_LABELS).indexOf(b) : 999;
+    return ia - ib;
+  });
+
   var body =
     '<div style="font-size:12px;color:var(--tx-t);margin-bottom:10px">' +
     esc(t("sec_key_pages_hint")) +
-    "</div><div style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px\">";
-  _KEY_PAGE_OPTIONS.forEach(function (o) {
+    "</div><div style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px\">";
+  ids.forEach(function (pid) {
+    var apis = (pmap.pages[pid] || []).join("  ");
     body +=
-      '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" class="key-page-cb" value="' +
-      o[0] + '"' + (cur.indexOf(o[0]) !== -1 ? " checked" : "") + "/><span>" + esc(o[1]) + "</span></label>";
+      '<label style="display:flex;align-items:flex-start;gap:6px;cursor:pointer" title="' +
+      esc(apis || t("sec_key_pages_no_api")) +
+      '"><input type="checkbox" class="key-page-cb" value="' +
+      esc(pid) + '"' + (cur.indexOf(pid) !== -1 ? " checked" : "") +
+      '/><span><span>' + esc(_PAGE_LABELS[pid] || pid) + "</span>" +
+      (apis
+        ? '<span style="display:block;font-size:11px;color:var(--tx-t);word-break:break-all">' +
+          esc((pmap.pages[pid] || []).slice(0, 2).join(", ")) +
+          ((pmap.pages[pid] || []).length > 2 ? " …" : "") +
+          "</span>"
+        : "") +
+      "</span></label>";
   });
   body += "</div>";
+  if (pmap.rbac && pmap.rbac.override_key) {
+    body +=
+      '<div style="margin-top:12px;font-size:11px;color:var(--tx-t)">' +
+      esc(t("sec_key_pages_override_hint").replace("{k}", pmap.rbac.override_key)) +
+      "</div>";
+  }
+
   showModal(t("sec_key_pages"), body, [
     { label: t("save"), value: "save", primary: true },
     { label: t("cancel"), value: null },

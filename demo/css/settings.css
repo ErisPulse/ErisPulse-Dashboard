@@ -454,6 +454,8 @@ button.set-row:focus-visible {
     gap: 4px;
 }
 
+/* 设置行图标：与侧栏/导航同一套图标语言（中性圆底 + 淡色线性图标），
+   不再使用强调色方块，避免设置页与外层观感割裂 */
 .set-ico {
     width: 28px;
     height: 28px;
@@ -461,14 +463,15 @@ button.set-row:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
-    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
-    color: var(--accent);
+    border-radius: 50%;
+    background: var(--bg-s);
+    color: var(--tx-s);
 }
 
 .set-ico svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
+    opacity: 0.8;
 }
 
 .set-main {
