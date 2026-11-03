@@ -90,6 +90,7 @@ class ApiDashboardMixin:
 
     async def _api_events_clear(self, request: Request) -> JSONResponse:
         self._event_log.clear()
+        self._total_event_count = 0
         self._persist_events()
         self._add_audit_log("clear_events", "", request)
         return JSONResponse({"success": True})

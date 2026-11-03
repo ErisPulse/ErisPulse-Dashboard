@@ -189,7 +189,9 @@
 }
 
 .perf-health .health-cell.is-abnormal {
-    box-shadow: inset 2px 0 0 var(--wr-c);
+    background: color-mix(in srgb, var(--wr-c) 10%, transparent);
+    border-radius: var(--radius-sm);
+    box-shadow: none;
 }
 
 .health-state.is-ok {

@@ -467,13 +467,39 @@ export function renderFwSection(s) {
       );
     })
     .join("");
+   
+   
+  var body;
+  if (!rows) {
+    var isScopeTable = s.key.indexOf("scope.") === 0;
+    if (isScopeTable) {
+      body =
+        '<div class="fw-section-empty"><span>' +
+        esc(t("fw_scope_empty")) +
+        '</span><button class="btn btn-secondary btn-sm" onclick="goScopeAdd()">' +
+        esc(t("fw_scope_go_add")) +
+        "</button></div>";
+    } else {
+      body =
+        '<div class="fw-section-empty"><span>' +
+        esc(t("fw_section_empty")) +
+        "</span></div>";
+    }
+  } else {
+    body = rows;
+  }
   return (
     '<div class="fw-section"><div class="fw-section-title">' +
     esc(displayName) +
     '</div><div class="fw-section-body">' +
-    rows +
+    body +
     "</div></div>"
   );
+}
+
+ 
+export function goScopeAdd() {
+  go("permissions", "perm-scope");
 }
 
 export function renderFwListField(fk, val) {

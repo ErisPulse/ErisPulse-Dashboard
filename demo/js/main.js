@@ -11,6 +11,8 @@ import * as m_components_toast from "./components/toast.js";
 import * as m_components_popover from "./components/popover.js";
 import * as m_components_ep_select from "./components/ep-select.js";
 import * as m_components_tabs from "./components/tabs.js";
+import * as m_components_subnav from "./components/subnav.js";
+import * as m_components_account_wizard from "./components/account-wizard.js";
 import * as m_components_kv from "./components/kv.js";
 import * as m_components_tasks from "./components/tasks.js";
 import * as m_components_update_hint from "./components/update-hint.js";
@@ -22,6 +24,8 @@ import * as m_core_router from "./core/router.js";
 import * as m_core_moduleviews from "./core/moduleviews.js";
 import * as m_core_auth from "./core/auth.js";
 import * as m_core_ws from "./core/ws.js";
+import * as m_core_drag_scroll from "./core/drag-scroll.js";
+import * as m_core_viewer_guard from "./core/viewer-guard.js";
 import * as m_pages_appearance from "./pages/appearance.js";
 import * as m_pages_settings from "./pages/settings.js";
 import * as m_pages_dashboard from "./pages/dashboard.js";
@@ -52,6 +56,8 @@ const __namespaces = [
   m_components_popover,
   m_components_ep_select,
   m_components_tabs,
+  m_components_subnav,
+  m_components_account_wizard,
   m_components_kv,
   m_components_tasks,
   m_components_update_hint,
@@ -64,6 +70,8 @@ const __namespaces = [
   m_core_moduleviews,
   m_core_auth,
   m_core_ws,
+  m_core_drag_scroll,
+  m_core_viewer_guard,
   m_pages_appearance,
   m_pages_settings,
   m_pages_dashboard,
@@ -91,12 +99,16 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyUiStyle(getUiStyle());
   applyOled(getOled());
   applyFont(getFont());
+   
+  if (typeof initDragScroll === "function") initDragScroll();
   applyI18n();
   applyCustomTheme();
    
   themepackRestore();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
+   
+  if (typeof applyScrollbarMode === "function") applyScrollbarMode(getScrollbarMode());
    
   var savedTitle = getSetting("dash_title", "");
   var effectiveTitle = savedTitle || "ErisPulse Dashboard";
@@ -130,33 +142,66 @@ for (const ns of __namespaces) Object.assign(window, ns);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {
-    fetch(API + "/api/auth/status", {
-      headers: { Authorization: "Bearer " + tk },
-    })
-      .then((r) => r.json())
+     
+    const authStatus = (signal) =>
+      fetch(API + "/api/auth/status", {
+        headers: { Authorization: "Bearer " + tk },
+        signal,
+      });
+    const boot = () => {
+      authed = true;
+      document.querySelector(".app").classList.add("authed");
+       
+      if (typeof applyNavGuard === "function") applyNavGuard();
+      dismissSplash();
+       
+      loadAll();
+       
+      restoreUpdateHint();
+      wsConnect();
+      restartRefreshTimer();
+      loadClusterNodes();
+      applyDefaultPageOnLogin();
+    };
+    const fail = () => {
+      localStorage.removeItem(TK);
+      dismissSplash();
+      showLogin();
+    };
+    let ctl = new AbortController();
+    let timer = setTimeout(() => ctl.abort(), 8000);
+    authStatus(ctl.signal)
+      .then((r) => {
+        clearTimeout(timer);
+        return r.json();
+      })
       .then((d) => {
         if (d && d.authenticated) {
-          authed = true;
-          document.querySelector(".app").classList.add("authed");
-          dismissSplash();
-           
-          loadAll();
-           
-          restoreUpdateHint();
-          wsConnect();
-          restartRefreshTimer();
-          loadClusterNodes();
-          loadGlobalAppearance();
-          applyDefaultPageOnLogin();
-        } else {
-          localStorage.removeItem(TK);
-          dismissSplash();
-          showLogin();
-        }
+          setAccess(d.role, d.pages);
+          boot();
+        } else fail();
       })
       .catch(() => {
-        dismissSplash();
-        showLogin();
+        clearTimeout(timer);
+         
+        ctl = new AbortController();
+        timer = setTimeout(() => ctl.abort(), 8000);
+        authStatus(ctl.signal)
+          .then((r) => {
+            clearTimeout(timer);
+            return r.json();
+          })
+          .then((d) => {
+            if (d && d.authenticated) {
+              setAccess(d.role, d.pages);
+              boot();
+            } else fail();
+          })
+          .catch(() => {
+            clearTimeout(timer);
+            dismissSplash();
+            showLogin();
+          });
       });
   } else {
     dismissSplash();

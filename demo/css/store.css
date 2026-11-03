@@ -364,10 +364,6 @@
     overflow-y: auto;
 }
 
-.pkg-row-update {
-    border-left: 3px solid var(--wr-c);
-}
-
 .pkg-info {
     flex: 1;
     min-width: 0;
@@ -514,6 +510,55 @@
     line-height: 1.5;
 }
 
+ 
+.adv-opts {
+    margin-top: 10px;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    background: var(--bg-t);
+    overflow: hidden;
+}
+
+.adv-opts summary {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--tx-s);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.adv-opts summary::-webkit-details-marker {
+    display: none;
+}
+
+.adv-opts summary::before {
+    content: "▸";
+    font-size: 10px;
+    color: var(--tx-t);
+    transition: transform 0.2s var(--ease-smooth, ease);
+}
+
+.adv-opts[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.adv-opts-body {
+    padding: 0 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.adv-opts-body .ep-input {
+    width: 100%;
+    font-family: var(--font-mono, Consolas, Monaco, monospace);
+    font-size: 12px;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -587,6 +632,23 @@
 
 .has-update-dot.show-update .update-dot {
     display: block;
+}
+
+ 
+.nav-item.show-update .nav-ico {
+    position: relative;
+}
+
+.nav-item.show-update .nav-ico::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wr-c);
+    border: 2px solid var(--bg-p);
 }
 
 @keyframes update-dot-pulse {

@@ -608,8 +608,9 @@ select:focus {
     }
 }
 
- 
-html {
+
+
+* {
     scrollbar-width: thin;
     scrollbar-color: var(--bd-h) transparent;
 }
@@ -774,6 +775,46 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
 }
 
 
+
+
+
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .header,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .sidebar,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .card,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .stat-card {
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+}
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .header,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .sidebar,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .card,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .stat-card {
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+    backdrop-filter: blur(8px) saturate(1.05);
+}
+ 
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] {
+    --bg-p: color-mix(in srgb, var(--bg-p) 82%, #ffffff);
+}
+html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
+    --bg-p: color-mix(in srgb, var(--bg-p) 82%, #0a0d12);
+}
+ 
+@media (max-width: 768px) {
+    html.bg-image[data-bg-effect="frosted"] .header,
+    html.bg-image[data-bg-effect="frosted"] .sidebar,
+    html.bg-image[data-bg-effect="frosted"] .card,
+    html.bg-image[data-bg-effect="frosted"] .stat-card,
+    html.bg-image[data-bg-effect="misty"] .header,
+    html.bg-image[data-bg-effect="misty"] .sidebar,
+    html.bg-image[data-bg-effect="misty"] .card,
+    html.bg-image[data-bg-effect="misty"] .stat-card {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+
  
  
 @media (hover: none), (pointer: coarse) {
@@ -782,4 +823,31 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
     }
+}
+
+ 
+
+
+.app {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+ 
+.log-console,
+.transcript-msg-list,
+.dash-events,
+#pkgDetailDesc,
+.fw-notes-summary,
+.fw-notes-callout,
+.fw-notes-group-body,
+.CodeMirror,
+input,
+textarea,
+pre,
+code,
+[contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
 }

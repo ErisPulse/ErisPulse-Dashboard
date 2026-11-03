@@ -179,6 +179,57 @@ export async function loadPackageUpdates(forceRefresh) {
   document.getElementById("pkgUpdateList").innerHTML = html;
 }
 
+ 
+ 
+var _PKG_BADGE_TTL = 30 * 60 * 1000;
+
+function _readPkgBadgeCache() {
+  try {
+    var raw = localStorage.getItem("ep_pkg_updates_cache");
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || Date.now() - o.ts > _PKG_BADGE_TTL) return null;
+    return o;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function checkPkgUpdateBadge(forceRefresh) {
+  try {
+    const force = forceRefresh === true;
+    var cached = !force && _readPkgBadgeCache();
+    let updates;
+    if (cached) {
+      updates = cached.updates || [];
+    } else {
+      const d = await api("/api/packages/updates" + (force ? "?force=true" : ""));
+      updates = (d && d.updates) || [];
+      try {
+        localStorage.setItem(
+          "ep_pkg_updates_cache",
+          JSON.stringify({ ts: Date.now(), updates: updates }),
+        );
+      } catch (e) {}
+    }
+    const nav = document.querySelector('.nav-item[data-page="packages"]');
+    if (updates.length > 0) {
+      if (nav) nav.classList.add("show-update");
+      addOrUpdateTask(
+        "pkg-update-available",
+        t("pkg_update_available_msg").replace("{count}", updates.length),
+        "info",
+        [],
+      );
+    } else {
+      if (nav) nav.classList.remove("show-update");
+      removeTask("pkg-update-available");
+    }
+  } catch (e) {
+     
+  }
+}
+
 export async function upgradePkg(pkgName) {
   if (!authed) return showLogin();
   const ok = await confirm2(
@@ -230,9 +281,14 @@ export async function installNewPkg() {
     t("install") + " <strong>" + esc(packages.join(", ")) + "</strong>?",
   );
   if (!ok) return;
+  const body = { packages };
+  const extra = (
+    document.getElementById("pkgInstallExtraArgs")?.value || ""
+  ).trim();
+  if (extra) body.extra_args = extra;
   const d = await api("/api/packages/install", {
     method: "POST",
-    body: JSON.stringify({ packages }),
+    body: JSON.stringify(body),
   });
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, packages.join(", "));
@@ -257,9 +313,12 @@ export async function installNewGitPkg() {
     t("install") + " <strong>" + esc(val) + "</strong>?",
   );
   if (!ok) return;
+  const body = { packages: [val] };
+  const extra = (document.getElementById("pkgGitExtraArgs")?.value || "").trim();
+  if (extra) body.extra_args = extra;
   const d = await api("/api/packages/install", {
     method: "POST",
-    body: JSON.stringify({ packages: [val] }),
+    body: JSON.stringify(body),
   });
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, val);

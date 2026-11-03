@@ -16,6 +16,11 @@ export function go(name, el, opts) {
     return;
   }
    
+  if (typeof canAccessPage === "function" && !canAccessPage(name) && !PAGE_REDIRECTS[name]) {
+    if (typeof toast === "function") toast(t("viewer_no_access"), "wr");
+    return;
+  }
+   
   if (
     !(opts && opts.force) &&
     window._cfgDirtyKeys &&

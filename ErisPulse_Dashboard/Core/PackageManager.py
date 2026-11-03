@@ -1,3 +1,4 @@
+import asyncio
 import importlib.metadata
 import os
 import shutil
@@ -418,7 +419,9 @@ class DashboardPackageManager:
         ):
             return self._updates_cache
 
-        installed = self.get_installed_packages(force)
+         
+         
+        installed = await asyncio.to_thread(self.get_installed_packages, force)
         packages = installed.get("packages", [])
         erispulse_pkgs = [p for p in packages if p["is_module"] or p["is_adapter"]]
 
@@ -432,6 +435,8 @@ class DashboardPackageManager:
                 if pkg_name:
                     remote_index[pkg_name.lower()] = info.get("version", "")
 
+         
+        need_pypi = []
         for pkg in erispulse_pkgs:
             current = pkg["version"]
             pkg_lower = pkg["name"].lower()
@@ -445,18 +450,29 @@ class DashboardPackageManager:
                         "source": "registry",
                     }
                 )
-                continue
+            elif not remote_ver:
+                need_pypi.append(pkg)
 
-            latest = await self._get_pypi_version(pkg["name"])
-            if latest and self._compare_versions(latest, current) > 0:
-                updates.append(
-                    {
-                        "name": pkg["name"],
-                        "current": current,
-                        "latest": latest,
-                        "source": "pypi",
-                    }
-                )
+        sem = asyncio.Semaphore(8)
+
+        async def _fetch_latest(pkg):
+            async with sem:
+                return await self._get_pypi_version(pkg["name"])
+
+        if need_pypi:
+            latest_list = await asyncio.gather(
+                *[_fetch_latest(p) for p in need_pypi]
+            )
+            for pkg, latest in zip(need_pypi, latest_list):
+                if latest and self._compare_versions(latest, pkg["version"]) > 0:
+                    updates.append(
+                        {
+                            "name": pkg["name"],
+                            "current": pkg["version"],
+                            "latest": latest,
+                            "source": "pypi",
+                        }
+                    )
 
         self._updates_cache = updates
         self._updates_cache_ts = time.time()

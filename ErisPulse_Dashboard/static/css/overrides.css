@@ -223,6 +223,13 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
+html[data-bg-effect="frosted"] .sidebar,
+html[data-bg-effect="frosted"] .header,
+html[data-bg-effect="misty"] .sidebar,
+html[data-bg-effect="misty"] .header {
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
 
 .header {
     border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
@@ -1330,16 +1337,44 @@ input, textarea, select, button,
  
 
 
-* {
+
+
+html[data-scrollbar="hidden"],
+html[data-scrollbar="hidden"] * {
     scrollbar-width: none;
 }
-*::-webkit-scrollbar {
+html[data-scrollbar="hidden"] *::-webkit-scrollbar {
     width: 0;
     height: 0;
     display: none;
 }
+html[data-scrollbar="hover"] *::-webkit-scrollbar-thumb {
+    background: transparent;
+    background-clip: content-box;
+    transition: background 0.2s ease;
+}
+html[data-scrollbar="hover"] *:hover::-webkit-scrollbar-thumb,
+html[data-scrollbar="hover"] *:hover *::-webkit-scrollbar-thumb,
+html[data-scrollbar="hover"] *:active::-webkit-scrollbar-thumb {
+    background: var(--bd-h);
+    background-clip: content-box;
+}
+html[data-scrollbar="hover"] {
+    scrollbar-color: transparent transparent;
+}
+html[data-scrollbar="hover"] *:hover {
+    scrollbar-color: var(--bd-h) transparent;
+}
 
  
+html[data-scrollbar="hidden"] .CodeMirror-vscrollbar,
+html[data-scrollbar="hidden"] .CodeMirror-hscrollbar {
+    scrollbar-width: thin;
+}
+html[data-scrollbar="hidden"] .CodeMirror-vscrollbar::-webkit-scrollbar,
+html[data-scrollbar="hidden"] .CodeMirror-hscrollbar::-webkit-scrollbar {
+    display: block;
+}
 .CodeMirror-vscrollbar,
 .CodeMirror-hscrollbar {
     scrollbar-width: thin;

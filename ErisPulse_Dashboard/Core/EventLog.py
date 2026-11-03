@@ -257,6 +257,9 @@ class EventLogMixin:
     def _persist_events(self):
         try:
             self.storage.set("__ep_events__", self._event_log[-self._max_log :])
+             
+             
+            self.storage.set("__ep_event_total__", int(self._total_event_count))
             self._events_dirty = False
         except Exception:
             pass
@@ -310,7 +313,16 @@ class EventLogMixin:
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
                 self._event_log = events[-self._max_log :]
-                self._total_event_count = max(self._total_event_count, len(events))
+                 
+                total = self.storage.get("__ep_event_total__")
+                if isinstance(total, int) and total >= 0:
+                    self._total_event_count = max(
+                        self._total_event_count, total, len(events)
+                    )
+                else:
+                    self._total_event_count = max(
+                        self._total_event_count, len(events)
+                    )
         except Exception:
             pass
         try:

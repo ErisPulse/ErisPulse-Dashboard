@@ -78,7 +78,7 @@ export function applyUiStyle(style) {
 }
 
 export function getFont() {
-  return localStorage.getItem("ep_font") || "sora";
+  return localStorage.getItem("ep_font") || "system";
 }
 
 function _ensureFontFace(name, url) {
@@ -305,11 +305,16 @@ export function applyBgColorManual(hex) {
 
 export function applyBgImageFile(file) {
   if (!file) return;
+   
+  var fileInput = document.getElementById("settingsBgFile");
+  if (fileInput) fileInput.value = "";
   var reader = new FileReader();
   reader.onload = function (e) {
     var dataUrl = e.target.result;
      
+     
     setSetting("bg_tile", "0");  
+    setSetting("bg_image", dataUrl);
     applyBgImage(dataUrl);
     showBgAutoThemeRow(true);
     if (bgAutoThemeEnabled()) {
@@ -319,12 +324,11 @@ export function applyBgImageFile(file) {
     }
      
     uploadBgImage(file).then(function (url) {
-      if (url) {
+      if (url && getSetting("bg_image", "") === dataUrl) {
         setSetting("bg_image", url);
-      } else {
-         
-        setSetting("bg_image", dataUrl);
+        applyBgImage(url);
       }
+       
     });
   };
   reader.readAsDataURL(file);
@@ -374,8 +378,8 @@ export function applySettingBgLevel(level) {
   setSetting("bg_trans", level);
   applyBgTransClass();
    
-  var img = getSetting("bg_image", "");
-  if (img) applyBgImage(img);
+   
+  document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
@@ -397,16 +401,50 @@ function _bgOverlayCss() {
   var a = (BG_OVERLAY_ALPHA[dark ? "dark" : "light"] || BG_OVERLAY_ALPHA.light)[getBgTrans()];
   if (typeof a !== "number") a = 0.55;
    
-  if (oled) a = Math.min(0.9, a + 0.1);
+  if (getBgEffect() === "misty") a = Math.min(0.92, a + 0.14);
+   
+  if (oled) a = Math.min(0.94, a + 0.1);
   return "linear-gradient(rgba(" + rgb + "," + a + "),rgba(" + rgb + "," + a + "))";
+}
+
+ 
+export function getBgEffect() {
+  var v = getSetting("bg_effect", "none");
+  return v === "frosted" || v === "misty" ? v : "none";
+}
+
+export function applyBgEffectClass() {
+  var root = document.documentElement;
+  root.removeAttribute("data-bg-effect");
+  var eff = getBgEffect();
+  if (eff !== "none") root.setAttribute("data-bg-effect", eff);
+}
+
+export function applySettingBgEffect(eff) {
+  if (eff !== "frosted" && eff !== "misty") eff = "none";
+  setSetting("bg_effect", eff);
+  applyBgEffectClass();
+   
+  document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+}
+
+ 
+var _curBgImage = "";
+
+function _currentBgImageCss() {
+  return _curBgImage ? ', url("' + _curBgImage + '")' : "";
 }
 
 export function applyBgImage(dataUrl) {
   if (!dataUrl) return;
+  _curBgImage = dataUrl;
+   
    
    
   document.documentElement.classList.add("bg-image");
   applyBgTransClass();
+  applyBgEffectClass();
   document.body.style.backgroundImage = _bgOverlayCss() + ', url("' + dataUrl + '")';
    
   if (getSetting("bg_tile", "0") === "1") {
@@ -437,8 +475,11 @@ export function applyBgPattern(url) {
 }
 
 export function clearBgImage() {
+  _curBgImage = "";
   document.documentElement.classList.remove("bg-image", "bg-level-soft", "bg-level-strong");
+  document.documentElement.removeAttribute("data-bg-effect");
   document.body.style.removeProperty("background-image");
+  document.body.style.removeProperty("background-repeat");
   document.body.style.removeProperty("background-size");
   document.body.style.removeProperty("background-position");
   document.body.style.removeProperty("background-attachment");

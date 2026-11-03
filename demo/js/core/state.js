@@ -75,6 +75,7 @@ window.ACCENT_PRESETS = [
   "#495057",  
 ];
  
+ 
 window.BG_PATTERNS = [
   "bg_3d6e2854f17344af90657cf84b6749e2.png",
   "bg_4611839d3c9a4da9b5398a2add4b1563.png",
@@ -87,7 +88,7 @@ window.BG_PATTERNS = [
   "bg_92a54f52e84d4d76809c05c716848aa7.gif",
   "bg_f0344a55d2d64e6fbdd7e35d874f3770.gif",
   "bg_54ce22286de24255ba895d17d2a1bb69.jpg",
-].map(function (n) { return "res/bg_upload/" + n; });
+].map(function (n) { return "res/bg_patterns/" + n; });
  
 window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
  

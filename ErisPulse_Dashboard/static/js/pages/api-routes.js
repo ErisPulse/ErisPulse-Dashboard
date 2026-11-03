@@ -384,24 +384,17 @@ export async function loadHealthStatus() {
 
   const detail = d.detail || {};
   const storageDetail = detail.storage || {};
-  const adapterDetail = detail.adapters || {};
-  const moduleDetail = detail.modules || {};
 
   var storageSub = storageDetail.backend || "";
   if (!d.storage && storageDetail.error) {
     storageSub = (storageSub ? storageSub + " · " : "") + storageDetail.error;
   }
-  var adapterSub = adapterDetail.total
-    ? adapterDetail.started + " / " + adapterDetail.total
-    : "";
-  var moduleSub = moduleDetail.loaded !== undefined
-    ? String(moduleDetail.loaded)
-    : "";
 
+   
   el.innerHTML =
     _healthCell(t("health_storage"), d.storage, storageSub, storageDetail.error || "") +
-    _healthCell(t("health_adapters"), d.adapters, adapterSub, "") +
-    _healthCell(t("health_modules"), d.modules, moduleSub, "") +
+    _healthCell(t("health_adapters"), d.adapters, "", "") +
+    _healthCell(t("health_modules"), d.modules, "", "") +
     _healthCell(t("health_router"), d.router, "", "");
 }
 

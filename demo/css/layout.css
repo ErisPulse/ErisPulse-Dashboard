@@ -395,6 +395,9 @@ code.ws-insp-val {
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+     
+    touch-action: pan-y;
+    overscroll-behavior: contain;
     padding: 8px 6px;
 }
 
@@ -823,6 +826,9 @@ code.ws-insp-val {
     display: none;
     flex: 1;
     overflow-y: auto;
+     
+    touch-action: pan-y;
+    overscroll-behavior: contain;
     padding: 28px;
     position: relative;
 }

@@ -1,4 +1,6 @@
  
+ 
+ 
 
 export function toast(msg, type) {
   const el = document.createElement("div");
@@ -7,12 +9,10 @@ export function toast(msg, type) {
   el.textContent = msg;
   document.body.appendChild(el);
   requestAnimationFrame(() => {
-    el.style.opacity = "1";
-    el.style.transform = "translateX(-50%) translateY(0)";
+    el.classList.add("show");
   });
   setTimeout(() => {
-    el.style.opacity = "0";
-    el.style.transform = "translateX(-50%) translateY(12px)";
+    el.classList.remove("show");
     setTimeout(() => el.remove(), 250);
   }, 2500);
 }
@@ -35,12 +35,10 @@ export function toastUndo(msg, undoFn) {
   el.appendChild(btn);
   document.body.appendChild(el);
   requestAnimationFrame(function () {
-    el.style.opacity = "1";
-    el.style.transform = "translateX(-50%) translateY(0)";
+    el.classList.add("show");
   });
   setTimeout(function () {
-    el.style.opacity = "0";
-    el.style.transform = "translateX(-50%) translateY(12px)";
+    el.classList.remove("show");
     setTimeout(function () {
       el.remove();
     }, 250);

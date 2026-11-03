@@ -271,9 +271,14 @@ export function loadAll() {
   window.refreshDashboard();
   loadPerformance();
   loadEvents();
-  checkFwUpdateBadge();
-  checkPkgUpdateBadge();
   loadModuleViews();
   restartRefreshTimer();
+   
+   
+  setTimeout(function () {
+    if (getSetting("auto_check_updates", "1") !== "1") return;
+    checkFwUpdateBadge();
+    checkPkgUpdateBadge();
+  }, 3000);
 }
 
