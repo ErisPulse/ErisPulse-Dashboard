@@ -78,7 +78,7 @@ export function applyUiStyle(style) {
 }
 
 export function getFont() {
-  return localStorage.getItem("ep_font") || "sora";
+  return localStorage.getItem("ep_font") || "system";
 }
 
 function _ensureFontFace(name, url) {
@@ -305,11 +305,16 @@ export function applyBgColorManual(hex) {
 
 export function applyBgImageFile(file) {
   if (!file) return;
+  // 处理后重置 input：同一文件再次选择也能触发 onchange
+  var fileInput = document.getElementById("settingsBgFile");
+  if (fileInput) fileInput.value = "";
   var reader = new FileReader();
   reader.onload = function (e) {
     var dataUrl = e.target.result;
-    // 本地预览（不存 base64 到 localStorage，避免塞满本地存储）
+    // 先同步写入本地值（dataUrl）：挡位切换/预览刷新立即读到新图，
+    // 不再出现"上传期间切挡位回退旧图"的竞态
     setSetting("bg_tile", "0"); // 上传照片默认封面模式
+    setSetting("bg_image", dataUrl);
     applyBgImage(dataUrl);
     showBgAutoThemeRow(true);
     if (bgAutoThemeEnabled()) {
@@ -317,14 +322,13 @@ export function applyBgImageFile(file) {
         applyAccentColor(hex);
       });
     }
-    // 上传到服务器，只保存 URL（避免 base64 污染配置）
+    // 上传到服务器成功后，把本地值替换为 URL（体积小、可同步）
     uploadBgImage(file).then(function (url) {
-      if (url) {
+      if (url && getSetting("bg_image", "") === dataUrl) {
         setSetting("bg_image", url);
-      } else {
-        // 上传失败时回退到本地 base64（仅本地，不同步）
-        setSetting("bg_image", dataUrl);
+        applyBgImage(url);
       }
+      // 上传失败保持 dataUrl（仅本地；setSetting 内部失败静默，不炸配额）
     });
   };
   reader.readAsDataURL(file);
@@ -373,9 +377,9 @@ export function applySettingBgLevel(level) {
   if (BG_TRANS_LEVELS.indexOf(level) === -1) level = "standard";
   setSetting("bg_trans", level);
   applyBgTransClass();
-  // 遮罩强度随档位联动重算
-  var img = getSetting("bg_image", "");
-  if (img) applyBgImage(img);
+  // 仅重算遮罩与预览，不重读存储重涂背景（当前背景由 applyBgImage 维护，
+  // 修复"上传期间切挡位回退旧图"的竞态）
+  document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
@@ -396,17 +400,51 @@ function _bgOverlayCss() {
   var rgb = oled ? "0, 0, 0" : dark ? "10,14,23" : "244,247,252";
   var a = (BG_OVERLAY_ALPHA[dark ? "dark" : "light"] || BG_OVERLAY_ALPHA.light)[getBgTrans()];
   if (typeof a !== "number") a = 0.55;
+  // 雾感效果：遮罩整体加深，营造雾面观感
+  if (getBgEffect() === "misty") a = Math.min(0.92, a + 0.14);
   // OLED：黑底低透明度会发灰，遮罩适度加深兜底
-  if (oled) a = Math.min(0.9, a + 0.1);
+  if (oled) a = Math.min(0.94, a + 0.1);
   return "linear-gradient(rgba(" + rgb + "," + a + "),rgba(" + rgb + "," + a + "))";
+}
+
+// ── 背景效果档（v2.6）：none / frosted（磨砂）/ misty（雾感） ──
+export function getBgEffect() {
+  var v = getSetting("bg_effect", "none");
+  return v === "frosted" || v === "misty" ? v : "none";
+}
+
+export function applyBgEffectClass() {
+  var root = document.documentElement;
+  root.removeAttribute("data-bg-effect");
+  var eff = getBgEffect();
+  if (eff !== "none") root.setAttribute("data-bg-effect", eff);
+}
+
+export function applySettingBgEffect(eff) {
+  if (eff !== "frosted" && eff !== "misty") eff = "none";
+  setSetting("bg_effect", eff);
+  applyBgEffectClass();
+  // 雾感改变遮罩强度，需重涂
+  document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
+  if (typeof syncBgCardUI === "function") syncBgCardUI();
+}
+
+// 当前生效背景（applyBgImage 维护；切挡位/效果时复用，不回读存储）
+var _curBgImage = "";
+
+function _currentBgImageCss() {
+  return _curBgImage ? ', url("' + _curBgImage + '")' : "";
 }
 
 export function applyBgImage(dataUrl) {
   if (!dataUrl) return;
-  // 透感模式（设计语言 §2.6 v1.2）：表面保持平面半透明，禁止大面积模糊；
-  // 仅模态框与下拉菜单由 base.css 单独做轻 blur 兜底；遮罩按档位调和可读性
+  _curBgImage = dataUrl;
+  // 透感模式（设计语言 §2.6 v1.2）：表面保持平面半透明；
+  // 磨砂/雾感效果由 [data-bg-effect] 在 base.css 单独开启表面 blur；
+  // 遮罩按档位调和可读性
   document.documentElement.classList.add("bg-image");
   applyBgTransClass();
+  applyBgEffectClass();
   document.body.style.backgroundImage = _bgOverlayCss() + ', url("' + dataUrl + '")';
   // 平铺模式（图案库小图）vs 封面模式（上传照片）
   if (getSetting("bg_tile", "0") === "1") {
@@ -437,8 +475,11 @@ export function applyBgPattern(url) {
 }
 
 export function clearBgImage() {
+  _curBgImage = "";
   document.documentElement.classList.remove("bg-image", "bg-level-soft", "bg-level-strong");
+  document.documentElement.removeAttribute("data-bg-effect");
   document.body.style.removeProperty("background-image");
+  document.body.style.removeProperty("background-repeat");
   document.body.style.removeProperty("background-size");
   document.body.style.removeProperty("background-position");
   document.body.style.removeProperty("background-attachment");

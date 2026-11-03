@@ -1,4 +1,6 @@
 // ErisPulse Dashboard – components/toast (auto-split from dash.js)
+// 显隐只切 .show 类；位移动画在 CSS（历史版 JS 写死内联 translateX(-50%)，
+// 会覆盖移动端媒体查询导致 toast 左移半屏被裁切，v2.6 已收归 CSS）
 
 export function toast(msg, type) {
   const el = document.createElement("div");
@@ -7,12 +9,10 @@ export function toast(msg, type) {
   el.textContent = msg;
   document.body.appendChild(el);
   requestAnimationFrame(() => {
-    el.style.opacity = "1";
-    el.style.transform = "translateX(-50%) translateY(0)";
+    el.classList.add("show");
   });
   setTimeout(() => {
-    el.style.opacity = "0";
-    el.style.transform = "translateX(-50%) translateY(12px)";
+    el.classList.remove("show");
     setTimeout(() => el.remove(), 250);
   }, 2500);
 }
@@ -35,12 +35,10 @@ export function toastUndo(msg, undoFn) {
   el.appendChild(btn);
   document.body.appendChild(el);
   requestAnimationFrame(function () {
-    el.style.opacity = "1";
-    el.style.transform = "translateX(-50%) translateY(0)";
+    el.classList.add("show");
   });
   setTimeout(function () {
-    el.style.opacity = "0";
-    el.style.transform = "translateX(-50%) translateY(12px)";
+    el.classList.remove("show");
     setTimeout(function () {
       el.remove();
     }, 250);

@@ -148,9 +148,10 @@ export function syncBgLevelSeg() {
   });
 }
 
-// 背景卡整体回显：预览缩略图 / 平铺开关 / 透感档位 / 自动取色 / 清除按钮 / OLED 提示
+// 背景卡整体回显：预览缩略图 / 平铺开关 / 透感档位 / 效果档 / 自动取色 / 清除按钮 / OLED 提示
 export function syncBgCardUI() {
   var img = getSetting("bg_image", "");
+  var bgColor = getSetting("bg_color", "");
   var has = !!img;
   var tile = getSetting("bg_tile", "0") === "1";
   var box = document.getElementById("bgPreviewBox");
@@ -164,18 +165,34 @@ export function syncBgCardUI() {
       im.style.backgroundSize = tile ? "64px auto" : "cover";
     } else {
       im.style.removeProperty("background-image");
+      im.style.removeProperty("background-repeat");
+      im.style.removeProperty("background-size");
     }
   }
-  if (box) box.classList.toggle("has-bg", has);
-  if (empty) empty.style.display = has ? "none" : "flex";
+  if (box) {
+    box.classList.toggle("has-bg", has);
+    // 纯色背景也进预览（WYSIWYG）
+    if (!has && bgColor) box.style.background = bgColor;
+    else box.style.removeProperty("background");
+  }
+  if (empty) empty.style.display = has || bgColor ? "none" : "flex";
   var tileEl = document.getElementById("settingsBgTile");
   if (tileEl) tileEl.checked = tile;
   syncBgLevelSeg();
+  // 效果档激活态
+  var beSeg = document.getElementById("bgEffectSeg");
+  if (beSeg) {
+    var cur = typeof getBgEffect === "function" ? getBgEffect() : "none";
+    beSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.be === cur);
+    });
+  }
   showBgAutoThemeRow(has);
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
   var clearBtn = document.getElementById("bgClearBtn");
-  if (clearBtn) clearBtn.style.display = has ? "inline-flex" : "none";
+  // 纯色背景也可"清除"（清除后回到空态）
+  if (clearBtn) clearBtn.style.display = has || bgColor ? "inline-flex" : "none";
   syncBgPatternActive();
   updateOledHint();
 }
@@ -193,11 +210,25 @@ export function renderBgPatternGrid() {
   var grid = document.getElementById("bgPatternGrid");
   if (!grid) return;
   grid.innerHTML = "";
+  if (!(BG_PATTERNS || []).length) {
+    // 空状态（内置图案目录缺失/为空）
+    var tip = document.createElement("div");
+    tip.className = "bg-pattern-empty";
+    tip.setAttribute("data-i18n", "settings_bg_pattern_empty");
+    grid.appendChild(tip);
+    return;
+  }
   (BG_PATTERNS || []).forEach(function (url) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "bg-pattern-thumb";
     b.title = t("settings_bg_pattern");
+    // img 探测：文件缺失时隐藏坏档瓦片（bg_patterns 目录为 git 跟踪，正常必有）
+    var probe = new Image();
+    probe.onerror = function () {
+      b.style.display = "none";
+    };
+    probe.src = url;
     b.style.backgroundImage = 'url("' + url + '")';
     b.onclick = function () {
       applyBgPattern(url);
@@ -237,8 +268,11 @@ export async function resetSettingsGroup(group) {
     case "bg":
       localStorage.removeItem("ep_setting_bg_tile");
       localStorage.removeItem("ep_setting_bg_trans");
+      localStorage.removeItem("ep_setting_bg_effect");
+      localStorage.removeItem("ep_setting_bg_auto_theme");
       resetBg();
       applyBgTransClass();
+      applyBgEffectClass();
       break;
     case "accent":
       resetAccent();
@@ -298,6 +332,7 @@ var SETTINGS_SEC_LOADERS = {
   "sec-update": function () { loadFrameworkVersions(); },
   "sec-about": function () { loadAbout(); },
   "sec-security": function () { loadGeneralTab(); },
+  "sec-fwbehavior": function () { loadFwBehaviorPane(); },
 };
 
 function _selectSettingsPane(paneId, remember) {
@@ -459,6 +494,24 @@ export function syncSettingsSectionUI() {
     efsSeg.querySelectorAll("button").forEach(function (b) {
       b.classList.toggle("active", b.dataset.efs === getEditorFontSize());
     });
+  }
+  // 触屏滚动 / 滚动条档位 / 自动检查更新（v2.6 新增）
+  var tssSeg = document.getElementById("touchScrollSeg");
+  if (tssSeg) {
+    var tsm = localStorage.getItem("ep_touch_scroll") || "auto";
+    tssSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.ts === tsm);
+    });
+  }
+  var sbSeg = document.getElementById("scrollbarSeg");
+  if (sbSeg) {
+    sbSeg.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.sb === getScrollbarMode());
+    });
+  }
+  var acuEl = document.getElementById("settingsAutoCheckUpdates");
+  if (acuEl) {
+    acuEl.checked = getSetting("auto_check_updates", "1") === "1";
   }
 }
 
@@ -1381,6 +1434,50 @@ export function applySettingAnimStyle(val) {
   applyAnimStyle(val);
 }
 
+// 滚动条显隐档位：always（默认胶囊常显）/ hover / hidden
+export function getScrollbarMode() {
+  var v = localStorage.getItem("ep_scrollbar");
+  return v === "hover" || v === "hidden" ? v : "always";
+}
+
+export function applyScrollbarMode(mode) {
+  if (mode !== "hover" && mode !== "hidden") mode = "always";
+  document.documentElement.setAttribute("data-scrollbar", mode);
+}
+
+export function applySettingScrollbar(mode) {
+  localStorage.setItem("ep_scrollbar", mode);
+  applyScrollbarMode(mode);
+  syncSettingsUI();
+}
+
+// 触屏滚动兜底：auto（默认，触屏/VNC 探测）/ on / off
+export function applySettingTouchScroll(val) {
+  localStorage.setItem("ep_touch_scroll", val);
+  syncSettingsUI();
+}
+
+// 自动检查更新（框架 + 包，含启动延迟检查与徽标）
+export function applySettingAutoCheckUpdates(on) {
+  setSetting("auto_check_updates", on ? "1" : "0");
+  syncSettingsUI();
+  if (!on) {
+    // 关闭即清提示；缓存也一并清掉，避免旧红点残留
+    var nav = document.querySelector('.nav-item[data-page="packages"]');
+    if (nav) nav.classList.remove("show-update");
+    removeTask("pkg-update-available");
+    try {
+      localStorage.removeItem("ep_pkg_updates_cache");
+    } catch (e) {}
+  } else {
+    // 打开后 3s 内静默补一次检查
+    setTimeout(function () {
+      checkFwUpdateBadge();
+      checkPkgUpdateBadge();
+    }, 3000);
+  }
+}
+
 export async function exportBackup() {
   if (!authed) return showLogin();
   const d = await api("/api/backup/export");
@@ -1662,6 +1759,7 @@ export function closeCustomThemeModal() {
 
 export function loadGeneralTab() {
   loadAccessTokenCard();
+  loadApiKeyCard();
   loadLoginLockout();
 }
 
@@ -1673,38 +1771,249 @@ export function loadAccessTokenCard() {
     tk.length > 12
       ? tk.slice(0, 6) + "••••••" + tk.slice(-4)
       : "••••••";
+  // 单行：标题 + 掩码 + 复制 + 重新生成（按钮保持同行不换行）
   host.innerHTML =
-    '<div class="card settings-card">' +
-    '<div class="card-header">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>' +
-    "<span>" +
-    esc(t("sec_token_title")) +
-    "</span>" +
-    "</div>" +
-    '<div class="settings-card-body">' +
-    '<div class="settings-item"><div>' +
-    '<div class="settings-item-label">' +
-    esc(t("sec_token_label")) +
-    "</div>" +
-    '<div class="settings-item-desc">' +
-    esc(t("sec_token_desc")) +
-    "</div>" +
-    "</div>" +
-    '<div class="settings-item-control">' +
-    "<code>" +
+    '<div class="card set-group">' +
+    '<div class="set-row set-row--wrap"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>' +
+    '<span class="set-main"><span class="set-title" data-i18n="sec_token_label"></span><span class="set-sub" data-i18n="sec_token_primary_desc"></span></span>' +
+    '<span class="set-end" style="gap:8px;flex-wrap:nowrap"><code style="user-select:all;white-space:nowrap">' +
     esc(masked) +
-    "</code>" +
-    "</div></div>" +
-    '<div class="settings-item" style="border-top:none">' +
-    '<div class="settings-item-control" style="display:flex;gap:8px;margin-left:0">' +
-    '<button class="btn btn-secondary btn-sm" onclick="copyAccessToken()">' +
-    esc(t("sec_copy")) +
-    "</button>" +
-    '<button class="btn btn-danger btn-sm" onclick="regenAccessToken()">' +
-    esc(t("sec_token_regen")) +
-    "</button>" +
-    "</div></div>" +
-    "</div></div>";
+    '</code><button class="btn btn-secondary btn-sm" onclick="copyAccessToken()"><span data-i18n="sec_copy"></span></button>' +
+    '<button class="btn btn-danger btn-sm" onclick="regenAccessToken()"><span data-i18n="sec_token_regen"></span></button>' +
+    "</span></div>" +
+    "</div>";
+  applyI18n();
+}
+
+// ════════════════ API 密钥（多密钥体系） ════════════════
+
+function _fmtTime(ts) {
+  if (!ts) return "-";
+  try {
+    var d = new Date(ts * 1000);
+    return (
+      d.getFullYear() +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0") +
+      " " +
+      String(d.getHours()).padStart(2, "0") +
+      ":" +
+      String(d.getMinutes()).padStart(2, "0")
+    );
+  } catch (e) {
+    return "-";
+  }
+}
+
+export async function loadApiKeyCard() {
+  var host = document.getElementById("apiKeyCard");
+  if (!host) return;
+  var d;
+  try {
+    d = await api("/api/security/keys");
+  } catch (e) {
+    d = null;
+  }
+  var keys = (d && d.keys) || [];
+  var html = "";
+  // 添加密钥行（名称 + 角色 + 添加按钮）
+  html +=
+    '<div class="set-row set-row--wrap"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>' +
+    '<span class="set-main"><span class="set-title" data-i18n="sec_keys_add"></span><span class="set-sub" data-i18n="sec_keys_add_desc"></span></span>' +
+    '<span class="set-end">' +
+    '<input type="text" class="settings-input" id="newKeyName" placeholder="kiosk" style="width:120px"/> ' +
+    '<select class="settings-select" id="newKeyRole"><option value="viewer" selected data-i18n-option="sec_key_role_viewer"></option><option value="admin" data-i18n-option="sec_key_role_admin"></option></select> ' +
+    '<button class="btn btn-primary btn-sm" onclick="createApiKey()"><span data-i18n="sec_keys_create"></span></button>' +
+    "</span></div>";
+  // 密钥列表
+  if (!keys.length) {
+    html +=
+      '<div class="set-row"><span class="set-main" style="justify-content:center"><span class="set-sub" data-i18n="sec_keys_empty"></span></span></div>';
+  } else {
+    keys.forEach(function (k) {
+      html +=
+        '<div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>' +
+        '<span class="set-main"><span class="set-title">' +
+        esc(k.name || k.id) +
+        ' <span class="chip" style="font-size:10px">' +
+        esc(k.role) +
+        "</span>" +
+        (k.enabled ? "" : ' <span class="chip" style="font-size:10px;opacity:.6">' + esc(t("sec_key_disabled")) + "</span>") +
+        "</span>" +
+        '<span class="set-sub"><code style="user-select:all">' +
+        esc(k.key_prefix || "") +
+        "…</code> · " +
+        (k.role === "viewer" && k.pages && k.pages.length
+          ? esc(t("sec_key_pages_count").replace("{n}", k.pages.length)) + " · "
+          : "") +
+        esc(t("sec_key_created")) +
+        " " +
+        _fmtTime(k.created_at) +
+        (k.last_used
+          ? " · " + esc(t("sec_key_last_used")) + " " + _fmtTime(k.last_used)
+          : "") +
+        "</span></span>" +
+        '<span class="set-end">' +
+        (k.role === "viewer"
+          ? '<button class="btn btn-secondary btn-sm" onclick="editKeyPages(\'' +
+            esc(k.id) +
+            '\')"><span data-i18n="sec_key_pages"></span></button> '
+          : "") +
+        '<label class="switch" title="' +
+        esc(t("sec_key_toggle")) +
+        '"><input type="checkbox" ' +
+        (k.enabled ? "checked" : "") +
+        ' onchange="toggleApiKey(\'' +
+        esc(k.id) +
+        '\', this.checked)"/><span class="switch-slider"></span></label> ' +
+        '<button class="btn btn-secondary btn-sm" onclick="regenApiKey(\'' +
+        esc(k.id) +
+        '\')"><span data-i18n="sec_token_regen"></span></button> ' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteApiKey(\'' +
+        esc(k.id) +
+        '\')"><span data-i18n="delete"></span></button>' +
+        "</span></div>";
+    });
+  }
+  host.innerHTML = html;
+  applyI18n();
+}
+
+function _showKeyOnce(key) {
+  // 明文仅创建/重生成时一次性展示
+  showModal(
+    t("sec_key_created_ok"),
+    '<div style="word-break:break-all"><code style="user-select:all;font-size:13px">' +
+      esc(key) +
+      "</code></div>" +
+      '<div style="margin-top:10px;color:var(--tx-t);font-size:12px">' +
+      esc(t("sec_key_onetime_hint")) +
+      "</div>",
+    [
+      {
+        label: t("sec_copy"),
+        primary: true,
+        value: "copy",
+      },
+      { label: t("close"), value: null },
+    ],
+  ).then(function (v) {
+    if (v === "copy") {
+      _copyToClipboard(key);
+      toast(t("sec_copied"), "ok");
+      _showKeyOnce(key);
+    }
+  });
+}
+
+export async function createApiKey() {
+  var nameEl = document.getElementById("newKeyName");
+  var roleEl = document.getElementById("newKeyRole");
+  var name = (nameEl && nameEl.value.trim()) || "";
+  var role = (roleEl && roleEl.value) || "viewer";
+  if (!name) return toast(t("sec_key_name_required"), "wr");
+  var d = await api("/api/security/keys", {
+    method: "POST",
+    body: JSON.stringify({ name: name, role: role }),
+  });
+  if (!d || d.error) return toast(t("unknown_error"), "er");
+  if (nameEl) nameEl.value = "";
+  loadApiKeyCard();
+  if (d.key) _showKeyOnce(d.key);
+}
+
+// viewer 密钥的页面白名单编辑（空 = 全部只读页）
+var _KEY_PAGE_OPTIONS = [
+  ["dashboard", "仪表盘"],
+  ["event-stream", "事件流"],
+  ["transcript", "会话收件箱"],
+  ["bots", "机器人"],
+  ["module-mgmt", "模块管理"],
+  ["store", "模块商店"],
+  ["packages", "包管理"],
+  ["config", "配置管理"],
+  ["framework", "框架更新"],
+  ["logs", "系统日志"],
+  ["api-routes", "API 路由"],
+  ["permissions", "权限控制"],
+  ["files", "文件管理"],
+  ["cluster", "集群"],
+  ["topology", "拓扑图谱"],
+];
+
+export async function editKeyPages(id) {
+  var d = await api("/api/security/keys");
+  var keys = (d && d.keys) || [];
+  var key = null;
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i].id === id) { key = keys[i]; break; }
+  }
+  if (!key) return;
+  var cur = key.pages || [];
+  var body =
+    '<div style="font-size:12px;color:var(--tx-t);margin-bottom:10px">' +
+    esc(t("sec_key_pages_hint")) +
+    "</div><div style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px\">";
+  _KEY_PAGE_OPTIONS.forEach(function (o) {
+    body +=
+      '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" class="key-page-cb" value="' +
+      o[0] + '"' + (cur.indexOf(o[0]) !== -1 ? " checked" : "") + "/><span>" + esc(o[1]) + "</span></label>";
+  });
+  body += "</div>";
+  showModal(t("sec_key_pages"), body, [
+    { label: t("save"), value: "save", primary: true },
+    { label: t("cancel"), value: null },
+  ]).then(async function (v) {
+    if (v !== "save") return;
+    var picked = [];
+    document.querySelectorAll(".key-page-cb:checked").forEach(function (cb) {
+      picked.push(cb.value);
+    });
+    var r = await api("/api/security/keys/" + encodeURIComponent(id), {
+      method: "PUT",
+      body: JSON.stringify({ pages: picked }),
+    });
+    if (!r || r.error) return toast(t("save_failed"), "er");
+    toast(t("saved"), "ok");
+    loadApiKeyCard();
+  });
+}
+
+export async function toggleApiKey(id, enabled) {
+  var d = await api("/api/security/keys/" + encodeURIComponent(id), {
+    method: "PUT",
+    body: JSON.stringify({ enabled: enabled }),
+  });
+  if (!d || d.error) {
+    toast(t("unknown_error"), "er");
+    return loadApiKeyCard();
+  }
+  toast(t("saved"), "ok");
+}
+
+export async function regenApiKey(id) {
+  var ok = await confirm2(t("sec_token_regen"), t("sec_key_regen_confirm"));
+  if (!ok) return;
+  var d = await api(
+    "/api/security/keys/" + encodeURIComponent(id) + "/regenerate",
+    { method: "POST" },
+  );
+  if (!d || d.error) return toast(t("unknown_error"), "er");
+  loadApiKeyCard();
+  if (d.key) _showKeyOnce(d.key);
+}
+
+export async function deleteApiKey(id) {
+  var ok = await confirm2(t("delete"), t("sec_key_delete_confirm"));
+  if (!ok) return;
+  var d = await api("/api/security/keys/" + encodeURIComponent(id), {
+    method: "DELETE",
+  });
+  if (!d || d.error) return toast(t("unknown_error"), "er");
+  toast(t("deleted"), "ok");
+  loadApiKeyCard();
 }
 
 export function copyAccessToken() {
@@ -1780,10 +2089,13 @@ export async function loadLoginLockout() {
     var sw = document.getElementById("settingsLoginLockout");
     if (sw) sw.checked = enabled;
     var sum = document.getElementById("loginLockoutSummary");
-    if (sum)
+    if (sum) {
+      // 移除 data-i18n：否则后续 applyI18n 会用未替换的模板覆盖插值结果
+      sum.removeAttribute("data-i18n");
       sum.textContent = t("login_lockout_params_desc")
         .replace("{n}", maxFails)
         .replace("{s}", win);
+    }
   } catch (e) {}
 }
 
@@ -1845,4 +2157,111 @@ export async function openLoginLockoutModal() {
     return toast(t("save_failed"), "er");
   toast(t("login_lockout_saved"), "ok");
   loadLoginLockout();
+}
+
+// ════════════════ 框架行为（ErisPulse 段常用项，持久写 /api/config） ════════════════
+// 完整配置仍在 配置管理 → 框架配置；此处只放高频项
+
+function _fwbSwitch(id, titleKey, descKey, key, on) {
+  return (
+    '<div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6H3"/><path d="M21 12H3"/><path d="M21 18H3"/></svg></span>' +
+    '<span class="set-main"><span class="set-title" data-i18n="' + titleKey + '"></span>' +
+    (descKey ? '<span class="set-sub" data-i18n="' + descKey + '"></span>' : "") +
+    "</span>" +
+    '<span class="set-end"><label class="switch"><input type="checkbox" id="' + id + '" data-fwb-key="' + key + '"' + (on ? " checked" : "") +
+    ' onchange="saveFwBehaviorKey(this.dataset.fwbKey, this.checked)"/><span class="switch-slider"></span></label></span></div>'
+  );
+}
+
+function _fwbNum(id, titleKey, descKey, key, val, min, max, step) {
+  return (
+    '<div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 11h4"/><path d="M18 16h4"/></svg></span>' +
+    '<span class="set-main"><span class="set-title" data-i18n="' + titleKey + '"></span>' +
+    (descKey ? '<span class="set-sub" data-i18n="' + descKey + '"></span>' : "") +
+    "</span>" +
+    '<span class="set-end"><input type="number" class="settings-input" id="' + id + '" data-fwb-key="' + key + '" value="' + val + '"' +
+    ' min="' + (min !== undefined ? min : 0) + '"' + (max !== undefined ? ' max="' + max + '"' : "") +
+    (step ? ' step="' + step + '"' : "") +
+    ' style="width:110px" onchange="saveFwBehaviorKey(this.dataset.fwbKey, this.value)"/></span></div>'
+  );
+}
+
+function _fwbSelect(id, titleKey, descKey, key, val, options) {
+  var opts = options
+    .map(function (o) {
+      return (
+        '<option value="' + o[0] + '"' + (String(val) === String(o[0]) ? " selected" : "") +
+        ' data-i18n-option="' + o[1] + '"></option>'
+      );
+    })
+    .join("");
+  return (
+    '<div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span>' +
+    '<span class="set-main"><span class="set-title" data-i18n="' + titleKey + '"></span>' +
+    (descKey ? '<span class="set-sub" data-i18n="' + descKey + '"></span>' : "") +
+    "</span>" +
+    '<span class="set-end"><select class="settings-select" id="' + id + '" data-fwb-key="' + key + '" onchange="saveFwBehaviorKey(this.dataset.fwbKey, this.value)">' + opts + "</select></span></div>"
+  );
+}
+
+export async function loadFwBehaviorPane() {
+  var d = await api("/api/config");
+  var cfg = (d && d.config && d.config.ErisPulse) || {};
+  var tr = cfg.transcript || {};
+  var ev = cfg.event || {};
+  var msg = (ev && ev.message) || {};
+  var wr = (ev && ev.wait_reply) || {};
+  var ov = (ev && ev.overrides) || {};
+  var itc = cfg.interaction || {};
+  var lg = cfg.logger || {};
+
+  var tEl = document.getElementById("fwbTranscriptCard");
+  if (tEl) {
+    tEl.innerHTML =
+      _fwbSwitch("fwbTrEnabled", "fwb_tr_enabled", "fwb_tr_enabled_desc", "transcript.enabled", tr.enabled !== false) +
+      _fwbNum("fwbTrMax", "fwb_tr_max", "fwb_tr_max_desc", "transcript.max_per_session", tr.max_per_session !== undefined ? tr.max_per_session : 50, 1, 10000, 1) +
+      _fwbNum("fwbTrTtl", "fwb_tr_ttl", "fwb_tr_ttl_desc", "transcript.ttl_hours", tr.ttl_hours !== undefined ? tr.ttl_hours : 168, 1, 10000, 1) +
+      _fwbSelect("fwbTrEcho", "fwb_tr_echo", "fwb_tr_echo_desc", "transcript.self_echo", tr.self_echo || "bot", [["bot", "fwb_tr_echo_bot"], ["skip", "fwb_tr_echo_skip"], ["user", "fwb_tr_echo_user"]]);
+  }
+  var eEl = document.getElementById("fwbEventCard");
+  if (eEl) {
+    eEl.innerHTML =
+      _fwbSwitch("fwbIgnoreSelf", "fwb_ev_ignore_self", "fwb_ev_ignore_self_desc", "event.message.ignore_self", msg.ignore_self !== false) +
+      _fwbSwitch("fwbWrBlock", "fwb_ev_wr_block", "fwb_ev_wr_block_desc", "event.wait_reply.block", !!wr.block) +
+      _fwbSwitch("fwbWrCmdpass", "fwb_ev_wr_cmdpass", "fwb_ev_wr_cmdpass_desc", "event.wait_reply.cmdpass", !!wr.cmdpass) +
+      _fwbSwitch("fwbAclDefault", "fwb_ev_acl_default", "fwb_ev_acl_default_desc", "event.overrides.acl_default_allow", ov.acl_default_allow !== false) +
+      _fwbNum("fwbCkptTtl", "fwb_it_ckpt_ttl", "fwb_it_ckpt_ttl_desc", "interaction.checkpoint_ttl", itc.checkpoint_ttl !== undefined ? itc.checkpoint_ttl : 86400, 60, 6048000, 60);
+  }
+  var lEl = document.getElementById("fwbLoggerCard");
+  if (lEl) {
+    var levels = [["DEBUG", "DEBUG"], ["INFO", "INFO"], ["SUCCESS", "SUCCESS"], ["WARNING", "WARNING"], ["ERROR", "ERROR"], ["CRITICAL", "CRITICAL"]];
+    var cur = String(lg.level || "INFO").toUpperCase();
+    var known = levels.some(function (l) { return l[0] === cur; });
+    if (!known) levels.unshift([cur, cur]);
+    lEl.innerHTML =
+      _fwbSelect("fwbLogLevel", "fwb_lg_level", "fwb_lg_level_desc", "logger.level", cur, levels) +
+      _fwbSelect("fwbLogRotation", "fwb_lg_rotation", "fwb_lg_rotation_desc", "logger.log_rotation", lg.log_rotation || "size", [["size", "fwb_lg_rotation_size"], ["date", "fwb_lg_rotation_date"], ["none", "fwb_lg_rotation_none"]]) +
+      _fwbNum("fwbLogMaxSize", "fwb_lg_max_size", "fwb_lg_max_size_desc", "logger.log_max_size_mb", lg.log_max_size_mb !== undefined ? lg.log_max_size_mb : 10, 1, 4096, 1) +
+      _fwbNum("fwbLogBackup", "fwb_lg_backup", "fwb_lg_backup_desc", "logger.log_backup_count", lg.log_backup_count !== undefined ? lg.log_backup_count : 5, 0, 1000, 1) +
+      _fwbNum("fwbLogMemory", "fwb_lg_memory", "fwb_lg_memory_desc", "logger.memory_limit", lg.memory_limit !== undefined ? lg.memory_limit : 200, 0, 100000, 100);
+  }
+  applyI18n();
+}
+
+export async function saveFwBehaviorKey(key, value) {
+  var d = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({ key: "ErisPulse." + key, value: value }),
+  });
+  if (!d || d.error) return toast(t("save_failed"), "er");
+  toast(t("saved"), "ok");
+}
+
+export function goFwConfigPage() {
+  go("config");
+  // 激活 框架配置 tab（go() 不带 tab 参数，进页后点击目标 tab）
+  setTimeout(function () {
+    var tab = document.querySelector('[data-tab="cfg-framework"]');
+    if (tab) tab.click();
+  }, 60);
 }

@@ -180,7 +180,7 @@
 }
 
 /* 健康项并入指标格同一网格：与 perf-extra-cell 同语言（无胶囊无大色点），
-   语义色仅用于状态字；异常格加 wr 色左边条点缀 */
+   语义色仅用于状态字；异常格用 wr 底色晕染提示（不再用左侧竖条） */
 .perf-health {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
@@ -189,7 +189,9 @@
 }
 
 .perf-health .health-cell.is-abnormal {
-    box-shadow: inset 2px 0 0 var(--wr-c);
+    background: color-mix(in srgb, var(--wr-c) 10%, transparent);
+    border-radius: var(--radius-sm);
+    box-shadow: none;
 }
 
 .health-state.is-ok {

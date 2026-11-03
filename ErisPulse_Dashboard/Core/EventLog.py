@@ -257,6 +257,9 @@ class EventLogMixin:
     def _persist_events(self):
         try:
             self.storage.set("__ep_events__", self._event_log[-self._max_log :])
+            # 真实总数单独持久化：环形缓冲被 _max_log 截断，
+            # 不能用 len(缓冲) 当总数（重启后会封顶在 500）
+            self.storage.set("__ep_event_total__", int(self._total_event_count))
             self._events_dirty = False
         except Exception:
             pass
@@ -310,7 +313,16 @@ class EventLogMixin:
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
                 self._event_log = events[-self._max_log :]
-                self._total_event_count = max(self._total_event_count, len(events))
+                # 优先读单独持久化的真实总数；旧数据无该键时回退 len(缓冲)
+                total = self.storage.get("__ep_event_total__")
+                if isinstance(total, int) and total >= 0:
+                    self._total_event_count = max(
+                        self._total_event_count, total, len(events)
+                    )
+                else:
+                    self._total_event_count = max(
+                        self._total_event_count, len(events)
+                    )
         except Exception:
             pass
         try:

@@ -18,10 +18,13 @@ class RoutesMixin:
 
         static_dir = Path(__file__).parent.parent / "static"
 
-        # 根路径 - HTML
+        # 根路径 - HTML（入口文档不缓存，避免改版后白屏）
         async def _html(request: Request) -> HTMLResponse:
             html_path = static_dir / "dash.html"
-            return HTMLResponse(html_path.read_text(encoding="utf-8"))
+            return HTMLResponse(
+                html_path.read_text(encoding="utf-8"),
+                headers={"Cache-Control": "no-cache"},
+            )
 
         # CSS 文件
         async def _css(request: Request):
@@ -50,14 +53,45 @@ class RoutesMixin:
 
         import mimetypes as _mimetypes
 
+        def _static_headers(request: Request, file_path: Path) -> dict:
+            """静态缓存策略：带 ?v= 指纹 → 一年 immutable；否则 no-cache + Last-Modified 304。"""
+            if request.query_params.get("v"):
+                return {"Cache-Control": "public, max-age=31536000, immutable"}
+            mtime = file_path.stat().st_mtime
+            return {
+                "Cache-Control": "no-cache",
+                "Last-Modified": _emailquote(mtime),
+            }
+
+        def _emailquote(mtime: float) -> str:
+            from email.utils import formatdate
+
+            return formatdate(mtime, usegmt=True)
+
+        def _not_modified(request: Request, file_path: Path) -> bool:
+            """If-Modified-Since 命中文件 mtime（秒级）即 304。"""
+            ims = request.headers.get("if-modified-since")
+            if not ims:
+                return False
+            try:
+                from email.utils import parsedate_to_datetime
+
+                since = parsedate_to_datetime(ims).timestamp()
+                return int(file_path.stat().st_mtime) <= int(since)
+            except Exception:
+                return False
+
         async def _static_res(request: Request):
             subpath = request.path_params.get("path", "")
             file_path = static_dir / "res" / subpath
             if file_path.exists() and file_path.is_file() and ".." not in subpath:
+                if _not_modified(request, file_path):
+                    return Response(status_code=304)
                 ct, _ = _mimetypes.guess_type(str(file_path))
                 return Response(
                     content=file_path.read_bytes(),
                     media_type=ct or "application/octet-stream",
+                    headers=_static_headers(request, file_path),
                 )
             return JSONResponse({"error": "Not found"}, status_code=404)
 
@@ -76,10 +110,13 @@ class RoutesMixin:
                     and file_path.is_file()
                     and str(resolved).startswith(str(static_dir.resolve()))
                 ):
+                    if _not_modified(request, file_path):
+                        return Response(status_code=304)
                     ct, _ = _mimetypes.guess_type(str(file_path))
                     return Response(
                         content=file_path.read_bytes(),
                         media_type=ct or "application/octet-stream",
+                        headers=_static_headers(request, file_path),
                     )
             except Exception:
                 pass
@@ -106,9 +143,19 @@ class RoutesMixin:
                 "/Dashboard/api/adapter-logos",
             ):
                 return request
+            # viewer 登录走公开端点校验（成功后仅只读）
             token = self._get_token_from_request(request)
-            if not self._verify_token(token):
+            ok, role, _key_id, key_pages = self._resolve_access(token)
+            if not ok:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            # viewer 只读：非 GET 一律 403（kiosk/触屏墙场景）
+            if role != "admin" and request.method not in ("GET", "HEAD", "OPTIONS"):
+                return JSONResponse({"error": "Forbidden"}, status_code=403)
+            # viewer 页面白名单：GET 须命中白名单页面的 API 前缀
+            if role != "admin" and key_pages:
+                rel = str(request.url.path).replace("/Dashboard", "", 1)
+                if not self._page_allowed(key_pages, rel):
+                    return JSONResponse({"error": "Forbidden"}, status_code=403)
             return request
 
         r.middleware("/Dashboard/api/*")(_auth_middleware)
@@ -385,6 +432,32 @@ class RoutesMixin:
             mn,
             "/api/security/token/regenerate",
             handler=self._api_token_regenerate,
+            methods=["POST"],
+        )
+
+        # 多密钥体系（Dashboard.keys；写入操作 handler 内要求 admin）
+        r.register_http_route(
+            mn, "/api/security/keys", handler=self._api_keys_list, methods=["GET"]
+        )
+        r.register_http_route(
+            mn, "/api/security/keys", handler=self._api_keys_create, methods=["POST"]
+        )
+        r.register_http_route(
+            mn,
+            "/api/security/keys/{id}",
+            handler=self._api_keys_update,
+            methods=["PUT"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/security/keys/{id}",
+            handler=self._api_keys_delete,
+            methods=["DELETE"],
+        )
+        r.register_http_route(
+            mn,
+            "/api/security/keys/{id}/regenerate",
+            handler=self._api_keys_regenerate,
             methods=["POST"],
         )
 
@@ -786,7 +859,9 @@ class RoutesMixin:
 
     async def _ws_handler(self, websocket: WebSocket):
         token = websocket.query_params.get("token", "")
-        if not self._verify_token(token):
+        # 多密钥：主令牌或任意启用密钥（viewer 也能连——WS 为只读事件流）
+        ok, _role, _key_id, _pages = self._resolve_access(token)
+        if not ok:
             await websocket.close(code=1008, reason="Unauthorized")
             return
         self._ws_clients.append(websocket)

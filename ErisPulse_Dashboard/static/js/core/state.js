@@ -74,7 +74,8 @@ window.ACCENT_PRESETS = [
   "#2c7bb6", // 深蓝
   "#495057", // 石板灰
 ];
-// 内置背景图案库（res/bg_upload，小图平铺用；appearance.js 读取）
+// 内置背景图案库（res/bg_patterns，git 跟踪目录；appearance.js 读取）
+// 注：bg_upload/ 是用户上传目录（gitignore），内置图案不依赖它
 window.BG_PATTERNS = [
   "bg_3d6e2854f17344af90657cf84b6749e2.png",
   "bg_4611839d3c9a4da9b5398a2add4b1563.png",
@@ -87,7 +88,7 @@ window.BG_PATTERNS = [
   "bg_92a54f52e84d4d76809c05c716848aa7.gif",
   "bg_f0344a55d2d64e6fbdd7e35d874f3770.gif",
   "bg_54ce22286de24255ba895d17d2a1bb69.jpg",
-].map(function (n) { return "/Dashboard/static/res/bg_upload/" + n; });
+].map(function (n) { return "/Dashboard/static/res/bg_patterns/" + n; });
 // 透感档位（ep_setting_bg_trans）：soft 轻 / standard 标准（默认，无附加类） / strong 强
 window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
 // ══════════ 时间显示格式（ep_setting_time_format："24" 默认 / "12" 12 小时制） ══════════

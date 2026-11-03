@@ -15,6 +15,11 @@ export function go(name, el, opts) {
     showLogin();
     return;
   }
+  // 只读密钥页面白名单：无权页面直接拦截（导航项已被隐藏，此处为兜底）
+  if (typeof canAccessPage === "function" && !canAccessPage(name) && !PAGE_REDIRECTS[name]) {
+    if (typeof toast === "function") toast(t("viewer_no_access"), "wr");
+    return;
+  }
   // 未保存修改守卫：配置表单有脏字段时，任何离开/重载配置页的导航先确认
   if (
     !(opts && opts.force) &&

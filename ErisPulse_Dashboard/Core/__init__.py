@@ -27,6 +27,7 @@ from .ApiFiles import ApiFilesMixin
 from .ApiScope import ApiScopeMixin
 from .ApiCluster import ApiClusterMixin
 from .ApiStorage import ApiStorageMixin
+from .ApiSecurity import ApiKeysMixin
 
 
 class Main(
@@ -50,6 +51,7 @@ class Main(
     ApiScopeMixin,
     ApiClusterMixin,
     ApiStorageMixin,
+    ApiKeysMixin,
     BaseModule,
 ):
     """

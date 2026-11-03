@@ -18,16 +18,16 @@
     border: 1px solid var(--bd);
 }
 
-/* 通知提示（toast）：JS 只切 opacity/transform，外观全部由类控制。
-   JS 写死 transform translateX(-50%)，这里用独立 translate 属性抵消，
-   使定位锚到右下角（right + translate 50% = 净位移 0）。 */
+/* 通知提示（toast）：JS 只切 .show 类，位移动画全部由类控制。
+   （历史实现 JS 写死 translateX(-50%) 内联 + CSS translate 抵消，
+   移动端媒体查询无法覆盖内联样式导致 toast 左移半屏被裁切，v2.6 收归 CSS） */
 .toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
     left: auto;
-    translate: 50% 0;
-    transform: translateX(-50%) translateY(12px);
+    max-width: calc(100vw - 48px);
+    transform: translateY(12px);
     padding: 10px 16px;
     border-radius: var(--radius-lg);
     font-size: 14px;
@@ -42,6 +42,10 @@
     transition:
         opacity 0.22s var(--ease-smooth),
         transform 0.22s var(--ease-smooth);
+}
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 .toast-ok {
     background: var(--ok-bg);
@@ -1352,16 +1356,18 @@ select.form-select::-ms-expand {
         font-size: 16px;
     }
 
-    /* toast 改为顶部安全区下方居中条，避免右下角小目标与手势条重叠 */
+    /* toast 改为底部安全区上方通栏居中条，避免右下角小目标与手势条重叠 */
     .toast {
         left: 12px;
         right: 12px;
         bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-        translate: none;
         transform: translateY(12px);
         max-width: none;
         text-align: center;
         justify-content: center;
+    }
+    .toast.show {
+        transform: translateY(0);
     }
 
     .toast + .toast {

@@ -1,7 +1,5 @@
 """ViewsMixin：模块内嵌视图注册与视图标题多语言解析"""
 
-import secrets
-
 from fastapi import Request
 
 from .Helpers import VIEW_LANG_KEY_TO_I18N, _VIEW_I18N_LOCK
@@ -209,9 +207,11 @@ class ViewsMixin:
     # ════════════════ 认证辅助 ════════════════
 
     def verify_token(self, token: str) -> bool:
+        # 多密钥：主令牌或任意启用密钥均视为有效（供模块内其它校验点复用）
         if not token:
             return False
-        return secrets.compare_digest(str(token), self._token)
+        ok, _role, _key_id, _pages = self._resolve_access(str(token))
+        return ok
 
     def verify_request(self, request: Request) -> bool:
         return self.verify_token(self._get_token_from_request(request))

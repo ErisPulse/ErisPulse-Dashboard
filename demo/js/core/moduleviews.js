@@ -112,6 +112,7 @@ export function _renderModuleViews(views) {
     pageDiv.setAttribute("data-module-view", v.id);
 
     if (v.iframe_url) {
+      pageDiv.classList.add("page-module-frame");
       var iframeSrc = v.iframe_url;
       if (currentNode !== "local" && iframeSrc.charAt(0) === "/") {
         var nInfo = nodeRuntimeInfo[currentNode] || {};

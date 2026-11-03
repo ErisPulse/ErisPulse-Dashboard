@@ -180,11 +180,38 @@ export async function loadPackageUpdates(forceRefresh) {
 }
 
 // 有可用更新时的安静提示：包管理导航红点 + 活动中心可点击条目（不弹气泡）
+// 结果缓存 30 分钟（localStorage），避免每次启动都打 PyPI 请求
+var _PKG_BADGE_TTL = 30 * 60 * 1000;
+
+function _readPkgBadgeCache() {
+  try {
+    var raw = localStorage.getItem("ep_pkg_updates_cache");
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || Date.now() - o.ts > _PKG_BADGE_TTL) return null;
+    return o;
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function checkPkgUpdateBadge(forceRefresh) {
   try {
     const force = forceRefresh === true;
-    const d = await api("/api/packages/updates" + (force ? "?force=true" : ""));
-    const updates = (d && d.updates) || [];
+    var cached = !force && _readPkgBadgeCache();
+    let updates;
+    if (cached) {
+      updates = cached.updates || [];
+    } else {
+      const d = await api("/api/packages/updates" + (force ? "?force=true" : ""));
+      updates = (d && d.updates) || [];
+      try {
+        localStorage.setItem(
+          "ep_pkg_updates_cache",
+          JSON.stringify({ ts: Date.now(), updates: updates }),
+        );
+      } catch (e) {}
+    }
     const nav = document.querySelector('.nav-item[data-page="packages"]');
     if (updates.length > 0) {
       if (nav) nav.classList.add("show-update");

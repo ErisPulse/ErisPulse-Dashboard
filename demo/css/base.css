@@ -608,8 +608,9 @@ select:focus {
     }
 }
 
-/* ── 全局滚动条：镂空胶囊（透明边框镂空技巧，QvQChat 同款） ── */
-html {
+/* ── 全局滚动条：镂空胶囊（透明边框镂空技巧，QvQChat 同款） ──
+   所有滚动容器统一 thin 胶囊；显隐档位见 overrides.css [data-scrollbar] */
+* {
     scrollbar-width: thin;
     scrollbar-color: var(--bd-h) transparent;
 }
@@ -773,6 +774,46 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
     backdrop-filter: none;
 }
 
+/* ══ 背景效果档（v2.6）：磨砂 / 雾感（仅 eris 皮肤；cel 纸面不参与） ══
+   由 html[data-bg-effect] 开关（appearance.js applyBgEffectClass）：
+     frosted 磨砂 —— 主表面（header/侧栏/卡片）轻 blur + 提饱和，玻璃质感
+     misty   雾感 —— 更柔的 blur + 表面整体再收实一点（遮罩加深在 JS 侧联动） */
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .header,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .sidebar,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .card,
+html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .stat-card {
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+}
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .header,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .sidebar,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .card,
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .stat-card {
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+    backdrop-filter: blur(8px) saturate(1.05);
+}
+/* 雾感：表面再收实一档，配合加深遮罩形成雾面 */
+html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] {
+    --bg-p: color-mix(in srgb, var(--bg-p) 82%, #ffffff);
+}
+html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
+    --bg-p: color-mix(in srgb, var(--bg-p) 82%, #0a0d12);
+}
+/* 移动端性能兜底：大面积 backdrop-filter 在低端设备掉帧，小屏关闭 */
+@media (max-width: 768px) {
+    html.bg-image[data-bg-effect="frosted"] .header,
+    html.bg-image[data-bg-effect="frosted"] .sidebar,
+    html.bg-image[data-bg-effect="frosted"] .card,
+    html.bg-image[data-bg-effect="frosted"] .stat-card,
+    html.bg-image[data-bg-effect="misty"] .header,
+    html.bg-image[data-bg-effect="misty"] .sidebar,
+    html.bg-image[data-bg-effect="misty"] .card,
+    html.bg-image[data-bg-effect="misty"] .stat-card {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
 
 /* ══════════ 移动端触控基础（触屏/粗指针设备） ══════════ */
 /* 消除点击高亮歧义与 300ms 双击缩放判定：交互元素禁用双击缩放手势 */
@@ -782,4 +823,31 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
     }
+}
+
+/* ══════════ 触屏 / VNC 拖拽体验：滑动 = 滚动，不选中文字 ══════════ */
+/* 此类设备上触摸常被合成为鼠标拖拽，浏览器默认行为是拖选文字。
+   UI 一律禁拖选（拖拽语义让给滚动），内容区按清单恢复可选中。 */
+.app {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+/* 内容豁免：日志 / 会话记录 / 事件流 / Markdown 详情 / 编辑器 / 表单控件仍可选中复制 */
+.log-console,
+.transcript-msg-list,
+.dash-events,
+#pkgDetailDesc,
+.fw-notes-summary,
+.fw-notes-callout,
+.fw-notes-group-body,
+.CodeMirror,
+input,
+textarea,
+pre,
+code,
+[contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
 }

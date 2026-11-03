@@ -217,11 +217,18 @@
     }
 }
 
-/* ─── 毛玻璃 ─── */
+/* ─── 毛玻璃 ───（磨砂/雾感效果档例外，见 base.css [data-bg-effect]） */
 .sidebar,
 .header {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+}
+html[data-bg-effect="frosted"] .sidebar,
+html[data-bg-effect="frosted"] .header,
+html[data-bg-effect="misty"] .sidebar,
+html[data-bg-effect="misty"] .header {
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
 }
 
 .header {
@@ -1327,19 +1334,47 @@ input, textarea, select, button,
     }
 }
 
-/* ════════════════ 全局滚动条隐藏（保留滚动能力） ════════════════ */
-/* 滚动条不显示但容器仍可滚动（滚轮/触摸/键盘）；代码编辑器保留
-   细滚动条供定位。Firefox 走 scrollbar-width，Chromium 走 webkit。 */
-* {
+/* ════════════════ 滚动条显隐档位（设置-外观可切） ════════════════ */
+/* html[data-scrollbar]（appearance.js 启动时挂载）：
+   always（默认）= 镂空胶囊常显；hover = 平时透明，悬停容器时显色；
+   hidden = 完全隐藏（滚动能力保留，等价旧行为）。
+   Firefox 走 scrollbar-width，Chromium 走 webkit。 */
+html[data-scrollbar="hidden"],
+html[data-scrollbar="hidden"] * {
     scrollbar-width: none;
 }
-*::-webkit-scrollbar {
+html[data-scrollbar="hidden"] *::-webkit-scrollbar {
     width: 0;
     height: 0;
     display: none;
 }
+html[data-scrollbar="hover"] *::-webkit-scrollbar-thumb {
+    background: transparent;
+    background-clip: content-box;
+    transition: background 0.2s ease;
+}
+html[data-scrollbar="hover"] *:hover::-webkit-scrollbar-thumb,
+html[data-scrollbar="hover"] *:hover *::-webkit-scrollbar-thumb,
+html[data-scrollbar="hover"] *:active::-webkit-scrollbar-thumb {
+    background: var(--bd-h);
+    background-clip: content-box;
+}
+html[data-scrollbar="hover"] {
+    scrollbar-color: transparent transparent;
+}
+html[data-scrollbar="hover"] *:hover {
+    scrollbar-color: var(--bd-h) transparent;
+}
 
-/* 白名单：代码编辑器（config 页 TOML / 文件编辑器）保留细滚动条 */
+/* 白名单：代码编辑器（config 页 TOML / 文件编辑器）保留细滚动条（不受 hidden 档影响） */
+html[data-scrollbar="hidden"] .CodeMirror-vscrollbar,
+html[data-scrollbar="hidden"] .CodeMirror-hscrollbar {
+    scrollbar-width: thin;
+}
+html[data-scrollbar="hidden"] .CodeMirror-vscrollbar::-webkit-scrollbar,
+html[data-scrollbar="hidden"] .CodeMirror-hscrollbar::-webkit-scrollbar {
+    display: block;
+}
 .CodeMirror-vscrollbar,
 .CodeMirror-hscrollbar {
     scrollbar-width: thin;

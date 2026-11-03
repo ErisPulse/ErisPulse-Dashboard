@@ -24,6 +24,8 @@ import * as m_core_router from "./core/router.js";
 import * as m_core_moduleviews from "./core/moduleviews.js";
 import * as m_core_auth from "./core/auth.js";
 import * as m_core_ws from "./core/ws.js";
+import * as m_core_drag_scroll from "./core/drag-scroll.js";
+import * as m_core_viewer_guard from "./core/viewer-guard.js";
 import * as m_pages_appearance from "./pages/appearance.js";
 import * as m_pages_settings from "./pages/settings.js";
 import * as m_pages_dashboard from "./pages/dashboard.js";
@@ -68,6 +70,8 @@ const __namespaces = [
   m_core_moduleviews,
   m_core_auth,
   m_core_ws,
+  m_core_drag_scroll,
+  m_core_viewer_guard,
   m_pages_appearance,
   m_pages_settings,
   m_pages_dashboard,
@@ -95,12 +99,16 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyUiStyle(getUiStyle());
   applyOled(getOled());
   applyFont(getFont());
+  // 触屏/VNC 拖拽滚动兜底（ep_touch_scroll: auto/on/off）
+  if (typeof initDragScroll === "function") initDragScroll();
   applyI18n();
   applyCustomTheme();
   // 用户主题包（上传的自定义 CSS 皮肤）
   themepackRestore();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
+  // 滚动条显隐档位（防 FOUC：与主题同批挂载）
+  if (typeof applyScrollbarMode === "function") applyScrollbarMode(getScrollbarMode());
   // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）
   var savedTitle = getSetting("dash_title", "");
   var effectiveTitle = savedTitle || "ErisPulse Dashboard";
@@ -134,33 +142,66 @@ for (const ns of __namespaces) Object.assign(window, ns);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {
-    fetch(API + "/api/auth/status", {
-      headers: { Authorization: "Bearer " + tk },
-    })
-      .then((r) => r.json())
+    // 启动鉴权带 8s 超时（超时重试一次），后端繁忙时不再无限转 splash
+    const authStatus = (signal) =>
+      fetch(API + "/api/auth/status", {
+        headers: { Authorization: "Bearer " + tk },
+        signal,
+      });
+    const boot = () => {
+      authed = true;
+      document.querySelector(".app").classList.add("authed");
+      // 只读密钥：隐藏无权导航项（页面级白名单）
+      if (typeof applyNavGuard === "function") applyNavGuard();
+      dismissSplash();
+      // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
+      loadAll();
+      // 恢复上次更新遗留的重载引导（如更新后刷新了页面）
+      restoreUpdateHint();
+      wsConnect();
+      restartRefreshTimer();
+      loadClusterNodes();
+      applyDefaultPageOnLogin();
+    };
+    const fail = () => {
+      localStorage.removeItem(TK);
+      dismissSplash();
+      showLogin();
+    };
+    let ctl = new AbortController();
+    let timer = setTimeout(() => ctl.abort(), 8000);
+    authStatus(ctl.signal)
+      .then((r) => {
+        clearTimeout(timer);
+        return r.json();
+      })
       .then((d) => {
         if (d && d.authenticated) {
-          authed = true;
-          document.querySelector(".app").classList.add("authed");
-          dismissSplash();
-          // 先加载仪表盘主体，外观延迟加载（不阻塞访问）
-          loadAll();
-          // 恢复上次更新遗留的重载引导（如更新后刷新了页面）
-          restoreUpdateHint();
-          wsConnect();
-          restartRefreshTimer();
-          loadClusterNodes();
-          loadGlobalAppearance();
-          applyDefaultPageOnLogin();
-        } else {
-          localStorage.removeItem(TK);
-          dismissSplash();
-          showLogin();
-        }
+          setAccess(d.role, d.pages);
+          boot();
+        } else fail();
       })
       .catch(() => {
-        dismissSplash();
-        showLogin();
+        clearTimeout(timer);
+        // 超时/网络抖动重试一次，仍失败则进入登录页（可手动重试）
+        ctl = new AbortController();
+        timer = setTimeout(() => ctl.abort(), 8000);
+        authStatus(ctl.signal)
+          .then((r) => {
+            clearTimeout(timer);
+            return r.json();
+          })
+          .then((d) => {
+            if (d && d.authenticated) {
+              setAccess(d.role, d.pages);
+              boot();
+            } else fail();
+          })
+          .catch(() => {
+            clearTimeout(timer);
+            dismissSplash();
+            showLogin();
+          });
       });
   } else {
     dismissSplash();

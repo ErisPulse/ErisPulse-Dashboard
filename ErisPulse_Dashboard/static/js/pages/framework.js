@@ -467,13 +467,39 @@ export function renderFwSection(s) {
       );
     })
     .join("");
+  // 空表（如 scope.platforms/bots/sessions 等默认 {}）：渲染空状态 + 去添加入口，
+  // 不再是只有标题的死卡片
+  var body;
+  if (!rows) {
+    var isScopeTable = s.key.indexOf("scope.") === 0;
+    if (isScopeTable) {
+      body =
+        '<div class="fw-section-empty"><span>' +
+        esc(t("fw_scope_empty")) +
+        '</span><button class="btn btn-secondary btn-sm" onclick="goScopeAdd()">' +
+        esc(t("fw_scope_go_add")) +
+        "</button></div>";
+    } else {
+      body =
+        '<div class="fw-section-empty"><span>' +
+        esc(t("fw_section_empty")) +
+        "</span></div>";
+    }
+  } else {
+    body = rows;
+  }
   return (
     '<div class="fw-section"><div class="fw-section-title">' +
     esc(displayName) +
     '</div><div class="fw-section-body">' +
-    rows +
+    body +
     "</div></div>"
   );
+}
+
+// 空作用域表「去添加」：跳权限控制页 scope 分区（完整编辑器在那里）
+export function goScopeAdd() {
+  go("permissions", "perm-scope");
 }
 
 export function renderFwListField(fk, val) {

@@ -1,3 +1,4 @@
+import { openAccountWizard } from "../components/account-wizard.js";
 // ErisPulse Dashboard – pages/component-config (auto-split from dash.js)
 
 // ── 未保存修改跟踪 ──
@@ -171,14 +172,18 @@ export async function loadAdapterConfigDetail(platform) {
 
   var html = '<div class="adapter-config-detail">';
 
-  if (d.has_config && d.schema) {
+  // 全局配置卡片：仅在适配器声明了可用配置项时渲染，未声明 Schema 不再显示空卡片
+  if (
+    d.has_config &&
+    d.schema &&
+    d.schema.fields &&
+    Object.keys(d.schema.fields).length > 0
+  ) {
     var globalFieldsHtml = renderAdapterSchemaFields(
       d.schema.fields,
       d.values || {},
       d.config_key,
     );
-    var hasRenderableFields =
-      d.schema.fields && Object.keys(d.schema.fields).length > 0;
     html +=
       '<div class="fw-section"><div class="fw-section-title">' +
       t("adapter_global_config") +
@@ -186,19 +191,19 @@ export async function loadAdapterConfigDetail(platform) {
     html +=
       '<div id="adapterGlobalConfigFields" data-cfg-prefix="' +
       esc(d.config_key) +
-      '.">' +
+      '" data-cfgbind-root data-cfgbind-prefix="' +
+      esc(d.config_key) +
+      '">' +
       globalFieldsHtml +
       "</div>";
-    if (hasRenderableFields) {
-      html +=
-        '<div class="cfg-fields-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
-        esc(d.config_key) +
-        '." onclick="saveAdapterConfigAll(\'' +
-        esc(platform) +
-        "')\">" +
-        t("save_adapter_config") +
-        "</button></div>";
-    }
+    html +=
+      '<div class="cfg-fields-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '." onclick="saveAdapterConfigAll(\'' +
+      esc(platform) +
+      "')\">" +
+      t("save_adapter_config") +
+      "</button></div>";
     html += "</div></div>";
   }
 
@@ -212,6 +217,9 @@ export async function loadAdapterConfigDetail(platform) {
 }
 
 export function renderAdapterSchemaFields(fields, values, keyPrefix, opts) {
+  opts = opts || {};
+  // 顶层字段绑定的取值来源（show_if/disabled_if 渲染期预计算）
+  opts.bindValues = values;
   if (!fields || Object.keys(fields).length === 0)
     return (
       '<div style="padding:12px;color:var(--tx-s)">' +
@@ -275,75 +283,356 @@ export function toggleSecretVisibility(btn) {
   }
 }
 
-export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
-  opts = opts || {};
-  var fieldSave = opts.fieldSave !== false;
-  var saveFn = opts.saveFn || "saveAdapterConfigField";
-  var saveTitle = opts.saveTitle || t("save_adapter_config");
-  var desc = schema.description || "";
-  var tp = schema.type || "string";
-  var widget = schema.widget || "";
-  var fullKey = (keyPrefix ? keyPrefix + "." : "") + name;
-  var onChg = fieldSave ? ' onchange="' + saveFn + '(this)"' : "";
-  var saveBtn = fieldSave
-    ? '<button class="kv-btn" onclick="' + saveFn + '(this.parentElement.querySelector(\'input,textarea\'))" title="' +
-      saveTitle +
-      '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>'
-    : "";
+// ══════════════════════════════════════════════════════════════
+// 满血配置组件系统
+// 约定文档：docs/config-widgets.md
+// 所有控件 renderer(name, schema, value, fullKey, ctx) 返回控件 HTML 字符串。
+// 值收集约定：单一原生控件直接带 data-ackey；复合控件（多选/键值/列表）用
+// hidden input 承载序列化值（tp=object → JSON.parse，tp=number → Number()），
+// 编辑器操作经 msSync / kvSync / listSync 同步 hidden 后按需触发保存。
+// 旧 widget（text/password/switch/select/textarea/number）行为完全兼容。
+// ══════════════════════════════════════════════════════════════
 
-  var ctrl = "";
-  // 嵌套 dataclass 子树（schema 带 fields）：渲染为可折叠嵌套分组，递归渲染子字段
-  if (schema.fields && typeof schema.fields === "object" && !Array.isArray(schema.fields)) {
-    var subValues = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-    var subHtml = renderAdapterSchemaFields(schema.fields, subValues, fullKey, opts);
-    ctrl =
-      '<details class="fw-nested" style="border:1px solid rgba(128,128,128,.25);border-radius:8px;padding:8px 10px;margin:4px 0">' +
-      '<summary style="cursor:pointer;font-weight:600;user-select:none">' +
-      esc(name) +
-      "</summary>" +
-      (desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "") +
-      '<div style="margin-top:6px">' +
-      subHtml +
-      "</div></details>";
-    return (
-      '<div class="fw-row" style="display:block"><div class="fw-control" style="width:100%">' +
-      ctrl +
-      "</div></div>"
-    );
+function _cfgAttrs(fullKey, tp, widget) {
+  return (
+    ' data-ackey="' +
+    esc(fullKey) +
+    '" data-adapter-tp="' +
+    esc(tp || "string") +
+    '"' +
+    (widget ? ' data-adapter-widget="' + esc(widget) + '"' : "")
+  );
+}
+
+function _cfgNumAttrs(schema) {
+  var a = "";
+  if (schema.min != null) a += ' min="' + esc(String(schema.min)) + '"';
+  if (schema.max != null) a += ' max="' + esc(String(schema.max)) + '"';
+  if (schema.step != null) a += ' step="' + esc(String(schema.step)) + '"';
+  return a;
+}
+
+// 字段绑定条件求值：{field, op, value}
+// op: eq/ne/in/nin/gt/lt/gte/lte/truthy（value 为数组时用于 in/nin）
+function _cfgEvalBind(cond, getVal) {
+  if (!cond || !cond.field) return true;
+  var v = getVal(cond.field);
+  var op = cond.op || "eq";
+  var target = cond.value;
+  var arr = Array.isArray(target) ? target : [target];
+  switch (op) {
+    case "eq":
+      return String(v) === String(target);
+    case "ne":
+      return String(v) !== String(target);
+    case "in":
+      return arr.some(function (x) {
+        return String(x) === String(v);
+      });
+    case "nin":
+      return !arr.some(function (x) {
+        return String(x) === String(v);
+      });
+    case "gt":
+      return Number(v) > Number(target);
+    case "gte":
+      return Number(v) >= Number(target);
+    case "lt":
+      return Number(v) < Number(target);
+    case "lte":
+      return Number(v) <= Number(target);
+    case "truthy":
+      return (
+        v === true || (v !== "" && v != null && v !== "false" && v !== "0")
+      );
+    default:
+      return true;
   }
-  if (widget === "switch" || tp === "boolean") {
-    var checked = value === true || value === "true" || value === 1;
-    ctrl =
-      '<label class="switch"><input type="checkbox" ' +
-      (checked ? "checked" : "") +
-      ' data-ackey="' +
-      esc(fullKey) +
-      '" data-adapter-tp="boolean" data-adapter-widget="switch"' +
-      onChg +
-      '><span class="switch-slider"></span></label>';
-  } else if (widget === "password" || schema.secret) {
+}
+
+// 运行时按 DOM 重算全部绑定行（change 事件驱动；页面字段量级下全量重算足够快）
+function _cfgFieldValue(root, field) {
+  if (!root || !field) return undefined;
+  var el = null;
+  try {
+    el = root.querySelector('[data-ackey="' + field + '"]');
+    if (!el && root.dataset && root.dataset.cfgbindPrefix) {
+      el = root.querySelector(
+        '[data-ackey="' + root.dataset.cfgbindPrefix + "." + field + '"]',
+      );
+    }
+  } catch (e) {}
+  if (!el) return undefined;
+  if (el.type === "checkbox") return el.checked;
+  return el.value;
+}
+
+function _cfgBindRescan() {
+  document
+    .querySelectorAll("[data-showif],[data-disabledif]")
+    .forEach(function (row) {
+      var root = (row.closest && row.closest("[data-cfgbind-root]")) || document;
+      var getVal = function (f) {
+        return _cfgFieldValue(root, f);
+      };
+      if (row.dataset.showif) {
+        var showCond;
+        try {
+          showCond = JSON.parse(row.dataset.showif);
+        } catch (e) {}
+        if (showCond)
+          row.style.display = _cfgEvalBind(showCond, getVal) ? "" : "none";
+      }
+      if (row.dataset.disabledif) {
+        var disCond;
+        try {
+          disCond = JSON.parse(row.dataset.disabledif);
+        } catch (e) {}
+        if (disCond)
+          row.classList.toggle(
+            "cfg-bind-disabled",
+            _cfgEvalBind(disCond, getVal),
+          );
+      }
+    });
+}
+
+document.addEventListener("change", function (e) {
+  if (e.target && e.target.matches && e.target.matches("[data-ackey]"))
+    _cfgBindRescan();
+});
+
+// hidden input 同步后统一触发：脏键 + 按需逐字段保存
+function _cfgCommitHidden(hidden) {
+  hidden.dispatchEvent(new Event("input", { bubbles: true }));
+  hidden.dispatchEvent(new Event("change", { bubbles: true }));
+  var saveFnName = hidden.dataset.mssave;
+  if (saveFnName && typeof window[saveFnName] === "function") {
+    window[saveFnName](hidden);
+  }
+}
+
+// 值形态推断：字段为整数/数字且选项为数字 → mask（位掩码）；数组字段 → array；
+// 其余按 JSON 字符串。使多选在旧版 SDK 未透传 value_type 时仍写入正确类型。
+function _cfgMsInferType(schema) {
+  var tp = String(schema.type || "").toLowerCase();
+  var opts = schema.options || [];
+  var numericOpts = opts.length > 0 && opts.every(function (o) {
+    var v = typeof o === "object" ? o.value : o;
+    return typeof v === "number" || /^\d+$/.test(String(v));
+  });
+  if ((tp === "integer" || tp === "number" || tp === "int" || tp === "float") && numericOpts)
+    return "mask";
+  if (tp === "array" || tp === "list") return "array";
+  return "json";
+}
+
+// multiselect 值形态：json（默认，存 JSON 字符串）/ array（存原生数组）/ mask（存位掩码整数）
+function _cfgMsRead(value, valueType) {
+  var items = [];
+  if (valueType === "mask") {
+    var m = Number(value) || 0;
+    for (var b = 0; b < 31; b++) if (m & (1 << b)) items.push(b);
+    return items;
+  }
+  if (Array.isArray(value)) return value.slice();
+  if (typeof value === "string" && value.trim()) {
+    try {
+      var p = JSON.parse(value);
+      if (Array.isArray(p)) return p;
+    } catch (e) {}
+  }
+  return [];
+}
+
+function _cfgMsSerialize(items, valueType) {
+  if (valueType === "mask") {
+    var m = 0;
+    items.forEach(function (x) {
+      m |= 1 << Number(x);
+    });
+    return { raw: String(m), tp: "number" };
+  }
+  if (valueType === "array") return { raw: JSON.stringify(items), tp: "object" };
+  return { raw: JSON.stringify(items), tp: "string" };
+}
+
+// ── 控件注册表 ──
+var _cfgWidgets = {
+  text: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div style="display:flex;gap:4px"><input class="fw-input" type="text" value="' +
+      esc(String(value != null ? value : "")) +
+      '"' +
+      _cfgAttrs(fullKey, ctx.tp) +
+      (schema.placeholder ? ' placeholder="' + esc(schema.placeholder) + '"' : "") +
+      ">" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  textarea: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="' +
+      (schema.rows || 2) +
+      '"' +
+      _cfgAttrs(fullKey, ctx.tp) +
+      (schema.placeholder ? ' placeholder="' + esc(schema.placeholder) + '"' : "") +
+      ">" +
+      esc(String(value != null ? value : "")) +
+      "</textarea>" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  password: function (name, schema, value, fullKey, ctx) {
     var eyeBtn =
       '<button class="kv-btn" type="button" onclick="toggleSecretVisibility(this)" title="' +
       esc(t("show_secret")) +
       '">' +
       EYE_OPEN_SVG +
       "</button>";
-    ctrl =
+    return (
       '<div style="display:flex;gap:4px"><input class="fw-input" type="password" value="' +
       esc(String(value != null ? value : "")) +
-      '" autocomplete="new-password" data-ackey="' +
-      esc(fullKey) +
-      '" data-adapter-tp="string">' +
+      '" autocomplete="new-password"' +
+      _cfgAttrs(fullKey, "string") +
+      ">" +
       eyeBtn +
-      saveBtn +
-      "</div>";
-  } else if (widget === "select" || (schema.options && schema.options.length)) {
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  number: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div style="display:flex;gap:4px"><input class="fw-input" type="number" value="' +
+      esc(String(value != null ? value : "")) +
+      '"' +
+      _cfgAttrs(fullKey, ctx.tp) +
+      _cfgNumAttrs(schema) +
+      ">" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  slider: function (name, schema, value, fullKey, ctx) {
+    var v = value != null ? value : schema.min != null ? schema.min : 0;
+    var sMin = schema.min != null ? Number(schema.min) : 0;
+    var sMax = schema.max != null ? Number(schema.max) : 100;
+    var pct = sMax > sMin ? ((v - sMin) / (sMax - sMin)) * 100 : 0;
+    return (
+      '<div class="cfg-slider"><input type="range" value="' +
+      esc(String(v)) +
+      '"' +
+      _cfgAttrs(fullKey, ctx.tp, "slider") +
+      _cfgNumAttrs(schema) +
+      ' style="--pct:' + Math.max(0, Math.min(100, pct)) + '%" oninput="cfgSliderPaint(this)">' +
+      '<span class="cfg-slider-val" data-sliderval>' +
+      esc(String(v)) +
+      "</span>" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  color: function (name, schema, value, fullKey, ctx) {
+    var v = String(value != null ? value : "");
+    if (!/^#[0-9a-fA-F]{6}$/.test(v)) v = "#4aa3dd";
+    var presets = schema.presets || [
+      "#4aa3dd", "#22c55e", "#f59e0b", "#ef4444",
+      "#a855f7", "#ec4899", "#64748b", "#111418",
+    ];
+    var dots = presets
+      .map(function (c) {
+        return (
+          '<button type="button" class="cfg-color-dot" style="background:' +
+          esc(c) +
+          '" data-colortarget="' +
+          esc(fullKey) +
+          '" data-colorval="' +
+          esc(c) +
+          '" onclick="colorPick(this)" title="' +
+          esc(c) +
+          '"></button>'
+        );
+      })
+      .join("");
+    return (
+      '<div class="cfg-color"><input type="color" value="' +
+      v +
+      '"' +
+      _cfgAttrs(fullKey, "string", "color") +
+      ' oninput="colorPaint(this)">' +
+      '<input type="text" class="fw-input cfg-color-hex" value="' +
+      esc(v) +
+      '" data-colorhex="' +
+      esc(fullKey) +
+      '" maxlength="7" spellcheck="false" oninput="colorHex(this)">' +
+      '<div class="cfg-color-dots">' +
+      dots +
+      "</div>" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  date: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div class="cfg-native"><input class="fw-input" type="date" value="' +
+      esc(String(value != null ? value : "")) +
+      '"' +
+      _cfgAttrs(fullKey, "string", "date") +
+      ">" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  time: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div class="cfg-native"><input class="fw-input" type="time" value="' +
+      esc(String(value != null ? value : "")) +
+      '"' +
+      _cfgAttrs(fullKey, "string", "time") +
+      ">" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  datetime: function (name, schema, value, fullKey, ctx) {
+    return (
+      '<div class="cfg-native"><input class="fw-input" type="datetime-local" value="' +
+      esc(String(value != null ? value : "")) +
+      '"' +
+      _cfgAttrs(fullKey, "string", "datetime") +
+      ">" +
+      ctx.saveBtn +
+      "</div>"
+    );
+  },
+
+  switch: function (name, schema, value, fullKey, ctx) {
+    var checked = value === true || value === "true" || value === 1;
+    return (
+      '<label class="switch"><input type="checkbox" ' +
+      (checked ? "checked" : "") +
+      _cfgAttrs(fullKey, "boolean", "switch") +
+      ctx.onChg +
+      '><span class="switch-slider"></span></label>'
+    );
+  },
+
+  select: function (name, schema, value, fullKey, ctx) {
     var options = schema.options || [];
     var optsHtml = options
       .map(function (o) {
         var optVal = typeof o === "object" ? o.value : o;
         var optLabel = typeof o === "object" ? o.label : o;
-        // label 兼容 i18n 字典形态（服务端已解析为文本；此处兜底未解析的场景）
         if (optLabel && typeof optLabel === "object") {
           optLabel =
             optLabel.default != null
@@ -365,68 +654,480 @@ export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
         );
       })
       .join("");
-    ctrl =
-      '<select class="settings-select" data-ackey="' +
-      esc(fullKey) +
-      '" data-adapter-tp="string"' +
-      onChg +
+    return (
+      '<select class="settings-select"' +
+      _cfgAttrs(fullKey, "string") +
+      ctx.onChg +
       ">" +
       optsHtml +
-      "</select>";
-  } else if (widget === "number" || tp === "integer" || tp === "float") {
-    ctrl =
-      '<div style="display:flex;gap:4px"><input class="fw-input" type="number" value="' +
-      esc(String(value != null ? value : "")) +
-      '" data-ackey="' +
+      "</select>"
+    );
+  },
+
+  multiselect: function (name, schema, value, fullKey, ctx) {
+    // 值形态：显式 value_type 优先；缺省时按字段类型推断（旧 SDK 未透传时仍正确）
+    var valueType = schema.value_type || _cfgMsInferType(schema);
+    var items = _cfgMsRead(value, valueType);
+    var sel = items.map(String);
+    var boxes = (schema.options || [])
+      .map(function (o) {
+        var ov = typeof o === "object" ? o.value : o;
+        var ol = typeof o === "object" ? o.label : o;
+        var on = sel.indexOf(String(ov)) !== -1;
+        return (
+          '<label class="cfg-ms-chip' +
+          (on ? " is-on" : "") +
+          '"><input type="checkbox" data-msvalue="' +
+          esc(String(ov)) +
+          '" data-mskey="' +
+          esc(fullKey) +
+          '"' +
+          (on ? " checked" : "") +
+          ' onchange="msSync(this)"><span class="cfg-ms-box"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="cfg-ms-label">' +
+          esc(String(ol)) +
+          "</span></label>"
+        );
+      })
+      .join("");
+    var ser = _cfgMsSerialize(items, valueType);
+    return (
+      '<div class="cfg-ms" data-msgroup="' +
       esc(fullKey) +
-      '" data-adapter-tp="' +
-      esc(tp) +
       '">' +
-      saveBtn +
-      "</div>";
-  } else if (
-    tp === "array" ||
-    tp === "object" ||
-    tp === "table" ||
-    (value && typeof value === "object" && !Array.isArray(value)) ||
-    Array.isArray(value) ||
-    schema.widget === "textarea"
-  ) {
-    // dict/list 值以 JSON 文本进 textarea（保存路径按 tp=object JSON.parse 回写）
-    var strVal =
-      value && typeof value === "object"
-        ? JSON.stringify(value, null, 2)
-        : String(value != null ? value : "");
-    ctrl =
-      '<div style="display:flex;gap:4px"><textarea class="fw-input fw-textarea" rows="2" data-ackey="' +
+      boxes +
+      "</div>" +
+      '<input type="hidden"' +
+      _cfgAttrs(fullKey, ser.tp, "multiselect") +
+      ' value="' +
+      esc(ser.raw) +
+      '"' +
+      (ctx.fieldSave ? ' data-mssave="' + esc(ctx.saveFn) + '"' : "") +
+      ' data-valuetype="' +
+      esc(valueType) +
+      '">'
+    );
+  },
+
+  kv: function (name, schema, value, fullKey, ctx) {
+    var obj = {};
+    if (value && typeof value === "object" && !Array.isArray(value)) obj = value;
+    else if (typeof value === "string" && value.trim()) {
+      try {
+        var p = JSON.parse(value);
+        if (p && typeof p === "object" && !Array.isArray(p)) obj = p;
+      } catch (e) {}
+    }
+    var rows = Object.keys(obj)
+      .map(function (k) {
+        return (
+          '<div class="cfg-row">' +
+          '<input class="fw-input cfg-row-key" type="text" value="' +
+          esc(k) +
+          '" data-kvkey placeholder="' +
+          esc(t("cfg_kv_key")) +
+          '">' +
+          '<input class="fw-input cfg-row-val" type="text" value="' +
+          esc(String(obj[k] != null ? obj[k] : "")) +
+          '" data-kvval placeholder="' +
+          esc(t("cfg_kv_value")) +
+          '">' +
+          '<button class="cfg-row-del" type="button" onclick="this.parentElement.remove();kvSync(this.closest(\'[data-kvgroup]\').querySelector(\'input[type=hidden]\'))" title="' +
+          esc(t("cfg_remove_row")) +
+          '">✕</button></div>'
+        );
+      })
+      .join("");
+    return (
+      '<div class="cfg-ed" data-kvgroup="' +
       esc(fullKey) +
-      '" data-adapter-tp="object">' +
-      esc(strVal) +
-      "</textarea>" +
-      saveBtn +
-      "</div>";
-  } else {
-    ctrl =
-      '<div style="display:flex;gap:4px"><input class="fw-input" type="text" value="' +
-      esc(String(value != null ? value : "")) +
-      '" data-ackey="' +
-      esc(fullKey) +
-      '" data-adapter-tp="' +
-      esc(tp) +
       '">' +
-      saveBtn +
-      "</div>";
+      (rows ||
+        '<div class="cfg-empty-hint">' +
+        esc(t("cfg_empty_list")) +
+        "</div>") +
+      '<button class="cfg-add-row" type="button" onclick="kvAddRow(this)">+ ' +
+      esc(t("cfg_add_row")) +
+      "</button>" +
+      '<input type="hidden"' +
+      _cfgAttrs(fullKey, "object", "kv") +
+      ' value="' +
+      esc(JSON.stringify(obj)) +
+      '"' +
+      (ctx.fieldSave ? ' data-mssave="' + esc(ctx.saveFn) + '"' : "") +
+      ">"
+    );
+  },
+
+  list: function (name, schema, value, fullKey, ctx) {
+    var arr = [];
+    if (Array.isArray(value)) arr = value;
+    else if (typeof value === "string" && value.trim()) {
+      try {
+        var p = JSON.parse(value);
+        if (Array.isArray(p)) arr = p;
+      } catch (e) {}
+    }
+    var item = schema.item || {};
+    var rows = arr
+      .map(function (rv, idx) {
+        return _cfgListRow(fullKey, item, rv);
+      })
+      .join("");
+    return (
+      '<div class="cfg-ed cfg-ed-list" data-listgroup="' +
+      esc(fullKey) +
+      '">' +
+      (rows ||
+        '<div class="cfg-empty-hint">' +
+        esc(t("cfg_empty_list")) +
+        "</div>") +
+      '<button class="cfg-add-row" type="button" onclick="listAddRow(this)">+ ' +
+      esc(t("cfg_add_row")) +
+      "</button>" +
+      '<input type="hidden"' +
+      _cfgAttrs(fullKey, "object", "list") +
+      ' value="' +
+      esc(JSON.stringify(arr)) +
+      '"' +
+      (ctx.fieldSave ? ' data-mssave="' + esc(ctx.saveFn) + '"' : "") +
+      ' data-item-schema="' +
+      esc(JSON.stringify(item)) +
+      '">'
+    );
+  },
+};
+
+// list 行渲染：item.fields 存在时为对象行（行内控件带 data-itemfield），
+// 否则为标量行（单个输入带 data-itemvalue）
+function _cfgListRow(fullKey, item, rowValue) {
+  var delBtn =
+    '<button class="kv-btn" type="button" onclick="this.parentElement.remove();listSync(this.closest(\'[data-listgroup]\').querySelector(\'input[type=hidden]\'))" title="' +
+    esc(t("cfg_remove_row")) +
+    '">✕</button>';
+  if (item.fields && typeof item.fields === "object") {
+    var inner = "";
+    for (var fname in item.fields) {
+      var fs = item.fields[fname] || {};
+      var fv = rowValue && typeof rowValue === "object" ? rowValue[fname] : undefined;
+      var fwidget = fs.widget || (fs.type === "boolean" ? "switch" : fs.type === "integer" || fs.type === "float" ? "number" : fs.options ? "select" : "text");
+      if (fwidget === "multiselect") {
+        inner += _cfgWidgets.multiselect(fname, fs, fv, fname, {
+          fieldSave: false,
+          saveFn: "",
+          saveBtn: "",
+          onChg: "",
+          tp: "string",
+        }).replace(/data-ackey="/g, 'data-itemfield="');
+      } else {
+        inner += _cfgWidgets[fwidget in _cfgWidgets ? fwidget : "text"](
+          fname,
+          fs,
+          fv,
+          fname,
+          { fieldSave: false, saveFn: "", saveBtn: "", onChg: "", tp: fs.type === "integer" || fs.type === "float" ? "number" : "string" },
+        ).replace(/data-ackey="/g, 'data-itemfield="');
+      }
+    }
+    return (
+      '<div class="cfg-row cfg-row-obj">' +
+      '<div class="cfg-row-fields">' +
+      inner +
+      "</div>" +
+      delBtn +
+      "</div>"
+    );
+  }
+  var w = item.widget || (item.type === "integer" || item.type === "number" ? "number" : "text");
+  var html = _cfgWidgets[w in _cfgWidgets ? w : "text"](
+    "",
+    item,
+    rowValue,
+    "",
+    { fieldSave: false, saveFn: "", saveBtn: "", onChg: "", tp: w === "number" ? "number" : "string" },
+  ).replace(/data-ackey="/g, 'data-itemvalue="');
+  return (
+    '<div class="cfg-row">' +
+    html +
+    delBtn +
+    "</div>"
+  );
+}
+
+// ── 单控件交互（全局函数，经 main.js Object.assign(window, ns) 暴露）──
+
+// slider 拖动：进度填充 + 数值徽标即时刷新
+export function cfgSliderPaint(el) {
+  var min = el.min !== "" ? Number(el.min) : 0;
+  var max = el.max !== "" ? Number(el.max) : 100;
+  var pct = max > min ? ((Number(el.value) - min) / (max - min)) * 100 : 0;
+  el.style.setProperty("--pct", Math.max(0, Math.min(100, pct)) + "%");
+  var val = el.parentElement.querySelector("[data-sliderval]");
+  if (val) val.textContent = el.value;
+}
+
+// color 色板拖动 → 同步 hex 输入
+export function colorPaint(el) {
+  var hex = el.parentElement.querySelector("[data-colorhex]");
+  if (hex && hex.value.toLowerCase() !== el.value.toLowerCase()) hex.value = el.value;
+}
+
+// hex 文本输入 → 合法时同步色板
+export function colorHex(el) {
+  var v = el.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    var picker = el.parentElement.querySelector('input[type="color"]');
+    if (picker) picker.value = v.toLowerCase();
+  }
+}
+
+// 预设色点选 → 设值并触发隐藏链保存
+export function colorPick(dot) {
+  var key = dot.dataset.colortarget;
+  var v = dot.dataset.colorval;
+  var wrap = dot.closest(".cfg-color");
+  if (!wrap) return;
+  var picker = wrap.querySelector('input[type="color"]');
+  var hex = wrap.querySelector("[data-colorhex]");
+  if (picker) picker.value = v;
+  if (hex) hex.value = v;
+  if (picker) _cfgCommitHidden(picker);
+}
+
+// ── 复合控件编辑操作 ──
+
+// kv/list 增行统一构造（带删除按钮；group 为容器元素）
+function _cfgNewRow(kind, itemHtml) {
+  var row = document.createElement("div");
+  row.className = "cfg-row";
+  row.innerHTML =
+    itemHtml +
+    '<button class="cfg-row-del" type="button" onclick="this.parentElement.remove();var g=this.closest(\'[data-kvgroup],[data-listgroup]\');if(g){var h=g.querySelector(\'input[type=hidden]\');if(h){(typeof kvSync===\'function\'&&g.hasAttribute(\'data-kvgroup\')?kvSync(h):listSync(h));}}" title="' +
+    esc(t("cfg_remove_row")) +
+    '">✕</button>';
+  return row;
+}
+
+
+export function msSync(box) {
+  var key = box.dataset && box.dataset.mskey;
+  if (!key) return;
+  var group = box.closest("[data-msgroup]");
+  if (!group) return;
+  var hidden = group.parentElement.querySelector(
+    'input[type="hidden"][data-ackey="' + key + '"], input[type="hidden"][data-itemfield="' + key + '"]',
+  );
+  if (!hidden) return;
+  // 值形态优先读渲染时写入的 data-valuetype；缺失时按 hidden tp 推断兼容旧渲染
+  var valueType = hidden.dataset.valuetype;
+  if (!valueType) {
+    var tpHint = hidden.dataset.adapterTp;
+    valueType = tpHint === "number" ? "mask" : tpHint === "object" ? "array" : "json";
+  }
+  var items = [];
+  group.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    if (!cb.checked) return;
+    var raw = cb.dataset.msvalue;
+    var n = Number(raw);
+    items.push(raw.trim() !== "" && Number.isFinite(n) ? n : raw);
+  });
+  var ser = _cfgMsSerialize(items, valueType);
+  hidden.dataset.adapterTp = ser.tp;
+  hidden.value = ser.raw;
+  _cfgCommitHidden(hidden);
+}
+
+export function kvAddRow(btn) {
+  var group = btn.closest("[data-kvgroup]");
+  if (!group) return;
+  var hint = group.querySelector(".cfg-empty-hint");
+  if (hint) hint.remove();
+  group.insertBefore(_cfgNewRow("kv", ""), btn);
+  var last = group.querySelectorAll("[data-kvkey]");
+  if (last.length) last[last.length - 1].focus();
+}
+
+export function kvSync(hidden) {
+  if (!hidden) return;
+  var group = hidden.closest("[data-kvgroup]");
+  if (!group) return;
+  var obj = {};
+  group.querySelectorAll(".cfg-row").forEach(function (r) {
+    var k = r.querySelector("[data-kvkey]").value.trim();
+    if (!k) return;
+    obj[k] = r.querySelector("[data-kvval]").value;
+  });
+  hidden.value = JSON.stringify(obj);
+  _cfgCommitHidden(hidden);
+}
+
+export function listAddRow(btn) {
+  var group = btn.closest("[data-listgroup]");
+  if (!group) return;
+  var hidden = group.querySelector("input[type=hidden]");
+  if (!hidden) return;
+  var item = {};
+  try {
+    item = JSON.parse(hidden.dataset.itemSchema || "{}");
+  } catch (e) {}
+  var hint = group.querySelector(".cfg-empty-hint");
+  if (hint) hint.remove();
+  var inner = _cfgListRow("", item, item.fields ? {} : "");
+  // _cfgListRow 自带行壳（.cfg-row），抽出其 innerHTML 复用 _cfgNewRow 统一删除按钮
+  var tmp = document.createElement("div");
+  tmp.innerHTML = inner;
+  var innerFields = tmp.querySelector(".cfg-row-fields");
+  var payload = innerFields ? innerFields.innerHTML : tmp.querySelector(".cfg-row").innerHTML;
+  group.insertBefore(_cfgNewRow("list", payload), btn);
+}
+
+export function listSync(hidden) {
+  if (!hidden) return;
+  var group = hidden.closest("[data-listgroup]");
+  if (!group) return;
+  var arr = [];
+  group.querySelectorAll(".cfg-row").forEach(function (r) {
+    if (r.querySelector("[data-itemvalue]")) {
+      var el = r.querySelector("[data-itemvalue]");
+      var v = el.type === "checkbox" ? el.checked : el.value;
+      if (el.dataset.adapterTp === "number") v = Number(v);
+      arr.push(v);
+    } else if (r.querySelector("[data-itemfield]")) {
+      var obj = {};
+      r.querySelectorAll("[data-itemfield]").forEach(function (h) {
+        var fname = h.dataset.itemfield;
+        var v = h.type === "checkbox" ? h.checked : h.value;
+        if (h.dataset.adapterTp === "number") v = Number(v);
+        else if (h.dataset.adapterTp === "object") {
+          try {
+            v = JSON.parse(v);
+          } catch (e) {}
+        }
+        obj[fname] = v;
+      });
+      arr.push(obj);
+    }
+  });
+  hidden.value = JSON.stringify(arr);
+  _cfgCommitHidden(hidden);
+}
+
+// ── 主渲染入口（控件分发表驱动；未知 widget 回退 text）──
+
+export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
+  opts = opts || {};
+  var fieldSave = opts.fieldSave !== false;
+  var saveFn = opts.saveFn || "saveAdapterConfigField";
+  var saveTitle = opts.saveTitle || t("save_adapter_config");
+  var desc = schema.description || "";
+  var tp = schema.type || "string";
+  var widget = schema.widget || "";
+  var fullKey = (keyPrefix ? keyPrefix + "." : "") + name;
+  var onChg = fieldSave ? ' onchange="' + saveFn + '(this)"' : "";
+  var saveBtn = fieldSave
+    ? '<button class="kv-btn" onclick="' + saveFn + '(this.parentElement.querySelector(\'input,textarea\'))" title="' +
+      saveTitle +
+      '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>'
+    : "";
+  var ctx = {
+    fieldSave: fieldSave,
+    saveFn: saveFn,
+    saveBtn: saveBtn,
+    onChg: onChg,
+    tp: tp,
+  };
+
+  // 嵌套 dataclass 子树（schema 带 fields）：渲染为可折叠嵌套分组，递归渲染子字段
+  if (schema.fields && typeof schema.fields === "object" && !Array.isArray(schema.fields)) {
+    var subValues = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    var subOpts = Object.assign({}, opts, { bindValues: Object.assign({}, opts.bindValues, subValues) });
+    var subHtml = renderAdapterSchemaFields(schema.fields, subValues, fullKey, subOpts);
+    var bind0 = _cfgBindRowAttrs(schema, name, keyPrefix, opts);
+    var ctrl =
+      '<details class="fw-nested' +
+      (bind0.disable ? " cfg-bind-disabled" : "") +
+      '" style="border:1px solid rgba(128,128,128,.25);border-radius:8px;padding:8px 10px;margin:4px 0">' +
+      '<summary style="cursor:pointer;font-weight:600;user-select:none">' +
+      esc(name) +
+      "</summary>" +
+      (desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "") +
+      '<div style="margin-top:6px">' +
+      subHtml +
+      "</div></details>";
+    return (
+      '<div class="fw-row" style="display:block' +
+      (bind0.hide ? ";display:none" : "") +
+      '"' +
+      bind0.attrs +
+      '><div class="fw-control" style="width:100%">' +
+      ctrl +
+      "</div></div>"
+    );
   }
 
+  // 控件分发：显式 widget → 类型/选项推断 → text 兜底
+  var w = widget;
+  if (!w) {
+    if (tp === "boolean") w = "switch";
+    else if (schema.secret) w = "password";
+    else if (tp === "integer" || tp === "float" || tp === "number") w = "number";
+    else if (schema.options && schema.options.length && tp === "string") w = "select";
+    else w = "text";
+  }
+  var renderer = _cfgWidgets[w] || _cfgWidgets.text;
+  var ctrlHtml = renderer(name, schema, value, fullKey, ctx);
+
+  var bind = _cfgBindRowAttrs(schema, name, keyPrefix, opts);
   var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "";
   return (
-    '<div class="fw-row"><div class="fw-label">' +
+    '<div class="fw-row' +
+    (bind.disable ? " cfg-bind-disabled" : "") +
+    '"' +
+    bind.attrs +
+    (bind.hide ? ' style="display:none"' : "") +
+    '><div class="fw-label">' +
     esc(name) +
     descHtml +
     '</div><div class="fw-control">' +
-    ctrl +
+    ctrlHtml +
     "</div></div>"
   );
+}
+
+// 字段绑定行属性：show_if / disabled_if（渲染期用 bindValues 预计算初始态）
+function _cfgBindRowAttrs(schema, name, keyPrefix, opts) {
+  var out = { attrs: "", hide: false, disable: false };
+  var bindValues = (opts && opts.bindValues) || {};
+  var getVal = function (field) {
+    if (field in bindValues) return bindValues[field];
+    if (keyPrefix) {
+      var full = keyPrefix + "." + field;
+      // 逐级回溯完整键（a.b.c → a.b.c / a.c）
+      var parts = keyPrefix.split(".");
+      for (var i = parts.length; i >= 0; i--) {
+        var k = parts.slice(0, i).concat(field).join(".");
+        if (k in bindValues) return bindValues[k];
+      }
+    }
+    return undefined;
+  };
+  ["show_if", "disabled_if"].forEach(function (key) {
+    var raw = schema[key];
+    if (!raw) return;
+    var cond = raw;
+    if (typeof raw === "string") {
+      try {
+        cond = JSON.parse(raw);
+      } catch (e) {
+        return;
+      }
+    }
+    var ok = _cfgEvalBind(cond, getVal);
+    var attr = key === "show_if" ? "data-showif" : "data-disabledif";
+    out.attrs += " " + attr + '="' + esc(JSON.stringify(cond)) + '"';
+    if (key === "show_if") out.hide = !ok;
+    else out.disable = ok;
+  });
+  return out;
 }
 
 export async function saveAdapterConfigField(el) {
@@ -565,6 +1266,33 @@ export async function loadAdapterAccounts(platform) {
 
   var accounts = d.accounts || {};
   var schema = d.schema;
+
+  // 首配置引导（通用推断）：唯一账户且声明为必填的字段存在空值 →
+  // 提示用户完成配置（扫码扩展区若注册则一并给出）。适配器无需任何额外声明。
+  var setupGuide = _accountNeedsSetup(accounts, schema);
+  if (setupGuide) {
+    html +=
+      '<div class="account-setup-guide">' +
+      '<div class="account-setup-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
+      '<div class="account-setup-texts">' +
+      '<div class="account-setup-title">' +
+      esc(t("account_setup_guide_title")) +
+      "</div>" +
+      '<div class="account-setup-desc">' +
+      esc(t("account_setup_guide_desc")) +
+      " · " +
+      esc(setupGuide) +
+      "</div></div>" +
+      '<div style="display:flex;gap:8px;flex:none">' +
+      '<button class="btn btn-primary btn-sm" onclick="openAccountWizard(\'' +
+      esc(platform) +
+      "', {editAccount:'" +
+      esc(setupGuide) +
+      "'})\">" +
+      esc(t("account_setup_guide_btn")) +
+      "</button></div></div>";
+  }
+
   for (var aname in accounts) {
     var adata = accounts[aname] || {};
     html += renderAdapterAccountCard(platform, aname, adata, schema);
@@ -626,6 +1354,32 @@ export async function loadAdapterAccounts(platform) {
   }
 }
 
+// 唯一账户且必填字段存在空值 → 返回该账户名（否则 null）。纯 schema 推断，零适配器声明。
+function _accountNeedsSetup(accounts, schema) {
+  var keys = Object.keys(accounts || {});
+  if (keys.length !== 1) return null;
+  var name = keys[0];
+  var adata = accounts[name] || {};
+  if (!schema || !schema.fields) return null;
+  for (var fname in schema.fields) {
+    var fs = schema.fields[fname] || {};
+    if (!fs.required) continue;
+    var v = adata[fname];
+    if (v === undefined || v === null || v === "") return name;
+  }
+  return null;
+}
+
+// 向导入口包装（全局）：供内联 onclick 使用
+export function openAccountWizardEntry(platform, opts) {
+  openAccountWizard(platform, opts).then(function (done) {
+    if (done) {
+      window._cfgNewAccountFlash = true;
+      loadAdapterConfigDetail(platform);
+    }
+  });
+}
+
 export function renderAdapterAccountCard(platform, accountName, accountData, schema) {
   var fieldsHtml = "";
   if (schema && schema.fields) {
@@ -645,7 +1399,7 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
         fschema,
         fval,
         "accounts." + accountName + "." + platform,
-        { fieldSave: false },
+        { fieldSave: false, bindValues: accountData },
       );
     }
   }
@@ -672,7 +1426,11 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     t("remove_account") +
     "</button>" +
     "</div>" +
-    '<div class="account-card-body">' +
+    '<div class="account-card-body" data-cfgbind-root data-cfgbind-prefix="accounts.' +
+    esc(accountName) +
+    "." +
+    esc(platform) +
+    '">' +
     fieldsHtml +
     "</div>" +
     '<div class="account-card-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="accounts.' +
@@ -779,6 +1537,15 @@ export async function saveAdapterAccount(platform, accountName) {
 }
 
 export async function addAdapterAccount(platform) {
+  // 分步向导：手动配置 / 适配器注册的扩展接入方式（如扫码）
+  var done = await openAccountWizard(platform);
+  if (!done) return;
+  window._cfgNewAccountFlash = true;
+  loadAdapterConfigDetail(platform);
+  return;
+}
+
+async function _addAdapterAccountLegacy(platform) {
   var name = await prompt2(
     t("add_account"),
     t("account_name"),
@@ -964,6 +1731,8 @@ export async function loadModuleConfigDetail(moduleName) {
       '</div><div class="fw-section-body">';
     html +=
       '<div id="moduleConfigFields" data-cfg-prefix="' +
+      esc(d.config_key) +
+      '" data-cfgbind-root data-cfgbind-prefix="' +
       esc(d.config_key) +
       '.">' +
       renderAdapterSchemaFields(d.schema.fields, d.values || {}, d.config_key, { saveFn: "saveModuleConfigField", saveTitle: t("save_module_config") }) +

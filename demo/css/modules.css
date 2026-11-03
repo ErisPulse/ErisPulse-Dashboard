@@ -434,9 +434,15 @@
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
+/* iframe 型模块页：铺满内容区、外层不滚动，滚动逻辑由模块页面内部自理 */
+.page.page-module-frame {
+    overflow: hidden;
+}
+
 .module-view-iframe {
+    display: block;
     width: 100%;
-    height: calc(100vh - 120px);
+    height: 100%;
     border: none;
     border-radius: var(--radius-md);
     background: var(--bg-s);

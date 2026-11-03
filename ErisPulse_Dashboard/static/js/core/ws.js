@@ -271,9 +271,14 @@ export function loadAll() {
   window.refreshDashboard();
   loadPerformance();
   loadEvents();
-  checkFwUpdateBadge();
-  checkPkgUpdateBadge();
   loadModuleViews();
   restartRefreshTimer();
+  // 更新检查（PyPI 网络请求，冷缓存可达数十秒）延迟 3s，
+  // 避开首屏关键请求；受设置"自动检查更新"开关控制
+  setTimeout(function () {
+    if (getSetting("auto_check_updates", "1") !== "1") return;
+    checkFwUpdateBadge();
+    checkPkgUpdateBadge();
+  }, 3000);
 }
 

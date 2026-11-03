@@ -1958,3 +1958,92 @@ export async function saveCmdEdit() {
   }
 }
 
+// ── 主人快速选择：最近消息发送者候选浮层 ──
+
+var _masterCandOv = null;
+
+export async function openMasterCandidates() {
+  if (_masterCandOv) {
+    _masterCandOv.remove();
+    _masterCandOv = null;
+    return;
+  }
+  var d = await api("/api/master/candidates");
+  var cands = (d && d.candidates) || [];
+  var ov = document.createElement("div");
+  ov.className = "modal-overlay show";
+  ov.style.alignItems = "center";
+  ov.style.justifyContent = "center";
+  var rows = cands
+    .map(function (c, i) {
+      var name = c.nickname || c.user_id;
+      var sub = [c.platform, c.user_id].filter(Boolean).join(" · ");
+      return (
+        '<button class="aw-card" type="button" style="width:100%" data-i="' +
+        i +
+        '">' +
+        '<span class="aw-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>' +
+        '<span class="aw-card-texts"><span class="aw-card-title">' +
+        esc(name) +
+        '</span><span class="aw-card-desc">' +
+        esc(sub) +
+        "</span></span></button>"
+      );
+    })
+    .join("");
+  if (!rows) rows = '<div class="perm-empty-desc" style="padding:20px">' + esc(t("master_pick_empty")) + "</div>";
+  ov.innerHTML =
+    '<div class="modal-box" style="max-width:460px;width:90vw;display:flex;flex-direction:column;gap:10px">' +
+    '<div class="modal-title">' +
+    esc(t("master_pick_recent")) +
+    "</div>" +
+    '<div style="max-height:56vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px">' +
+    rows +
+    "</div>" +
+    '<div style="display:flex;justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="openMasterCandidates()">' +
+    esc(t("close")) +
+    "</button></div>" +
+    "</div>";
+  ov.onclick = function (e) {
+    if (e.target === ov) {
+      ov.remove();
+      _masterCandOv = null;
+    }
+  };
+  ov.querySelectorAll("[data-i]").forEach(function (b) {
+    b.onclick = function () {
+      var c = cands[Number(b.dataset.i)];
+      if (!c) return;
+      var sel = document.getElementById("masterAddPlatform");
+      var idInput = document.getElementById("masterAddId");
+      // 平台存在则选中，否则走自定义值
+      if (sel) {
+        var found = false;
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === c.platform) {
+            sel.value = c.platform;
+            sel.dataset.custom = "";
+            found = true;
+            break;
+          }
+        }
+        if (!found && c.platform) {
+          sel.value = "__custom__";
+          sel.dataset.custom = "1";
+          sel.value = c.platform;
+        }
+        if (typeof onMasterAddPlatformChange === "function") onMasterAddPlatformChange();
+      }
+      if (idInput) {
+        idInput.value = c.user_id;
+        idInput.focus();
+      }
+      ov.remove();
+      _masterCandOv = null;
+      toast(t("master_pick_filled") + ": " + (c.nickname || c.user_id), "ok");
+    };
+  });
+  document.body.appendChild(ov);
+  _masterCandOv = ov;
+}
+

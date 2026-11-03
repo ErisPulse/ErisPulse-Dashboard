@@ -395,6 +395,9 @@ code.ws-insp-val {
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    /* 触屏/VNC：双轴原生滚动，防双击缩放歧义与滚动链外溢 */
+    touch-action: pan-y;
+    overscroll-behavior: contain;
     padding: 8px 6px;
 }
 
@@ -823,6 +826,9 @@ code.ws-insp-val {
     display: none;
     flex: 1;
     overflow-y: auto;
+    /* 触屏/VNC：双轴原生滚动，防双击缩放歧义与滚动链外溢 */
+    touch-action: pan-y;
+    overscroll-behavior: contain;
     padding: 28px;
     position: relative;
 }
@@ -831,7 +837,7 @@ code.ws-insp-val {
     display: block;
 }
 
-/* 滚动条走 base.css 全局镂空样式 */
+/* 滚动条走 base.css 全局镂空样式 + overrides.css [data-scrollbar] 显隐档位 */
 
 .page-title {
     font-size: 26px;

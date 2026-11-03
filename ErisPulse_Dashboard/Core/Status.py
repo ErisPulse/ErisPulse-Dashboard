@@ -315,10 +315,14 @@ class StatusMixin:
             )
         body = await request.json()
         token = body.get("token", "")
-        if self._verify_token(token):
+        # 多密钥：主令牌或任意启用密钥均可登录（viewer 登录后仅只读）
+        ok, role, _key_id, key_pages = self._resolve_access(token)
+        if ok:
             self._login_fails = 0
             self._add_audit_log("login_success", "", request)
-            return JSONResponse({"success": True})
+            return JSONResponse(
+                {"success": True, "role": role, "pages": key_pages}
+            )
         self._login_fails += 1
         self._last_login_fail = time.time()
         self._add_audit_log("login_failed", "", request)
@@ -328,8 +332,11 @@ class StatusMixin:
 
     async def _api_auth_status(self, request: Request) -> JSONResponse:
         token = self._get_token_from_request(request)
-        if self._verify_token(token):
-            return JSONResponse({"authenticated": True})
+        ok, role, _key_id, key_pages = self._resolve_access(token)
+        if ok:
+            return JSONResponse(
+                {"authenticated": True, "role": role, "pages": key_pages}
+            )
         return JSONResponse({"authenticated": False}, status_code=401)
 
     async def _api_status(self, request: Request) -> JSONResponse:
