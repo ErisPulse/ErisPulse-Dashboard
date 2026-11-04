@@ -453,9 +453,18 @@ class CommandsMixin:
         except Exception:
             providers = []
 
+         
+        try:
+            from ErisPulse.Core.master import GLOBAL_MASTER_KEY as _gmk
+
+            global_key_supported = bool(_gmk)
+        except Exception:
+            global_key_supported = False
+
         return JSONResponse(
             {
                 "master": master_config,
+                "global_key_supported": global_key_supported,
                 "platforms": all_platforms,
                 "providers": providers,
             }

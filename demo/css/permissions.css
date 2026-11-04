@@ -1299,3 +1299,59 @@
         mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
     }
 }
+
+
+
+
+
+.perm-stats .stat-card {
+    padding: 14px 16px;
+    align-items: center;
+    gap: 0;
+}
+
+.perm-stats .stat-meta {
+    gap: 2px;
+    width: 100%;
+}
+
+.perm-stats .stat-val {
+    font-size: 24px;
+}
+
+.perm-stats .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+ 
+.perm-group-head {
+    padding-left: 10px;
+    min-height: 18px;
+    border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    margin-bottom: 8px;
+}
+
+.perm-group-title {
+    text-transform: none;
+    font-size: 12.5px;
+    color: var(--tx-p);
+}
+
+ 
+.perm-group + .perm-group {
+    border-top: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
+    padding-top: 14px;
+}
+
+ 
+.perm-hint {
+    padding: 10px 12px;
+    margin-top: 14px;
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--tx-s);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+    border-radius: var(--radius-md);
+}

@@ -317,6 +317,8 @@ window._masterPlatforms = [];
 window._masterEntries = [];
 window._masterFilter = "";
 window._masterProviders = [];
+ 
+window._masterGlobalKeySupported = false;
 window._scopeData = null;
 window._scopePlatformBots = {};
 window._scopeRegisteredModules = [];

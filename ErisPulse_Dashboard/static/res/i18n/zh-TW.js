@@ -510,7 +510,6 @@
     master_empty: "暫無主人配置",
     master_no_platforms: "暫無已註冊適配器",
     master_saved: "主人配置已儲存",
-    master_merge_hint: "同時存在全局和平台主人時，全局主人將被合併到各平台中儲存",
     master_page_desc: "管理框架主人（擁有者）列表。主人擁有最高權限，可執行管理命令。平台留空表示全局主人，對所有平台生效。",
     perm_control: "權限控制",
     perm_control_desc: "管理框架存取權限：設定主人名單，並統一檢視與管理權限策略。",

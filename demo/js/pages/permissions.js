@@ -323,8 +323,13 @@ export function initMasterState(masterConfig, platforms) {
     for (var platform in users) {
       var ids = users[platform];
       if (!Array.isArray(ids)) ids = [ids];
+       
+      var isGlobalKey = String(platform).toLowerCase() === "global";
       for (var j = 0; j < ids.length; j++) {
-        _masterEntries.push({ platform: String(platform), userId: String(ids[j]) });
+        _masterEntries.push({
+          platform: isGlobalKey ? "" : String(platform),
+          userId: String(ids[j]),
+        });
       }
     }
   }
@@ -392,7 +397,6 @@ export function renderMasterConfig() {
       '<div class="perm-empty">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="52" height="52" style="color:var(--accent);opacity:0.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>' +
       '<div class="perm-empty-title">' + t("master_empty") + "</div>" +
-      '<div class="perm-empty-desc">' + t("master_merge_hint") + "</div>" +
       '<button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="toggleMasterEditor()">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
       t("master_add") +
@@ -452,7 +456,6 @@ export function renderMasterConfig() {
     html +=
       '<div class="perm-group">' +
       '<div class="perm-group-head">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>' +
       '<span class="perm-group-title">' + t("master_global_users") + "</span>" +
       '<span class="perm-group-count">' + globalEntries.length + "</span>" +
       '<span class="perm-group-hint">' + t("master_global_users_hint") + "</span>" +
@@ -471,7 +474,6 @@ export function renderMasterConfig() {
     html +=
       '<div class="perm-group">' +
       '<div class="perm-group-head">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>' +
       '<span class="perm-group-title">' + esc(platform) + "</span>" +
       '<span class="perm-group-count">' + indices.length + "</span>" +
       "</div>" +
@@ -483,7 +485,6 @@ export function renderMasterConfig() {
   }
 
    
-  html += '<div class="perm-hint">' + t("master_merge_hint") + "</div>";
 
   html += _masterProvidersHtml();
 
@@ -621,6 +622,7 @@ export async function loadMaster() {
   var d = await api("/api/master");
   if (!d) return;
   _masterProviders = d.providers || [];
+  _masterGlobalKeySupported = !!d.global_key_supported;
   var platforms = d.platforms || [];
   try {
     var ad = await api("/api/adapters");
@@ -643,6 +645,7 @@ export async function saveMasterConfig() {
   var platformEntries = entries.filter(function (e) { return e.platform; });
   var users;
   if (platformEntries.length === 0) {
+     
     users = globalEntries.map(function (e) { return e.userId; });
   } else {
     users = {};
@@ -651,9 +654,22 @@ export async function saveMasterConfig() {
       if (!users[p]) users[p] = [];
       if (users[p].indexOf(platformEntries[i].userId) === -1) users[p].push(platformEntries[i].userId);
     }
-    for (var i = 0; i < globalEntries.length; i++) {
-      for (var p in users) {
-        if (users[p].indexOf(globalEntries[i].userId) === -1) users[p].push(globalEntries[i].userId);
+    if (globalEntries.length) {
+      if (_masterGlobalKeySupported) {
+         
+        var globalIds = [];
+        for (var i = 0; i < globalEntries.length; i++) {
+          if (globalIds.indexOf(globalEntries[i].userId) === -1) globalIds.push(globalEntries[i].userId);
+        }
+        users["global"] = globalIds;
+      } else {
+         
+         
+        for (var i = 0; i < globalEntries.length; i++) {
+          for (var p2 in users) {
+            if (users[p2].indexOf(globalEntries[i].userId) === -1) users[p2].push(globalEntries[i].userId);
+          }
+        }
       }
     }
   }
