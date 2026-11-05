@@ -123,6 +123,13 @@ class ApiStoreMixin:
         tid = request.query_params.get("task_id", "")
         info = self._install_tasks.get(tid)
         if not info:
+            # SDK 侧「转正并持久化」任务（shadow_promote_persist）不在本地表，
+            # 回退查询 SDK 的任务状态
+            try:
+                info = self.sdk.module.shadow_persist_status(tid)
+            except Exception:
+                info = None
+        if not info:
             return JSONResponse({"error": "task not found"}, status_code=404)
         return JSONResponse(info)
 

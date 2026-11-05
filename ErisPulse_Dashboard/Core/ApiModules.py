@@ -19,22 +19,34 @@ from fastapi.responses import JSONResponse
 class ApiModulesMixin:
     """模块列表、加载 / 卸载 / 重载操作与模块配置 API。"""
 
-    # 影子测试能力的方法全集（SDK 缺任一项即整体视为不支持）
+    # 影子测试基础能力（SDK 2.11+ 即有；缺任一项整体视为不支持）
     _SHADOW_CAPS = ("shadow_start", "promote_shadow", "dismiss_shadow", "shadow_diff")
+    # 2.12+ 扩展能力（whl 摄取 / 转正并持久化在 SDK 侧；旧 SDK 走本地降级路径）
+    _SHADOW_PERSIST_CAPS = (
+        "shadow_ingest_whl",
+        "shadow_promote_persist",
+        "shadow_persist_status",
+    )
 
-    # 影子源 whl 上传限制：文件本体 / 解包总大小 / 解包条目（zip 炸弹防护）
+    # 影子源 whl 上传限制（本地降级路径用；SDK 侧有自己的同值上限）
     _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024
     _SHADOW_EXTRACT_MAX_BYTES = 200 * 1024 * 1024
     _SHADOW_EXTRACT_MAX_ENTRIES = 2000
-    # 影子源目录名段：仅允许模块名安全字符（防路径注入）
     _SHADOW_SEG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
     def _shadow_supported(self) -> bool:
-        """探测 SDK 模块管理器是否具备影子测试全量能力（getattr 探测，旧 SDK 降级）"""
+        """探测 SDK 模块管理器是否具备影子测试基础能力（getattr 探测，旧 SDK 降级）"""
         module_manager = getattr(self.sdk, "module", None)
         if module_manager is None:
             return False
         return all(hasattr(module_manager, attr) for attr in self._SHADOW_CAPS)
+
+    def _shadow_persist_supported(self) -> bool:
+        """探测 2.12+ 扩展能力（whl 摄取 / 转正并持久化在 SDK 侧）"""
+        module_manager = getattr(self.sdk, "module", None)
+        if module_manager is None:
+            return False
+        return all(hasattr(module_manager, attr) for attr in self._SHADOW_PERSIST_CAPS)
 
 
     async def _api_modules(self, request: Request) -> JSONResponse:
@@ -104,9 +116,22 @@ class ApiModulesMixin:
 
         # 影子测试能力（SDK 级探测一次，供前端决定模块卡菜单项显隐）
         shadow_supported = self._shadow_supported()
+        shadow_persist_supported = self._shadow_persist_supported()
+        # 2.12+ 影子绑定视图：{原模块名: 影子 owner 名}；旧 SDK 降级为空
+        # （不过滤、无聚合区，行为与旧版 Dashboard 一致）
+        shadow_bindings: dict = {}
+        if shadow_supported and hasattr(module_manager, "list_shadows"):
+            try:
+                shadow_bindings = module_manager.list_shadows() or {}
+            except Exception:
+                shadow_bindings = {}
+        shadow_owners = set(shadow_bindings.values())
 
         modules = []
         for name in module_manager.list_registered():
+            if name in shadow_owners:
+                # 影子 owner 不进普通列表（顶部聚合区单独展示）
+                continue
             info = module_manager.get_info(name) or {}
             load_strategy = None
             try:
@@ -140,6 +165,9 @@ class ApiModulesMixin:
                         module_manager._module_classes.get(name), "ConfigClass", None
                     ) is not None,
                     "shadow": shadow_supported,
+                    "shadow_persist": shadow_persist_supported,
+                    "shadow_active": name in shadow_bindings,
+                    "shadow_owner": shadow_bindings.get(name, ""),
                 }
             )
         for name in adapter_list:
@@ -164,7 +192,24 @@ class ApiModulesMixin:
         # 未注册（禁用后失去句柄）的模块/适配器：Finder + 配置还原状态，
         # WebUI 展示为"未加载/禁用中"，用户可自行启用
         modules.extend(self._discover_ghost_modules(adapter_list))
-        return JSONResponse({"modules": modules})
+        # 兜底过滤：幽灵发现等路径 reintroduce 的影子 owner 不进普通列表
+        modules = [m for m in modules if m.get("name") not in shadow_owners]
+
+        # 顶部聚合区数据：活跃影子（真实模块 / 影子 owner / diff 计数）
+        shadows_payload = []
+        for real, owner in shadow_bindings.items():
+            count = 0
+            if shadow_supported:
+                try:
+                    count = int((module_manager.shadow_diff(real) or {}).get("count", 0) or 0)
+                except Exception:
+                    count = 0
+            shadows_payload.append(
+                {"module": real, "shadow_owner": owner, "diff_count": count}
+            )
+        return JSONResponse(
+            {"modules": modules, "shadows": shadows_payload, "shadow_persist": shadow_persist_supported}
+        )
 
     async def _api_modules_action(self, request: Request) -> JSONResponse:
         body = await request.json()
@@ -579,6 +624,8 @@ class ApiModulesMixin:
                     "shadow_promote", f"{name} ({'ok' if ok else 'rolled_back'})", request
                 )
                 return JSONResponse({"success": bool(ok)})
+            elif action == "promote_persist":
+                return await self._shadow_promote_persist(name, body, request)
             elif action == "dismiss":
                 ok = await module_manager.dismiss_shadow(name)
                 self._add_audit_log("shadow_dismiss", name, request)
@@ -590,6 +637,33 @@ class ApiModulesMixin:
         except Exception as e:
             # 影子操作失败语义由 SDK 保证（promote 自动回滚旧实例），原样透出错误
             return JSONResponse({"error": str(e)}, status_code=400)
+
+    async def _shadow_promote_persist(
+        self, name: str, body: dict, request: Request
+    ) -> JSONResponse:
+        """转正并持久化：SDK 2.12+ 转发；旧 SDK 返回 501（前端按能力隐藏按钮）"""
+        if not self._shadow_persist_supported():
+            return JSONResponse(
+                {"error": "shadow persist requires SDK 2.12+", "supported": False},
+                status_code=501,
+            )
+        whl_path = str(body.get("whl_path") or "").strip()
+        if not whl_path:
+            return JSONResponse({"error": "whl_path required"}, status_code=400)
+        try:
+            result = await self.sdk.module.shadow_promote_persist(
+                name, whl_path=whl_path
+            )
+        except Exception as e:
+            # SDK 侧校验失败（路径越界 / 缺失等）原样透出为 400
+            return JSONResponse({"error": str(e)}, status_code=400)
+        if not result.get("promoted"):
+            self._add_audit_log("shadow_promote", f"{name} (rolled_back)", request)
+            return JSONResponse({"success": False, "rolled_back": True})
+        self._add_audit_log("shadow_promote_persist", name, request)
+        return JSONResponse(
+            {"success": True, "task_id": result.get("task_id", "")}
+        )
 
     # ════════════════ 影子测试 · whl 上传 ════════════════
 
@@ -619,55 +693,70 @@ class ApiModulesMixin:
         if file is None:
             return JSONResponse({"error": "file is required"}, status_code=400)
         filename = getattr(file, "filename", "") or ""
-        source_dir = await self._prepare_shadow_whl(name, filename, file, request)
-        if isinstance(source_dir, JSONResponse):
-            return source_dir
-        return JSONResponse(
-            {"success": True, "module": name, "source": source_dir, "filename": filename}
-        )
-
-    async def _prepare_shadow_whl(
-        self, name: str, filename: str, file: object, request: Request
-    ):
-        """校验 whl → 落盘解包 → 推导 shadow source；出错返回 JSONResponse"""
-        if not filename.lower().endswith(".whl"):
-            return JSONResponse(
-                {"error": "only .whl files are allowed"}, status_code=400
-            )
-        # wheel 文件名粗校验（PEP 427）：name-version-[-build]-py-abi-platform.whl ≥ 5 段
-        stem_parts = filename[:-4].split("-")
-        if len(stem_parts) < 5 or any(not p for p in stem_parts):
-            return JSONResponse(
-                {"error": "invalid wheel filename (name-version-...whl)"}, status_code=400
-            )
         try:
             data = await file.read()
         except Exception as e:
             return JSONResponse({"error": f"read upload failed: {e}"}, status_code=400)
-        if len(data) > self._SHADOW_WHL_MAX_BYTES:
-            return JSONResponse(
-                {"error": "wheel too large (max 50MB)"}, status_code=400
+        self._add_audit_log("shadow_upload", f"{name} <- {filename}", request)
+        if self._shadow_persist_supported():
+            # 2.12+ SDK：摄取逻辑（校验 / 落盘 / 解包 / source 推导）在 SDK 侧
+            result = await asyncio.to_thread(
+                self.sdk.module.shadow_ingest_whl, name, data=data, filename=filename
             )
+            return JSONResponse(
+                {
+                    "success": True,
+                    "module": name,
+                    "source": result["source"],
+                    "whl_path": result["whl_path"],
+                    "filename": filename,
+                }
+            )
+        # 旧 SDK 降级：本地解包落盘（原件一并落盘，供 SDK 升级后持久化复用）
+        result = await asyncio.to_thread(self._ingest_whl_local, name, data, filename)
+        return JSONResponse(
+            {
+                "success": True,
+                "module": name,
+                "source": result["source"],
+                "whl_path": result.get("whl_path", ""),
+                "filename": filename,
+            }
+        )
+
+    def _ingest_whl_local(self, name: str, data: bytes, filename: str) -> dict:
+        """{!--< internal-use >!--} 旧 SDK 降级路径：本地校验 + 原件落盘 + 解包 + source 推导"""
+        def _fail(msg: str):
+            return JSONResponse({"error": msg}, status_code=400)
+
+        if not filename.lower().endswith(".whl"):
+            return _fail("only .whl files are allowed")
+        stem_parts = filename[:-4].split("-")
+        if len(stem_parts) < 5 or any(not p for p in stem_parts):
+            return _fail("invalid wheel filename (name-version-...whl)")
+        if not data or len(data) > self._SHADOW_WHL_MAX_BYTES:
+            return _fail(f"wheel too large (max {self._SHADOW_WHL_MAX_BYTES // (1024 * 1024)}MB)")
+        if name in (".", "..") or not self._SHADOW_SEG_RE.match(name):
+            return _fail("invalid module name")
         ts = time.strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
         dest = Path.cwd() / "shadows" / name / ts
         try:
-            source = await asyncio.to_thread(self._extract_shadow_whl, data, dest, stem_parts[0])
+            source = self._extract_shadow_whl(data, dest, stem_parts[0])
+            whl_path = dest.parent / filename
+            whl_path.write_bytes(data)
         except Exception as e:
             shutil.rmtree(dest, ignore_errors=True)
             self.logger.debug(f"shadow whl upload failed for {name}: {e}")
-            return JSONResponse({"error": str(e)}, status_code=400)
-        self._add_audit_log("shadow_upload", f"{name} <- {filename}", request)
-        return str(source)
+            return _fail(str(e))
+        return {"source": str(source), "whl_path": str(whl_path)}
 
     def _extract_shadow_whl(self, data: bytes, dest: Path, dist_name: str) -> Path:
         """
-        解包 whl（zip）到 dest 并推导 shadow source 目录。
+        解包 whl（zip）到 dest 并推导 shadow source 目录（本地降级路径）。
 
-        安全限制：条目数 ≤ _SHADOW_EXTRACT_MAX_ENTRIES、解包总大小 ≤
-        _SHADOW_EXTRACT_MAX_BYTES、拒绝绝对路径 / 盘符 / ..（防 ZipSlip）。
-        source 推导：解包后扫描第一层——存在唯一含 ``__init__.py`` 的顶层包目录
-        则取该目录；否则与 wheel 发行名归一化匹配的唯一包目录；否则解包根自身
-        含 ``__init__.py``（扁平 wheel）取根；否则唯一同名 ``.py`` 单模块文件。
+        安全限制：条目数 / 解包总大小上限、拒绝绝对路径 / 盘符 / ..（防
+        ZipSlip）。source 推导：唯一含 ``__init__.py`` 的顶层包目录优先
+        （发行名匹配者优先），其次扁平 wheel 解包根，最后唯一同名单文件模块。
         """
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             entries = [i for i in zf.infolist() if not i.is_dir()]

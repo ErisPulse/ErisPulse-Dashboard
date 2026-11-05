@@ -3028,6 +3028,7 @@
                         </div>
                         <div id="mm-modules-tab" class="tab-section">
                             <span class="module-list-count" id="moduleCount"></span>
+                            <div id="shadowAggregate"></div>
                             <div id="moduleList"></div>
                         </div>
                         <!-- 影子测试模态：新版代码以独立 owner 试运行，可对比 / 转正 / 解散 -->
@@ -3130,6 +3131,13 @@
                                         style="display: none"
                                         onclick="shadowPromote()"
                                         data-i18n="shadow_promote"
+                                    ></button>
+                                    <button
+                                        class="btn btn-primary"
+                                        id="shadowPersistBtn"
+                                        style="display: none"
+                                        onclick="shadowPromotePersist()"
+                                        data-i18n="shadow_persist"
                                     ></button>
                                     <button
                                         class="btn btn-secondary"
