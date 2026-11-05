@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – core/utils
 
 export function cmpVer(a, b) {
   var parseVer = function (v) {

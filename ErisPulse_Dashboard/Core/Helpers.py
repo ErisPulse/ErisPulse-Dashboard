@@ -2,7 +2,7 @@
 
 import threading
 
- 
+# 前端语言键 -> 框架 i18n 语言码（框架仅支持 5 语言并按就近原则映射）
 VIEW_LANG_KEY_TO_I18N = {
     "zh": "zh-CN",
     "zh-TW": "zh-TW",
@@ -11,7 +11,7 @@ VIEW_LANG_KEY_TO_I18N = {
     "ru": "ru",
 }
 
- 
+# 解析模块视窗 i18n 引用时，需临时切换框架语言，全程加锁保证线程安全
 _VIEW_I18N_LOCK = threading.RLock()
 
 
@@ -90,7 +90,7 @@ class _CoreHelpers:
             name = p.split("==", 1)[0].strip().lower().replace("_", "-")
             if name == "erispulse-dashboard" or name.startswith("erispulse-dashboard-"):
                 return True
-             
+            # git+https://.../ErisPulse-Dashboard(.git) 等直装形式，pip 安装前无法得知项目名
             if name.startswith("git+") and "erispulse-dashboard" in name:
                 return True
         return False

@@ -1,19 +1,19 @@
- 
- 
- 
+// ErisPulse Dashboard – pages/transcript（会话收件箱）
+// 依赖 SDK 的 sdk.transcript 能力（经 /api/transcript/* 暴露）；本页面为拉取式：
+// 进入页面拉取一次 + 工具条手动刷新，不做 WebSocket 推送。
 
-var _trInfo = null;  
-var _trSessions = [];  
-var _trCurSession = "";  
-var _trHours = 24;  
-var _trTraceId = "";  
-var _trMsgSeq = 0;  
+var _trInfo = null; // /api/transcript/info 结果（能力探测 + 保留策略）
+var _trSessions = []; // 当前时间窗内的会话列表
+var _trCurSession = ""; // 当前选中会话键（platform:detail_type:target_id）
+var _trHours = 24; // 会话列表时间窗（小时）
+var _trTraceId = ""; // 链路查看模式（非空时消息区展示 trace 结果）
+var _trMsgSeq = 0; // 消息加载竞态令牌：发起加载前自增并捕获，返回后不一致即丢弃
 
 function _trEl(id) {
   return document.getElementById(id);
 }
 
- 
+// 相对时间（复用全局 just_now / time_ago / never 文案）
 function _trRelativeTime(ts) {
   if (!ts) return t("never");
   var diff = Math.floor(Date.now() / 1000 - ts);
@@ -25,7 +25,7 @@ function _trRelativeTime(ts) {
   return new Date(ts * 1000).toLocaleDateString(getLocale());
 }
 
- 
+// 三态切换：unsupported（SDK 无能力）/ disabled（未启用）/ main（正常主从视图）
 function _trShowState(state) {
   var unsupported = _trEl("transcriptUnsupported");
   var disabled = _trEl("transcriptDisabled");
@@ -35,7 +35,7 @@ function _trShowState(state) {
   if (main) main.style.display = state === "main" ? "" : "none";
 }
 
- 
+// ════════════════ 页面入口（进入拉一次 + 手动刷新） ════════════════
 
 export async function loadTranscript() {
   if (!authed) return showLogin();
@@ -47,7 +47,7 @@ export async function loadTranscript() {
   }
   _trInfo = d;
   if (!d.enabled) {
-     
+    // 未启用：引导开启（附配置段提示与跳配置页入口）
     var hint = _trEl("transcriptDisabledHint");
     if (hint) {
       hint.innerHTML =
@@ -59,7 +59,7 @@ export async function loadTranscript() {
   }
   _trShowState("main");
   await loadTranscriptSessions();
-   
+  // 恢复上一次选中的会话（不在当前时间窗内则回到待选择态）
   var stillThere = _trSessions.some(function (s) {
     return s.session_key === _trCurSession;
   });
@@ -71,7 +71,7 @@ export async function loadTranscript() {
   }
 }
 
- 
+// ════════════════ 会话列表（左栏） ════════════════
 
 export function onTranscriptHoursChange(value) {
   var h = parseInt(value, 10);
@@ -89,9 +89,9 @@ export async function loadTranscriptSessions() {
     return;
   }
   _trSessions = (d.sessions || []).map(function (s) {
-     
-     
-     
+    // 后端 _api_transcript_sessions 的条目由三段键拆解而来，可能不带
+    // session_key 字段；缺失时由 platform/detail_type/target_id 拼回，
+    // 否则 data-key/onclick 为空，选中会话会静默失效（右栏不渲染）。
     if (!s.session_key) {
       s.session_key = [s.platform, s.detail_type, s.target_id]
         .filter(function (p) {
@@ -153,9 +153,9 @@ export async function loadTranscriptSessions() {
 
 export function selectTranscriptSession(key, keepMobile) {
   _trCurSession = key;
-  _trTraceId = "";  
-  _trMsgSeq++;  
-   
+  _trTraceId = ""; // 选中会话即退出链路查看模式
+  _trMsgSeq++; // 立即失效在途请求
+  // 移动端单栏切换：进入详情
   if (!keepMobile) {
     var layout = _trEl("transcriptLayout");
     if (layout) layout.classList.add("show-detail");
@@ -174,23 +174,23 @@ export function showTranscriptList() {
   if (layout) layout.classList.remove("show-detail");
 }
 
- 
- 
- 
- 
- 
+// ════════════════ 消息文本渲染管线（媒体消息友好化） ════════════════
+// SDK 存储侧的 text 有四种形态：① Python bytes repr（b'...'，媒体二进制被
+// str() 化的产物）② OneBot 消息段 JSON 数组字符串 ③ CQ 码混排文本 ④ 纯文本。
+// 这里按形态归一解析后输出转义的安全 HTML：媒体 → [图片] 等占位符，图片段
+// 可渲染缩略图；url 仅放行 http(s)/data，javascript: 等一律拒绝。
 
 function _trPh(label) {
   return '<span class="tr-ph">[' + esc(label) + "]</span>";
 }
 
- 
+// 链接 url 白名单：仅 http(s)（其余降级为纯文本，javascript: 被拒绝）
 function _trSafeLinkUrl(u) {
   var s = String(u || "").trim();
   return /^https?:\/\//i.test(s) ? s : "";
 }
 
- 
+// base64:// 图片转 data URI（按解码后头部魔数推断 MIME，非图片字节返回空）
 function _trBase64ToDataUri(u) {
   var b64 = String(u || "").slice(9).replace(/\s+/g, "");
   if (!b64) return "";
@@ -212,8 +212,8 @@ function _trBase64ToDataUri(u) {
   return mime ? "data:" + mime + ";base64," + b64 : "";
 }
 
- 
- 
+// 图片段渲染：base64:// → data URI 直接显示；http(s)/data: 显示缩略图；
+// file:// 等本地路径浏览器不可读 → 仅占位。点击新窗口看原图。
 function _trImgHtml(url) {
   var u = String(url || "").trim();
   var src = "";
@@ -230,7 +230,7 @@ function _trImgHtml(url) {
   );
 }
 
- 
+// 可点链接（http(s) 才渲染为 <a target=_blank>，其余转义为纯文本）
 function _trLinkHtml(url, label) {
   var u = _trSafeLinkUrl(url);
   if (!u) return esc(String(label == null ? url : label));
@@ -243,15 +243,15 @@ function _trLinkHtml(url, label) {
   );
 }
 
- 
+// 从 bytes repr 内提取可打印文本中的 url（字符集已排除 repr 转义反斜杠/引号）
 function _trExtractUrl(text) {
   var m = String(text || "").match(/https?:\/\/[^\s"'\\<>]+/);
   if (!m) return "";
   return m[0].replace(/[)\]}>,.!?'"]+$/, "");
 }
 
- 
- 
+// bytes repr 魔数 → 媒体类型占位（repr 中控制字节表现为 \xNN 转义文本，
+// 个别实现也可能存 latin-1 解码后的原始字节，两种形态都匹配）
 var _trBytesMagic = [
   [/\\x89PNG|\x89PNG/, "图片"],
   [/\\xff\\xd8|JFIF|\xff\xd8/, "图片"],
@@ -263,9 +263,9 @@ var _trBytesMagic = [
   [/PK\\x03\\x04|PK\x03\x04/, "文件"],
 ];
 
- 
- 
- 
+// bytes repr 形态检测：b'/b" 开头，且含 repr 转义（\xNN、\n 等）或已知
+// 魔数（避免把恰好以 b' 开头的普通文本误判）。结尾引号不作要求——存储侧
+// 2000 字符截断可能把 repr 截在中途。
 function _trLooksLikeBytesRepr(text) {
   var t = text.trim();
   if (t.length < 4) return false;
@@ -287,13 +287,13 @@ function _trRenderBytesRepr(text) {
     }
   }
   var html = _trPh(label);
-   
+  // repr 内嵌可打印文本（如 JSON 里含 url）→ 占位符附可点链接
   var url = _trExtractUrl(text);
   if (url) html += " " + _trLinkHtml(url, url);
   return html;
 }
 
- 
+// CQ 码参数反转义（OneBot 转义规则：&#44; &#91; &#93; &amp;）
 function _trCqUnescape(s) {
   return String(s || "")
     .replace(/&#44;/g, ",")
@@ -315,8 +315,8 @@ function _trCqParams(raw) {
   return data;
 }
 
- 
- 
+// CQ 码混排：CQ 码替换为占位/富媒体，普通文本段转义保留
+//（CQ 参数键与 OneBot 段 data 键一致，复用 _trRenderSegment 的类型分派）
 function _trRenderCq(text) {
   var re = /\[CQ:([^\],\s]+)((?:,[^\]]*)?)\]/g;
   var out = "";
@@ -331,8 +331,8 @@ function _trRenderCq(text) {
   return out;
 }
 
- 
- 
+// OneBot 消息段 JSON 数组检测：trim 后以 [ 开头、JSON.parse 成功、为非空
+// 数组且全部元素含字符串 type 字段（避免把普通 JSON 文本误判为段数组）
 function _trTryParseSegments(text) {
   var t = text.replace(/^\s+|\s+$/g, "");
   if (t.charAt(0) !== "[") return null;
@@ -356,7 +356,7 @@ function _trTryParseSegments(text) {
   return arr;
 }
 
- 
+// json/xml 卡片段 → 摘要卡片（尽力提取标题/描述，失败仅显示 [卡片]）
 function _trCardHtml(data) {
   var raw = data.data != null ? data.data : data;
   var title = "";
@@ -382,7 +382,7 @@ function _trCardHtml(data) {
   );
 }
 
- 
+// 单个 OneBot 11 标准消息段渲染（未知类型 → [type 名]）
 function _trRenderSegment(seg) {
   var type = String(seg.type || "");
   var data = seg.data && typeof seg.data === "object" ? seg.data : {};
@@ -405,7 +405,7 @@ function _trRenderSegment(seg) {
     case "face":
       return _trPh("表情");
     case "reply": {
-       
+      // 引用回复：淡样式前缀，若段内携带被引消息则附其文本摘要
       var quoted = "";
       var content = data.content != null ? data.content : data.message;
       if (Array.isArray(content)) {
@@ -461,7 +461,7 @@ function _trRenderSegments(arr) {
   return out;
 }
 
- 
+// 主入口：按形态归一渲染消息文本 → 安全 HTML（保留换行，外层 pre-wrap）
 export function _trFormatMessageText(raw) {
   var text = raw == null ? "" : String(raw);
   if (!text) return "";
@@ -472,8 +472,8 @@ export function _trFormatMessageText(raw) {
   return esc(text);
 }
 
- 
- 
+// 原图查看：http(s) 直接新窗口打开；data: URI 不允许顶层导航，
+// 写入空白文档展示。导出供内联 onclick 经 window 挂载调用。
 export function openTranscriptImage(src) {
   src = String(src || "");
   var w = window.open("", "_blank");
@@ -497,7 +497,7 @@ export function openTranscriptImage(src) {
   doc.close();
 }
 
- 
+// ════════════════ 消息流（右栏） ════════════════
 
 function _trRenderDetailEmpty() {
   var emptyEl = _trEl("transcriptDetailEmpty");
@@ -554,7 +554,7 @@ export function exitTranscriptTrace() {
   loadTranscriptMessages();
 }
 
- 
+// 消息区加载骨架（三行 skeleton）：切换会话/链路时清空并立即给反馈
 function _trShowListSkeleton(listEl) {
   var row = function (width, right) {
     return (
@@ -574,11 +574,11 @@ export async function loadTranscriptMessages() {
   var listEl = _trEl("transcriptMsgList");
   if (!card || !listEl) return;
 
-   
+  // 竞态防护：发起请求前捕获令牌，await 返回后不一致即为过期响应
   var seq = ++_trMsgSeq;
 
   if (_trTraceId) {
-     
+    // 链路查看模式：消息区展示按 trace_id 查询的出站记录
     if (emptyEl) emptyEl.style.display = "none";
     card.style.display = "";
     _trRenderTraceBanner();
@@ -588,7 +588,7 @@ export async function loadTranscriptMessages() {
     var dTrace = await api(
       "/api/transcript/trace?trace_id=" + encodeURIComponent(_trTraceId)
     );
-    if (seq !== _trMsgSeq) return;  
+    if (seq !== _trMsgSeq) return; // 过期响应：已有更新的加载，丢弃
     var traceMsgs = dTrace && dTrace.supported !== false ? dTrace.messages || [] : [];
     if (!traceMsgs.length) {
       listEl.innerHTML =
@@ -607,14 +607,14 @@ export async function loadTranscriptMessages() {
   card.style.display = "";
   _trRenderTraceBanner();
   _trSessionHeader(_trCurSession);
-  _trShowListSkeleton(listEl);  
+  _trShowListSkeleton(listEl); // 即时反馈：先清空并显示骨架
 
   var d = await api(
     "/api/transcript?session=" +
       encodeURIComponent(_trCurSession) +
       "&n=100"
   );
-  if (seq !== _trMsgSeq) return;  
+  if (seq !== _trMsgSeq) return; // 过期响应：会话已切换，丢弃本次渲染
   var msgs = d && d.supported !== false ? d.messages || [] : [];
   if (!msgs.length) {
     listEl.innerHTML =
@@ -667,7 +667,7 @@ function _trRenderMsgList(listEl, msgs) {
       "</div>";
   }
   listEl.innerHTML = html;
-   
+  // 聊天语义：新消息沉底
   listEl.scrollTop = listEl.scrollHeight;
 }
 
@@ -678,7 +678,7 @@ export function copyTranscriptTraceId(el) {
   loadTranscriptMessages();
 }
 
- 
+// ════════════════ 工具条动作 ════════════════
 
 export async function openTranscriptTrace() {
   var v = await prompt2(
@@ -689,7 +689,7 @@ export async function openTranscriptTrace() {
   if (v === null) return;
   var tid = String(v).trim();
   if (!tid) {
-     
+    // 清空输入等价退出链路模式
     _trTraceId = "";
     loadTranscriptMessages();
     return;
@@ -716,7 +716,7 @@ export async function clearTranscriptSession() {
   }
 }
 
- 
+// ════════════════ 保留策略（模态表单） ════════════════
 
 export async function openTranscriptRetention() {
   var d = await api("/api/transcript/retention");

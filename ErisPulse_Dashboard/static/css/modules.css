@@ -1,10 +1,10 @@
+/* ErisPulse Dashboard – modules
+   模块管理页（适配器/模块卡网格）
+   生命周期时间轴样式见 logs.css */
 
-
-
-
-
-
-
+/* ───────────────────────── 页面标准边距（本组页面防御性收口） ─────────────────────────
+   全局 .page padding 由 overrides.css 提供（clamp 值）；此处对模块与配置管理组
+   各页面显式重申同一 token 化边距，防止页面级规则意外覆盖导致内容贴边 */
 #p-module-mgmt,
 #p-store,
 #p-packages,
@@ -16,9 +16,9 @@
     padding: clamp(16px, 3vw, 32px) clamp(14px, 3.4vw, 36px);
 }
 
- 
+/* ───────────────────────── 模块卡网格 ───────────────────────── */
 
- 
+/* 工具条：搜索/筛选/双 tab/刷新 一行收纳 */
 .module-toolbar {
     display: flex;
     align-items: center;
@@ -51,7 +51,7 @@
 #moduleList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-     
+    /* start：卡片可展开，展开高度只属于自身，不拉伸同排兄弟 */
     align-items: start;
     gap: 12px;
     padding: 14px 0 0;
@@ -99,7 +99,7 @@
     cursor: pointer;
 }
 
- 
+/* 图标瓦片：适配器用品牌 logo，模块用立方体图标 */
 .module-ico {
     width: 38px;
     height: 38px;
@@ -137,7 +137,7 @@
     object-fit: contain;
 }
 
- 
+/* 兜底首字母头像：accent-soft 底 + 主文字色，全部 token 化（不按模块名哈希取色） */
 .module-ico:has(.module-ico-initial) {
     background: var(--accent-soft);
     border-color: color-mix(in srgb, var(--accent) 25%, transparent);
@@ -230,7 +230,7 @@
     transform: rotate(180deg);
 }
 
- 
+/* 卡片操作行：启用开关 + 主操作 + ⋯ 菜单 */
 .module-card-side {
     display: flex;
     align-items: center;
@@ -342,7 +342,7 @@
     box-shadow: 0 0 0 3px var(--bg-s);
 }
 
- 
+/* 展开详情：底部下沉面板 */
 .module-detail {
     padding: 10px 14px 12px;
     border-top: 1px solid var(--bd);
@@ -434,7 +434,7 @@
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
- 
+/* iframe 型模块页：铺满内容区、外层不滚动，滚动逻辑由模块页面内部自理 */
 .page.page-module-frame {
     overflow: hidden;
 }
@@ -448,7 +448,7 @@
     background: var(--bg-s);
 }
 
- 
+/* 窄屏：模块卡退化为单列 */
 @media (max-width: 700px) {
     #adapterList,
     #moduleList {
@@ -456,13 +456,13 @@
     }
 }
 
- 
+/* ══════════ 移动端（≤768）：模块管理工具条与卡片按钮 ══════════ */
 @media (max-width: 768px) {
     .module-search {
         flex: 1 1 100%;
         max-width: none;
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 
     .module-toolbar .ep-combobox-trigger {
@@ -485,14 +485,14 @@
     }
 }
 
- 
+/* 模块卡 ID 行（点击展开详情的整行）：≥40px */
 @media (max-width: 768px) {
     .module-card-id {
         min-height: 40px;
     }
 }
 
- 
+/* ══════════ 模块已注册命令清单（模块卡展开详情） ══════════ */
 .modcmd-item {
     flex: 1 1 100%;
     flex-wrap: wrap;
@@ -548,7 +548,7 @@
     white-space: nowrap;
 }
 
- 
+/* ══════════ 资源归属审计（监控/诊断页） ══════════ */
 .ownership-body {
     display: flex;
     flex-direction: column;
@@ -559,7 +559,7 @@
     flex: 1;
 }
 
- 
+/* 孤儿 owner 警告行（wr 语义色三件套） */
 .ownership-orphan-warn {
     display: flex;
     align-items: flex-start;
@@ -660,7 +660,7 @@
     flex-shrink: 0;
 }
 
- 
+/* ══════════ 影子测试模态 ══════════ */
 .shadow-modal {
     max-width: 560px;
     display: flex;
@@ -793,7 +793,7 @@
     flex-wrap: wrap;
 }
 
- 
+/* 影子源 whl 上传区（与手填路径方式并列） */
 .shadow-upload-sec {
     display: flex;
     flex-direction: column;

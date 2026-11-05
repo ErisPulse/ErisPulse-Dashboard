@@ -1,16 +1,16 @@
- 
+// ErisPulse Dashboard – core/ws
 
- 
+// 是否为 Dashboard 自身的包名
 function isDashboardPkg(s) {
   return /erispulse[-_]dashboard/i.test(s || "");
 }
- 
+// 是否为框架自身的包名（erispulse，精确匹配，不含 dashboard 等衍生包）
 function isFrameworkPkg(s) {
   var v = (s || "").trim().toLowerCase();
   return v === "erispulse" || v.indexOf("erispulse==") === 0;
 }
- 
- 
+// 框架更新意图（doFrameworkUpdate 发起时落盘）：安装中刷新页面会丢掉
+// 内存里的 _installTaskIds 映射，靠它仍能在 success 时辨认框架更新
 function getFwUpdateIntent(taskId) {
   try {
     var raw = localStorage.getItem("ep_fw_task");
@@ -29,7 +29,7 @@ function clearFwUpdateIntent() {
     localStorage.removeItem("ep_fw_task");
   } catch (e) {}
 }
- 
+// Dashboard 更新完成后引导刷新：由用户确认（底部引导条作为未刷新时的持久入口）
 var _dashRefreshPromptShown = false;
 function promptDashboardRefresh() {
   if (_dashRefreshPromptShown) return;
@@ -136,7 +136,7 @@ export function wsConnect() {
           (_tasks.find((t) => t.id === m.task_id) || {}).name ||
           "";
         if (m.status === "running") {
-           
+          // 心跳消息不带 output：undefined 让 addOrUpdateTask 保留已有输出
           addOrUpdateTask(
             m.task_id,
             pkg,
@@ -146,7 +146,7 @@ export function wsConnect() {
         } else if (m.status === "success") {
           _installTaskIds.delete(m.task_id);
           addOrUpdateTask(m.task_id, pkg, "success", m.output || []);
-           
+          // 升级的是 Dashboard 自身：后端即将自重载，前端随后强制刷新拿到新资源
           if (
             isDashboardPkg(pkg) ||
             (m.packages || []).some((p) => isDashboardPkg(p))
@@ -156,7 +156,7 @@ export function wsConnect() {
             isFrameworkPkg(pkg) ||
             (m.packages || []).some((p) => isFrameworkPkg(p))
           ) {
-             
+            // 升级的是框架：新代码需重启才能生效，给出重启引导
             var fwSpec =
               (m.packages || []).find((p) => isFrameworkPkg(p)) || pkg;
             clearFwUpdateIntent();
@@ -185,18 +185,18 @@ export function wsConnect() {
       } else if (m.type === "module_changed") {
         if (m.data && m.data.action === "installed") {
           toast(m.data.name + ": " + t("module_loaded_dynamic"), "ok");
-           
+          // 活动中心：安装完成落一条成功记录
           addOrUpdateTask(
             "mod:installed:" + m.data.name,
             m.data.name + " · " + t("module_loaded_dynamic"),
             "success",
             [],
           );
-           
+          // 新装模块若声明了配置，稍后聚合弹窗引导配置
           queueInstallGuide(m.data.name, "module");
         }
         if (m.data && m.data.action === "installed_adapter") {
-           
+          // 新适配器注册并启动完成：有配置则弹窗引导，无配置补安装成功 toast
           queueInstallGuide(m.data.name, "adapter");
           addOrUpdateTask(
             "mod:adapter:" + m.data.name,
@@ -218,7 +218,7 @@ export function wsConnect() {
         }
         loadModules();
       } else if (m.type === "dashboard_reloaded") {
-         
+        // 后端已完成 Dashboard 模块重载：引导用户刷新（确认制，不自动刷）
         promptDashboardRefresh();
       } else if (m.type === "ping") {
         ws.send(JSON.stringify({ type: "pong" }));
@@ -231,9 +231,9 @@ export function wsConnect() {
       } else if (m.type === "appearance_changed") {
         loadGlobalAppearance();
       } else if (m.type === "cert_files_changed") {
-         
+        // SSL 管理已随安全页移除；保留分支避免旧后端消息导致未处理告警
       } else if (m.type === "config_updated") {
-         
+        // 配置文件被外部（编辑器/其他进程）修改
         toast(t("config_changed_externally"), "");
         const fwBody = document.getElementById("fwConfigBody");
         if (
@@ -252,7 +252,7 @@ export function wsConnect() {
 
 export function loadAll() {
   initMirrorSelects();
-   
+  // SDK 能力表（前端按能力显隐/降级的统一数据源）
   api("/api/capabilities")
     .then(function (c) {
       window.CAPS = (c && c.capabilities) || {};
@@ -265,16 +265,16 @@ export function loadAll() {
   _applyEditorOptions();
   fetchAdapterLogos();
   document.body.classList.toggle("privacy-on", getPrivacyMode());
-   
-   
-   
+  // 登录只加载首屏（仪表盘状态 + 事件卡）与全局性数据；
+  // 各页面数据由路由 loaders 在首次进入时拉取
+  // 默认页为 dashboard 时 applyDefaultPageOnLogin 不走 go()，首屏数据在此直取
   window.refreshDashboard();
   loadPerformance();
   loadEvents();
   loadModuleViews();
   restartRefreshTimer();
-   
-   
+  // 更新检查（PyPI 网络请求，冷缓存可达数十秒）延迟 3s
+  // 受设置"自动检查更新"开关控制
   setTimeout(function () {
     if (getSetting("auto_check_updates", "1") !== "1") return;
     checkFwUpdateBadge();

@@ -1,18 +1,18 @@
- 
+/* ErisPulse Dashboard – bots */
 
- 
+/* ════════════════ 卡片网格：auto-fill 自适应，窄屏自动收拢无空轨道 ════════════════ */
 .bot-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 292px), 1fr));
     gap: 14px;
 }
 
- 
+/* 空状态横跨整行 */
 .bot-grid > .empty-state {
     grid-column: 1 / -1;
 }
 
- 
+/* ════════════════ 机器人卡片：扁平双行结构 ════════════════ */
 .bot-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -25,7 +25,7 @@
     transition: border-color 0.15s var(--ease-smooth);
 }
 
- 
+/* 头部行：logo + 身份 + 连接 chip */
 .bot-head {
     display: flex;
     align-items: center;
@@ -33,7 +33,7 @@
     min-width: 0;
 }
 
- 
+/* logo 容器：软底方块 + 右下角状态点（api.js _botAvatarFallback 依赖 .bot-avatar/.has-logo 类名） */
 .bot-avatar {
     position: relative;
     width: 44px;
@@ -56,7 +56,7 @@
     display: block;
 }
 
- 
+/* 平台 logo：等比缩放留出呼吸边距 */
 .bot-avatar.has-logo img {
     object-fit: contain;
     padding: 4px;
@@ -70,7 +70,7 @@
     opacity: 0.65;
 }
 
- 
+/* 连接状态点：覆盖在 logo 右下角 */
 .bot-status-dot {
     position: absolute;
     right: -3px;
@@ -88,7 +88,7 @@
     background: var(--tx-t);
 }
 
- 
+/* 身份块 */
 .bot-card-body {
     flex: 1;
     min-width: 0;
@@ -128,7 +128,7 @@
     text-overflow: ellipsis;
 }
 
- 
+/* 连接 chip：语义色胶囊（在线/离线） */
 .bot-conn-chip {
     flex-shrink: 0;
     gap: 6px;
@@ -143,7 +143,7 @@
     flex-shrink: 0;
 }
 
- 
+/* ════════════════ 卡底：能力标签 + 元信息收纳行 ════════════════ */
 .bot-foot {
     display: flex;
     align-items: center;
@@ -159,7 +159,7 @@
     min-width: 0;
 }
 
- 
+/* 无能力标签时保持底行占位对齐 */
 .bot-caps-empty {
     flex: 1;
 }
@@ -183,7 +183,7 @@
     border-color: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
- 
+/* 元信息（最近活跃 + 适配器状态）收纳于右侧 */
 .bot-foot-meta {
     margin-left: auto;
     display: flex;
@@ -204,20 +204,20 @@
     white-space: nowrap;
 }
 
- 
+/* 兼容引用（旧结构类名，保留最小定义） */
 .bot-card-status {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
- 
+/* ════════════════ 响应式 ════════════════ */
 @media (max-width: 640px) {
     .bot-grid {
         grid-template-columns: 1fr;
     }
 
-     
+    /* 窄屏允许连接 chip 换行，身份块占满 */
     .bot-head {
         flex-wrap: wrap;
     }

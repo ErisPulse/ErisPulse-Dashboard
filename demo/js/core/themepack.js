@@ -1,7 +1,7 @@
- 
- 
- 
- 
+// ErisPulse Dashboard – core/themepack
+// 主题包 v2：zip 压缩包（theme.json 清单 + theme.css + 可选 theme.js + assets/）。
+// 主题包拥有完整的 JS/CSS 执行权限——导入前必须经用户确认来源。
+// 纯前端解压：手工解析 zip 中央目录 + DecompressionStream("deflate-raw")。
 
 var TP_STYLE_ID = "epThemePack";
 var TP_SCRIPT_ID = "epThemePackScript";
@@ -35,7 +35,7 @@ async function _tpInflateRaw(data) {
   return new Uint8Array(buf);
 }
 
- 
+// 解析 zip（存储方法 0 / deflate 8），返回 [{name, bytes}]
 export async function themepackUnzip(buffer) {
   var dv = new DataView(buffer);
   var u8 = new Uint8Array(buffer);
@@ -75,7 +75,7 @@ export async function themepackUnzip(buffer) {
   return entries;
 }
 
- 
+// 组装主题包运行时：清单 + css（assets 引用改写为 blob URL）+ 可选 js
 export async function themepackBuild(buffer, fallbackName) {
   var entries = await themepackUnzip(buffer);
   var byName = {};
@@ -99,7 +99,7 @@ export async function themepackBuild(buffer, fallbackName) {
   if (!cssName) throw new Error("包内缺少 theme.css");
   var css = new TextDecoder().decode(byName[cssName]);
 
-   
+  // assets → blob URL，并改写 css 中的相对引用（url(assets/…)、src="assets/…"）
   var assets = {};
   entries.forEach(function (e) {
     if (e.name.indexOf(TP_ASSET_PREFIX) === 0 && e.bytes.length) {
@@ -134,7 +134,7 @@ export async function themepackBuild(buffer, fallbackName) {
   };
 }
 
- 
+// 应用到页面：样式注入 + 可选脚本执行（调用方须已完成来源确认）
 export function themepackApply(pack) {
   var el = document.getElementById(TP_STYLE_ID);
   if (!el) {
@@ -160,7 +160,7 @@ export function themepackRemove() {
   if (script) script.remove();
 }
 
- 
+// 持久化：zip 字节存 base64（≤4MB，超出建议改用自定义 CSS）
 export function themepackSave(buffer, name) {
   var b64 = _tpB64FromBytes(new Uint8Array(buffer));
   if (b64.length > 4 * 1024 * 1024)
@@ -176,7 +176,7 @@ export function themepackClear() {
   themepackRemove();
 }
 
- 
+// 开机恢复：解包持久化的 zip 并应用
 export async function themepackRestore() {
   var raw = localStorage.getItem(TP_STORE_KEY);
   if (!raw) return;

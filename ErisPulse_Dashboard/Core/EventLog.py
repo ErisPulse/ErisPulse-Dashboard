@@ -12,7 +12,7 @@ class EventLogMixin:
     """事件 / 日志 / 审计采集、持久化恢复与 WebSocket 广播。"""
 
 
-     
+    # ════════════════ 事件 / 日志 / 审计采集与持久化 ════════════════
 
     def _setup_log_streaming(self):
         """注册日志订阅器，通过 WebSocket 实时推送日志。
@@ -112,7 +112,7 @@ class EventLogMixin:
                 )
                 self._add_lifecycle_log(entry)
                 self._lifecycle_counts[_name] = self._lifecycle_counts.get(_name, 0) + 1
-                 
+                # 配置文件被外部修改时实时提醒前端
                 if _name == "config.updated":
                     self._safe_broadcast({"type": "config_updated", "data": data})
 
@@ -128,9 +128,9 @@ class EventLogMixin:
                 self._lifecycle_counts.get(event_type, 0) + 1
             )
 
-         
-         
-         
+        # 存储生命周期事件（storage.ready / unreachable / recovered）
+        # 写入事件缓冲并经 WS 广播，供前端健康区与桌面通知链路感知；
+        # 旧 SDK 无 lifecycle API 或无存储事件时静默跳过
         lifecycle_api = getattr(self.sdk, "lifecycle", None)
         if lifecycle_api is not None and hasattr(lifecycle_api, "on"):
             _storage_levels = {
@@ -185,15 +185,13 @@ class EventLogMixin:
         }
         self._lifecycle_log.append(entry)
 
-         
+        # 按类型限制：每种类型最多保留 _max_per_type 条
         type_count = {}
         for e in self._lifecycle_log:
-            t = e.get("event", "").split(".")[0]   
+            t = e.get("event", "").split(".")[0]  # 取第一段作为类型
             type_count[t] = type_count.get(t, 0) + 1
 
-         
         if len(self._lifecycle_log) > self._max_lifecycle_log:
-             
             groups = {}
             for e in self._lifecycle_log:
                 t = e.get("event", "").split(".")[0]
@@ -203,7 +201,6 @@ class EventLogMixin:
             for t, items in groups.items():
                 trimmed.extend(items[-self._max_per_type :])
 
-             
             trimmed.sort(key=lambda x: x.get("timestamp", 0))
             self._lifecycle_log = trimmed[-self._max_lifecycle_log :]
 
@@ -257,8 +254,8 @@ class EventLogMixin:
     def _persist_events(self):
         try:
             self.storage.set("__ep_events__", self._event_log[-self._max_log :])
-             
-             
+            # 真实总数单独持久化：环形缓冲被 _max_log 截断，
+            # 不能用 len(缓冲) 当总数（重启后会封顶在 500）
             self.storage.set("__ep_event_total__", int(self._total_event_count))
             self._events_dirty = False
         except Exception:
@@ -313,7 +310,7 @@ class EventLogMixin:
             events = self.storage.get("__ep_events__")
             if isinstance(events, list):
                 self._event_log = events[-self._max_log :]
-                 
+                # 优先读单独持久化的真实总数；旧数据无该键时回退 len(缓冲)
                 total = self.storage.get("__ep_event_total__")
                 if isinstance(total, int) and total >= 0:
                     self._total_event_count = max(
@@ -337,7 +334,7 @@ class EventLogMixin:
                         self._log_by_level[lvl.upper()] = deq
                     deq.extend(entries[-self._max_per_level :])
             elif isinstance(logs, list):
-                 
+                # 兼容最早的单缓冲格式
                 for e in logs[-self._max_per_level :]:
                     level_key = (e.get("level") or "UNKNOWN").upper() if isinstance(e, dict) else "UNKNOWN"
                     deq = self._log_by_level.get(level_key)
@@ -383,7 +380,7 @@ class EventLogMixin:
         except Exception:
             pass
 
-     
+    # ════════════════ WebSocket 广播 ════════════════
 
     async def _broadcast(self, msg: dict):
         if not self._ws_clients:

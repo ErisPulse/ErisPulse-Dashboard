@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – core/api
 
 const _realFetch = window.fetch;;
 

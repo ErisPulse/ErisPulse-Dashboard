@@ -95,7 +95,7 @@ class ApiAdaptersMixin:
             return JSONResponse({"supported": False})
         return JSONResponse({"supported": True, "connection": conn})
 
-     
+    # ════════════════ 适配器配置 ════════════════
 
     def _get_adapter_config_info(self, platform: str) -> dict | None:
         adapter_instance = self.sdk.adapter.get(platform)
@@ -122,7 +122,6 @@ class ApiAdaptersMixin:
             try:
                 from ErisPulse.runtime.config_schema import resolve_config_schema
 
-                 
                 result["schema"] = resolve_config_schema(config_class)
             except Exception as e:
                 self.logger.debug(f"Failed to get config schema for {platform}: {e}")
@@ -191,8 +190,6 @@ class ApiAdaptersMixin:
 
             self.sdk.config.setConfig(config_key, merged)
 
-             
-             
 
             self._add_audit_log("adapter_config_update", platform, request)
             return JSONResponse(
@@ -212,7 +209,7 @@ class ApiAdaptersMixin:
         self._add_audit_log("adapter_config_update", f"{platform}.{key}", request)
         return JSONResponse({"success": True})
 
-     
+    # ════════════════ 适配器多账号 ════════════════
 
     async def _api_adapter_accounts_get(self, request: Request) -> JSONResponse:
         platform = request.path_params.get("platform", "")
@@ -342,7 +339,6 @@ class ApiAdaptersMixin:
         accounts_data[account_name] = default_data
         self.sdk.config.setConfig(accounts_key, accounts_data)
 
-         
         await self._reload_adapter_if_running(adapter_instance, platform, reload=False)
 
         self._add_audit_log(
@@ -370,8 +366,6 @@ class ApiAdaptersMixin:
         del accounts_data[account_name]
         self.sdk.config.setConfig(accounts_key, accounts_data)
 
-         
-         
         if adapter_instance in getattr(self.sdk.adapter, "_started_instances", set()):
             import asyncio as _asyncio
 
@@ -396,11 +390,9 @@ class ApiAdaptersMixin:
     ) -> bool:
         """刷新适配器；reload=True 且适配器运行中时，交由框架执行完整重载"""
         try:
-             
             if reload and adapter_instance in getattr(
                 self.sdk.adapter, "_started_instances", set()
             ):
-                 
                 return await self.sdk.adapter.restart(platform)
         except Exception as e:
             self.logger.error(f"适配器重载失败: {e}")
@@ -411,10 +403,9 @@ class ApiAdaptersMixin:
         target = request.query_params.get("target") or ""
         platform = request.query_params.get("platform") or ""
         sections = self.get_sections(target, platform)
-         
         return JSONResponse({"success": True, "sections": sections})
 
-     
+    # ════════════════ 最近消息发送者（主人快速选择数据源）════════════════
 
     def _setup_recent_sender_collector(self):
         """注册消息监听，收集最近发送者（昵称/ID/平台，内存环形，容量200）"""
@@ -430,8 +421,8 @@ class ApiAdaptersMixin:
                 user_id = str(event.get("user_id") or "")
                 if not platform or not user_id:
                     return
-                 
-                 
+                # 昵称多源兼容：sender.nickname/name（OneBot12 通用）、
+                # sender.username、事件顶层 user_nickname/user_name（QQ 官方适配器）
                 sender = event.get("sender") or {}
                 nickname = ""
                 if isinstance(sender, dict):
@@ -453,7 +444,7 @@ class ApiAdaptersMixin:
                     "ts": _time.time(),
                 }
                 if len(self._recent_senders) > 200:
-                     
+                    # 淘汰最旧
                     for k in sorted(self._recent_senders, key=lambda x: self._recent_senders[x]["ts"])[: len(self._recent_senders) - 200]:
                         self._recent_senders.pop(k, None)
             except Exception:
@@ -469,10 +460,10 @@ class ApiAdaptersMixin:
         import time as _time
 
         out: dict[str, dict] = {}
-         
+        # 运行期收集
         for it in self._recent_senders.values():
             out[it["platform"] + ":" + it["user_id"]] = dict(it)
-         
+        # 收件箱历史（若启用）补全更早的昵称
         try:
             tr = getattr(self.sdk, "transcript", None)
             if tr is not None and getattr(tr, "enabled", False):

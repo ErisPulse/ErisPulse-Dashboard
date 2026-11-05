@@ -1,8 +1,8 @@
- 
- 
- 
+// ErisPulse Dashboard – pages/files
+// 资源管理器式文件管理：面包屑导航、列表/网格双视图、点选+Ctrl 多选、
+// 行内 ⋮ 菜单（移动端）、排序表头、全屏编辑模态窗
 
- 
+// ── 视图状态（view/sort 持久化） ──
 _fmView = localStorage.getItem("ep_fm_view") === "grid" ? "grid" : "list";
 _fmSort = { key: "name", dir: 1 };
 _fmEntries = [];
@@ -65,7 +65,7 @@ export function fmFormatTime(ts) {
   });
 }
 
- 
+// 文件类型 → 分类图标（代码/配置/图片/视频/音频/压缩包/文档/日志/密钥），着色沿用扩展名色表
 const FM_CATEGORY_ICONS = {
   code: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
   config:
@@ -117,9 +117,9 @@ export function fmGetIcon(type, name) {
   );
 }
 
- 
+// ── 在线预览（原生 HTML5 标签，零新增依赖） ──
 
- 
+// 浏览器可原生渲染的预览类型（扩展名白名单；mkv/mov 视浏览器解码器支持而定）
 const FM_PREVIEW_IMAGE = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "svg", "avif", "apng"];
 const FM_PREVIEW_VIDEO = ["mp4", "webm", "m4v", "mov", "mkv"];
 const FM_PREVIEW_AUDIO = ["mp3", "wav", "ogg", "oga", "m4a", "flac", "aac", "opus"];
@@ -133,10 +133,10 @@ export function fmPreviewKind(name) {
   return "";
 }
 
- 
+// 大文件流式播放提示阈值（字节）
 const FM_PREVIEW_STREAM_HINT = 100 * 1024 * 1024;
 
- 
+// 预览状态（模块作用域；state.js 未预声明，勿用隐式全局）
 let _fmPreview = null;
 
 function fmPreviewUrl(path) {
@@ -158,7 +158,7 @@ export function fmPreviewFile(path) {
   const name = path.split("/").pop();
   const kind = fmPreviewKind(name);
   if (!kind) return fmEditFile(path);
-   
+  // 图片画廊序列 = 当前目录排序后的全部图片；其余类型单文件
   let list = [path];
   if (kind === "image") {
     const imgs = fmSortedEntries()
@@ -192,7 +192,7 @@ function fmPreviewRender() {
   document.getElementById("fmPreviewNext").style.display =
     st.kind === "image" && st.list.length > 1 ? "" : "none";
 
-   
+  // 底部信息：图片加载后补尺寸；大媒体给出流式播放提示
   document.getElementById("fmPreviewInfo").textContent = name;
   const hint =
     (st.kind === "video" || st.kind === "audio") && size > FM_PREVIEW_STREAM_HINT
@@ -269,19 +269,19 @@ export function fmPreviewDownload() {
 export function fmPreviewClose() {
   const ov = document.getElementById("fmPreviewOv");
   if (ov) ov.classList.remove("show");
-   
+  // 清空 DOM 释放媒体（停止播放 / 断开流式连接）
   const body = document.getElementById("fmPreviewBody");
   if (body) body.innerHTML = "";
   _fmPreview = null;
 }
 
- 
+// 统一入口：可预览类型走预览，其余走编辑器
 export function fmOpenFile(path) {
   if (fmPreviewKind(path.split("/").pop())) fmPreviewFile(path);
   else fmEditFile(path);
 }
 
- 
+// ── 导航 ──
 
 export function fmNavigateTo(path) {
   fmClearSelection();
@@ -333,7 +333,7 @@ export function fmUpdateBreadcrumb(path, count) {
   bc.innerHTML = html;
 }
 
- 
+// ── 视图 / 排序 ──
 
 export function fmToggleView() {
   _fmView = _fmView === "list" ? "grid" : "list";
@@ -368,7 +368,7 @@ function fmSortedEntries() {
   return dirs.concat(files);
 }
 
- 
+// ── 浏览与渲染 ──
 
 export async function fmBrowse(path) {
   _fmCurrentPath = path;
@@ -388,7 +388,7 @@ export async function fmBrowse(path) {
   }
 
   _fmEntries = d.entries || d.results || [];
-   
+  // 根目录不显示 .. 上级条目（上级用面包屑/上跳按钮）
   if (_fmCurrentPath === "." || _fmCurrentPath === "") {
     _fmEntries = _fmEntries.filter(
       (e) => !(e.type === "directory" && e.name === ".."),
@@ -424,7 +424,7 @@ function fmRender() {
       const size = isDir ? "--" : fmFormatSize(e.size || 0);
       const mtime = fmFormatTime(e.modified);
       const open = fmOpenCall(e);
-       
+      // 可预览类型：名称尾部出现预览按钮（桌面 hover 显示 / 触屏常显）
       const previewable = !isDir && !!fmPreviewKind(e.name);
       const previewBtn = previewable
         ? '<button class="fm2-previewbtn" title="' +
@@ -487,17 +487,16 @@ function fmRenderHeadRow() {
     t("fm_col_size") + arrow("size");
 }
 
- 
+// ── 选择（桌面：单击选中，Ctrl 加选；移动端：直接打开，⋮ 出菜单） ──
 
 export function fmRowClick(event, path, type) {
-   
+  // 移动端：单击即打开（桌面双击打开）
   if (window.innerWidth <= 768) {
     if (type === "directory") fmNavigateTo(path);
     else fmOpenFile(path);
     return;
   }
-   
-   
+  // 桌面普通单击不动作（正常交互）；选择是主动行为——Ctrl/Cmd+点击，
   if (event.ctrlKey || event.metaKey) {
     event.stopPropagation();
     if (path === "..") return;
@@ -530,7 +529,7 @@ export function fmUpdateSelBar() {
     count.textContent = t("fm_selected_count").replace("{n}", n);
   const dl = document.getElementById("fmSelDownload");
   if (dl) {
-     
+    // 仅选中单个文件时提供下载（多选/目录隐藏）
     const entry = n === 1 ? _fmEntries.find((e) => e.path === fmSelectedPaths()[0]) : null;
     dl.style.display = entry && entry.type !== "directory" ? "" : "none";
   }
@@ -568,12 +567,12 @@ export async function fmCompressSelected() {
   await fmCompressPaths(paths);
 }
 
- 
+// ── 行菜单（右键 / 移动端 ⋮） ──
 
 export function fmToggleRowMenu(event, path, type) {
   event.stopPropagation();
   event.preventDefault();
-   
+  // 移动端 ⋮：菜单贴屏幕底部成 bottom-sheet
   fmShowContextMenu(event, path, type, window.innerWidth <= 768);
 }
 
@@ -691,9 +690,9 @@ export function fmCtxItem(label, svgPath, onclick) {
   );
 }
 
- 
+// ── 编辑器模态窗 ──
 
- 
+// 编辑器 IDE 化：状态栏（光标位置/语言）+ 活动行 + 词法补全
 function fmEditorStatusUpdate(cm) {
   const pos = cm.getCursor();
   const el = document.getElementById("fmStatusPos");
@@ -733,7 +732,7 @@ export async function fmEditFile(path) {
   _fmDirty = false;
   const overlay = document.getElementById("fmEditorOv");
   const name = path.split("/").pop();
-   
+  // 头部图标与列表一致：按扩展名分类着色
   document.getElementById("fmEditorIcon").innerHTML = fmGetIcon("file", name);
   document.getElementById("fmEditorTitle").textContent = name;
   document.getElementById("fmEditorPath").textContent =
@@ -766,9 +765,9 @@ export async function fmEditFile(path) {
         "Ctrl-S": function (cm) { fmSaveFile(); },
       },
     });
-     
+    // 设置页编辑器偏好（主题/字号/缩进）需要触达实例，模块私有变量经 window 暴露
     window._fmEditor = _fmEditor;
-     
+    // 词法补全：输入单词字符 800ms 后自动弹出（Esc/点选关闭）
     let hintTimer = null;
     _fmEditor.on("inputRead", function (cm, change) {
       const ch = (change.text && change.text[0]) || "";
@@ -832,7 +831,7 @@ export async function fmSaveFile() {
 }
 
 export async function fmCloseEditor(force) {
-   
+  // 有未保存修改时先确认（Esc/遮罩/× 都走这里）
   if (_fmDirty && !force) {
     const ok = await confirm2(
       t("unsaved_confirm_title"),
@@ -849,7 +848,7 @@ export async function fmCloseEditor(force) {
   _fmDirty = false;
 }
 
- 
+// ── 增删改上传 ──
 
 export function fmDownload(path) {
   const tk = localStorage.getItem(TK);
@@ -1032,7 +1031,7 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
- 
+// 压缩：优先压缩选区，无选区时压缩全部；download 压缩产物
 export async function fmCompress() {
   const paths =
     _fmSelection.size > 0
@@ -1100,7 +1099,7 @@ export async function fmDecompress(path) {
   }
 }
 
- 
+// ── 文件编辑器：Esc / 点击遮罩关闭（含未保存确认） ──
 document.addEventListener("keydown", function (e) {
   if (e.key !== "Escape") return;
   const ov = document.getElementById("fmEditorOv");
@@ -1118,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
- 
+// ── 预览模态：Esc 关闭，←/→ 切换画廊（图片） ──
 document.addEventListener("keydown", function (e) {
   const ov = document.getElementById("fmPreviewOv");
   if (!ov || !ov.classList.contains("show")) return;

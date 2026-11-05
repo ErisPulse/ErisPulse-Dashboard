@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/packages
 
 export function debouncePkgs() {
   clearTimeout(_pkgDebounceTimer);
@@ -7,7 +7,7 @@ export function debouncePkgs() {
 
 export async function loadPackages(forceRefresh) {
   const force = forceRefresh === true;
-   
+  // 首次进入渲染骨架占位
   if (!_pkgCache) {
     document.getElementById("pkgInstalledList").innerHTML =
       '<div class="pkg-skeleton">' +
@@ -48,7 +48,7 @@ export function renderPkgInstalled() {
 
   const html = filtered
     .map((p) => {
-       
+      // 类型徽标胶囊：模块 / 适配器 / 依赖库，语义色三件套
       let typeBadges = "";
       if (p.is_module)
         typeBadges +=
@@ -179,8 +179,8 @@ export async function loadPackageUpdates(forceRefresh) {
   document.getElementById("pkgUpdateList").innerHTML = html;
 }
 
- 
- 
+// 有可用更新时的安静提示：包管理导航红点 + 活动中心可点击条目（不弹气泡）
+// 结果缓存 30 分钟（localStorage）
 var _PKG_BADGE_TTL = 30 * 60 * 1000;
 
 function _readPkgBadgeCache() {
@@ -226,7 +226,7 @@ export async function checkPkgUpdateBadge(forceRefresh) {
       removeTask("pkg-update-available");
     }
   } catch (e) {
-     
+    /* 静默失败 */
   }
 }
 

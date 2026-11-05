@@ -1,19 +1,19 @@
-
-
-
-
-
-
-
-
-
+/* ══════════════════════════════════════════════════════════
+   ep-subnav：通用「左侧子导航 + 右侧内容」布局组件
+   ──────────────────────────────────────────────────────────
+   桌面（≥960px）：grid 264px / 1fr，左栏 sticky，内容独立滚动
+   移动（≤959px）：导航转顶部横向 chips（横滑），内容全宽
+   归属层级：最多一层子项（.is-child，缩进 + 树线）；pane 用
+   data-parent 声明归属，激活时高亮父项。
+   设置页（.settings-shell）通过双选择器映射共用本样式表。
+   ══════════════════════════════════════════════════════════ */
 
 .ep-subnav,
 .settings-shell {
   display: block;
 }
 
- 
+/* ── 左栏 ── */
 .ep-subnav-aside,
 .settings-aside {
   min-width: 0;
@@ -24,7 +24,7 @@
   flex: none;
 }
 
- 
+/* ── 导航列表 ── */
 .ep-subnav-nav,
 .settings-nav {
   display: flex;
@@ -95,7 +95,7 @@
   background: color-mix(in srgb, var(--bd) 60%, transparent);
 }
 
- 
+/* ── 子项归属（缩进 + 树线，仅一层）── */
 .ep-subnav-item.is-child {
   padding-left: 30px;
   font-size: 12.5px;
@@ -121,7 +121,7 @@
   color: var(--accent);
 }
 
- 
+/* ── 徽标（状态点 / 计数）── */
 .ep-subnav-badge {
   margin-left: auto;
   display: inline-flex;
@@ -151,7 +151,7 @@
   background: var(--wr-c);
 }
 
- 
+/* ── 右栏 pane ── */
 .ep-subnav-body,
 .settings-detail {
   min-width: 0;
@@ -179,7 +179,7 @@
   }
 }
 
- 
+/* ══════════════ 桌面（≥960px）：两栏 + 左栏 sticky ══════════════ */
 @media (min-width: 960px) {
   .ep-subnav,
   .settings-shell {
@@ -205,13 +205,13 @@
     min-height: 0;
     overflow-y: auto;
     margin-bottom: 0;
-     
+    /* 细滚动条（悬停显形） */
     scrollbar-width: thin;
     scrollbar-gutter: stable;
   }
 }
 
- 
+/* ══════════════ 移动（≤959px）：顶部横向 chips ══════════════ */
 @media (max-width: 959px) {
   .ep-subnav-nav,
   .settings-nav {
@@ -250,7 +250,7 @@
     background: var(--accent-soft);
   }
 
-   
+  /* 子项在 chips 行用「·」前缀轻量表达归属 */
   .ep-subnav-item.is-child {
     padding: 8px 14px;
     color: var(--tx-s);
@@ -266,7 +266,7 @@
   }
 }
 
- 
+/* 动效可及性 */
 @media (prefers-reduced-motion: reduce) {
   .ep-subnav-pane.active,
   .settings-pane.active {

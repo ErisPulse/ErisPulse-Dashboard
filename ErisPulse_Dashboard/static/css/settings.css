@@ -1,4 +1,4 @@
- 
+/* ErisPulse Dashboard – settings */
 .color-swatches {
     display: flex;
     flex-wrap: wrap;
@@ -48,7 +48,7 @@
     border-radius: 5px;
 }
 
- 
+/* 背景控制按钮组 */
 .bg-controls {
     display: flex;
     flex-wrap: wrap;
@@ -112,7 +112,7 @@
 }
 
 
- 
+/* 设置面板样式 */
 .settings-section-title {
     font-size: 12px;
     font-weight: 600;
@@ -181,7 +181,7 @@
     color: var(--tx-p);
 }
 
- 
+/* 设置面板移动端适配 */
 
 .settings-backdrop {
     display: none;
@@ -283,24 +283,24 @@
     }
 }
 
-
-
+/* ── 编辑器字号偏好：全局下发 CodeMirror 实例（文件管理 / 配置源码） ──
+   --ep-cm-font-size 由 settings.js 写入 :root；缺省 1em 保持既有继承字号 */
 .CodeMirror {
     font-size: var(--ep-cm-font-size, 1em);
 }
 
+/* ════════════════ 设置页：索引 + 详情两栏（OS 设置范式） ════════════════
+   桌面（≥960px）：左侧分区菜单 sticky，右侧当前分区详情；
+   移动（<960px）：单栏索引 → 点击行滑入详情，返回按钮退回索引 */
 
-
-
-
-
-
+/* ── 左栏：页头标题块 + 分区索引，桌面端作为一个整体 sticky 固定 ──
+   右栏详情滚动时左栏纹丝不动；移动端保持常规文档流（标题在上、chips 次之） */
 
 .settings-aside-head {
     padding: 0 2px;
 }
 
- 
+/* 标题块收窄到索引栏宽度内的字号节奏（覆盖页级 32px 大标题） */
 .settings-aside-head .page-title {
     font-size: 20px;
     margin-bottom: 2px;
@@ -312,13 +312,13 @@
     line-height: 1.45;
 }
 
- 
+/* 行内控件降级后允许换行（如 5 语言分段在窄屏放不下时折到标题下方） */
 .set-row--wrap {
     flex-wrap: wrap;
     row-gap: 8px;
 }
 
- 
+/* 换行行内的右侧控件区允许收缩，分段控件随之折行 */
 .set-row--wrap .set-end {
     flex: 1 1 auto;
     min-width: 0;
@@ -384,9 +384,9 @@
 }
 
 
-
-
-
+/* ── 行条目（OS 设置签名样式）：图标 + 标题/副标题 + 行内控件或值 + chevron ──
+   对位规范：图标卡 28px 与标题行光学居中对齐（line-height 1.4 锚定基线）；
+   右侧控件经 .set-end 统一垂直居中；hairline 只出现在行与行之间（首末行无线） */
 .set-group {
     padding: 6px 8px;
     margin: 0 0 14px;
@@ -424,7 +424,7 @@
     border-top: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
 }
 
- 
+/* 块状行内嵌的子行（如语言卡下的同步行）：分隔线由显式修饰类提供 */
 .set-row--divided {
     border-top: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
 }
@@ -437,7 +437,7 @@ button.set-row:hover {
     background: var(--bg-s);
 }
 
- 
+/* 按压反馈：轻缩放（reduced-motion 下退化为纯色反馈） */
 button.set-row:active {
     transform: scale(0.985);
 }
@@ -454,8 +454,7 @@ button.set-row:focus-visible {
     gap: 4px;
 }
 
-
-
+/* 设置行图标：与侧栏/导航同一套图标语言（中性圆底 + 淡色线性图标） */
 .set-ico {
     width: 28px;
     height: 28px;
@@ -507,7 +506,7 @@ button.set-row:focus-visible {
     gap: 8px;
 }
 
- 
+/* 子面板导航行右侧当前值：右对齐次级文字，超长截断 */
 .set-value {
     font-size: 13px;
     color: var(--tx-s);
@@ -529,13 +528,13 @@ button.set-row:focus-visible {
     height: 16px;
 }
 
- 
+/* 可点行 hover：chevron 指向性微移 2px 并提亮 */
 button.set-row:hover .set-chevron {
     transform: translateX(2px);
     color: var(--tx-s);
 }
 
- 
+/* 强调色行内当前值色点 */
 .accent-dot-row {
     width: 16px;
     height: 16px;
@@ -544,7 +543,7 @@ button.set-row:hover .set-chevron {
     border: 1px solid var(--bd);
 }
 
- 
+/* 面板内既有内容块（令牌卡 / 更新卡 / 关于块）与行条目组的纵向节奏对齐 */
 .settings-pane > #generalTokenCard {
     margin-bottom: 14px;
 }
@@ -582,7 +581,7 @@ button.set-row:hover .set-chevron {
     color: var(--tx-t);
 }
 
- 
+/* 卡头右侧操作区：重置/入口按钮统一右对齐成组（标题在左，互不挤靠） */
 .card-header-actions {
     margin-left: auto;
     flex-shrink: 0;
@@ -590,7 +589,7 @@ button.set-row:hover .set-chevron {
     align-items: center;
     gap: 6px;
 }
- 
+/* 设置卡头：标题占满剩余空间，保证操作按钮严格右贴边 */
 .settings-card .card-header > span {
     flex: 1;
     min-width: 0;
@@ -599,7 +598,7 @@ button.set-row:hover .set-chevron {
     white-space: nowrap;
 }
 
- 
+/* 卡内小节标题（如「界面风格」「图案库」）：11px 大写宽字距 */
 .settings-subhead {
     margin: 16px 0 8px;
     font-size: 11px;
@@ -609,15 +608,15 @@ button.set-row:hover .set-chevron {
     color: var(--tx-t);
 }
 
- 
+/* 双列选择器（皮肤卡等两选项场景）：瓦片上限 200px，禁止拉伸为横幅 */
 .theme-selector.theme-selector--two {
     grid-template-columns: repeat(auto-fill, minmax(150px, 200px));
     justify-content: center;
 }
 
-
-
-
+/* ── 分段选择器（透感三档等互斥选项）：胶囊式分段控件 ──
+   容器为 bg-s 胶囊凹槽，选中项 accent-soft 柔和底 + accent 字 + 600 字重；
+   键盘可达（focus-visible 柔光环），触屏档位整体 ≥40px */
 .settings-seg {
     display: inline-flex;
     align-items: center;
@@ -652,7 +651,7 @@ button.set-row:hover .set-chevron {
     box-shadow: 0 0 0 3.5px var(--accent-soft);
     z-index: 1;
 }
- 
+/* 触屏：选中胶囊 + 凹槽上下 padding 合计 ≥40px 触控目标 */
 @media (pointer: coarse) {
     .settings-seg button {
         min-height: 38px;
@@ -660,9 +659,9 @@ button.set-row:hover .set-chevron {
     }
 }
 
-
-
-
+/* ── 开关（.switch）全站统一审计补充 ──
+   视觉规格（轨道 40×22 / 旋钮 16 / 选中 accent / 0.18s 过渡）由 components.css 全局定义，
+   此处仅补齐触屏 ≥44px 命中区与键盘焦点环，不改变视觉尺寸（cel 方轨样式不受影响） */
 @media (pointer: coarse) {
     .switch::after {
         content: "";
@@ -675,12 +674,12 @@ button.set-row:hover .set-chevron {
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
- 
+/* 触屏下开关行内不与扩展命中区外的控件争抢点击 */
 .set-end .switch {
     position: relative;
 }
 
- 
+/* ════════════════ 背景与透感（所见即所得预览卡） ════════════════ */
 .bg-workspace {
     display: grid;
     grid-template-columns: 1fr;
@@ -693,7 +692,7 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
+/* 预览区：背景图 + 模拟卡片表面（表面 token 与全局一致，透感模式自动呈现半透明） */
 .bg-preview {
     position: relative;
     height: 180px;
@@ -772,7 +771,7 @@ button.set-row:hover .set-chevron {
     color: var(--tx-t);
 }
 
- 
+/* 控制列：按钮组 + 设置行（横贯卡内限宽） */
 .bg-controls-col {
     display: flex;
     flex-direction: column;
@@ -780,7 +779,7 @@ button.set-row:hover .set-chevron {
     max-width: 620px;
 }
 
- 
+/* OLED 提示条（OLED + 背景图同时开启时） */
 .bg-oled-hint {
     margin-top: 10px;
     padding: 8px 12px;
@@ -792,7 +791,7 @@ button.set-row:hover .set-chevron {
     border-radius: var(--radius-sm);
 }
 
- 
+/* 图案库：小图平铺缩略图（瓦片上限 72px，随容器自适应列数） */
 .bg-pattern-block {
     margin-top: 4px;
 }
@@ -820,7 +819,7 @@ button.set-row:hover .set-chevron {
     box-shadow: 0 0 0 1px var(--accent);
 }
 
- 
+/* ════════════════ 强调色卡：预设色板 + 自定义取色 ════════════════ */
 .accent-swatches {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(52px, 72px));
@@ -869,7 +868,7 @@ button.set-row:hover .set-chevron {
     gap: 10px;
 }
 
- 
+/* ════════════════ 主题变量编辑器模态（入口在「主题包与高级定制」卡） ════════════════ */
 .custom-theme-box {
     max-width: 620px;
 }
@@ -888,7 +887,7 @@ button.set-row:hover .set-chevron {
     padding-right: 4px;
 }
 
- 
+/* ════════════════ 主题包与高级定制卡的分节 ════════════════ */
 .advanced-divider {
     height: 1px;
     margin: 14px 0;
@@ -901,7 +900,7 @@ button.set-row:hover .set-chevron {
     gap: 16px;
 }
 
- 
+/* ════════════════ 关于：版本徽标行 ════════════════ */
 .about-ver-badge {
     display: flex;
     align-items: baseline;
@@ -910,7 +909,7 @@ button.set-row:hover .set-chevron {
     flex-wrap: wrap;
 }
 
- 
+/* 通用 tab：关于卡 */
 .about-ver {
     font-size: 15px;
     font-weight: 700;
@@ -990,7 +989,7 @@ button.set-row:hover .set-chevron {
     margin: 0;
 }
 
- 
+/* 全局同步开关 */
 .settings-scope-toggle {
     display: inline-flex;
     align-items: center;
@@ -1044,7 +1043,7 @@ button.set-row:hover .set-chevron {
     white-space: nowrap;
 }
 
- 
+/* 全局横幅 */
 .settings-banner {
     display: flex;
     align-items: center;
@@ -1069,8 +1068,8 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
- 
+/* 关于页面 */
+/* hero：看板娘大图直接铺入（不裁圆、不包底框），文本与版本信息居中对齐 */
 .about-hero {
     display: flex;
     align-items: center;
@@ -1497,8 +1496,7 @@ button.set-row:hover .set-chevron {
     background: #0e141b;
     clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
 }
-
-
+/* auto 卡：header 直接透出 ::before/::after 的左亮右暗分屏底色 */
 .theme-card[data-theme-card="auto"] .theme-card-preview .tcp-header {
     position: relative;
     z-index: 1;
@@ -1629,7 +1627,7 @@ button.set-row:hover .set-chevron {
 .style-card[data-style="eris"] .scp-dot { background: #3b6fe0; }
 .style-card[data-style="eris"] .scp-bar { background: #3b6fe0; opacity: 0.5; }
 
- 
+/* 经典风格卡实际使用 theme-card-preview/tcp-* 部件：补着色 */
 .style-card[data-style="eris"] .theme-card-preview {
     background: #f6f7f9;
     border: 1px solid #e5e8ec;
@@ -1682,9 +1680,9 @@ button.set-row:hover .set-chevron {
     box-shadow: 0 0 0 3.5px var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
- 
+/* 移动端 */
 @media (max-width: 768px) {
-     
+    /* 机器人卡片 */
     .bot-card {
         flex-wrap: wrap;
         gap: 10px;
@@ -1717,7 +1715,7 @@ button.set-row:hover .set-chevron {
         padding: 0 5px;
     }
 
-     
+    /* 模块详情 */
     .module-detail-row {
         gap: 6px;
     }
@@ -1725,7 +1723,7 @@ button.set-row:hover .set-chevron {
         font-size: 11px;
     }
 
-     
+    /* 商店标签 */
     .store-tag-chip {
         font-size: 10px;
         padding: 2px 7px;
@@ -1743,7 +1741,7 @@ button.set-row:hover .set-chevron {
 }
 
 
- 
+/* 自定义主题编辑器（变量表单样式；容器布局见 custom-theme-box 一节） */
 .ct-group {
     border: 1px solid var(--bd);
     border-radius: var(--radius-md);
@@ -1863,7 +1861,7 @@ button.set-row:hover .set-chevron {
 }
 
 
- 
+/* ════════════════ 默认起始页选择器 ════════════════ */
 
 .default-page-picker {
     position: relative;
@@ -1892,7 +1890,7 @@ button.set-row:hover .set-chevron {
     color: var(--tx-t);
 }
 
- 
+/* 定位/宽高/翻转由 EP.positionList 接管（fixed，逃出卡片 overflow 裁剪） */
 .dp-panel {
     z-index: 1300;
     overflow-y: auto;
@@ -1935,7 +1933,7 @@ button.set-row:hover .set-chevron {
 
 
 
- 
+/* ════════════════ 字体上传 / 删除 ════════════════ */
 
 .font-card {
     position: relative;
@@ -1982,7 +1980,7 @@ button.set-row:hover .set-chevron {
     color: var(--accent);
 }
 
- 
+/* ── 移动端优化：settings-item 堆叠防文字挤压（瓦片由 auto-fill 自行换行） ── */
 @media (max-width: 768px) {
     .settings-item {
         flex-direction: column;
@@ -1998,7 +1996,7 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
+/* ── 访问令牌：令牌预览代码块 ── */
 .settings-token-code {
     margin: 0;
     padding: 10px 12px;
@@ -2014,9 +2012,9 @@ button.set-row:hover .set-chevron {
     user-select: all;
 }
 
- 
+/* ══════════ 移动端/触屏：设置页触控目标 + 字体卡删除按钮常显 ══════════ */
 @media (max-width: 768px) {
-     
+    /* 顶部 tab chips：与全站 tab 触控目标一致（44px） */
     .settings-nav-item,
     .settings-nav-item.pkg-tab {
         min-height: 44px;
@@ -2027,7 +2025,7 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
+/* 触屏无 hover：自定义字体删除按钮常显（并放大到可点尺寸） */
 @media (max-width: 768px), (hover: none) {
     .font-card-del {
         display: flex;
@@ -2043,7 +2041,7 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
+/* 设置详情返回按钮：触屏目标 40px */
 @media (max-width: 768px) {
     .settings-back {
         width: 40px;
@@ -2051,7 +2049,7 @@ button.set-row:hover .set-chevron {
     }
 }
 
- 
+/* ── 动效克制：reduced-motion 下按压缩放与 chevron 微移退化为纯色反馈 ── */
 @media (prefers-reduced-motion: reduce) {
     button.set-row:active,
     .settings-nav-item:active,
@@ -2067,7 +2065,7 @@ button.set-row:hover .set-chevron {
 }
 
 
- 
+/* ── settings 特有（导航布局已迁移至 ep-subnav.css）── */
 @media (max-width: 959px) {
     .settings-nav-item.pkg-tab {
         padding: 6px 14px;

@@ -1,15 +1,15 @@
- 
- 
- 
+// ErisPulse Dashboard – components/search-palette
+// 全局功能搜索（Ctrl/Cmd+K、`/`、顶栏按钮）：页面/标签页、组件配置直达、常用操作
+// 索引每次打开时构建；结果行文案渲染时直接烘焙 t()（动态 DOM 惯例，不用 data-i18n）
 
 var PALETTE_RECENT_KEY = "ep_palette_recent";
 var PALETTE_RECENT_MAX = 5;
 var _paletteOpen = false;
 var _paletteActiveIdx = 0;
-var _paletteFlat = [];  
+var _paletteFlat = []; // 当前渲染的扁平可选项（与 DOM .palette-item 顺序一致）
 
 function _paletteEnT(key) {
-   
+  // 取英文文案加入匹配域，保证中文界面下也能用英文关键词搜到
   try {
     return (window.__EP_I18N__ && window.__EP_I18N__.en && window.__EP_I18N__.en[key]) || "";
   } catch (e) {
@@ -57,7 +57,7 @@ function _palettePageEntries() {
       });
     }
   });
-   
+  // 仅顶栏可达的两个页面
   var extras = [
     { page: "settings", key: "settings_title" },
     { page: "about", key: "about" },
@@ -75,7 +75,7 @@ function _palettePageEntries() {
         go(x.page);
       },
     });
-     
+    // 顶栏页的子标签同样可搜（如 设置 › 安全/外观/更新）
     var xTabs = MERGED_PAGE_TABS[x.page];
     if (xTabs) {
       xTabs.forEach(function (tabInfo) {
@@ -235,7 +235,7 @@ function _paletteRecordRecent(id) {
 }
 
 function _paletteEnsureModules() {
-   
+  // 模块列表懒加载：首次打开搜索时拉一次，完成后若面板仍开着则刷新结果
   if (window._paletteModules) return;
   api("/api/modules").then(function (d) {
     if (!d || !d.modules) return;
@@ -354,7 +354,7 @@ export function openPalette() {
   input.value = "";
   renderPalette("");
   _paletteEnsureModules();
-   
+  // 触屏设备不自动聚焦，避免弹出输入法；指针设备聚焦以便直接输入
   if (!window.EP || EP._finePointer !== false) input.focus();
 }
 
@@ -373,7 +373,7 @@ export function isPaletteOpen() {
   return _paletteOpen;
 }
 
- 
+// ── 全局键盘：Ctrl/Cmd+K 或 / 打开；Esc 关闭（捕获阶段，先于其他 Esc 处理）──
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
     e.preventDefault();
@@ -381,7 +381,7 @@ document.addEventListener("keydown", function (e) {
     return;
   }
   if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !_paletteOpen) {
-     
+    // 打字焦点下不劫持斜杠
     var a = document.activeElement;
     var typing =
       a &&
@@ -402,7 +402,7 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
- 
+// 模块导入即生效：输入框键盘导航 + 遮罩点击关闭 + 鼠标悬停高亮
 function _paletteBindDom() {
   var input = document.getElementById("paletteInput");
   if (input) {
@@ -444,7 +444,7 @@ function _paletteBindDom() {
       var item = e.target.closest(".palette-item");
       if (!item) return;
       var entry = _paletteFlat[_paletteActiveIdx];
-       
+      // 以点击行为准（悬停已同步 _paletteActiveIdx，这里兜底按 id 查）
       var clicked = _paletteFlat.find(function (x) {
         return x.id === item.getAttribute("data-pid");
       });

@@ -54,7 +54,7 @@ class DashboardPackageManager:
             except Exception:
                 pass
 
-     
+    # ─── 后端检测：uv 优先，pip 回退 ───
 
     def _is_uv_disabled(self) -> bool:
         """是否禁用 uv：no_uv 属性优先，其次环境变量 ERISPULSE_NO_UV"""
@@ -80,12 +80,12 @@ class DashboardPackageManager:
 
         self._uv_checked = True
 
-         
+        # 1. 独立的 uv 二进制（最常见，全局安装）
         if shutil.which("uv"):
             self._uv_command = ["uv"]
             return self._uv_command
 
-         
+        # 2. 作为 pip 包安装的 uv: python -m uv
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "uv", "--version"],
@@ -116,7 +116,7 @@ class DashboardPackageManager:
         if not venv:
             return sys.executable
 
-         
+        # Dashboard 已在该虚拟环境内运行
         try:
             venv_root = os.path.normcase(os.path.abspath(venv)) + os.sep
             exe_root = os.path.normcase(os.path.abspath(sys.executable))
@@ -125,7 +125,7 @@ class DashboardPackageManager:
         except Exception:
             pass
 
-         
+        # 定位虚拟环境的 python
         if sys.platform == "win32":
             candidate = os.path.join(venv, "Scripts", "python.exe")
         else:
@@ -146,7 +146,6 @@ class DashboardPackageManager:
 
         :return: 现在 pip 是否可用
         """
-         
         try:
             result = subprocess.run(
                 [target_python, "-m", "pip", "--version"],
@@ -158,7 +157,6 @@ class DashboardPackageManager:
         except Exception:
             pass
 
-         
         try:
             result = subprocess.run(
                 [target_python, "-m", "ensurepip", "--default-pip"],
@@ -186,7 +184,7 @@ class DashboardPackageManager:
         if uv_cmd:
             return uv_cmd + ["pip"]
 
-         
+        # 回退 pip：先确保 venv 里有 pip（处理 --without-pip 创建的 venv）
         target_python = self._get_target_python()
         self._ensure_pip(target_python)
         return [target_python, "-m", "pip"]
@@ -350,14 +348,14 @@ class DashboardPackageManager:
         try:
             dist_iter = importlib.metadata.distributions()
             while True:
-                 
+                # 逐条容错：单个损坏的 dist-info 只跳过自身，不废掉整个列表
                 try:
                     dist = next(dist_iter)
                 except StopIteration:
                     break
                 except Exception:
                     continue
-                 
+                # 半写/损坏的 dist-info 可能缺失 Name（如更新被中断），跳过
                 name = dist.metadata.get("Name")
                 if not name:
                     continue
@@ -419,8 +417,6 @@ class DashboardPackageManager:
         ):
             return self._updates_cache
 
-         
-         
         installed = await asyncio.to_thread(self.get_installed_packages, force)
         packages = installed.get("packages", [])
         erispulse_pkgs = [p for p in packages if p["is_module"] or p["is_adapter"]]
@@ -435,7 +431,7 @@ class DashboardPackageManager:
                 if pkg_name:
                     remote_index[pkg_name.lower()] = info.get("version", "")
 
-         
+        # 仅命中不了注册表的包才查 PyPI；并发抓取（信号量限 8）代替逐包串行
         need_pypi = []
         for pkg in erispulse_pkgs:
             current = pkg["version"]

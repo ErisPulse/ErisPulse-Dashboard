@@ -317,8 +317,7 @@ class ApiScopeMixin:
         if mode not in ("merge", "replace"):
             return JSONResponse({"error": "mode must be merge/replace"}, status_code=400)
 
-         
-         
+        # 替换模式：先持久化清空现有规则
         if mode == "replace":
             try:
                 old = scope_obj.topology()

@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/api-routes
 
 import {
   refreshDashboard as _dashboardRefresh,
@@ -11,7 +11,7 @@ export async function loadApiRoutes() {
 
   var groups = {};
 
-   
+  // 主路径：kind 分组数据（list_namespaces + get_module_routes/urls 派生）
   if (d.namespaces && typeof d.namespaces === "object") {
     Object.keys(d.namespaces).forEach(function (ns) {
       var kinds = d.namespaces[ns] || {};
@@ -32,7 +32,7 @@ export async function loadApiRoutes() {
       };
     });
   } else {
-     
+    // 回退：旧版扁平字段（集群旧节点 / demo mock 等旧数据源）
     const httpRoutes = d.http_routes || [];
     const wsRoutes = d.ws_routes || [];
     httpRoutes.forEach(function (r) {
@@ -55,7 +55,7 @@ export async function loadApiRoutes() {
     });
   }
 
-   
+  // 头部计数（HTTP 按方法行计数，与表格行数一致）
   var httpCount = 0,
     wsCount = 0,
     sseCount = 0;
@@ -123,7 +123,7 @@ export async function loadApiRoutes() {
         " SSE</span>";
     html += "</div>";
 
-     
+    // 表格化：sticky 表头 + 行 hover + 方法徽标胶囊
     html += '<div class="route-group-body" style="display:none">';
     html +=
       '<table class="route-table"><thead><tr>' +
@@ -246,7 +246,7 @@ export async function loadMessageStats() {
   const d = await api("/api/message-stats");
   if (!d) return;
 
-   
+  // 消息类型分布
   const typeStats = d.by_type || {};
   var ti = 0;
   const typeHtml = Object.entries(typeStats)
@@ -271,7 +271,7 @@ export async function loadMessageStats() {
     typeHtml ||
     '<div style="color:var(--tx-s);font-size:13px">' + t("no_data") + "</div>";
 
-   
+  // 平台分布
   const platformStats = d.by_platform || {};
   const platformHtml = Object.entries(platformStats)
     .map(([platform, count]) => {
@@ -295,7 +295,7 @@ export async function loadMessageStats() {
     platformHtml ||
     '<div style="color:var(--tx-s);font-size:13px">' + t("no_data") + "</div>";
 
-   
+  // 每小时趋势（最近24小时）
   const hourlyStats = d.hourly || {};
   const now = Date.now() / 1000;
   const bars = [];
@@ -312,7 +312,7 @@ export async function loadMessageStats() {
     );
   }
 
-   
+  // 只显示首尾和中间时间
   const firstHour = new Date((now - 23 * 3600) * 1000).getHours();
   const midHour = new Date((now - 12 * 3600) * 1000).getHours();
   const lastHour = new Date(now * 1000).getHours();
@@ -330,12 +330,11 @@ export async function loadMessageStats() {
     ":00</span></div>";
 }
 
- 
+// ════════════════ 首页系统状态区（/api/health 健康行） ════════════════
 
 var _lastStorageOk = null;
 
- 
- 
+// 健康项 = 与指标格同语言的小格（label 上 / 状态值下），语义色仅用于状态字与异常点缀，
 function _healthCell(name, ok, sub, err) {
   var okText = esc(t("health_ok"));
   var badText = esc(t("health_abnormal"));
@@ -374,7 +373,7 @@ export async function loadHealthStatus() {
     return;
   }
 
-   
+  // 断连检测：存储状态翻转时 toast（事件流同时经 WS 广播，桌面通知链路自动生效）
   if (_lastStorageOk === true && !d.storage) {
     toast(t("health_storage_lost"), "er");
   } else if (_lastStorageOk === false && d.storage) {
@@ -390,7 +389,7 @@ export async function loadHealthStatus() {
     storageSub = (storageSub ? storageSub + " · " : "") + storageDetail.error;
   }
 
-   
+  // 适配器/模块只显示正常与否
   el.innerHTML =
     _healthCell(t("health_storage"), d.storage, storageSub, storageDetail.error || "") +
     _healthCell(t("health_adapters"), d.adapters, "", "") +
@@ -398,15 +397,9 @@ export async function loadHealthStatus() {
     _healthCell(t("health_router"), d.router, "", "");
 }
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// ── refreshDashboard 包装链（首页性能环 / 消息统计 / 系统状态健康行）──
+// 时序契约：main.js 在全部页面模块求值完成后，按 __namespaces 顺序
+// Object.assign(window, ns) 挂载各页面导出，且 m_pages_dashboard 先于
 export async function refreshDashboard() {
   await _dashboardRefresh();
   await loadPerformance();

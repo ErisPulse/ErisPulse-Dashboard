@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – components/status-icon
 
 const STATUS_FRAMES = {
   conn: ["Disconnected.png", "Connected.png", "Connection Error  Broken.png"],

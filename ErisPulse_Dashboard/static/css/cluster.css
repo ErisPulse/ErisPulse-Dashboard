@@ -1,6 +1,6 @@
- 
+/* ErisPulse Dashboard – cluster */
 
- 
+/* 节点选择器 */
 .node-selector {
     padding: 10px 12px;
     border-bottom: 1px solid var(--bd);
@@ -117,7 +117,7 @@
     background: var(--accent);
 }
 
- 
+/* 侧边栏禁用态 */
 .nav-disabled {
     opacity: 0.35;
     pointer-events: none;
@@ -128,7 +128,7 @@
     opacity: 0.35;
 }
 
- 
+/* 节点延迟标签 */
 .node-latency {
     margin-left: auto;
     font-size: 11px;
@@ -142,7 +142,7 @@
     color: var(--tx-t);
 }
 
- 
+/* 集群通用 */
 .cluster-badge {
     margin-left: 4px;
     flex-shrink: 0;
@@ -190,7 +190,7 @@
     }
 }
 
- 
+/* 工具条：节点计数 + 添加动作 */
 .cluster-toolbar {
     display: flex;
     justify-content: space-between;
@@ -204,7 +204,7 @@
     color: var(--tx-s);
 }
 
- 
+/* ════════════════ 节点卡网格：auto-fill 自适应，多节点自动多列 ════════════════ */
 .cluster-node-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
@@ -282,7 +282,7 @@
     flex-shrink: 0;
 }
 
- 
+/* ════════════════ 能力矩阵（卡面常显层级） ════════════════ */
 .cluster-cap-matrix {
     display: flex;
     flex-wrap: wrap;
@@ -322,7 +322,7 @@
     background: var(--ok-bg);
     color: var(--ok-c);
 }
- 
+/* 不支持：中性弱化胶囊（非错误语义） */
 .cluster-cap-tag.cap-unsupported {
     background: transparent;
     color: var(--tx-t);
@@ -333,7 +333,7 @@
     opacity: 1;
 }
 
- 
+/* 卡片折叠按钮（详情区入口） */
 .cluster-card-toggle {
     display: flex;
     align-items: center;
@@ -370,7 +370,7 @@
     font-variant-numeric: tabular-nums;
 }
 
- 
+/* 卡片详情区（可折叠，承载运行统计） */
 .cluster-card-detail {
     max-height: 0;
     overflow: hidden;
@@ -395,7 +395,7 @@
     height: 16px;
 }
 
- 
+/* 卡片统计：自适应瓦片网格 */
 .cluster-card-stats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
@@ -429,7 +429,7 @@
     max-width: 100%;
 }
 
- 
+/* 小图标按钮 */
 .btn-icon-sm {
     display: inline-flex;
     align-items: center;
@@ -463,7 +463,7 @@
     animation: cluster-spin 0.8s linear infinite;
 }
 
- 
+/* 集群表单面板 */
 .cluster-form-panel {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -523,11 +523,11 @@
     border-top: 1px solid var(--bd);
 }
 
- 
+/* ══════════ 移动端（≤768）：集群表单触控目标 ══════════ */
 @media (max-width: 768px) {
     .cluster-form-field input {
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 
     .cluster-form-field .btn,

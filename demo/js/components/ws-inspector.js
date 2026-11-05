@@ -1,6 +1,6 @@
- 
- 
- 
+// ErisPulse Dashboard – components/ws-inspector
+// 连接详情面板：仅展示连接信息（地址/节点/时长/重连/帧计数）。
+// WS 帧内容统一输出到浏览器控制台（console.debug，默认隐藏，DevTools 可展开查看）。
 
 function wsSafeUrl(u) {
   return String(u || "").replace(/(token=)[^&]+/g, "$1******");

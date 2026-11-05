@@ -15,19 +15,19 @@ import re
 from .Helpers import _CoreHelpers
 
 
- 
+# 会话列表聚合的默认时间窗（小时）与单会话消息明细的最大条数
 _TRANSCRIPT_SESSIONS_DEFAULT_HOURS = 24
 _TRANSCRIPT_SESSIONS_MAX_HOURS = 24 * 30
 _TRANSCRIPT_SESSIONS_LIMIT = 1000
 _TRANSCRIPT_DEFAULT_N = 100
 _TRANSCRIPT_MAX_N = 500
- 
+# 会话摘要的最大长度（字符）
 _TRANSCRIPT_SUMMARY_CHARS = 100
 
 
- 
- 
- 
+# ---- 媒体消息占位归一（仅用于会话列表摘要，与前端渲染管线对齐） ----
+# SDK 存储的 text 可能为 bytes repr / OneBot 消息段 JSON / CQ 码混排
+# 摘要需将媒体二进制折叠为 [图片] 等占位
 _BYTES_REPR_MAGIC_RES = [
     (re.compile(r"\\x89PNG|\x89PNG"), "[图片]"),
     (re.compile(r"\\xff\\xd8|JFIF|\xff\xd8"), "[图片]"),
@@ -68,8 +68,8 @@ def _transcript_media_placeholder(text: str) -> str:
     """{!--< internal-use >!--} 媒体消息归一为占位文本（bytes repr / 消息段 JSON / CQ 码）"""
     s = str(text or "")
     stripped = s.strip()
-     
-     
+    # ① bytes repr：b'/b" 开头且含 repr 转义或已知魔数（结尾引号可能被
+    #    存储侧 2000 字符截断，不作要求），按魔数映射占位，无法识别 → [二进制数据]
     if (
         len(stripped) > 3
         and stripped[0] == "b"
@@ -83,7 +83,7 @@ def _transcript_media_placeholder(text: str) -> str:
             if pat.search(s):
                 return ph
         return "[二进制数据]"
-     
+    # ② OneBot 消息段 JSON 数组：各段类型拼接（text 段保留原文）
     if stripped.startswith("["):
         try:
             arr = json.loads(stripped)
@@ -100,12 +100,12 @@ def _transcript_media_placeholder(text: str) -> str:
                 else:
                     parts.append(_CQ_TYPE_PH.get(seg["type"], f"[{seg['type']}]"))
             return "".join(parts)
-     
+    # ③ CQ 码混排：CQ 码替换为占位，其余文本原样
     if "[CQ:" in s:
         return _CQ_CODE_RE.sub(
             lambda m: _CQ_TYPE_PH.get(m.group(1), f"[{m.group(1)}]"), s
         )
-     
+    # ④ 纯文本
     return s
 
 

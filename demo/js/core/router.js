@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – core/router
 
 export function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("open");
@@ -15,12 +15,12 @@ export function go(name, el, opts) {
     showLogin();
     return;
   }
-   
+  // 只读密钥页面白名单：无权页面直接拦截（导航项已被隐藏，此处为兜底）
   if (typeof canAccessPage === "function" && !canAccessPage(name) && !PAGE_REDIRECTS[name]) {
     if (typeof toast === "function") toast(t("viewer_no_access"), "wr");
     return;
   }
-   
+  // 未保存修改守卫：配置表单有脏字段时，任何离开/重载配置页的导航先确认
   if (
     !(opts && opts.force) &&
     window._cfgDirtyKeys &&
@@ -28,7 +28,7 @@ export function go(name, el, opts) {
   ) {
     var adapterPage = document.getElementById("p-adapter");
     var onAdapter = adapterPage && adapterPage.classList.contains("active");
-     
+    // 目标不是配置页，或虽是配置页但会重载页面，都可能丢改动
     if (name !== "adapter" || onAdapter) {
       confirm2(t("unsaved_confirm_title"), t("unsaved_confirm_text")).then(
         function (ok) {
@@ -41,11 +41,11 @@ export function go(name, el, opts) {
       return;
     }
   }
-   
+  // 处理重定向（合并后的页面）
   var redirect = PAGE_REDIRECTS[name];
   if (redirect) {
     var targetEl = el;
-     
+    // 如果传入的 el 是旧页面的 nav-item，找到宿主页的 nav-item
     if (el) {
       var hostNav = document.querySelector(
         '.nav-item[data-page="' + redirect.page + '"]',
@@ -53,7 +53,7 @@ export function go(name, el, opts) {
       if (hostNav) targetEl = hostNav;
     }
     go(redirect.page, targetEl, opts);
-     
+    // 激活对应 tab
     var tabBtn = document.querySelector(
       "#" +
         redirect.page.replace(/-/g, "") +
@@ -62,7 +62,7 @@ export function go(name, el, opts) {
         '"]',
     );
     if (!tabBtn) {
-       
+      // 通用查找：在任何 tab bar 中找 data-tab
       tabBtn = document.querySelector('[data-tab="' + redirect.tab + '"]');
     }
     if (tabBtn) tabBtn.click();
@@ -98,14 +98,14 @@ export function go(name, el, opts) {
   }
   closeSidebar();
 
-   
+  // 加载指示条
   if (page) {
     var strip = document.createElement("div");
     strip.className = "page-loader-strip";
     var navItem = el || document.querySelector('.nav-item[data-page="' + name + '"]');
     var iconTitle = "";
     if (navItem) {
-       
+      // 跳过 .nav-ico 图标卡容器，取文字标签
       var spanEl = navItem.querySelector("span:not(.nav-ico)");
       if (spanEl) iconTitle = spanEl.textContent;
     }
@@ -117,7 +117,7 @@ export function go(name, el, opts) {
   const loaders = {
     dashboard: function () {
       window.refreshDashboard();
-       
+      // 性能环卡在首页上：进入即刷新
       loadPerformance();
     },
     bots: loadBots,
@@ -125,7 +125,7 @@ export function go(name, el, opts) {
       loadEvents();
     },
     transcript: function () {
-       
+      // 会话收件箱：动态加载页面模块并挂载到 window（拉取式页面，无 WS 推送）
       return import("../pages/transcript.js").then(function (m) {
         Object.assign(window, m);
         return m.loadTranscript();
@@ -192,7 +192,7 @@ export function go(name, el, opts) {
 
 export function toggleNavGroup(titleEl) {
   titleEl.parentElement.classList.toggle("collapsed");
-   
+  // 保存状态
   saveNavGroupStates();
 }
 
@@ -263,10 +263,10 @@ export function navItemContent(pinId) {
     document.querySelector('.nav-item[data-module-view="' + page + '"]');
   if (!item) return null;
   var svg = item.querySelector("svg");
-   
+  // 跳过 .nav-ico 图标卡容器，取文字标签
   var span = item.querySelector("span:not(.nav-ico)");
   var title = span ? span.textContent : page;
-   
+  // 如果有子 tab，只显示 tab 名称（不显示父页面名）
   if (tab) {
     var tabBtn = document.querySelector('[data-tab="' + tab + '"]');
     if (tabBtn) {
@@ -288,7 +288,7 @@ export function renderHomePins() {
   var found = 0;
   pins.forEach(function (pinId, idx) {
     var c = navItemContent(pinId);
-    if (!c) return;  
+    if (!c) return; // 该视图不存在（如动态视图已卸载），跳过
     found++;
     var card = document.createElement("div");
     card.className = "home-pin" + (_homePinsEditing ? " editing" : "");
@@ -299,7 +299,7 @@ export function renderHomePins() {
       card.addEventListener("click", function () {
         var parts = pinId.split(":");
         if (parts[1]) {
-           
+          // page:tab 格式 — 先导航到页面再切换 tab
           go(parts[0]);
           var tabBtn = document.querySelector('[data-tab="' + parts[1] + '"]');
           if (tabBtn) tabBtn.click();
@@ -398,20 +398,20 @@ export function toggleHomePinPicker() {
 
       var isPinned = pinned.indexOf(page) !== -1;
 
-       
+      // 整页 pin 选项（仅当该页面未被 pin 时显示）
       if (!isPinned) {
         addOption(c.title, c.svg, function () {
           addHomePin(page);
         });
       }
 
-       
+      // 子 tab 选项（仅当父页面未被 pin 时显示）
       if (!isPinned) {
         var tabs = MERGED_PAGE_TABS[page];
         if (tabs) {
           tabs.forEach(function (tabInfo) {
             var tabLabel = t(tabInfo.i18n) || tabInfo.label;
-             
+            // 与页面同名的 tab（如"事件流"页的"事件流"tab）不重复列出
             if (tabLabel === c.title) return;
             var pinId = page + ":" + tabInfo.id;
             if (pinned.indexOf(pinId) !== -1) return;
@@ -487,12 +487,12 @@ export function bindHomePinDnd() {
 export function updateNodeSelectorVisibility() {
   var nodeSelector = document.getElementById("nodeSelector");
   if (!nodeSelector) return;
-  var showSetting = localStorage.getItem("ep_show_node_selector") !== "false";  
+  var showSetting = localStorage.getItem("ep_show_node_selector") !== "false"; // 默认开启
   if (!showSetting) {
     nodeSelector.style.display = "none";
     return;
   }
-   
+  // 设置开启时：有远程节点才显示
   var hasRemote = Object.keys(nodeRuntimeInfo).some(function (id) {
     return id !== "local";
   });
@@ -508,7 +508,7 @@ export function restartRefreshTimer() {
 }
 
 export function toggleSidebarCollapse() {
-  if (window.innerWidth <= 1023) return;  
+  if (window.innerWidth <= 1023) return; // 抽屉模式（移动/平板）：无收起态
   const sb = document.getElementById("sidebar");
   sb.classList.toggle("collapsed");
   localStorage.setItem(

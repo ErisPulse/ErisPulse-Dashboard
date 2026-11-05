@@ -1,12 +1,11 @@
- 
+// ErisPulse Dashboard – components/popover
 
 export function initPopovers() {
-   
+  // 定位popover
   function positionPopover(trigger, popover) {
     const rect = trigger.getBoundingClientRect();
     const gap = 12;
 
-     
     popover.style.visibility = "hidden";
     popover.style.display = "block";
     const popoverHeight = popover.offsetHeight;
@@ -17,16 +16,14 @@ export function initPopovers() {
     const viewportH = window.innerHeight;
     const viewportW = window.innerWidth;
 
-     
+    // 优先显示在上方
     let top = rect.top - popoverHeight - gap;
     let left = rect.left + (rect.width - popoverWidth) / 2;
 
-     
     if (top < gap) {
       top = rect.bottom + gap;
     }
 
-     
     if (top + popoverHeight > viewportH - gap) {
       const spaceAbove = rect.top - gap;
       const spaceBelow = viewportH - rect.bottom - gap;
@@ -37,7 +34,7 @@ export function initPopovers() {
       }
     }
 
-     
+    // 确保不超出左右边界
     if (left < gap) {
       left = gap;
     }
@@ -49,7 +46,7 @@ export function initPopovers() {
     popover.style.left = left + "px";
   }
 
-   
+  // CPU详情popover
   const cpuSection = document.getElementById("cpuSection");
   const cpuPopover = document.getElementById("cpuDetailPopover");
   const cpuClose = document.getElementById("cpuPopoverClose");
@@ -57,7 +54,7 @@ export function initPopovers() {
   if (cpuSection && cpuPopover) {
     let cpuPinned = false;
 
-     
+    // ✕ 关闭按钮在 popover 内部，需单独绑定（点击冒泡不经过触发卡片）
     if (cpuClose) {
       cpuClose.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -66,14 +63,14 @@ export function initPopovers() {
       });
     }
 
-     
+    // 点击显示/隐藏
     cpuSection.addEventListener("click", function (e) {
       if (e.target.closest(".popover-close")) {
         cpuPinned = false;
         cpuPopover.classList.remove("show");
         return;
       }
-       
+      // 关闭内存popover
       if (memPopover) memPopover.classList.remove("show");
 
       cpuPinned = !cpuPinned;
@@ -84,7 +81,7 @@ export function initPopovers() {
     });
   }
 
-   
+  // 内存详情popover
   const memSection = document.getElementById("memSection");
   const memPopover = document.getElementById("memDetailPopover");
   const memClose = document.getElementById("memPopoverClose");
@@ -92,7 +89,7 @@ export function initPopovers() {
   if (memSection && memPopover) {
     let memPinned = false;
 
-     
+    // ✕ 关闭按钮在 popover 内部，需单独绑定（点击冒泡不经过触发卡片）
     if (memClose) {
       memClose.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -101,14 +98,14 @@ export function initPopovers() {
       });
     }
 
-     
+    // 点击显示/隐藏
     memSection.addEventListener("click", function (e) {
       if (e.target.closest(".popover-close")) {
         memPinned = false;
         memPopover.classList.remove("show");
         return;
       }
-       
+      // 关闭CPUpopover
       if (cpuPopover) cpuPopover.classList.remove("show");
 
       memPinned = !memPinned;
@@ -119,7 +116,7 @@ export function initPopovers() {
     });
   }
 
-   
+  // 点击外部关闭所有popover
   document.addEventListener("click", function (e) {
     if (
       !e.target.closest("#cpuSection") &&
@@ -135,7 +132,7 @@ export function initPopovers() {
     }
   });
 
-   
+  // ESC键关闭所有popover
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       if (cpuPopover) cpuPopover.classList.remove("show");
@@ -143,7 +140,7 @@ export function initPopovers() {
     }
   });
 
-   
+  // 窗口大小变化时重新定位
   window.addEventListener("resize", function () {
     if (cpuPopover && cpuPopover.classList.contains("show")) {
       positionPopover(cpuSection, cpuPopover);
@@ -153,7 +150,7 @@ export function initPopovers() {
     }
   });
 
-   
+  // 滚动时关闭popover
   window.addEventListener(
     "scroll",
     function () {

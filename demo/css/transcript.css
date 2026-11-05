@@ -1,7 +1,7 @@
+/* ErisPulse Dashboard – 会话收件箱（transcript）页面
+   视觉契约见 docs/design-language.md：全 token、无渐变、主从式卡片布局 */
 
-
-
- 
+/* ========== 主从布局：左会话列表卡 / 右消息流卡 ========== */
 
 .transcript-layout {
     display: grid;
@@ -16,7 +16,7 @@
     margin-top: 0;
 }
 
- 
+/* 会话列表滚动区：与卡片头分离，独立滚动 */
 .transcript-session-list {
     max-height: 560px;
     overflow-y: auto;
@@ -30,7 +30,7 @@
     padding: 32px 12px;
 }
 
- 
+/* ---- 会话条目：平台徽标 + 目标 ID + 摘要 + 相对时间 ---- */
 
 .tr-session {
     border: 1px solid var(--bd);
@@ -105,7 +105,7 @@
     color: var(--tx-t);
 }
 
- 
+/* ========== 右栏：消息流 ========== */
 
 .transcript-msgs-card .transcript-msgs-head {
     flex-wrap: wrap;
@@ -138,7 +138,7 @@
     font-family: var(--font-mono, "Cascadia Code", "Fira Code", Consolas, Monaco, monospace);
 }
 
- 
+/* 链路查看横幅：header 下的 bg-s 通栏条（flat 分层，无浮层） */
 .tr-trace-banner {
     display: flex;
     align-items: center;
@@ -158,7 +158,7 @@
     font-family: var(--font-mono, "Cascadia Code", "Fira Code", Consolas, Monaco, monospace);
 }
 
- 
+/* 消息滚动区：聊天气泡流，user 左 / bot 右 */
 .transcript-msg-list {
     max-height: 560px;
     overflow-y: auto;
@@ -229,7 +229,7 @@
     text-decoration: underline;
 }
 
- 
+/* ---- 消息富媒体：图片缩略图 / 占位符 / 引用回复 / 摘要卡片 ---- */
 
 .tr-img {
     max-width: 240px;
@@ -240,19 +240,19 @@
     margin-top: 4px;
 }
 
- 
+/* 媒体/未知消息占位符（[图片] [语音] 等） */
 .tr-ph {
     color: var(--tx-s);
 }
 
- 
+/* 引用回复前缀：淡样式 */
 .tr-reply {
     font-size: 12px;
     color: var(--tx-t);
     margin-bottom: 2px;
 }
 
- 
+/* json/xml 卡片段：摘要卡片 */
 .tr-card {
     display: inline-block;
     margin-top: 4px;
@@ -266,7 +266,7 @@
     word-break: break-word;
 }
 
- 
+/* ---- 切换会话即时反馈：消息区三行骨架 ---- */
 
 .tr-skel {
     display: flex;
@@ -281,9 +281,9 @@
     height: 14px;
 }
 
- 
+/* ========== 空态补充 ========== */
 
- 
+/* 未启用引导：配置段代码提示 */
 .tr-cfg-hint {
     display: inline-block;
     margin-top: 10px;
@@ -298,7 +298,7 @@
     font-family: var(--font-mono, "Cascadia Code", "Fira Code", Consolas, Monaco, monospace);
 }
 
- 
+/* ========== 保留策略模态表单 ========== */
 
 .tr-retention-form {
     display: flex;
@@ -335,9 +335,9 @@
     line-height: 1.5;
 }
 
- 
+/* ========== 窄屏：单栏列表 → 详情切换 ========== */
 
- 
+/* 返回按钮：仅移动端单栏详情态可见 */
 .tr-back-btn {
     display: none;
 }
@@ -347,7 +347,7 @@
         grid-template-columns: 1fr;
     }
 
-     
+    /* 单栏模式：默认展示列表，选中会话后切到详情 */
     .transcript-layout.show-detail .transcript-sessions {
         display: none;
     }

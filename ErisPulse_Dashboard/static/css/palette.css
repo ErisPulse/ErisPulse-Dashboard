@@ -1,5 +1,5 @@
- 
- 
+/* ════════════════ 全局功能搜索（Ctrl+K / `/`）════════════════ */
+/* 视觉语言：radius 16 / shadow-hover / 弹入动画 / accent-soft 焦点环 */
 
 .palette-overlay {
     display: none;
@@ -37,7 +37,7 @@
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
- 
+/* 输入焦点：accent 描边 + 3.5px 柔光环（同 qvq-msg-editor） */
 .palette-box:focus-within {
     border-color: var(--accent);
     box-shadow:
@@ -56,8 +56,8 @@
     }
 }
 
-
-
+/* 输入行 = 一体化横向搜索组件：图标/占位文字/Esc 徽标都在同一容器内，
+   内嵌场样式（bg-s 圆角）。域样式全部由整行承担 */
 .palette-input-row {
     display: flex;
     align-items: center;
@@ -77,7 +77,7 @@
     border-color: color-mix(in srgb, var(--bd) 60%, transparent);
 }
 
- 
+/* 输入框自身不带任何域样式（环/边框归整行），点击穿透让整行可点 */
 .palette-input-row .palette-search-icon,
 .palette-input-row .palette-esc {
     pointer-events: none;
@@ -202,7 +202,7 @@
     background: var(--bg-s);
 }
 
- 
+/* 选中项：accent-soft 底 + accent 文字/图标 */
 .palette-item.active {
     background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }

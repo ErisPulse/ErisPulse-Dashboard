@@ -73,7 +73,7 @@ class ApiFrameworkMixin:
 
         headers = {"Accept": "application/vnd.github.v3+json"}
 
-         
+        # 标签查询（多源回退）
         tag_sources = [
             f"https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
             f"https://ghproxy.net/https://api.github.com/repos/ErisPulse/ErisPulse/releases/tags/v{version}",
@@ -106,7 +106,7 @@ class ApiFrameworkMixin:
                 self.logger.debug(f"GitHub fetch failed for {url}: {e}")
                 continue
 
-         
+        # 列表查询回退
         list_sources = [
             "https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
             "https://ghproxy.net/https://api.github.com/repos/ErisPulse/ErisPulse/releases?per_page=30",
@@ -263,7 +263,6 @@ except Exception:
         self._install_tasks[task_id]["status"] = "pending_restart"
         self._install_tasks[task_id]["message"] = "更新窗口已打开，Dashboard 即将退出"
 
-         
         def _shutdown_and_exit():
             time.sleep(1)
             try:

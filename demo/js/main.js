@@ -1,5 +1,5 @@
- 
- 
+// ErisPulse Dashboard – 入口
+// 模块按依赖顺序求值；随后将全部导出挂载到 window，供内联 onclick 与跨模块调用
 
 import * as m_core_state from "./core/state.js";
 import * as m_core_api from "./core/api.js";
@@ -93,23 +93,23 @@ const __namespaces = [
 ];
 for (const ns of __namespaces) Object.assign(window, ns);
 
- 
+// ── 启动语句──
 (function () {
   applyTheme(getTheme());
   applyUiStyle(getUiStyle());
   applyOled(getOled());
   applyFont(getFont());
-   
+  // 触屏/VNC 拖拽滚动兜底（ep_touch_scroll: auto/on/off）
   if (typeof initDragScroll === "function") initDragScroll();
   applyI18n();
   applyCustomTheme();
-   
+  // 用户主题包（上传的自定义 CSS 皮肤）
   themepackRestore();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
-   
+  // 滚动条显隐档位（防 FOUC：与主题同批挂载）
   if (typeof applyScrollbarMode === "function") applyScrollbarMode(getScrollbarMode());
-   
+  // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）
   var savedTitle = getSetting("dash_title", "");
   var effectiveTitle = savedTitle || "ErisPulse Dashboard";
   var titleEl = document.getElementById("appTitle");
@@ -119,30 +119,30 @@ for (const ns of __namespaces) Object.assign(window, ns);
   if (sbTitleEl) sbTitleEl.textContent = effectiveTitle;
   updateNodeSelectorUI();
   const collapsedSetting = localStorage.getItem("ep_sidebar_collapsed");
-   
+  // 默认收起侧边栏（首次使用或无设置时）
   const isCollapsed =
     collapsedSetting === null ? true : collapsedSetting === "true";
-   
+  // ≤1023px 为抽屉模式，不启用收起态
   if (isCollapsed && window.innerWidth > 1023)
     document.getElementById("sidebar").classList.add("collapsed");
   updateNodeSelectorVisibility();
   restoreNavGroupStates();
-   
+  // 启动画面在首次显示登录或仪表盘时消失
   var splashEl = document.getElementById("splash");
   var _splashReady = false;
   var _splashDismissed = false;
-   
+  // 保底时长与 splash 文字编排（dots 于 0.85s+0.4s 完成）对齐，此后即可揭示
   setTimeout(function () { _splashReady = true; if (_splashDismissed) dismissSplash(); }, 1200);
   function dismissSplash() {
     _splashDismissed = true;
     if (!_splashReady || !splashEl) return;
     splashEl.classList.add("hide");
-     
+    // 与 overrides.css 的 splashBubblePop 0.45s 对齐：动画播完再移除节点
     setTimeout(function () { if (splashEl) splashEl.remove(); }, 600);
   }
   const tk = localStorage.getItem(TK);
   if (tk) {
-     
+    // 启动鉴权带 8s 超时（超时重试一次），后端繁忙时不再无限转 splash
     const authStatus = (signal) =>
       fetch(API + "/api/auth/status", {
         headers: { Authorization: "Bearer " + tk },
@@ -151,12 +151,11 @@ for (const ns of __namespaces) Object.assign(window, ns);
     const boot = () => {
       authed = true;
       document.querySelector(".app").classList.add("authed");
-       
+      // 只读密钥：隐藏无权导航项（页面级白名单）
       if (typeof applyNavGuard === "function") applyNavGuard();
       dismissSplash();
-       
       loadAll();
-       
+      // 恢复上次更新重载引导（如更新后刷新了页面）
       restoreUpdateHint();
       wsConnect();
       restartRefreshTimer();
@@ -183,7 +182,7 @@ for (const ns of __namespaces) Object.assign(window, ns);
       })
       .catch(() => {
         clearTimeout(timer);
-         
+        // 超时/网络抖动重试一次，仍失败则进入登录页（可手动重试）
         ctl = new AbortController();
         timer = setTimeout(() => ctl.abort(), 8000);
         authStatus(ctl.signal)
@@ -208,8 +207,8 @@ for (const ns of __namespaces) Object.assign(window, ns);
     showLogin();
   }
   initMirrorSelects();
-   
-   
+  // ── 折叠态侧栏导航滚动裁剪切换：内容放得下保持 overflow visible（折叠气泡可探出），
+  // 放不下切内部滚动——footer 吸底，折叠按钮不因高度不足被推出视口 ──
   (function () {
     var nav = null;
     function update() {

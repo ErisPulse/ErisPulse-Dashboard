@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/bots
 
 export function _capabilityBadges(caps) {
   if (!caps || !caps.length) return "";
@@ -67,7 +67,7 @@ export async function loadBots() {
             avatarHtml =
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>';
           }
-           
+          // 卡片结构：头部（logo+状态点 / 名称 / 连接 chip）+ 卡底元信息收纳
           return (
             '<div class="bot-card" data-bot-status="' +
             (on ? "online" : "offline") +

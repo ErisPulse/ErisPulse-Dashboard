@@ -1,7 +1,7 @@
- 
+/* ErisPulse Dashboard – permissions */
 
- 
- 
+/* 命令管理样式 */
+/* 规则卡列表：每条命令一张扁平卡，1px 边框分层、无阴影 */
 #cmdListBody {
     padding: 16px 20px;
     display: flex;
@@ -123,7 +123,7 @@
     border-color: var(--ok-bd, transparent);
 }
 
- 
+/* 用法签名：等宽小字 */
 .cmd-usage {
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
     font-size: 11px;
@@ -231,7 +231,7 @@
     }
 }
 
- 
+/* 权限控制 */
 .perm-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -463,7 +463,7 @@
 }
 
 
- 
+/* ========== 作用域（scope）子 Tab ========== */
 
 .perm-stats.four-col {
     grid-template-columns: repeat(4, 1fr);
@@ -624,7 +624,7 @@
     border-color: color-mix(in srgb, var(--er-c) 40%, transparent);
 }
 
- 
+/* ========== 命令编辑弹窗增强 ========== */
 
 .cmd-owner-badge {
     cursor: pointer;
@@ -643,10 +643,10 @@
         width: 120px;
     }
 
-     
+    /* 拓扑页移动端适配在 topology.css（需晚于其桌面规则加载才能覆盖） */
 }
 
- 
+/* ========== 作用域专业版 UI：维度导航 / 层级树 / 层级徽章 ========== */
 
 .scope-nav {
     display: flex;
@@ -700,7 +700,7 @@
     margin-top: 0;
 }
 
- 
+/* ---- 层级树 ---- */
 
 .scope-tree {
     display: flex;
@@ -714,7 +714,7 @@
     gap: 8px;
 }
 
- 
+/* 层级缩进占位：仅承担子级行的缩进定位，不绘制竖向装饰线 */
 .scope-tree-guide {
     width: 18px;
     flex-shrink: 0;
@@ -767,7 +767,7 @@
     flex-shrink: 0;
 }
 
- 
+/* ---- 层级徽章 ---- */
 
 .scope-level-badge {
     display: inline-flex;
@@ -812,7 +812,7 @@
     color: color-mix(in srgb, var(--wr-c) 55%, var(--accent));
 }
 
- 
+/* ---- 编辑器 ---- */
 
 .scope-crumbs {
     display: flex;
@@ -861,7 +861,7 @@
     width: 100%;
 }
 
- 
+/* ---- 策略切换（allow/deny 分段按钮） ---- */
 
 .scope-policy-toggle {
     display: inline-flex;
@@ -905,7 +905,7 @@
     color: var(--er-c);
 }
 
- 
+/* ---- 出站动作矩阵行 ---- */
 
 .scope-act-mod {
     font-weight: 600;
@@ -926,7 +926,7 @@
     width: 100%;
 }
 
- 
+/* ========== 作用域导出/导入模态窗 ========== */
 
 .scope-dim-list {
     display: flex;
@@ -1004,15 +1004,15 @@
     word-break: break-all;
 }
 
- 
+/* 权限页 Tab 条不拉伸整行 */
 #permTabBar {
     width: fit-content;
     max-width: 100%;
 }
 
- 
+/* ========== 主从布局（主人 / 作用域共用）：左列表卡，右详情区 ========== */
 
- 
+/* 主人配置：列表卡整行占满，分布与编辑器沉底 */
 .perm-master-layout {
     display: flex;
     flex-direction: column;
@@ -1042,7 +1042,7 @@
     margin-top: 0;
 }
 
- 
+/* ---- 编辑器卡内体（scope 风格表单的统一容器） ---- */
 
 .perm-editor-body {
     padding: 14px 20px 18px;
@@ -1055,7 +1055,7 @@
     line-height: 1.5;
 }
 
- 
+/* 表单语义标签：白名单 / 黑名单（允许 / 拒绝） */
 .scope-editor-field > label.lab-ok {
     color: var(--ok-c);
 }
@@ -1064,7 +1064,7 @@
     color: var(--er-c);
 }
 
- 
+/* ---- 作用域维度面板：左导航 + 右面板的主从结构 ---- */
 
 .scope-layout {
     display: grid;
@@ -1074,7 +1074,7 @@
     margin-top: 14px;
 }
 
- 
+/* 维度导航：宽屏为竖向导航列 */
 .scope-nav {
     flex-direction: column;
     flex-wrap: nowrap;
@@ -1101,7 +1101,7 @@
     margin-top: 0;
 }
 
- 
+/* 面板标题下的一句话说明 */
 .scope-panel-desc {
     padding: 0 20px 4px;
     font-size: 12px;
@@ -1110,7 +1110,7 @@
     margin-bottom: 6px;
 }
 
- 
+/* 窄屏折叠：维度导航退化为横向滚动药丸行 */
 @media (max-width: 860px) {
     .scope-layout {
         grid-template-columns: 1fr;
@@ -1135,7 +1135,7 @@
     }
 }
 
- 
+/* ---- 编辑器底部操作行：合并开关 + 保存按钮 ---- */
 
 .scope-editor-footer {
     display: flex;
@@ -1156,7 +1156,7 @@
     color: var(--tx-s);
 }
 
- 
+/* ---- 出站黑名单：输入与"全部拒绝"开关并排 ---- */
 
 .scope-deny-field {
     display: flex;
@@ -1182,7 +1182,7 @@
     accent-color: var(--accent);
 }
 
- 
+/* ---- 全局默认策略条 ---- */
 
 .scope-default-row {
     display: flex;
@@ -1205,14 +1205,14 @@
     min-width: 200px;
 }
 
- 
+/* ========== 命令规则页 ========== */
 
- 
+/* 区块节奏：同页卡片间距 14px */
 #p-commands .card + .card {
     margin-top: 14px;
 }
 
- 
+/* 全局设置体：固定列宽网格，前缀输入通栏；行内标签与控件成组，不跨行甩开 */
 .cmd-settings-body {
     padding: 16px 20px 18px;
     display: grid;
@@ -1243,7 +1243,7 @@
     color: var(--tx-t);
 }
 
- 
+/* 开关行：标签与开关在同一网格单元内成组 */
 .cmd-toggle-row {
     display: flex;
     align-items: center;
@@ -1268,8 +1268,8 @@
     }
 }
 
-
-
+/* ---- 命令编辑模态：表单分组视觉（静态标记位于公共模态区，仅以属性选择器补充分隔线与节奏，
+     不与其内联布局冲突） ---- */
 
 #cmdEditOverlay label[data-i18n="cmd_param_overrides"],
 #cmdEditOverlay label[data-i18n="cmd_acl_allow"],
@@ -1285,7 +1285,7 @@
     margin-top: 6px;
 }
 
- 
+/* ══════════ 移动端（≤768）：权限页触控目标 ≥40px ══════════ */
 @media (max-width: 768px) {
     .scope-nav-item {
         min-height: 40px;
@@ -1294,15 +1294,13 @@
     }
 
     .scope-nav {
-         
+        /* 横向滑动容器：右缘渐隐提示可横滑（全局隐藏滚动条，需可见暗示） */
         -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
         mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent);
     }
 }
 
-
-
-
+/* ========== 主人配置页：布局统一（弱化装饰、强化层级） ========== */
 
 .perm-stats .stat-card {
     padding: 14px 16px;
@@ -1324,7 +1322,7 @@
     letter-spacing: 0.02em;
 }
 
- 
+/* 分组标题：左侧强调线表达层级，平台名保持原样 */
 .perm-group-head {
     padding-left: 10px;
     min-height: 18px;
@@ -1338,13 +1336,12 @@
     color: var(--tx-p);
 }
 
- 
+/* 分组之间用浅分隔线 */
 .perm-group + .perm-group {
     border-top: 1px solid color-mix(in srgb, var(--bd) 55%, transparent);
     padding-top: 14px;
 }
 
- 
 .perm-hint {
     padding: 10px 12px;
     margin-top: 14px;

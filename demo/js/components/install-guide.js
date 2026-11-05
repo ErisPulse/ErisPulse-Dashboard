@@ -1,12 +1,12 @@
- 
- 
- 
+// ErisPulse Dashboard – components/install-guide
+// 安装完成后的配置引导：聚合新装的适配器/模块，弹窗询问是否立即配置；
+// 同时提供 gotoComponentConfig 供模块管理页"去配置"按钮复用（跨页预选跳转）
 
 var IG_DEBOUNCE_MS = 2000;
 var _igQueue = [];
 var _igTimer = null;
 
- 
+// ws 收到安装广播后调用：kind "adapter" | "module"
 export function queueInstallGuide(name, kind) {
   if (!name || !authed) return;
   var key = kind + ":" + name;
@@ -21,7 +21,7 @@ async function _flushInstallGuide() {
   var pending = _igQueue.splice(0, _igQueue.length);
   if (!pending.length) return;
 
-   
+  // 逐个检查是否声明了配置（ConfigClass / AccountConfigClass）
   var configurable = [];
   for (var i = 0; i < pending.length; i++) {
     var it = pending[i];
@@ -40,10 +40,10 @@ async function _flushInstallGuide() {
     if (ok) {
       configurable.push(it);
     } else if (it.kind === "adapter") {
-       
+      // 无配置项时补一条 toast
       toast(t("adapter_installed_toast").replace("{name}", it.name), "ok");
     }
-     
+    // 无配置的模块：ws.js 已 toast 动态加载提示
   }
   if (!configurable.length) return;
 
@@ -51,7 +51,7 @@ async function _flushInstallGuide() {
   if (configurable.length === 1) {
     text = t("install_guide_single").replace("{name}", esc(configurable[0].name));
   } else {
-     
+    // 分隔符按语言习惯：中日文用顿号，其余用逗号
     var igLang = localStorage.getItem("ep_lang") || "zh";
     var joiner = igLang === "en" || igLang === "ru" ? ", " : "、";
     var names = configurable
@@ -71,7 +71,6 @@ async function _flushInstallGuide() {
   });
   var pick = await showModal(t("install_guide_title"), text, actions);
   if (pick == null) {
-     
     toast(t("install_guide_later_hint"), "");
     return;
   }
@@ -79,7 +78,7 @@ async function _flushInstallGuide() {
   if (target) gotoComponentConfig(target.kind, target.name);
 }
 
- 
+// 预选并跳转到组件配置页（安装引导与模块管理页"去配置"共用入口）
 export function gotoComponentConfig(kind, name) {
   if (!authed) return showLogin();
   _igQueue = _igQueue.filter(function (q) {

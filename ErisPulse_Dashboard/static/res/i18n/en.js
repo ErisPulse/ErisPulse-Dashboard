@@ -1,5 +1,5 @@
- 
- 
+// ErisPulse Dashboard i18n: en
+// 本文件由构建维护，请勿直接编辑与 dash.js 内嵌字典同时修改。
 (function () {
   const I18N = window.__EP_I18N__ = window.__EP_I18N__ || {};
   I18N["en"] = {
@@ -1173,7 +1173,7 @@ settings_tab_colorfont: "Colors & Font",
     about_discussions: "Discussions",
     about_market: "Module Market",
   
-     
+    /* ── Install config guide / onboarding (UX) ── */
     install_guide_title: "Installed",
     install_guide_single: "{name} was installed successfully. Configure it now?",
     install_guide_multi: "The following components were installed and support configuration. Configure now?",
@@ -1185,7 +1185,7 @@ settings_tab_colorfont: "Colors & Font",
     accounts_empty_desc: "An adapter needs at least one account (bot) to connect to the platform. It reloads automatically after saving and can be edited anytime.",
     add_first_account: "Add first account",
     view_docs: "Documentation",
-     
+    /* ── Global search ── */
     palette_placeholder: "Search pages, components, actions…",
     palette_empty: "No matching results",
     palette_group_pages: "Pages",
@@ -1200,10 +1200,10 @@ settings_tab_colorfont: "Colors & Font",
     palette_act_restart: "Restart framework",
     palette_act_sidebar: "Collapse / expand sidebar",
     palette_act_privacy: "Toggle privacy mode",
-     
+    /* ── Interaction guards ── */
     unsaved_confirm_title: "Unsaved changes",
     unsaved_confirm_text: "Leaving this page will discard unsaved changes. Leave anyway?",
-     
+    /* ── Guide copy extras ── */
     install_guide_later_hint: "You can configure them anytime under Component Config",
 
 
@@ -1253,7 +1253,7 @@ settings_tab_colorfont: "Colors & Font",
     settings_upload_global_desc: "Push this device's full settings as the global settings; all devices with sync enabled will apply them",
     settings_upload_confirm: "This overwrites the global settings with this device's settings and updates every synced device. Continue?",
 
-     
+    // ── Security page ──
     sec_copy: "Copy",
     sec_copied: "Copied",
     sec_token_title: "Access Security",

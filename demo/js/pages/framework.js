@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/framework
 
 export async function restartFramework() {
   if (!authed) return showLogin();
@@ -283,7 +283,7 @@ export async function addFwField() {
   try {
     parsedValue = JSON.parse(value);
   } catch (e) {
-     
+    // keep as string
   }
   var d = await api("/api/config", {
     method: "PUT",
@@ -320,7 +320,7 @@ export function flattenFwSections(obj, prefix) {
         }
         sections.push({ key, values: annotated });
       } else {
-         
+        // 混合类型：先收集原始值（boolean/number/string/array）为当前 section
         var annotated = {};
         for (var fk in v) {
           var fv = v[fk];
@@ -336,7 +336,6 @@ export function flattenFwSections(obj, prefix) {
         if (Object.keys(annotated).length > 0) {
           sections.push({ key, values: annotated });
         }
-         
         sections.push(...flattenFwSections(v, key));
       }
     }
@@ -467,8 +466,7 @@ export function renderFwSection(s) {
       );
     })
     .join("");
-   
-   
+  // 空表（如 scope.platforms/bots/sessions 等默认 {}）：渲染空状态 + 去添加入口，
   var body;
   if (!rows) {
     var isScopeTable = s.key.indexOf("scope.") === 0;
@@ -497,7 +495,7 @@ export function renderFwSection(s) {
   );
 }
 
- 
+// 空作用域表「去添加」：跳权限控制页 scope 分区（完整编辑器在那里）
 export function goScopeAdd() {
   go("permissions", "perm-scope");
 }
@@ -579,7 +577,7 @@ export async function saveFwListField(btnOrContainer) {
     );
     if (!ok) return;
   }
-   
+  // If single value, save as string; if multiple, save as list
   var saveValue = values.length === 1 ? values[0] : values;
   var d = await api("/api/config", {
     method: "PUT",
@@ -636,7 +634,7 @@ export async function resetFwField(fk) {
   );
   if (!ok) return;
 
-   
+  // 未知键优先真删除（delConfig）；旧 SDK 不支持时回退写 null
   if (!isKnown) {
     var del = await api("/api/config/delete", {
       method: "POST",
@@ -681,7 +679,7 @@ export async function checkFwUpdateBadge() {
   try {
     var d = await api("/api/framework/versions");
     if (!d || !d.current) return;
-     
+    // 同步服务器平台
     if (d.platform) {
       window._serverPlatform = d.platform;
       window._serverIsWindows = /^win/i.test(d.platform);
@@ -693,17 +691,17 @@ export async function checkFwUpdateBadge() {
       removeTask("fw-update-available");
       return;
     }
-     
+    // 红点
     document.getElementById("settingsBtn")?.classList.add("show-update");
     document.getElementById("settingsUpdateTab")?.classList.add("show-update");
-     
+    // 任务面板常驻一条可点击条目（更新成功后在 onFrameworkUpdateSuccess 移除）
     addOrUpdateTask(
       "fw-update-available",
       t("fw_popup_msg").replace("{latest}", latest),
       "info",
       [],
     );
-     
+    // 弹出提示（延迟显示）
     var popupText = document.getElementById("fwUpdatePopupText");
     if (popupText) {
       popupText.textContent = t("fw_popup_msg").replace("{latest}", latest);
@@ -717,7 +715,7 @@ export async function checkFwUpdateBadge() {
         }, 4000);
       }, 3000);
     }
-  } catch (e) {   }
+  } catch (e) { /* 静默失败 */ }
 }
 
 export async function loadFrameworkVersions() {
@@ -741,7 +739,7 @@ async function _loadFrameworkVersions() {
   _fwVersions = d.versions || [];
   document.getElementById("fwCurrentVer").textContent = d.current;
 
-   
+  // 最新版本 + 状态徽章
   var latest = _fwVersions.length > 0 ? _fwVersions[0] : "-";
   var hasUpdate = latest !== "-" && cmpVer(latest, d.current) > 0;
   var latestEl = document.getElementById("fwLatestVer");
@@ -761,7 +759,7 @@ async function _loadFrameworkVersions() {
     );
   }
 
-   
+  // 服务器平台提示（点击安装时弹窗确认，此处不显横幅）
   if (d.platform) {
     window._serverPlatform = d.platform;
     window._serverIsWindows = /^win/i.test(d.platform);
@@ -770,7 +768,7 @@ async function _loadFrameworkVersions() {
   var winWarn = document.getElementById("fwWinWarn");
   if (winWarn) winWarn.style.display = isWindows ? "" : "none";
 
-   
+  // 更新按钮：所选版本 > 当前版本即可启用
   var updateBtn = document.getElementById("fwUpdateBtn");
   var sel = document.getElementById("fwVersionSelect");
   function refreshBtn() {
@@ -789,7 +787,7 @@ async function _loadFrameworkVersions() {
     loadFwReleaseNotes();
   };
 
-   
+  // 填充版本选择器
   var versionRow = document.getElementById("fwVersionRow");
   if (sel && versionRow && _fwVersions.length > 0) {
     versionRow.style.display = "";
@@ -832,7 +830,7 @@ export async function fetchChangelog() {
 
 export function findChangelogHead(text, version) {
   if (!text) return null;
-   
+  // CHANGELOG 用横杠，PyPI 用点号，都要试
   var variants = [version];
   if (version.indexOf(".dev") !== -1) variants.push(version.replace(/\.dev/, "-dev."));
   if (version.indexOf("-dev.") !== -1) variants.push(version.replace(/-dev\./, ".dev"));
@@ -848,12 +846,12 @@ export function findChangelogHead(text, version) {
 export function parseChangelogSection(text, version) {
   var m = findChangelogHead(text, version);
   if (!m) return null;
-   
+  // 正文：标题行之后到下一个版本标题之间
   var start = m.index + m[0].length;
   var rest = text.slice(start);
   var next = rest.search(/## \[/);
   var body = (next === -1 ? rest : rest.slice(0, next)).trim();
-   
+  // 日期取自标题行 "## [x] - 2026/08/28"
   var dm = m[0].match(/-\s*(\d{4}[-/.]\d{1,2}[-/.]\d{1,2})\s*$/);
   return { date: dm ? dm[1] : "", body: body };
 }
@@ -880,7 +878,7 @@ export function aggregateDevGroups(text, version) {
     var hm = rest.match(/^## \[([^\]]+)\][^\n]*/m);
     if (!hm) break;
     var vname = hm[1].trim();
-     
+    // 仅聚合属于该版本的开发段落，遇到其它版本（含上一个正式版）即停止
     if (
       vname.indexOf(version + "-dev") !== 0 &&
       vname.indexOf(version + ".dev") !== 0
@@ -926,8 +924,8 @@ export function fwMdHtml(lines) {
 }
 
 export function fwCountItems(lines) {
-   
-   
+  // 官方 CHANGELOG 顶层是贡献者、二级缩进才是变更条目；
+  // 旧格式则顶层即变更。优先计二级，无二级时计顶层。
   var top = 0, nested = 0;
   for (var i = 0; i < (lines || []).length; i++) {
     if (/^([-*+]|\d+\.)\s+/.test(lines[i])) top++;
@@ -947,7 +945,7 @@ export function parseReleaseStructure(md) {
     groups: [],
     summaryExplicit: false,
   };
-  var bucket = null;  
+  var bucket = null; // "summary" | "upgrade" | "notice" | 分组对象
   var sawContent = false;
   function push(s) {
     if (typeof bucket === "string") res[bucket].push(s);
@@ -1007,10 +1005,10 @@ export function renderFwNotes(v, body, date, agg) {
     s.upgrade.length ||
     s.notice.length ||
     s.breaking.length;
-   
+  // 正式版自身无分组时，合并其对应开发版本的分组
   var useAgg = !!(agg && agg.groups && agg.groups.length) && !s.groups.length;
   if (!hasOwn && !useAgg) {
-    return false;  
+    return false; // 无结构，交由调用方回退整段渲染
   }
   var h = '<div class="fw-notes-head"><span class="fw-notes-ver">v' + esc(v) + "</span>";
   if (date) h += '<span class="fw-notes-date">' + esc(date) + "</span>";
@@ -1096,7 +1094,7 @@ export async function loadFwReleaseNotes() {
   var v = sel.value;
   if (!v) { notesEl.style.display = "none"; return; }
   notesEl.style.display = "";
-   
+  // 加载态：骨架占位（bg-s 呼吸块）
   notesEl.innerHTML =
     '<div class="fw-skel" aria-hidden="true">' +
     '<div class="fw-skel-line"></div>' +
@@ -1105,7 +1103,7 @@ export async function loadFwReleaseNotes() {
     '<div class="fw-skel-line" style="width:74%"></div>' +
     "</div>";
 
-   
+  // 1. 尝试从 CHANGELOG.md 提取并结构化渲染（正式版聚合其 dev 分组）
   var changelog = await fetchChangelog();
   if (changelog) {
     var section = parseChangelogSection(changelog, v);
@@ -1115,7 +1113,7 @@ export async function loadFwReleaseNotes() {
     }
   }
 
-   
+  // 2. 回退后端
   var d = await api("/api/framework/versions?notes=" + encodeURIComponent(v));
   if (d && d.notes) {
     if (renderFwNotes(v, d.notes, "")) return;
@@ -1127,7 +1125,7 @@ export async function loadFwReleaseNotes() {
     return;
   }
 
-   
+  // 3. 最后显示链接
   var releaseUrl = "https://github.com/ErisPulse/ErisPulse/releases/tag/v" + v;
   notesEl.innerHTML =
     '<div class="fw-notes-loading">' +
@@ -1137,8 +1135,8 @@ export async function loadFwReleaseNotes() {
     esc(releaseUrl) + "</a></div>";
 }
 
- 
- 
+// 框架更新任务成功后（WS install_progress success）调用：
+// 复位更新按钮、刷新版本显示，并给出"建议重启框架"引导
 export function onFrameworkUpdateSuccess(version) {
   var btn = document.getElementById("fwUpdateBtn");
   if (btn) {
@@ -1167,7 +1165,7 @@ export async function doFrameworkUpdate() {
     if (!ok) return;
   }
 
-   
+  // Windows 特别提示（基于服务器平台而非客户端浏览器平台）
   var isWin = isServerWindows();
   if (isWin) {
     var ok = await confirm2(t("fw_win_confirm_title"), t("fw_win_confirm_text"));
@@ -1185,7 +1183,7 @@ export async function doFrameworkUpdate() {
 
   if (d && d.success && d.task_id) {
     _installTaskIds.set(d.task_id, "ErisPulse==" + version);
-     
+    // 落盘更新意图：安装中刷新页面丢失内存映射后，success 仍可辨认框架更新
     try {
       localStorage.setItem(
         "ep_fw_task",

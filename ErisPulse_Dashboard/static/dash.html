@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width,initial-scale=1.0" />
         <title>ErisPulse Dashboard</title>
         <link rel="icon" href="/Dashboard/static/res/erispulse_logo_hp.png" />
-         
+        <!-- 阻止深色模式闪白：在 CSS 加载前同步设置 data-theme -->
         <script>
             (function () {
                 var t = localStorage.getItem("ep_theme");
@@ -62,7 +62,7 @@
     </head>
 
     <body>
-         
+        <!-- 启动画面 -->
         <div class="splash" id="splash">
             <div class="splash-bg"></div>
             <div class="splash-content">
@@ -286,7 +286,7 @@
                         </div>
                     </div>
                     <div class="sidebar-nav">
-                         
+                        <!-- 概览 -->
                         <div class="nav-group">
                             <div
                                 class="nav-group-title"
@@ -408,7 +408,7 @@
                                 <span data-i18n="topology"></span>
                             </a>
                         </div>
-                         
+                        <!-- 事件 -->
                         <div class="nav-group">
                             <div
                                 class="nav-group-title"
@@ -473,7 +473,7 @@
                                 <span data-i18n="cmd_management"></span>
                             </a>
                         </div>
-                         
+                        <!-- 扩展 -->
                         <div class="nav-group">
                             <div
                                 class="nav-group-title"
@@ -549,7 +549,7 @@
                                 <span data-i18n="pkg_manager"></span>
                             </a>
                         </div>
-                         
+                        <!-- 管理 -->
                         <div class="nav-group">
                             <div
                                 class="nav-group-title"
@@ -613,7 +613,7 @@
                                 <span data-i18n="config"></span>
                             </a>
                         </div>
-                         
+                        <!-- 运维 -->
                         <div class="nav-group">
                             <div
                                 class="nav-group-title"
@@ -767,7 +767,7 @@
                     <div class="page active" id="p-dashboard">
                         <h1 class="page-title" data-i18n="dashboard"></h1>
                         <p class="page-desc" id="fwDesc"></p>
-                         
+                        <!-- 核心指标：自适应 stat 网格（首屏第一行，大数字 + 图标 + 状态点） -->
                         <div id="statGrid" class="stat-grid">
                             <div class="stat-card stat-skel" aria-hidden="true">
                                 <span class="skel-ico"></span>
@@ -794,9 +794,9 @@
                                 ></span>
                             </div>
                         </div>
-                         
+                        <!-- 新手引导清单（完成后或关闭后不再显示） -->
                         <div id="onboardingCard"></div>
-                         
+                        <!-- 主页快捷导航（可自定义 pin） -->
                         <div class="home-section-hd">
                             <span data-i18n="home_quick"></span>
                             <button
@@ -852,7 +852,7 @@
                                 ></div>
                             </div>
                         </div>
-                         
+                        <!-- 性能卡：全宽单行（环区居左 + 右侧上下两段：指标格 / 健康行，自然高度无拉伸） -->
                         <div class="card perf-card">
                                 <div class="card-header">
                                     <svg
@@ -871,7 +871,7 @@
                                 </div>
                                 <div class="card-body perf-card-body">
                                 <div class="perf-grid">
-                                     
+                                    <!-- CPU -->
                                     <div class="perf-section" id="cpuSection">
                                         <svg
                                             class="circular-progress"
@@ -908,7 +908,7 @@
                                             data-i18n="cpu_usage"
                                         ></div>
                                     </div>
-                                     
+                                    <!-- 内存 -->
                                     <div class="perf-section" id="memSection">
                                         <svg
                                             class="circular-progress"
@@ -952,9 +952,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-
-
+                                <!-- 右栏上下两段：上段补充指标格（运行时长/磁盘/连接，真实字段，缺省不渲染）；
+                                     下段系统状态健康行（存储/适配器/模块/路由），loadHealthStatus 注入。
+                                     id 保持 #dashHealthRows，api-routes.js 渲染逻辑零改动 -->
                                 <div class="perf-side">
                                     <div class="perf-extra" id="perfExtra"></div>
                                     <div class="perf-health" id="dashHealthRows">
@@ -972,7 +972,7 @@
                                 </div>
                             </div>
 
-                             
+                            <!-- CPU详情弹窗 -->
                         <div class="popover" id="cpuDetailPopover">
                             <div class="popover-header">
                                 <span
@@ -1063,7 +1063,7 @@
                                 </div>
                             </div>
                         </div>
-                         
+                        <!-- 内存详情弹窗 -->
                         <div class="popover" id="memDetailPopover">
                             <div class="popover-header">
                                 <span
@@ -1183,7 +1183,7 @@
                                 </div>
                             </div>
                         </div>
-                         
+                        <!-- 适配器 + 模块：双卡并列（grid-2 两列，窄屏单列堆叠） -->
                         <div class="grid-2 dash-list-grid">
                             <div class="card">
                                 <div class="card-header">
@@ -1293,7 +1293,7 @@
                                 </div>
                             </div>
                         </div>
-                         
+                        <!-- 实时动态：页面尾区块（限高内部滚动 + 事件流跳转脚注） -->
                         <div class="card live-card">
                             <div class="card-header">
                                 <svg
@@ -1356,7 +1356,7 @@
                                     style="width: 64%"
                                 ></div>
                             </div>
-                             
+                            <!-- 卡底脚注：跳转事件流页（纯文字链接） -->
                             <div class="dash-events-foot">
                                 <button
                                     class="btn-link dash-events-more"
@@ -1370,7 +1370,7 @@
                     <div class="page" id="p-bots">
                         <h1 class="page-title" data-i18n="bots"></h1>
                         <p class="page-desc" data-i18n="bots_desc"></p>
-                         
+                        <!-- 平台卡片网格：auto-fill 自适应（logo + 连接 chip，元信息收纳于卡底） -->
                         <div id="botGrid" class="bot-grid"></div>
                     </div>
                     <div class="page" id="p-event-stream">
@@ -1397,7 +1397,7 @@
                             class="tab-section"
                             style="display: block"
                         >
-                             
+                            <!-- 工具条：筛选 + 搜索收敛左侧，实时/刷新/清空右侧 -->
                             <div class="filter-bar ev-toolbar">
                                 <div class="filter-bar-inputs">
                                     <select
@@ -1963,7 +1963,7 @@
                         <h1 class="page-title" data-i18n="transcript"></h1>
                         <p class="page-desc" data-i18n="transcript_desc"></p>
 
-                         
+                        <!-- 空态：SDK 无 transcript 能力 -->
                         <div
                             class="empty-state"
                             id="transcriptUnsupported"
@@ -1985,7 +1985,7 @@
                             <p data-i18n="transcript_unsupported_desc"></p>
                         </div>
 
-                         
+                        <!-- 空态：功能未启用，引导开启 -->
                         <div
                             class="empty-state"
                             id="transcriptDisabled"
@@ -2012,7 +2012,7 @@
                             </button>
                         </div>
 
-                         
+                        <!-- 主从布局：左会话列表 / 右消息流 -->
                         <div id="transcriptMain" style="display: none">
                             <div class="transcript-layout" id="transcriptLayout">
                                 <div class="card transcript-sessions">
@@ -2775,7 +2775,7 @@
                                 <div id="auditList" class="audit-table"></div>
                             </div>
                         </div>
-                         
+                        <!-- 资源归属审计：按 owner 聚合的在册资源计数 + 孤儿扫描 -->
                         <div id="mon-ownership-tab" class="tab-section">
                             <div class="card">
                                 <div class="card-header">
@@ -2853,7 +2853,7 @@
                                 </div>
                             </div>
                         </div>
-                         
+                        <!-- 实时连接：连接注册表面板（stats 概览 + 连接清单，旧 SDK 显示不支持态） -->
                         <div id="mon-connections-tab" class="tab-section">
                             <div class="card">
                                 <div class="card-header">
@@ -3030,7 +3030,7 @@
                             <span class="module-list-count" id="moduleCount"></span>
                             <div id="moduleList"></div>
                         </div>
-                         
+                        <!-- 影子测试模态：新版代码以独立 owner 试运行，可对比 / 转正 / 解散 -->
                         <div class="modal-overlay" id="shadowOv">
                             <div class="modal-box shadow-modal">
                                 <div class="shadow-modal-head">
@@ -3072,7 +3072,7 @@
                                         data-i18n="shadow_start"
                                     ></button>
                                 </div>
-                                 
+                                <!-- 影子源上传：whl 解包后以返回的 source 启动影子 -->
                                 <div class="shadow-upload-sec" id="shadowUploadSec">
                                     <div class="shadow-upload-label" data-i18n="shadow_upload_or"></div>
                                     <div class="shadow-upload-row">
@@ -3581,7 +3581,7 @@
                         <h1 class="page-title" data-i18n="perm_control"></h1>
                         <p class="page-desc" data-i18n="perm_control_desc"></p>
 
-                         
+                        <!-- 子 Tab 视图：作用域系统 + 主人配置 -->
                         <div class="view-toggle pkg-tabs" id="permTabBar">
                             <button class="view-btn pkg-tab active" data-tab="perm-scope" onclick="switchPermTab('perm-scope', this)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
@@ -3594,7 +3594,7 @@
                         </div>
 
                         <div id="perm-master-tab" class="tab-section" style="display: none">
-                             
+                            <!-- Stats overview row -->
                             <div class="perm-stats">
                                 <div class="stat-card">
                                     <div class="stat-meta">
@@ -3616,7 +3616,7 @@
                                 </div>
                             </div>
 
-                             
+                            <!-- 主从布局：左主人列表 / 右详情操作 -->
                             <div class="perm-master-layout">
                                 <div class="perm-master-list">
                                     <div class="card perm-card">
@@ -3643,7 +3643,7 @@
                                 </div>
                                 <div class="perm-master-detail">
                                     <div id="masterDist" class="master-dist"></div>
-                                     
+                                    <!-- 添加主人编辑器（scope 风格，默认隐藏） -->
                                     <div class="card perm-card" id="masterEditorCard" style="display: none">
                                         <div class="card-header">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -3683,11 +3683,11 @@
                             </div>
                         </div>
 
-                         
+                        <!-- 作用域（scope）子 Tab -->
                         <div id="perm-scope-tab" class="tab-section" style="display: block">
                             <div id="scopeUnsupported" class="scope-unsupported" style="display:none" data-i18n="scope_unsupported"></div>
                             <div id="scopeMain" style="display:none">
-                                 
+                                <!-- 统计卡片行 -->
                                 <div class="perm-stats four-col">
                                     <div class="stat-card">
                                         <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -3711,7 +3711,7 @@
                                     </div>
                                 </div>
 
-                                 
+                                <!-- 全局设置条 -->
                                 <div class="card perm-card">
                                     <div class="card-header">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.18V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1.08H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.08V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.2.65.77 1.09 1.51 1.08H21a2 2 0 010 4h-.09c-.74 0-1.31.44-1.51 1.08z"/></svg>
@@ -3731,7 +3731,7 @@
                                     </div>
                                 </div>
 
-                                 
+                                <!-- 主从布局：左维度导航 / 右维度面板 -->
                                 <div class="scope-layout">
                                     <div class="scope-nav" id="scopeNav">
                                         <button class="scope-nav-item active" data-panel="mod" onclick="switchScopePanel('mod', this)">
@@ -3761,7 +3761,7 @@
                                     </div>
 
                                     <div class="scope-panels">
-                                         
+                                        <!-- ① 模块维度：层级树 -->
                                         <div class="scope-panel" id="scopePanel-mod">
                                             <div class="card perm-card">
                                                 <div class="card-header">
@@ -3779,7 +3779,7 @@
                                                 <div id="scopeModuleListBody" class="perm-list-body"></div>
                                             </div>
 
-                                             
+                                            <!-- 绑定编辑器（新建/编辑共用） -->
                                             <div class="card perm-card" id="scopeModuleEditorCard" style="display: none">
                                                 <div class="card-header">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -3825,7 +3825,7 @@
                                             </div>
                                         </div>
 
-                                         
+                                        <!-- ② 身份维度：四级分层 -->
                                         <div class="scope-panel" id="scopePanel-idn" style="display: none">
                                             <div class="card perm-card">
                                                 <div class="card-header">
@@ -3896,7 +3896,7 @@
                                             </div>
                                         </div>
 
-                                         
+                                        <!-- ③ 出站维度 -->
                                         <div class="scope-panel" id="scopePanel-act" style="display: none">
                                             <div class="card perm-card">
                                                 <div class="card-header">
@@ -3959,7 +3959,7 @@
                                             </div>
                                         </div>
 
-                                         
+                                        <!-- ④ 运行时绑定（归属权） -->
                                         <div class="scope-panel" id="scopePanel-rt" style="display: none">
                                             <div class="card perm-card">
                                                 <div class="card-header">
@@ -3977,7 +3977,7 @@
                                             </div>
                                         </div>
 
-                                         
+                                        <!-- ⑤ 判定测试器 -->
                                         <div class="scope-panel" id="scopePanel-test" style="display: none">
                                             <div class="card perm-card">
                                                 <div class="card-header">
@@ -4715,7 +4715,7 @@
                         </div>
                     </div>
 
-                     
+                    <!-- 集群管理 -->
                     <div class="page" id="p-cluster">
                         <h1
                             class="page-title"
@@ -4927,7 +4927,7 @@
 <section class="settings-pane" data-pane="sec-update">
   <div class="settings-pane-head"><button type="button" class="settings-back settings-back-top" onclick="settingsGoBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h2 class="settings-pane-title" data-i18n="fw_update_title"></h2></div>
 <div class="fw-update-card card">
-   
+  <!-- 卡头：与其他页 .card-header 规范一致（图标 + 标题 + 右侧操作区） -->
   <div class="card-header">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
     <span data-i18n="fw_update_title"></span>
@@ -4949,7 +4949,7 @@
       </button>
     </div>
   </div>
-   
+  <!-- 版本区：最新版本大字 tabular-nums 主导，当前版本小字陪衬 -->
   <div class="fw-hero">
     <div class="fw-hero-nums">
       <div class="fw-ver-block">
@@ -4963,10 +4963,10 @@
     </div>
   </div>
   <div class="fw-update-body">
-     
+    <!-- Windows 提示条：语义 wr 三件套 -->
     <div id="fwWinWarn" class="fw-win-warn" style="display: none" data-i18n="fw_win_warn"></div>
 
-     
+    <!-- 工具条：版本选择 + pre 开关（左） / GitHub 链接 + 更新按钮（右） -->
     <div id="fwVersionRow" class="fw-toolbar" style="display: none">
       <div class="fw-toolbar-controls">
         <select
@@ -5003,7 +5003,7 @@
       </div>
     </div>
 
-     
+    <!-- Release Notes -->
     <div id="fwReleaseNotes" class="fw-notes" style="display: none"></div>
   </div>
 </div>
@@ -5350,7 +5350,7 @@
             </div>
         </div>
 
-         
+        <!-- 设置专属模态：主题变量编辑器（实时预览，遮罩/弹入/Esc 关闭复用模态体系） -->
         <div
             class="modal-overlay"
             id="customThemeOv"
@@ -5498,7 +5498,7 @@
             </div>
         </div>
 
-         
+        <!-- 集群节点添加模态窗 -->
         <div
             class="modal-overlay"
             id="clusterAddOv"
@@ -5542,7 +5542,7 @@
             </div>
         </div>
 
-         
+        <!-- 集群节点编辑模态窗 -->
         <div
             class="modal-overlay"
             id="clusterEditOv"
@@ -6303,7 +6303,7 @@
                         data-i18n="scope_import"
                     ></button>
                 </div>
-                 
+                <!-- 导出面板 -->
                 <div id="scopeTransferExport" style="flex: 1; overflow-y: auto; min-height: 0">
                     <div class="scope-dim-list" id="scopeExportDims"></div>
                     <button
@@ -6313,7 +6313,7 @@
                         data-i18n="scope_export_run"
                     ></button>
                 </div>
-                 
+                <!-- 导入面板 -->
                 <div
                     id="scopeTransferImport"
                     style="display: none; flex: 1; overflow-y: auto; min-height: 0"

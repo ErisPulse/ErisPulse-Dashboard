@@ -1,8 +1,8 @@
- 
+/* ErisPulse Dashboard – topology */
+/* 设计契约：只用 token；无渐变/无玻璃拟态 blur；层级 = 背景三层 + 1px 边框；
+   浮层才用 --shadow-hover；胶囊/卡片走圆角阶梯。 */
 
-
-
- 
+/* ========== 拓扑图谱页 ========== */
 
 .topo-legend {
     display: flex;
@@ -32,7 +32,7 @@
     flex: 0 0 auto;
 }
 
- 
+/* 图例配色与画布取色（topology.js _refreshTopoColors）共用同一组 token */
 .topo-legend-dot.module {
     background: var(--accent);
 }
@@ -65,7 +65,7 @@
     border-top-style: dotted;
 }
 
- 
+/* 画布卡：页面纸面上的大卡，背景保持 --bg-p，极淡 1px 边 */
 .topo-stage {
     position: relative;
     height: calc(100vh - 250px);
@@ -83,7 +83,7 @@
     cursor: grab;
 }
 
- 
+/* 画布浮层：实底卡片 + 1px 边 + 悬浮柔影（不做玻璃拟态 blur） */
 .topo-float {
     position: absolute;
     z-index: 5;
@@ -152,7 +152,7 @@
     cursor: grabbing;
 }
 
- 
+/* 节点详情面板：标准卡片语义（--bg-t + 1px --bd + radius 16 + 悬浮柔影） */
 .topo-detail {
     position: absolute;
     top: 12px;
@@ -187,7 +187,7 @@
     flex-wrap: wrap;
 }
 
- 
+/* ↓ master-dist：权限页复用（permissions.js），保持不动 */
 
 .master-dist {
     margin: 4px 0 4px;
@@ -272,7 +272,7 @@
     right: 8px;
 }
 
- 
+/* ========== 拓扑图增强 ========== */
 
 .topo-stats {
     display: inline-flex;
@@ -291,7 +291,7 @@
     height: 11px;
 }
 
- 
+/* 悬停提示：小件层级（radius-sm）+ 实底 + 柔影 */
 .topo-tooltip {
     position: absolute;
     pointer-events: none;
@@ -314,7 +314,7 @@
     color: var(--tx-t);
 }
 
- 
+/* ========== 拓扑画布触摸手势 ========== */
 
 .topo-canvas {
     touch-action: none;
@@ -322,9 +322,9 @@
     user-select: none;
 }
 
-
-
-
+/* ========== 拓扑页移动端适配 ==========
+   必须位于上方桌面规则之后，媒体查询才能覆盖
+   .topo-float-tr 的 top:14px，否则浮层会被 top+bottom 双向拉伸 */
 
 @media (max-width: 720px) {
     .topo-stage {
@@ -340,7 +340,7 @@
         flex-wrap: wrap;
     }
 
-     
+    /* 控制浮层上移：给底部图例条让位 */
     .topo-float-tr {
         left: 10px;
         right: 10px;
@@ -353,7 +353,7 @@
         gap: 6px 12px;
     }
 
-     
+    /* 图例移动端保持可见：底部单行胶囊，横向滚动 */
     .topo-float-bl {
         display: flex;
         left: 10px;
@@ -371,7 +371,7 @@
     }
 }
 
- 
+/* 减少动效：详情/提示面板与图例不做过渡装饰（画布动画由 JS 侧门控） */
 @media (prefers-reduced-motion: reduce) {
     .topo-detail,
     .topo-tooltip,

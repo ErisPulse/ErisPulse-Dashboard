@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – core/i18n
 
 const I18N = window.__EP_I18N__ || {};;
 
@@ -47,7 +47,7 @@ export function toggleLang() {
       bots: loadBots,
       "event-stream": loadEvents,
       transcript: function () {
-         
+        // 会话收件箱：动态加载页面模块并挂载到 window（与 router.js 的 go() loader 一致）
         return import("../pages/transcript.js").then(function (m) {
           Object.assign(window, m);
           return m.loadTranscript();
@@ -83,8 +83,8 @@ export function toggleLang() {
 }
 
 export function applyI18n() {
-   
-   
+  // 语言字典缺失防御：资源文件加载/解析失败时跳过渲染（保留英文 key 兜底），
+  // 不因 I18N[lang] 为 undefined 连锁崩溃调用方（如模块视图加载）
   const dict = I18N[lang];
   if (!dict) return;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -114,7 +114,7 @@ export function applyI18n() {
   document.title = titles[lang] || "ErisPulse Dashboard";
   const htmlLangMap = { zh: "zh-CN", "zh-TW": "zh-TW", ja: "ja", ru: "ru" };
   document.documentElement.lang = htmlLangMap[lang] || "en";
-   
+  // 侧边栏折叠态无文字，用本地化页面名做悬浮气泡提示（跟随语言切换）
   document.querySelectorAll(".nav-item").forEach((el) => {
     const label = el.querySelector("span[data-i18n]");
     if (label) el.setAttribute("data-tip", label.textContent || "");

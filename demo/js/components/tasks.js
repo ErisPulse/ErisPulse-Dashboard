@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – components/tasks
 
 export function addOrUpdateTask(id, name, status, outputLines, errorMsg) {
   let task = _tasks.find((t) => t.id === id);
@@ -113,7 +113,7 @@ export function renderTaskPanel() {
       var output = (t.output || []).slice(-20).join("\n");
       var detail = t.status === "error" && t.errorMsg ? "\n" + t.errorMsg : "";
       var expanded = _expandedTasks.has(t.id) ? " task-expanded" : "";
-       
+      // info 条目整行可点（跳转目标），普通条目点击展开输出
       var rowClick =
         t.status === "info"
           ? 'onclick="openTaskTarget(\'' + esc(t.id) + '\')"'
@@ -161,7 +161,7 @@ export function toggleTaskExpand(el) {
   }
 }
 
- 
+// info 条目跳转目标（活动中心入口）
 export function openTaskTarget(id) {
   if (id === "fw-update-available") {
     closeTaskPanel();
@@ -178,13 +178,6 @@ export function openTaskTarget(id) {
 }
 
 setInterval(function () {
-   
-   
-   
-   
-   
-   
-   
   if (_taskPanelOpen) renderTaskPanel();
 }, 5000);;
 

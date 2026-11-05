@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/dashboard
 
 export async function refreshDashboard() {
   const d = await api("/api/status");
@@ -6,7 +6,7 @@ export async function refreshDashboard() {
   const fw = d.framework || {};
   window._fwStatus = fw;
   updateAboutCard();
-   
+  // 存储服务器平台（用于判断更新行为，而非客户端浏览器平台）
   window._serverPlatform = fw.platform || "";
   window._serverIsWindows = !!fw.is_windows;
   document.getElementById("fwDesc").textContent =
@@ -14,7 +14,7 @@ export async function refreshDashboard() {
   document.getElementById("fwInfo").textContent = "ErisPulse v" + fw.version;
   const ad = d.adapters || {},
     mo = d.modules || {};
-   
+  // 适配器配置完整度（onboarding-card 动态步骤用）
   window._adapterConfigStatus = d.adapter_config_status || {};
   let ob = 0;
   Object.values(ad).forEach((a) =>
@@ -47,7 +47,7 @@ export async function refreshDashboard() {
       '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
       "event-stream",
     );
-   
+  // 统计数字变化时滚动动画（EP Live）
   if (window.EP && EP.animateStatVals)
     EP.animateStatVals(document.getElementById("statGrid"), "statGrid");
 
@@ -99,7 +99,7 @@ export async function refreshDashboard() {
 }
 
 export function statCard(v, label, icon, page) {
-   
+  // stat 瓦片：图标软底方块 + 大数字 + 小标签（.stat-val 类名被 EP 动画/WS 依赖，勿改）
   const tag = page
     ? '<div class="stat-card is-link" onclick="go(' + "'" + page + "'" + ')">'
     : '<div class="stat-card">';
@@ -151,12 +151,12 @@ export async function loadPerformance() {
     }
   };
 
-   
+  // CPU 卡片：只显示进程CPU
   var procCpu = memory.cpu_percent || 0;
   var sysCpu = memory.system_cpu_percent || 0;
   _updateCircle("cpuProgressCircle", "cpuProgressText", procCpu);
 
-   
+  // 内存卡片：只显示进程内存
   var rssMb = memory.rss_mb || 0;
   var totalGb = memory.system_total_gb || 0;
   var procMemPct =
@@ -167,7 +167,7 @@ export async function loadPerformance() {
   if (document.getElementById("procMemVal"))
     document.getElementById("procMemVal").textContent = fmt(rssMb, " MB");
 
-   
+  // psutil 不可用且降级链也未取到数据时显示 N/A（而非误导性 0%）
   if (memory.psutil_ok === false) {
     var naCpu = document.getElementById("cpuProgressText");
     if (naCpu) naCpu.textContent = "N/A";
@@ -175,7 +175,7 @@ export async function loadPerformance() {
     if (naMem) naMem.textContent = "N/A";
   }
 
-   
+  // popover详情
   const setEl = (id, v, unit = "") => {
     const el = document.getElementById(id);
     if (el) el.textContent = fmt(v, unit);
@@ -202,7 +202,7 @@ export async function loadPerformance() {
   setEl("ioRead", process.read_bytes_mb, " MB");
   setEl("ioWrite", process.write_bytes_mb, " MB");
 
-   
+  // 性能卡指标格：轻量三项（线程/交换内存已在 CPU/内存详情浮层，不在卡面堆叠）
   var extraRows = [];
   if (system.uptime_human)
     extraRows.push([t("instance_uptime"), system.uptime_human, ""]);
@@ -233,7 +233,6 @@ export async function loadPerformance() {
       .join("");
   }
 
-   
   window._perfData = {
     vms: memory.vms_mb,
     threads: process.threads,

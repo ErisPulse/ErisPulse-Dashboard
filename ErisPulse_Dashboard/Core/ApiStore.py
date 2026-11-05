@@ -138,7 +138,7 @@ class ApiStoreMixin:
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
 
-     
+    # ════════════════ 已装包管理 ════════════════
 
     async def _api_packages(self, request: Request) -> JSONResponse:
         force = request.query_params.get("force", "") == "true"
@@ -183,7 +183,7 @@ class ApiStoreMixin:
         index_url = body.get("index_url", "") or None
         extra_args = self._sanitize_pip_extra_args(body.get("extra_args"))
 
-         
+        # Detect git+ URLs and register for tracking
         git_urls = [p for p in packages if p.startswith("git+")]
         for git_url in git_urls:
             self._get_pkg_manager().register_git_package(

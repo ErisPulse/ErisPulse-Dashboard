@@ -1,6 +1,6 @@
- 
+/* ErisPulse Dashboard – ep-components */
 
- 
+/* ========== 基础控件（原生 select / input / search） ========== */
 .ep-search,
 .ep-select,
 .ep-input {
@@ -42,7 +42,7 @@
     padding-right: 32px;
 }
 
- 
+/* ========== EP 组件库 2.0：自定义下拉（ep-combobox） ========== */
 .ep-native-hidden {
     display: none !important;
 }
@@ -111,9 +111,9 @@
     cursor: not-allowed;
     filter: saturate(0.6);
 }
-
-
-
+/* 下拉列表 v2：radius 12 + shadow-hover 悬浮影 + 弹入动画 + 主题化滚动条
+   z-index 对齐 EP.Z_MENU=3000（ep-select.js）：高于模态(1300)/搜索面板(1500)，
+   open 时组件还会写行内 z-index 兜底 */
 .ep-combobox-list {
     display: none;
     position: fixed;
@@ -189,7 +189,7 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
- 
+/* 禁用选项：与宿主 select 的 disabled option 同步（data-disabled 由组件写入） */
 .ep-combobox-opt[data-disabled="1"] {
     opacity: 0.45;
     cursor: not-allowed;
@@ -198,12 +198,12 @@
 .ep-combobox-opt[data-disabled="1"].ep-kb-active {
     background: transparent;
 }
- 
+/* 键盘高亮项选中时勾号颜色跟随 */
 .ep-combobox-opt.ep-kb-active[data-selected="1"]::after {
     border-color: var(--accent);
 }
 
- 
+/* ========== EP 组件库 2.0：可搜索多选（ep-multiselect） ========== */
 .ep-multiselect {
     position: relative;
     display: inline-block;
@@ -252,7 +252,7 @@
     align-items: center;
     gap: 5px;
 }
- 
+/* 已选计数徽章（render() 写入） */
 .ep-multiselect-count {
     flex-shrink: 0;
     display: inline-block;
@@ -341,7 +341,7 @@
     text-align: center;
 }
 
- 
+/* ========== 浮层弹入动效（scale .96 + 8px） ========== */
 @keyframes epPop {
     from {
         opacity: 0;
@@ -365,13 +365,13 @@
     }
 }
 
- 
+/* ══════════ 移动端（≤768）：搜索/下拉触控目标 ≥40px ══════════ */
 @media (max-width: 768px) {
     .ep-search,
     .ep-select,
     .ep-input {
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 
     .ep-combobox-trigger {
@@ -384,24 +384,24 @@
     }
 }
 
- 
+/* 多选触发器触控目标 */
 @media (max-width: 768px) {
     .ep-multiselect-trigger {
         min-height: 40px;
     }
 }
 
- 
+/* 配置组件：字段绑定禁用态（disabled_if） */
 .cfg-bind-disabled .fw-control{opacity:.45;pointer-events:none;}
 .cfg-bind-disabled .switch{opacity:.45;pointer-events:none;}
 
+/* ══════════════════════════════════════════════════════════
+   配置组件系统（docs/config-widgets.md）
+   设计契约：EP Design Language 1.1 —— 纯 token、扁平 1px 边框、
+   无装饰渐变、focus 柔光环、hover 上浮、75–220ms 动效
+   ══════════════════════════════════════════════════════════ */
 
-
-
-
-
-
- 
+/* ── slider：accent 进度轨道 + 数值徽标 ── */
 .cfg-slider{display:flex;gap:10px;align-items:center;max-width:420px;}
 .cfg-slider input[type="range"]{
   -webkit-appearance:none;appearance:none;flex:1;height:22px;background:transparent;cursor:pointer;
@@ -429,7 +429,7 @@
   padding:2px 8px;border-radius:8px;background:var(--bg-s);border:1px solid var(--bd);color:var(--tx-p);
 }
 
- 
+/* ── color：色块 + hex + 预设色板 ── */
 .cfg-color{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .cfg-color input[type="color"]{
   width:38px;height:30px;padding:2px;border-radius:10px;border:1px solid var(--bd);
@@ -448,11 +448,11 @@
 }
 .cfg-color-dot:hover{transform:scale(1.18);box-shadow:0 0 0 2.5px var(--accent-soft);}
 
- 
+/* ── 原生日期/时间：主题跟随 ── */
 .cfg-native{display:flex;gap:4px;align-items:center;}
 .cfg-native input{color-scheme:light dark;}
 
- 
+/* ── multiselect：chips 胶囊多选 ── */
 .cfg-ms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-width:760px;}
 .cfg-ms-chip{
   display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 8px;
@@ -476,7 +476,7 @@
 .cfg-ms-chip.is-on .cfg-ms-box svg{opacity:1;}
 .cfg-ms-chip.is-on .cfg-ms-label{color:var(--accent);}
 
- 
+/* ── kv / list 编辑器 ── */
 .cfg-ed{display:flex;flex-direction:column;gap:6px;max-width:680px;}
 .cfg-ed-list{max-width:720px;}
 .cfg-row{
@@ -503,11 +503,11 @@
 .cfg-add-row:hover{border-color:var(--accent);color:var(--accent);}
 .cfg-empty-hint{color:var(--tx-s);font-size:12px;padding:4px 2px;}
 
- 
+/* ── 绑定禁用态（disabled_if）── */
 .cfg-bind-disabled .fw-control,.cfg-bind-disabled .switch{opacity:.45;pointer-events:none;}
 .cfg-bind-disabled .fw-label{color:var(--tx-t);}
 
- 
+/* ════════════════ 账户添加向导 ════════════════ */
 .aw-overlay{align-items:center;justify-content:center;}
 .aw-box{display:flex;flex-direction:column;gap:12px;}
 .aw-steps{display:flex;gap:6px;}
@@ -532,7 +532,7 @@
 .aw-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--tx-p);font-size:14px;}
 @media (max-width:560px){.aw-cards{grid-template-columns:1fr;}}
 
- 
+/* ── 账户首配置引导（schema 推断触发，零适配器声明）── */
 .account-setup-guide{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--wr-bd,var(--wr-c));border-radius:14px;background:color-mix(in srgb,var(--wr-c) 8%,var(--bg-t));}
 .account-setup-icon{width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:10px;background:color-mix(in srgb,var(--wr-c) 15%,transparent);color:var(--wr-c);}
 .account-setup-texts{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}

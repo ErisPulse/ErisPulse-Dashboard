@@ -328,7 +328,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/lifecycle/clear'] = function () { return _json({ success: true }); };
 
     API_MAP['/api/performance'] = function () {
-         
+        // 形状对齐真实后端：{ system: _get_system_status(), websocket, lifecycle_counts }
         return _json({
             system: {
                 uptime_seconds: Math.floor(NOW - START_TIME),
@@ -349,7 +349,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     };
 
     API_MAP['/api/health'] = function () {
-         
+        // 形状对齐真实后端 ApiObservability._api_health：{storage, adapters, modules, router, detail}
         return _json({
             storage: true,
             adapters: true,
@@ -385,7 +385,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     }
     API_MAP['/api/config'] = function (opts) {
         if (opts && opts.method === 'PUT') {
-             
+            // 点分键写入（Dashboard.login_lockout_* 等），token 不可经此修改
             try {
                 var b = JSON.parse(opts.body || '{}');
                 if (b && b.key && String(b.key).indexOf('Dashboard.') === 0) {
@@ -469,7 +469,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/packages/install'] = function () { return _json({ success: true, task_id: 'mock_install_' + _r(1000, 9999) }); };
     API_MAP['/api/packages/uninstall'] = function () { return _json({ success: true }); };
 
-     
+    // 模拟安装任务：向当前 WS 推送 install_progress running → success
     window._mockEmitInstall = function (taskId, packages) {
         var emit = function (status, extra) {
             var ws = window._mockWsLast;
@@ -521,9 +521,9 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/restart'] = function () { return _json({ success: true }); };
     API_MAP['/api/modules/action'] = function () { return _json({ success: true }); };
 
-     
+    // ── 令牌与登录保护 ──
     API_MAP['/api/security/token/regenerate'] = function (init) {
-         
+        // 预览-确认流：回显客户端提交的令牌
         var tk = 'demo';
         try {
             var b = JSON.parse((init && init.body) || '{}');
@@ -844,7 +844,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/files/decompress'] = function () { return _json({ success: true }); };
 
     var _mockAdapterConfigs = {
-         
+        // 真实适配器声明（源自 SDK/Adapter 各适配器 ConfigClass / AccountConfigClass）
         Yunhu: {
             config_key: 'Yunhu', has_config: true, has_accounts: true,
             schema: { fields: {
@@ -1066,7 +1066,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                 var ev2 = { id: 'evt_' + _r(10000, 99999), time: Date.now() / 1000, type: 'notice', detail_type: _pick(NOTICE_TYPES), platform: _pick(ADAPTERS), sub_type: '', self_id: 'bot_001', user_id: '', group_id: '', alt_message: '' };
                 self.onmessage({ data: JSON.stringify({ type: 'event', data: ev2 }) });
             } else if (typeRoll < 0.85) {
-                 
+                // Simulate real-time log streaming
                 var logLevels = [
                     { level: 'TRACE', level_num: 5 },
                     { level: 'DEBUG', level_num: 10 },
@@ -1138,7 +1138,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     window.__DEMO_MODE__ = true;
     window.__DEMO_TOKEN__ = DEMO_TOKEN;
 
-     
+    // Demo 登录页提示 token（applyI18n 会覆盖 authHint，需监听并恢复）
     function _demoHintHTML() {
         return '<div style="padding:8px 12px;border-radius:8px;background:color-mix(in srgb,#f59e0b 12%,transparent);border:1px solid color-mix(in srgb,#f59e0b 30%,transparent);font-size:12px;color:#f59e0b;margin-top:4px">演示密码 / Demo Token: <code style="font-weight:700;user-select:all;cursor:pointer" onclick="document.getElementById(\'loginInput\').value=\'demo\'">demo</code> — 点击自动填入</div>';
     }

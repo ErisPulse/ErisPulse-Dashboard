@@ -38,7 +38,7 @@ class MainBase:
         self._loop: asyncio.AbstractEventLoop | None = None
         self._lifecycle_log: list[dict] = []
         self._max_lifecycle_log = 200
-        self._max_per_type = 30   
+        self._max_per_type = 30  # 每种类型最多保留30条
         self._audit_log: list[dict] = []
         self._max_audit_log = 500
         self._max_per_level = 1000
@@ -89,7 +89,7 @@ class MainBase:
         asyncio.create_task(self._events_flush_loop())
         self._cluster = ClusterManager(self.storage, self.logger.get_child("Cluster"))
         asyncio.create_task(self._cluster.start_heartbeat())
-         
+        # 注册框架 WebUI 主页入口（旧 SDK 无此 API 时跳过）
         home_entry = getattr(self.sdk.router, "register_home_entry", None)
         if home_entry is not None:
             try:
@@ -129,7 +129,7 @@ class MainBase:
             token_display = self._token
             extra_line = saved
         else:
-             
+            # 用星号脱敏，保持与令牌等长
             token_display = "*" * len(self._token)
             extra_line = i18n.t(
                 "dashboard.banner.token_hidden_hint",
@@ -142,7 +142,7 @@ class MainBase:
             f"  {token_label} {token_display}",
             "  " + extra_line,
         ]
-         
+        # 根据最长行（含前导两空格）动态决定边框宽度
         W = max(_CoreHelpers._display_width(ln) for ln in lines)
         border = "═" * W
         self.logger.warning("")
@@ -166,8 +166,8 @@ class MainBase:
                 pass
         self._ws_clients.clear()
         self._unregister_routes()
-         
-         
+        # i18n 翻译以 domain="dashboard"（小写）注册为独立 owner
+        # 不随路由注销而注销会残留为孤儿资源（ownership audit 报泄漏）
         try:
             unregister_i18n = getattr(self.sdk.i18n, "unregister_domain", None)
             if unregister_i18n:
@@ -177,7 +177,7 @@ class MainBase:
         self.logger.info("WebUI module unloaded")
         return True
 
-     
+    # ════════════════ 配置与访问令牌 ════════════════
 
     def _load_config(self):
         config = self.sdk.config.getConfig("Dashboard")
@@ -190,7 +190,7 @@ class MainBase:
         token = self.sdk.config.getConfig("Dashboard.token")
         if not token:
             token = secrets.token_urlsafe(32)
-             
+            # immediate=True：立即落盘
             self.sdk.config.setConfig("Dashboard.token", token, immediate=True)
             self._token_new = True
         else:

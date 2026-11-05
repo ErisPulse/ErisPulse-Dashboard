@@ -9,21 +9,21 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 
- 
+# 表名严格白名单：仅字母/数字/下划线，1-64 位（防注入第一道闸，先于任何 SQL 拼装）
 _TABLE_NAME_RE = re.compile(r"^[A-Za-z0-9_]{1,64}$")
 
- 
+# 框架内建表：KV 主表（config）+ 会话收件箱（transcript）
 _BUILTIN_TABLES = {"config", "transcript"}
 
- 
+# 单元格安全化阈值：超长截断并标记
 _MAX_CELL_LEN = 500
- 
+# 表清单规模上限：防御异常库（如误连系统库）时逐表 COUNT 的放大效应
 _MAX_TABLES = 500
- 
+# 分页参数边界
 _DEFAULT_PAGE_SIZE = 50
 _MAX_PAGE_SIZE = 200
 
- 
+# 各方言"列出全部表"的系统表查询（无参数，全部走占位符漏斗；表名不参与拼接）
 _LIST_TABLES_SQL: dict[str, tuple[str, list[Any]]] = {
     "sqlite": (
         "SELECT name FROM sqlite_master "
@@ -48,7 +48,7 @@ class ApiStorageMixin:
     """存储表浏览器 API：表清单、表数据分页与清空。"""
 
 
-     
+    # ════════════════ 内部工具 ════════════════
 
     def _storage_dialect_name(self) -> str:
         """探测当前存储后端方言：优先运行时实例的 dialect.name，读配置兜底"""
@@ -57,7 +57,7 @@ class ApiStorageMixin:
         name = getattr(dialect, "name", "")
         if name:
             return name
-         
+        # 实例不可用（理论上不发生）时按配置 ErisPulse.storage.backend 兜底
         backend = ""
         try:
             backend = str(
@@ -114,7 +114,7 @@ class ApiStorageMixin:
                 "truncated": len(encoded) > _MAX_CELL_LEN,
             }
         if isinstance(value, bool) or isinstance(value, (int, float)):
-             
+            # 数值/布尔保持原生 JSON 类型（bool 先于 int 判断）
             return {"v": value, "truncated": False}
         if isinstance(value, (dict, list, tuple, set)):
             try:
@@ -125,7 +125,7 @@ class ApiStorageMixin:
             text = str(value)
         return {"v": text[:_MAX_CELL_LEN], "truncated": len(text) > _MAX_CELL_LEN}
 
-     
+    # ════════════════ 表浏览器端点 ════════════════
 
     async def _api_storage_tables(self, request: Request) -> JSONResponse:
         """列出存储全部表：[{name, rows, builtin}]；后端方言探测后直查系统表"""
@@ -171,7 +171,6 @@ class ApiStorageMixin:
             page, size = 1, _DEFAULT_PAGE_SIZE
         size = min(max(1, size), _MAX_PAGE_SIZE)
 
-         
         try:
             exists = await self.storage.aHasTable(name)
         except Exception as e:
@@ -184,7 +183,7 @@ class ApiStorageMixin:
             total = int(await self.storage.Table(name).aCount())
             offset = (page - 1) * size
             builder = self.storage.Table(name).Select().Limit(size).Offset(offset)
-             
+            # 稳定分页：按首列排序（列名源自系统表，且经构建器黑名单校验兜底）
             if columns and re.match(r"^[A-Za-z0-9_]+$", columns[0]):
                 builder = builder.OrderBy(columns[0])
             raw_rows = await builder.aExecute()
@@ -197,7 +196,7 @@ class ApiStorageMixin:
             else [self._serialize_cell(row)]
             for row in (raw_rows or [])
         ]
-         
+        # 列名枚举失败时按首行宽度派生占位列名，保证前端仍可渲染
         if not columns and rows:
             columns = [f"col{i + 1}" for i in range(len(rows[0]))]
         return JSONResponse(

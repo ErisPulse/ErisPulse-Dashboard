@@ -1,5 +1,5 @@
- 
- 
+/* ErisPulse Dashboard – login */
+/* 视觉语言：surface 卡 + 1px 边框 + 克制阴影 + 弹入动画 */
 .login-overlay {
     position: fixed;
     inset: 0;
@@ -28,7 +28,7 @@
     display: none;
 }
 
- 
+/* ══ 背景层：accent 派生的扁平 blur 圆 + 点阵，只做质感不引入新色相 ══ */
 .login-bg {
     position: absolute;
     inset: 0;
@@ -85,7 +85,7 @@
     );
 }
 
- 
+/* 暗色/OLED 下降低光斑透明度 */
 [data-theme="dark"] .login-orb {
     opacity: 0.12;
 }
@@ -100,7 +100,7 @@
     opacity: 0.1;
 }
 
- 
+/* ══ 登录卡：悬浮卡语言（radius 20 / surface 底 / 1px 边框 / shadow-hover） ══ */
 .login-card {
     position: relative;
     z-index: 2;
@@ -116,7 +116,7 @@
     gap: 14px;
 }
 
- 
+/* 每次显示时弹入（scale 0.96 + 上移 8px → 归位） */
 .login-overlay.show .login-card {
     animation: loginCardIn 0.22s var(--ease-soft-spring) both;
 }
@@ -132,7 +132,7 @@
     }
 }
 
- 
+/* logo 直接展示，不做圆形包裹 */
 .login-avatar {
     display: flex;
     justify-content: center;
@@ -145,7 +145,7 @@
     object-fit: contain;
 }
 
- 
+/* 输入框：居中、略放大，焦点为 accent 柔光环（0 0 0 3.5px accent-soft） */
 .login-card .ep-input {
     padding: 11px 14px;
     font-size: 14px;
@@ -173,7 +173,7 @@
     border: 1px solid var(--bd);
 }
 
- 
+/* 通用表单组（login.css 承载的全局规则，与 ep-input 同焦点语言） */
 .form-group label {
     display: block;
     margin-bottom: 8px;
@@ -204,7 +204,7 @@
     color: var(--tx-t);
 }
 
- 
+/* 主按钮：hover 轻浮起，active 归位 */
 .login-actions {
     display: flex;
     gap: 8px;
@@ -231,7 +231,7 @@
     transform: translateY(0);
 }
 
- 
+/* 语言选择（页脚） */
 .login-lang-select {
     padding: 4px 24px 4px 8px;
     border: 1px solid var(--bd);
@@ -297,7 +297,7 @@
     }
 }
 
- 
+/* ══ 既有 radius 全站映射（login.css 承载） ══ */
 .module-search, .ep-select, .form-input, .form-select, .settings-input {
     border-radius: var(--radius-sm);
 }
@@ -317,12 +317,12 @@
 .master-card { border-radius: var(--radius-lg); }
 .bot-card { border-radius: var(--radius-lg); }
 
- 
+/* ══════════ 移动端（≤768）：登录表单触控目标 ══════════ */
 @media (max-width: 768px) {
     .login-card .ep-input,
     .form-group input {
         min-height: 44px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 
     .login-actions .btn {

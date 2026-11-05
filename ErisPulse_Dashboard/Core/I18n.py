@@ -11,7 +11,7 @@ Dashboard 国际化文本定义
 {!--< /tips >!--}
 """
 
- 
+# 控制台横幅的多语言文本（键为 i18n key，值为对应语言文本）
 DASHBOARD_BANNER_TEXTS = {
     "zh-CN": {
         "dashboard.banner.title": "ErisPulse Dashboard",

@@ -8,7 +8,7 @@ class CommandsMixin:
     """命令规则同步、命令系统中间件与命令 / 主人管理 API。"""
 
 
-     
+    # ════════════════ 命令系统中间件 ════════════════
 
     def _load_command_rules(self):
         try:
@@ -47,7 +47,7 @@ class CommandsMixin:
         except Exception:
             return []
 
-         
+        # 命令覆写 / ACL（SDK 覆写系统，缺失时静默降级）
         acl_map: dict[str, dict] = {}
         override_params: dict[str, dict] = {}
         try:
@@ -129,7 +129,6 @@ class CommandsMixin:
                 raw_prefix = "/"
                 case_sensitive = True
 
-             
             if isinstance(raw_prefix, list):
                 prefixes = [str(p) for p in raw_prefix] if raw_prefix else ["/"]
             else:
@@ -139,7 +138,6 @@ class CommandsMixin:
 
             check_text = text if case_sensitive else text.lower()
 
-             
             matched_prefix = None
             for p in prefixes:
                 if check_text.startswith(p):
@@ -206,7 +204,7 @@ class CommandsMixin:
 
         self._command_middleware_func = _command_middleware
 
-     
+    # ════════════════ API · 命令 / 主人 ════════════════
 
     async def _api_commands(self, request: Request) -> JSONResponse:
         commands = self._get_all_commands_info()
@@ -310,7 +308,7 @@ class CommandsMixin:
         self._save_command_rules()
         self._sync_command_aliases()
 
-         
+        # 命令 ACL 用户黑白名单（overrides.acl，用户标识 "platform:uid"）
         acl_result = None
         if "acl" in body:
             acl = body.get("acl") or {}
@@ -335,7 +333,7 @@ class CommandsMixin:
             except Exception as e:
                 self.logger.warning(f"Failed to update command ACL {cmd_name}: {e}")
 
-         
+        # 命令实现参数覆写（overrides.command：master / hidden，用户优先）
         params_result = None
         raw_params = body.get("params")
         if isinstance(raw_params, dict):
@@ -437,7 +435,7 @@ class CommandsMixin:
         except Exception:
             all_platforms = self.sdk.adapter.list_registered()
 
-         
+        # 自定义身份源 provider（含注册归属，模块卸载时由框架自动注销）
         providers: list[dict] = []
         try:
             master_obj = getattr(self.sdk, "master", None)
@@ -453,7 +451,7 @@ class CommandsMixin:
         except Exception:
             providers = []
 
-         
+        # 能力探测：框架是否支持 dict 内的 global 保留键（全局主人的无损存储）
         try:
             from ErisPulse.Core.master import GLOBAL_MASTER_KEY as _gmk
 

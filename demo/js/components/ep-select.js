@@ -1,11 +1,10 @@
- 
- 
- 
- 
+// ErisPulse Dashboard – components/ep-select
+// EP 组件库：类名/DOM 与 1.x 完全兼容
+//          / 幂等增强与 wrap 重建 / 选项全量属性同步 / 任何异常降级为原生 select
 
 window.EP = window.EP || {};;
 EP.version = "2.1";;
- 
+// 精确指针（鼠标/触控板）才自动聚焦搜索框；触屏弹键盘会引发视口变化导致面板自关
 EP._finePointer = !!(
   window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches
 );;
@@ -17,11 +16,11 @@ EP._pendingSelects = [];;
 
 EP._multis = [];;
 
- 
- 
+// EP 专用浮层层级：高于模态(1300)与搜索面板(1500)，低于 toast(9999+)。
+// open 时同步写入行内样式，杜绝被后挂载的高 z 浮层压住
 EP.Z_MENU = 3000;;
 
- 
+// 按 select 元素反查既有增强 api（幂等增强 / 重建判定用）
 EP._enhancedApiFor = function (sel) {
   if (!sel) return null;
   for (var i = 0; i < EP._enhanced.length; i++) {
@@ -31,11 +30,11 @@ EP._enhancedApiFor = function (sel) {
   return null;
 };;
 
- 
- 
- 
- 
- 
+// 该 select 是否需要（重）增强：
+//  - 全新 select：是
+//  - 已增强但 wrap/list 脱离文档（innerHTML 重建后 wrap 丢失）：是 → 原地重建
+//  - 处于孤儿 .ep-combobox wrap 内（序列化重建后事件全丢）：是 → 拆除重建
+//  - 健康实例：否（幂等）
 EP._needsEnhance = function (s) {
   if (!s || s.nodeType !== 1 || s.tagName !== "SELECT" || s.multiple) return false;
   var api = s.dataset.epEnhanced ? EP._enhancedApiFor(s) : null;
@@ -53,7 +52,7 @@ EP.positionList = function (el, anchor, maxH) {
   var vh = window.innerHeight;
   var below = vh - rc.bottom - margin;
   var above = rc.top - margin;
-   
+  // 先以 auto 宽度渲染测量内容自然宽度（不可见
   var prevVis = el.style.visibility;
   el.style.visibility = "hidden";
   el.style.display = "block";
@@ -84,7 +83,7 @@ EP.enhanceSelect = function (sel) {
   try {
     return EP._enhanceSelectInner(sel);
   } catch (e) {
-     
+    // 防御降级：组件任何异常都不阻断 select 原生行为
     try {
       if (sel) {
         delete sel.dataset.epEnhanced;
@@ -102,12 +101,12 @@ EP.enhanceSelect = function (sel) {
 
 EP._enhanceSelectInner = function (sel) {
   if (!sel || sel.nodeType !== 1 || sel.tagName !== "SELECT") return sel;
-   
+  // 原生 multiple 语义不接管，保持原生多选行为
   if (sel.multiple) return sel;
 
   var staleWrap = sel.closest ? sel.closest(".ep-combobox") : null;
   var api = sel.dataset.epEnhanced ? EP._enhancedApiFor(sel) : null;
-   
+  // 幂等（任务 A4）：同 select 重复 enhance 且实例健康 → 直接返回旧 api
   if (
     api &&
     api.wrap === staleWrap &&
@@ -116,9 +115,9 @@ EP._enhanceSelectInner = function (sel) {
     api.list.isConnected
   )
     return api;
-   
+  // 孤儿 wrap（innerHTML 序列化重建后事件丢失）→ 拆除后重建
   if (staleWrap && staleWrap.parentNode) staleWrap.parentNode.removeChild(staleWrap);
-   
+  // wrap 被内层重建/丢失→ 清残骸，原 api 原地重建（引用保持稳定）
   if (api) {
     if (api.list && api.list.parentNode) api.list.parentNode.removeChild(api.list);
     if (api.wrap && api.wrap.parentNode) api.wrap.parentNode.removeChild(api.wrap);
@@ -152,10 +151,7 @@ EP._enhanceSelectInner = function (sel) {
   list.dataset.epOwner = "1";
   wrap.appendChild(btn);
   sel.parentNode.insertBefore(wrap, sel.nextSibling);
-   
-   
-   
-   
+  // 列表挂到 body：脱离模态/transform/overflow 祖先，保证 fixed 定位基于视口。
   document.body.appendChild(list);
   sel.classList.add("ep-native-hidden");
   sel.dataset.epEnhanced = "1";
@@ -171,7 +167,7 @@ EP._enhanceSelectInner = function (sel) {
     o.setAttribute("role", "option");
     o.textContent = opt.textContent || opt.value || "\u00a0";
     o.dataset.value = opt.value;
-     
+    // disabled 选项同步渲染并禁点
     if (opt.disabled) {
       o.dataset.disabled = "1";
       o.setAttribute("aria-disabled", "true");
@@ -210,7 +206,7 @@ EP._enhanceSelectInner = function (sel) {
       label = first ? first.textContent || first.value : "";
     }
     api.label.textContent = label || "\u00a0";
-     
+    // 宿主禁用态动态镜像到触发器
     wrap.classList.toggle("disabled", !!sel.disabled);
     btn.disabled = !!sel.disabled;
     Array.prototype.forEach.call(api.list.querySelectorAll(".ep-combobox-opt"), function (o) {
@@ -225,7 +221,7 @@ EP._enhanceSelectInner = function (sel) {
     }
   };
   function open() {
-     
+    // 单例：展开前先收起其它已展开实例
     EP._enhanced.forEach(function (other) {
       if (other !== api && other.wrap && other.wrap.dataset && other.wrap.dataset.open === "1") {
         try {
@@ -235,10 +231,10 @@ EP._enhanceSelectInner = function (sel) {
     });
     build();
     syncUI();
-     
-     
+    // 隐藏容器安全：菜单位置不在增强期预设，推迟到 open 这一刻按
+    // 触发器实时 rect + 视口剩余空间上下翻转计算
     EP.positionList(api.list, btn, 260);
-     
+    // 打开可靠性：抬到全站浮层之上
     api.list.style.zIndex = String(EP.Z_MENU);
     api.list.addEventListener("wheel", wheelGuard);
     wrap.dataset.open = "1";
@@ -272,7 +268,7 @@ EP._enhanceSelectInner = function (sel) {
     toggle();
   });
 
-   
+  // 键盘导航（↑↓ 高亮、Enter 选中、Esc 关闭由全局处理）
   function kbHighlight(opt) {
     var opts = api.list.querySelectorAll(".ep-combobox-opt");
     Array.prototype.forEach.call(opts, function (o) {
@@ -286,7 +282,7 @@ EP._enhanceSelectInner = function (sel) {
   }
   function kbMove(dir) {
     var all = Array.prototype.slice.call(api.list.querySelectorAll(".ep-combobox-opt"));
-     
+    // 键盘跳过禁用项
     var opts = all.filter(function (o) {
       return o.dataset.disabled !== "1";
     });
@@ -324,8 +320,8 @@ EP._enhanceSelectInner = function (sel) {
     }
   });
 
-   
-   
+  // options 全量属性动态同步（label/value/selected/disabled 等）。
+  // value 属性变化不触发原生 change，由 EP._tick 兜底同步触发器文案
   if (!api._obs) {
     api._obs = new MutationObserver(function () {
       clearTimeout(api._buildTimer);
@@ -415,11 +411,11 @@ EP.createMultiSelect = function (opts) {
   panel.appendChild(optsList);
   wrap.appendChild(trigger);
   host.appendChild(wrap);
-   
+  // 面板挂到 body：脱离模态/transform/overflow 祖先，保证 fixed 定位基于视口
   document.body.appendChild(panel);
 
   function render() {
-     
+    // 计数徽章（<b class="ep-multiselect-count">N</b> + 文本）
     label.innerHTML = "";
     if (selected.size > 0) {
       var b = document.createElement("b");
@@ -473,7 +469,7 @@ EP.createMultiSelect = function (opts) {
     }
   };
   function open() {
-     
+    // 单例：展开前先收起其它已展开多选面板
     EP._multis.forEach(function (other) {
       if (other !== mApi && other.wrap && other.wrap.dataset && other.wrap.dataset.open === "1") {
         try {
@@ -485,7 +481,7 @@ EP.createMultiSelect = function (opts) {
     panel.style.zIndex = String(EP.Z_MENU);
     panel.addEventListener("wheel", wheelGuard);
     wrap.dataset.open = "1";
-     
+    // 仅精确指针设备自动聚焦；触屏不弹键盘（用户可手动点击搜索框）
     if (EP._finePointer) search.focus();
     render();
   }
@@ -500,7 +496,7 @@ EP.createMultiSelect = function (opts) {
     if (wrap.dataset.open === "1") close();
     else open();
   });
-   
+  // 键盘开合（Enter/Space/↓ 打开，Esc 由全局关闭）
   trigger.addEventListener("keydown", function (e) {
     if (
       wrap.dataset.open !== "1" &&
@@ -543,7 +539,7 @@ EP.createMultiSelect = function (opts) {
   return mApi;
 };;
 
- 
+// document 级全局关闭（单例点击 / Esc / 滚动捕获），全部防御性容错
 document.addEventListener(
   "mousedown",
   function (e) {
@@ -575,7 +571,7 @@ document.addEventListener(
 
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
-     
+    // 只收起当前展开的实例
     EP._enhanced.forEach(function (api) {
       try {
         if (api.wrap && api.wrap.dataset.open === "1") api.close();
@@ -589,8 +585,8 @@ document.addEventListener("keydown", function (e) {
   }
 });;
 
- 
- 
+// scroll 用 capture：scroll 事件不冒泡但参与捕获下传，任何祖先滚动容器
+// （含页面/卡片内滚动）滚动时都会触发 → 收起浮层；浮层自身列表滚动除外
 window.addEventListener(
   "scroll",
   function (e) {
@@ -613,9 +609,8 @@ window.addEventListener(
   true,
 );;
 
- 
- 
- 
+// resize 时仅宽度变化（旋转/分屏）才关闭；高度变化（移动端键盘弹出）
+// visualViewport（视觉视口变化时同样重算位置）
 var _epLastW = window.innerWidth;
 EP._repositionOpenMenus = function (widthChanged) {
   EP._enhanced.forEach(function (api) {
@@ -655,14 +650,14 @@ if (window.visualViewport) {
     _epLastVVW = w;
     EP._repositionOpenMenus(widthChanged);
   });
-   
+  // 键盘/缩放导致的视觉视口偏移：只重算位置，不关闭
   window.visualViewport.addEventListener("scroll", function () {
     EP._repositionOpenMenus(false);
   });
 }
 
- 
- 
+// 全局自动增强 —— body 级 MutationObserver（childList+subtree，防抖 50ms）
+// 任何新进入 DOM 的 select 自动增强
 EP._autoObserver = new MutationObserver(function (muts) {
   try {
     muts.forEach(function (m) {
@@ -695,9 +690,8 @@ EP._autoObserver = new MutationObserver(function (muts) {
   } catch (e) {}
 });;
 
- 
- 
- 
+// 启动时机：组件求值后 body 已就绪即启动；否则等 DOMContentLoaded。
+// 本文件内 EP._cleanupOrphans 定义在后，启动调用必须容错（首次同步启动时
 EP._startAutoEnhance = function () {
   if (EP._autoStarted || !document.body) return false;
   EP._autoStarted = true;
@@ -737,12 +731,12 @@ EP._cleanupOrphans = function () {
   } catch (e) {}
 };;
 
- 
+// 500ms 值同步兜底 + wrap 失联自愈（wrap 被拆除而 select 尚在 → 重建）
 EP._tick = setInterval(function () {
   EP._enhanced.forEach(function (api) {
     try {
       if (!api.select || !api.select.isConnected) return;
-       
+      // 自愈：select 在文档中但 wrap 已脱离 → 原地重建
       if (api.wrap && !api.wrap.isConnected) {
         EP.enhanceSelect(api.select);
         return;
@@ -757,18 +751,18 @@ EP._tick = setInterval(function () {
 
 EP.enhanceAll(document);;
 
-
-
-
-
-
-
-
-
-
-
-
-
+/* ========== EP Live 2.0：声明式动态区域 ==========
+ * HTML 声明即可自动更新，无需手动绑定 DOM：
+ *   <span data-live="clock"></span>       实时时钟
+ *   <span data-live="date"></span>        本地日期
+ *   <span data-live="datetime"></span>    日期 + 时间
+ *   <span data-live="uptime"></span>      页面会话时长（ humanize ）
+ *   <span data-live="wsuptime"></span>    WS 连接时长（依赖 _wsMeta，无则显示 —）
+ * 自定义周期：<span data-live="clock" data-tick="5000"></span>（默认 1s）
+ * 注册自定义更新器：EP.live("name", function (el, ds) { el.textContent = ...; })
+ * 手动立即刷新：EP.refreshLive()
+ * 数字滚动动画：EP.countUp(el, 1234)（统计卡片等数值变化时使用）
+ */
 EP._liveFns = {
   clock: function (el) {
     el.textContent = new Date().toLocaleTimeString(
@@ -812,7 +806,7 @@ EP._humanUptime = function (ms) {
   var sec = s % 60;
   return (h ? h + "h " : "") + (h || m ? m + "m " : "") + sec + "s";
 };
- 
+// 数字滚动动画：从 el 当前值（或 from）平滑滚动到 to
 EP.countUp = function (el, to, opts) {
   opts = opts || {};
   var from = parseFloat(
@@ -833,7 +827,7 @@ EP.countUp = function (el, to, opts) {
   }
   requestAnimationFrame(frame);
 };
- 
+// 统计数字容器动画：遍历 .stat-val，值变化时滚动（key 区分多个容器，记住上次值）
 EP._statPrev = {};
 EP.animateStatVals = function (container, key) {
   if (!container) return;
@@ -857,7 +851,7 @@ EP.animateStatVals = function (container, key) {
   );
   EP._statPrev[key] = prev;
 };
- 
+// 注册/覆盖动态更新器
 EP.live = function (name, fn) {
   EP._liveFns[name] = fn;
   EP.refreshLive();
@@ -875,7 +869,7 @@ EP._liveTick = function () {
     } catch (e) {}
   });
 };
- 
+// 共享调度：默认 1s；data-tick 自定义周期的元素归入独立定时器组
 EP._liveTimers = {};
 EP._liveSchedule = function () {
   var groups = {};
@@ -907,7 +901,7 @@ EP._liveSchedule = function () {
     }, parseInt(p, 10));
   });
 };
- 
+// DOM 增删自动接管/清理（与组件库的自动增强一致的声明式体验）
 EP._liveObserver = new MutationObserver(function () {
   clearTimeout(EP._liveObsTimer);
   EP._liveObsTimer = setTimeout(function () {

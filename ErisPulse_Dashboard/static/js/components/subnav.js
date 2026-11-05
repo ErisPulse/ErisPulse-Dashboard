@@ -1,22 +1,22 @@
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// ErisPulse Dashboard – components/subnav
+// 通用「左侧子导航 + 右侧内容」布局控制器（样式：ep-subnav.css）
+//
+// 结构约定：
+//   <div class="ep-subnav" data-subnav>
+//     <aside class="ep-subnav-aside">
+//       <nav class="ep-subnav-nav">
+//         <button class="ep-subnav-item" data-pane="paneId">…</button>
+//         <button class="ep-subnav-item is-child" data-pane="subId">…</button>  ← 归属上一父项
+//       </nav>
+//     </aside>
+//     <div class="ep-subnav-body">
+//       <div class="ep-subnav-pane" data-pane-id="paneId">…</div>
+//       <div class="ep-subnav-pane" data-pane-id="subId" data-parent="paneId">…</div>
+//     </div>
+//   </div>
+//
+// pane 声明 data-parent 时，激活该 pane 会同时高亮其父导航项。
+// data-subnav-onswitch="全局函数名" 可选：切换后回调 fn(paneId, navItem, paneEl)。
 
 var _subnavMobileMQ = window.matchMedia
   ? window.matchMedia("(max-width: 959px)")
@@ -37,9 +37,9 @@ export function selectSubnavPane(subnavEl, paneId) {
   var body = subnavEl.querySelector(".ep-subnav-body");
   if (!body) return;
 
-   
-   
-   
+  // 单动态 pane 模式：pane 的 data-pane-id 可在渲染时动态改写为当前项
+  // （适配器/模块配置页共用一个内容容器）；找不到匹配 pane 时仍设置
+  // 导航高亮并触发回调，由回调负责填充内容。
   var pane = body.querySelector('.ep-subnav-pane[data-pane-id="' + paneId + '"]');
   if (pane) {
     body.querySelectorAll(".ep-subnav-pane").forEach(function (p) {
@@ -47,7 +47,7 @@ export function selectSubnavPane(subnavEl, paneId) {
     });
   }
 
-   
+  // 子面板归属父分区：导航高亮跟随父项（子项自身也保持高亮）
   var parentSec = (pane && pane.dataset.parent) || paneId;
   var activeItem = null;
   subnavEl.querySelectorAll(".ep-subnav-item").forEach(function (b) {
@@ -69,7 +69,7 @@ export function selectSubnavPane(subnavEl, paneId) {
 
 export function initSubnav(root) {
   var scope = root || document;
-   
+  // 首个 pane 默认激活（无激活项时）
   scope.querySelectorAll("[data-subnav]").forEach(function (sub) {
     var hasActive =
       sub.querySelector(".ep-subnav-item.active") ||
@@ -81,7 +81,7 @@ export function initSubnav(root) {
   });
 }
 
- 
+// 事件委托：任意 ep-subnav-item 点击即切换（无需每处绑事件）
 document.addEventListener("click", function (e) {
   var item = e.target.closest && e.target.closest(".ep-subnav-item");
   if (!item) return;

@@ -59,8 +59,7 @@ class PipOpsMixin:
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                         
-                         
+                        # 行到达即推（800ms 节流），每 20 行兜底推一次；
                         now = time.time()
                         if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
                             last_push[0] = now
@@ -78,7 +77,7 @@ class PipOpsMixin:
                 pipe.close()
 
             def _pip_heartbeat():
-                 
+                # pip 依赖解析/下载可能长时间零输出：10s 心跳证明任务仍活着
                 while proc.poll() is None:
                     self._safe_broadcast(
                         {
@@ -130,7 +129,7 @@ class PipOpsMixin:
                     }
                 )
                 self._dynamic_load_new_modules()
-                 
+                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
                 if _CoreHelpers._packages_contain_dashboard(packages):
                     self._schedule_dashboard_self_reload()
             else:
@@ -178,7 +177,7 @@ class PipOpsMixin:
         try:
             pkg_mgr = self._get_pkg_manager()
             backend = pkg_mgr.get_pip_backend()
-             
+            # uv pip uninstall 不支持 -y 参数（本身即为非交互式）
             if pkg_mgr.is_using_uv():
                 cmd = backend + ["uninstall", package_name]
             else:
@@ -257,9 +256,6 @@ class PipOpsMixin:
         cmd = backend + ["install", "--upgrade"]
         if index_url:
             cmd.extend(["--index-url", index_url])
-         
-         
-         
         if any(p.split("==", 1)[0].strip().lower() == "erispulse" and "==" not in p for p in packages):
             try:
                 import re as _re
@@ -267,7 +263,7 @@ class PipOpsMixin:
                 from importlib.metadata import version as _pkg_version
 
                 _cur = _pkg_version("ErisPulse") or ""
-                 
+                # PEP 440 预发布段：dev/a/b/rc/pre 后跟数字或直接后缀
                 if _re.search(r"(\.dev\d+|\.a\d+|\.b\d+|\.rc\d+|[ab]\d+|rc\d+)\s*$", _cur, _re.I):
                     cmd.append("--pre")
             except Exception:
@@ -304,8 +300,7 @@ class PipOpsMixin:
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                         
-                         
+                        # 行到达即推（800ms 节流），每 20 行兜底推一次；
                         now = time.time()
                         if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
                             last_push[0] = now
@@ -323,7 +318,7 @@ class PipOpsMixin:
                 pipe.close()
 
             def _pip_heartbeat():
-                 
+                # pip 依赖解析/下载可能长时间零输出：10s 心跳证明任务仍活着
                 while proc.poll() is None:
                     self._safe_broadcast(
                         {
@@ -375,10 +370,10 @@ class PipOpsMixin:
                     }
                 )
                 self._get_pkg_manager().invalidate_caches()
-                 
+                # 重载受升级影响的已注册模块（遵守 enabled 状态）
                 self._reload_upgraded_registered_modules(packages)
-                 
-                 
+                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
+                # （_reload_upgraded_registered_modules 会跳过 Dashboard，需单独处理）
                 if _CoreHelpers._packages_contain_dashboard(packages):
                     self._schedule_dashboard_self_reload()
                 self._safe_broadcast(
@@ -461,8 +456,7 @@ class PipOpsMixin:
                 try:
                     for line in iter(pipe.readline, ""):
                         combined_lines.append(line.rstrip())
-                         
-                         
+                        # 行到达即推（800ms 节流），每 20 行兜底推一次；
                         now = time.time()
                         if now - last_push[0] >= 0.8 or len(combined_lines) % 20 == 0:
                             last_push[0] = now
@@ -480,7 +474,7 @@ class PipOpsMixin:
                 pipe.close()
 
             def _pip_heartbeat():
-                 
+                # pip 依赖解析/下载可能长时间零输出：10s 心跳证明任务仍活着
                 while proc.poll() is None:
                     self._safe_broadcast(
                         {
@@ -536,7 +530,7 @@ class PipOpsMixin:
                     }
                 )
                 self._dynamic_load_new_modules()
-                 
+                # 本地文件安装涉及本模块时：延迟重载 Dashboard
                 if _CoreHelpers._packages_contain_dashboard([filename]):
                     self._schedule_dashboard_self_reload()
             else:

@@ -19,14 +19,14 @@ from fastapi.responses import JSONResponse
 class ApiModulesMixin:
     """模块列表、加载 / 卸载 / 重载操作与模块配置 API。"""
 
-     
+    # 影子测试能力的方法全集（SDK 缺任一项即整体视为不支持）
     _SHADOW_CAPS = ("shadow_start", "promote_shadow", "dismiss_shadow", "shadow_diff")
 
-     
+    # 影子源 whl 上传限制：文件本体 / 解包总大小 / 解包条目（zip 炸弹防护）
     _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024
     _SHADOW_EXTRACT_MAX_BYTES = 200 * 1024 * 1024
     _SHADOW_EXTRACT_MAX_ENTRIES = 2000
-     
+    # 影子源目录名段：仅允许模块名安全字符（防路径注入）
     _SHADOW_SEG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
     def _shadow_supported(self) -> bool:
@@ -42,7 +42,7 @@ class ApiModulesMixin:
         module_manager = self.sdk.module
         adapter_list = self.sdk.adapter.list_registered()
 
-         
+        # --- 并行：路由计数 + 视窗计数 + Git 包 + Bot 计数 + 适配器能力 ---
         async def _compute_meta():
             """计算路由和视窗计数"""
             routes_counts: dict[str, int] = {}
@@ -76,7 +76,7 @@ class ApiModulesMixin:
             except Exception:
                 pass
 
-             
+            # 并行拉取每个平台的能力
             async def _one_cap(p: str):
                 try:
                     return p, self.sdk.adapter.list_sends(p) or []
@@ -89,20 +89,20 @@ class ApiModulesMixin:
                     caps[p] = val
             return bot_counts, caps
 
-         
+        # 并行执行两组计算
         (
             (routes_counts, views_counts),
             (adapter_bot_counts, adapter_capabilities),
         ) = await asyncio.gather(_compute_meta(), _compute_adapter_extras())
 
-         
+        # Git 包（纯内存查找）
         git_packages: dict[str, dict] = {}
         try:
             git_packages = self._get_pkg_manager().get_git_packages()
         except Exception:
             pass
 
-         
+        # 影子测试能力（SDK 级探测一次，供前端决定模块卡菜单项显隐）
         shadow_supported = self._shadow_supported()
 
         modules = []
@@ -161,8 +161,8 @@ class ApiModulesMixin:
                     "shadow": False,
                 }
             )
-         
-         
+        # 未注册（禁用后失去句柄）的模块/适配器：Finder + 配置还原状态，
+        # WebUI 展示为"未加载/禁用中"，用户可自行启用
         modules.extend(self._discover_ghost_modules(adapter_list))
         return JSONResponse({"modules": modules})
 
@@ -177,7 +177,7 @@ class ApiModulesMixin:
             return JSONResponse({"error": "name and action required"}, status_code=400)
 
         if mtype == "adapter":
-             
+            # 禁用后的适配器失去句柄：enable/load 前尝试经 Finder 重新注册
             if action in ("load", "enable") and not self.sdk.adapter.get(name):
                 if not self._register_ghost_adapter(name):
                     return JSONResponse(
@@ -227,7 +227,7 @@ class ApiModulesMixin:
                 )
             return JSONResponse({"error": "adapter not found"}, status_code=404)
 
-         
+        # 禁用后的模块失去句柄：enable/load 前尝试经 Finder 重新注册
         if (
             action in ("enable", "load")
             and name not in set(self.sdk.module.list_registered())
@@ -309,7 +309,7 @@ class ApiModulesMixin:
         else:
             return JSONResponse({"error": f"unknown action: {action}"}, status_code=400)
 
-     
+    # ════════════════ 模块配置 ════════════════
 
     def _get_module_config_info(self, module_name: str) -> dict | None:
         """获取模块配置信息（schema + 当前值）"""
@@ -329,7 +329,7 @@ class ApiModulesMixin:
         }
 
         if config_class is not None:
-             
+            # 配置键名 = 模块注册名（与 BaseModule._get_config_key 一致）
             config_key = module_name
 
             result["config_key"] = config_key
@@ -367,7 +367,7 @@ class ApiModulesMixin:
         if config_class is None:
             return JSONResponse({"error": "Module has no config schema"}, status_code=400)
 
-         
+        # 配置键名 = 模块注册名
         config_key = module_name
 
         body = await request.json()
@@ -376,7 +376,6 @@ class ApiModulesMixin:
             current = self.sdk.config.getConfig(config_key) or {}
             merged = {**current, **values}
 
-             
             try:
                 from ErisPulse.runtime.config_schema import (
                     dict_to_dataclass,
@@ -394,13 +393,11 @@ class ApiModulesMixin:
 
             self.sdk.config.setConfig(config_key, merged)
 
-             
-             
 
             self._add_audit_log("module_config_update", module_name, request)
             return JSONResponse({"success": True})
 
-         
+        # 单个 key 更新
         key = body.get("key", "")
         value = body.get("value")
         if not key:
@@ -411,7 +408,7 @@ class ApiModulesMixin:
         self._add_audit_log("module_config_update", f"{module_name}.{key}", request)
         return JSONResponse({"success": True})
 
-     
+    # ════════════════ 资源归属审计 ════════════════
 
     @staticmethod
     def _get_ownership_service():
@@ -484,7 +481,7 @@ class ApiModulesMixin:
             {"supported": True, "owners": owners, "orphans": orphans}
         )
 
-     
+    # ════════════════ 模块命令清单 ════════════════
 
     async def _api_module_commands(self, request: Request) -> JSONResponse:
         """模块已注册命令清单：SDK 命令总览按模块过滤（owner 字段缺失时返回空集）"""
@@ -507,8 +504,8 @@ class ApiModulesMixin:
                 }
             )
         entry = overview.get(name) or {}
-         
-         
+        # 权限信息补充：总览不含权限位，从命令注册表读取 master 限定标记
+        # （permission 为可调用对象不可序列化，不透出）
         master_flags: dict[str, bool] = {}
         try:
             from ErisPulse.Core.Event import command as command_service
@@ -540,7 +537,7 @@ class ApiModulesMixin:
             {"supported": True, "module": name, "commands": commands}
         )
 
-     
+    # ════════════════ 影子测试 ════════════════
 
     async def _api_module_shadow(self, request: Request) -> JSONResponse:
         """影子测试操作：action=start（source 为新版代码路径）/ promote / dismiss"""
@@ -591,10 +588,10 @@ class ApiModulesMixin:
                     {"error": f"unknown action: {action}"}, status_code=400
                 )
         except Exception as e:
-             
+            # 影子操作失败语义由 SDK 保证（promote 自动回滚旧实例），原样透出错误
             return JSONResponse({"error": str(e)}, status_code=400)
 
-     
+    # ════════════════ 影子测试 · whl 上传 ════════════════
 
     async def _api_module_shadow_upload(self, request: Request) -> JSONResponse:
         """
@@ -607,7 +604,7 @@ class ApiModulesMixin:
                 {"error": "shadow not supported", "supported": False},
                 status_code=501,
             )
-         
+        # 模块名仅作单层目录段使用：严格校验，防路径注入
         if (
             not name
             or name in (".", "..")
@@ -637,7 +634,7 @@ class ApiModulesMixin:
             return JSONResponse(
                 {"error": "only .whl files are allowed"}, status_code=400
             )
-         
+        # wheel 文件名粗校验（PEP 427）：name-version-[-build]-py-abi-platform.whl ≥ 5 段
         stem_parts = filename[:-4].split("-")
         if len(stem_parts) < 5 or any(not p for p in stem_parts):
             return JSONResponse(
@@ -651,15 +648,11 @@ class ApiModulesMixin:
             return JSONResponse(
                 {"error": "wheel too large (max 50MB)"}, status_code=400
             )
-         
-         
-         
         ts = time.strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
         dest = Path.cwd() / "shadows" / name / ts
         try:
             source = await asyncio.to_thread(self._extract_shadow_whl, data, dest, stem_parts[0])
         except Exception as e:
-             
             shutil.rmtree(dest, ignore_errors=True)
             self.logger.debug(f"shadow whl upload failed for {name}: {e}")
             return JSONResponse({"error": str(e)}, status_code=400)
@@ -723,10 +716,10 @@ class ApiModulesMixin:
             return matched[0]
         if len(with_init) == 1:
             return with_init[0]
-         
+        # 扁平 wheel：包内容直接在解包根（根目录即含 __init__.py）
         if (dest / "__init__.py").exists():
             return dest
-         
+        # 单模块 wheel：顶层唯一与发行名同名的 .py 文件
         singles = [p for p in tops if p.is_file() and p.suffix == ".py" and norm(p.stem) == norm(dist_name)]
         if len(singles) == 1:
             return singles[0]

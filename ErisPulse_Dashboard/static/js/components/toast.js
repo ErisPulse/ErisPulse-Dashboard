@@ -1,6 +1,5 @@
- 
- 
- 
+// ErisPulse Dashboard – components/toast
+// 显隐只切 .show 类；位移动画在 CSS
 
 export function toast(msg, type) {
   const el = document.createElement("div");

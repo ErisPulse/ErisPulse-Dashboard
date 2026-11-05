@@ -20,7 +20,6 @@ class ApiClusterMixin:
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
 
-         
         modules_tree = topology.get("modules") or {}
         for name, info in modules_tree.items():
             depends = []
@@ -70,7 +69,6 @@ class ApiClusterMixin:
         name = str(body.get("name", "")).strip()
         url = str(body.get("url", "")).strip()
         token = str(body.get("token", "")).strip()
-         
         if not node_id:
             node_id = "node_" + secrets.token_urlsafe(6)
         if not url or not token:

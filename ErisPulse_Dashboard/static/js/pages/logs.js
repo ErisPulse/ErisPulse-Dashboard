@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/logs
 
 export function debounceLogs() {
   clearTimeout(_logDebounceTimer);
@@ -7,7 +7,7 @@ export function debounceLogs() {
 
 export function toggleLogAutoRefresh() {
   if (_logStreamActive || _logAutoRefreshTimer) {
-     
+    // Turn off
     _logStreamActive = false;
     if (_logAutoRefreshTimer) {
       clearInterval(_logAutoRefreshTimer);
@@ -17,9 +17,9 @@ export function toggleLogAutoRefresh() {
     if (btn) btn.style.opacity = "0.5";
     toast(t("auto_refresh_off"), "");
   } else {
-     
+    // Turn on - prefer WebSocket streaming, fall back to polling
     _logStreamActive = true;
-     
+    // Also do an initial load to get history
     loadLogs();
     var btn = document.getElementById("logAutoRefreshBtn");
     if (btn) btn.style.opacity = "1";
@@ -31,9 +31,9 @@ export function _onWebSocketLog(logData) {
   if (!_logStreamActive) return;
   _logStreamBuffer.push(logData);
   if (_logStreamFlushTimer) return;
-   
-   
-   
+  // 渲染合帧：WS 日志仅入队，至多每 250ms 合并一批，DOM 写入对齐下一动画帧；
+  // 高频日志不逐条触发列表重排（增量插入见 _flushLogStream，全量重建仅发生在
+  // 切 tab / 变更过滤器 / 手动刷新等用户动作驱动的 loadLogs）
   _logStreamFlushTimer = setTimeout(function () {
     _logStreamFlushTimer = null;
     requestAnimationFrame(function () {
@@ -48,7 +48,7 @@ export function _flushLogStream() {
   var newLogs = _logStreamBuffer;
   _logStreamBuffer = [];
 
-   
+  // 收集新出现的模块；仅在有真正新增时才重建模块下拉
   var hasNewModule = false;
   newLogs.forEach(function (log) {
     if (log.module && !_availableModules.has(log.module)) {
@@ -58,7 +58,7 @@ export function _flushLogStream() {
   });
   if (hasNewModule) updateModuleSelect();
 
-   
+  // Apply current filters
   var moduleFilter = document.getElementById("logModuleFilter")?.value || "";
   var levelSet = _getSelectedLevelsSet();
   var search = document.getElementById("logSearch")?.value?.toLowerCase() || "";
@@ -70,7 +70,7 @@ export function _flushLogStream() {
     return true;
   });
 
-   
+  // Prepend to existing log list
   var logList = document.getElementById("logList");
   if (!logList) return;
 
@@ -83,17 +83,17 @@ export function _flushLogStream() {
     logList.insertAdjacentHTML("afterbegin", insertHTML);
   }
 
-   
+  // Trim excess entries (keep max 500)
   while (logList.children.length > 500) {
     if (_logSortNewestBottom) logList.removeChild(logList.firstChild);
     else logList.removeChild(logList.lastChild);
   }
 
-   
+  // Update count
   var countEl = document.getElementById("logCount");
   if (countEl) countEl.textContent = parseInt(countEl.textContent || "0") + filtered.length;
 
-   
+  // Auto-scroll
   if (!_logPaused && (_logStreamActive || wasNearBottom)) {
     logList.scrollTop = _logSortNewestBottom ? logList.scrollHeight : 0;
   }
@@ -123,7 +123,7 @@ export function _renderLogEntry(log) {
   var lvlBadge = lvl
     ? '<span class="log-level-badge ' + lvl + '">' + esc(log.level) + "</span>"
     : "";
-   
+  // Short timestamp: HH:MM:SS, full on hover
   var ts = log.timestamp || "";
   var shortTs = ts;
   var m = ts.match(/(\d{2}:\d{2}:\d{2})/);
@@ -177,7 +177,7 @@ export async function loadLogs() {
   const selectedLevels = _getSelectedLevels();
   const search = document.getElementById("logSearch")?.value || "";
 
-   
+  // 定期做一次全量扫描以发现新模块（不阻塞当前渲染）
   _discoverLogModules();
 
   const params = new URLSearchParams();
@@ -191,7 +191,7 @@ export async function loadLogs() {
 
   const logs = d.logs || [];
 
-   
+  // 同时从当前筛选结果中收集新模块
   var newModules = false;
   logs.forEach((log) => {
     if (log.module && !_availableModules.has(log.module)) {
@@ -229,7 +229,7 @@ export function updateModuleSelect() {
 
   const currentValue = select.value;
 
-   
+  // 清空并重新填充
   select.innerHTML = '<option value="">' + t("all_modules") + "</option>";
 
   const sortedModules = Array.from(_availableModules).sort();
@@ -240,7 +240,6 @@ export function updateModuleSelect() {
     select.appendChild(opt);
   });
 
-   
   if (currentValue && _availableModules.has(currentValue)) {
     select.value = currentValue;
   }
@@ -400,7 +399,7 @@ export async function clearLifecycle() {
   loadLifecycle();
 }
 
- 
+// ════════════════ 服务端日志导出（sdk.logger.save_logs → 临时文件 → FileResponse） ════════════════
 
 export async function exportServerLogs() {
   try {
@@ -418,7 +417,7 @@ export async function exportServerLogs() {
       toast(msg || t("server_error") + " (" + resp.status + ")", "er");
       return;
     }
-     
+    // 文件名优先取响应头（后端已按日期命名），缺失时本地补齐
     const cd = resp.headers.get("Content-Disposition") || "";
     let name = "";
     const mStar = cd.match(/filename\*=UTF-8''([^;]+)/i);
@@ -452,7 +451,7 @@ export async function exportServerLogs() {
   }
 }
 
- 
+// ════════════════ 实时连接面板（连接注册表 list + stats） ════════════════
 
 export async function loadConnections() {
   const listEl = document.getElementById("connList");
@@ -462,7 +461,7 @@ export async function loadConnections() {
   const unsupportedEl = document.getElementById("connUnsupported");
   const d = await api("/api/connections");
 
-   
+  // 旧 SDK 无 connections 模块：显示不支持态（与归属审计 tab 同构）
   if (!d || d.supported === false) {
     listEl.innerHTML = "";
     if (statsEl) statsEl.innerHTML = "";
@@ -482,7 +481,7 @@ export async function loadConnections() {
       stats.total !== undefined ? stats.total : conns.length,
     );
 
-   
+  // stats 概览行：总数 / 各 kind / 命名空间数 / 分组数
   if (statsEl) {
     const byKind = stats.by_kind || {};
     const nsNames = Object.keys(stats.by_namespace || {}).length;
@@ -514,7 +513,7 @@ export async function loadConnections() {
     return;
   }
 
-   
+  // kind 语义 chip：server=sc / client=pr / sse=ok
   var kindClass = { server: "chip-sc", client: "chip-pr", sse: "chip-ok" };
   listEl.innerHTML = conns
     .map(function (c) {

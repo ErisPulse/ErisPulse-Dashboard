@@ -1,13 +1,13 @@
-
-
-
+/* ErisPulse Dashboard – files
+   资源管理器式文件管理：紧凑行列表 + 网格双视图、排序表头、
+   选择操作条、行内 ⋮ 菜单（移动端 bottom-sheet） */
 
 .fm2-card {
     padding: 0;
     overflow: hidden;
 }
 
- 
+/* ── 面包屑（沿用 fm-crumb 系列类名） ── */
 .fm2-crumbbar {
     flex: 1;
     min-width: 0;
@@ -57,7 +57,7 @@
     display: block;
 }
 
- 
+/* ── 工具行：面包屑 + 搜索/视图/刷新 ── */
 .fm2-toolbar {
     display: flex;
     align-items: center;
@@ -94,7 +94,7 @@
     height: 30px;
 }
 
- 
+/* ── 操作行 ── */
 .fm2-actions {
     display: flex;
     align-items: center;
@@ -108,7 +108,7 @@
     flex: 1;
 }
 
- 
+/* ── 选择操作条 ── */
 .fm2-selbar {
     display: flex;
     align-items: center;
@@ -129,7 +129,7 @@
     flex: 1;
 }
 
- 
+/* ── 列表 ── */
 .fm2-listwrap {
     min-height: 320px;
     max-height: calc(100vh - 340px);
@@ -217,7 +217,7 @@
     white-space: nowrap;
 }
 
- 
+/* 可预览文件：名称尾部预览按钮（桌面 hover 浮现 / 触屏常显） */
 .fm2-previewbtn {
     flex-shrink: 0;
     width: 22px;
@@ -295,7 +295,7 @@
     color: var(--tx-p);
 }
 
- 
+/* ── 网格视图 ── */
 .fm2-list.fm2-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -348,7 +348,7 @@
     color: var(--tx-t);
 }
 
- 
+/* ── 右键菜单 / 移动端 bottom-sheet ── */
 .fm-context-menu {
     position: fixed;
     z-index: 1200;
@@ -396,9 +396,9 @@
     background: var(--bd);
 }
 
- 
-
-
+/* ── 编辑器模态窗 ── */
+/* max-width / max-height 必须显式放开：.modal-box 基础规则是 420px 小弹窗，
+   否则编辑器在 PC 上也只显示手机尺寸 */
 .fm-editor-modal .fm-editor-box {
     width: min(1180px, 94vw);
     max-width: none;
@@ -479,7 +479,7 @@
     height: 100%;
 }
 
- 
+/* ── 移动端 ── */
 @media (max-width: 768px) {
     .fm2-desktop-only {
         display: none !important;
@@ -538,7 +538,7 @@
         display: none;
     }
 
-     
+    /* 修改时间落到名称下方第二行 */
     .fm2-row::after {
         content: attr(data-meta);
         grid-column: 2;
@@ -559,7 +559,7 @@
         padding: 10px;
     }
 
-     
+    /* 菜单变 bottom-sheet */
     .fm-context-menu.fm-ctx-sheet {
         left: 8px !important;
         right: 8px;
@@ -572,7 +572,7 @@
         padding: 12px 12px;
     }
 
-     
+    /* 编辑器全屏 */
     .fm-editor-modal .fm-editor-box {
         width: 100%;
         height: 100%;
@@ -581,7 +581,7 @@
     }
 }
 
- 
+/* ── 编辑器 IDE 化：状态栏 + CodeMirror 打磨 ── */
 .fm-editor-modal .fm-editor-box {
     width: min(1180px, 94vw);
     max-width: none;
@@ -619,7 +619,7 @@
     font-weight: 600;
 }
 
- 
+/* 亮色（default 主题）：gutter 分离 + 活动行高亮 */
 .fm-editor-box .cm-s-default .CodeMirror {
     font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
     font-size: 13px;
@@ -654,7 +654,7 @@
     background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
- 
+/* 暗色（dracula）：活动行补底色 */
 .fm-editor-box .cm-s-dracula .CodeMirror-activeline-background {
     background: rgba(255, 255, 255, 0.06);
 }
@@ -665,7 +665,7 @@
     line-height: 1.55;
 }
 
- 
+/* 补全下拉与编辑器同风格 */
 .fm-editor-box .CodeMirror-hints {
     z-index: 1300;
     font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
@@ -681,14 +681,14 @@
     }
 }
 
- 
+/* 状态栏保存按钮：紧凑，随状态栏高度 */
 .fm-editor-savebtn {
     padding: 3px 14px;
     font-size: 12px;
     line-height: 1.4;
 }
 
- 
+/* ════════════════ 在线预览模态（img/video/audio/PDF 原生标签） ════════════════ */
 .fm-preview-modal .fm-preview-box {
     width: min(1080px, 94vw);
     height: min(720px, 88vh);
@@ -702,7 +702,7 @@
     animation: modalIn 0.2s var(--ease-soft-spring) both;
 }
 
- 
+/* ── 头部：类型图标 + 文件名/元信息 + 画廊导航/下载/关闭 ── */
 .fm-preview-header {
     display: flex;
     align-items: center;
@@ -761,7 +761,7 @@
     height: 15px;
 }
 
- 
+/* ── 媒体区：次级底衬托，contain 自适应 ── */
 .fm-preview-body {
     flex: 1;
     min-height: 0;
@@ -790,7 +790,7 @@
     background: var(--bg-t);
 }
 
- 
+/* 音频：大图标 + 原生控件 */
 .fm-preview-audiowrap {
     display: flex;
     flex-direction: column;
@@ -810,7 +810,7 @@
     width: min(420px, 86%);
 }
 
- 
+/* 加载骨架：呼吸态 */
 .fm-preview-loading {
     position: absolute;
     inset: 0;
@@ -853,7 +853,7 @@
     }
 }
 
- 
+/* ── 底部信息条 ── */
 .fm-preview-footer {
     display: flex;
     align-items: center;
@@ -882,7 +882,7 @@
     font-size: 11.5px;
 }
 
- 
+/* ── 移动端：全屏预览 ── */
 @media (max-width: 768px) {
     .fm-preview-modal .fm-preview-box {
         width: 100%;
@@ -893,11 +893,11 @@
     }
 }
 
- 
+/* ══════════ 移动端（≤768）：文件管理触控目标 ≥40px ══════════ */
 @media (max-width: 768px) {
     .fm2-search {
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
         flex: 1 1 120px;
         width: auto;
     }

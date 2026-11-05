@@ -1,6 +1,6 @@
- 
- 
- 
+// ErisPulse Dashboard – 全局状态
+// 原顶层 var/let 与跨模块 const 提升为 window 属性，保持与拆分前全局语义一致
+// 首次求值即执行（main.js 第一个 import），为后续模块提供全局状态
 
 window.API = "/Dashboard";
 window.TK = "__ep_tk__";
@@ -65,17 +65,17 @@ window._cfgSourceDirty = false;
 window._swipeX = 0;
 window._swipeT = 0;
 window.ACCENT_PRESETS = [
-  "#4fa6de",  
-  "#6750a4",  
-  "#006b3c",  
-  "#e8590c",  
-  "#c92a2a",  
-  "#9c36b5",  
-  "#2c7bb6",  
-  "#495057",  
+  "#4fa6de", // ErisPulse 默认蓝
+  "#6750a4", // MD3 紫
+  "#006b3c", // 深绿
+  "#e8590c", // 橙
+  "#c92a2a", // 红
+  "#9c36b5", // 品红
+  "#2c7bb6", // 深蓝
+  "#495057", // 石板灰
 ];
- 
- 
+// 内置背景图案库（res/bg_patterns，git 跟踪目录；appearance.js 读取）
+// bg_upload/ 为用户上传目录（gitignore），内置图案不依赖它
 window.BG_PATTERNS = [
   "bg_3d6e2854f17344af90657cf84b6749e2.png",
   "bg_4611839d3c9a4da9b5398a2add4b1563.png",
@@ -89,9 +89,9 @@ window.BG_PATTERNS = [
   "bg_f0344a55d2d64e6fbdd7e35d874f3770.gif",
   "bg_54ce22286de24255ba895d17d2a1bb69.jpg",
 ].map(function (n) { return "/Dashboard/static/res/bg_patterns/" + n; });
- 
+// 透感档位（ep_setting_bg_trans）：soft 轻 / standard 标准（默认，无附加类） / strong 强
 window.BG_TRANS_LEVELS = ["soft", "standard", "strong"];
- 
+// ══════════ 时间显示格式（ep_setting_time_format："24" 默认 / "12" 12 小时制） ══════════
 window.getTimeFormat = function () {
   try {
     return localStorage.getItem("ep_setting_time_format") === "12" ? "12" : "24";
@@ -99,7 +99,7 @@ window.getTimeFormat = function () {
     return "24";
   }
 };
- 
+// t 系时间格式化工具：ts 支持 UNIX 秒 / 毫秒 / Date 实例，按用户时间格式偏好输出时分秒
 window.formatTime = function (ts) {
   var d = ts instanceof Date ? ts : new Date(Math.abs(Number(ts)) < 1e12 ? Number(ts) * 1000 : Number(ts));
   if (isNaN(d.getTime())) return "-";
@@ -114,8 +114,6 @@ window.formatTime = function (ts) {
     return d.toLocaleTimeString();
   }
 };
- 
- 
 (function () {
   var _nativeLtts = Date.prototype.toLocaleTimeString;
   Date.prototype.toLocaleTimeString = function (loc, opts) {
@@ -229,8 +227,8 @@ window._wsEventBuffer = [];
 window._wsFlushTimer = null;
 window._moduleConfigNames = [];
 window._moduleConfigCurrent = "";
-window._paletteModules = null;  
-window._cfgDirtyKeys = new Set();  
+window._paletteModules = null; // 全局搜索用的懒加载模块缓存（仅含声明了配置的模块）
+window._cfgDirtyKeys = new Set(); // 组件配置表单的未保存字段 key（ackey）
 window.builderState = {
   eventType: "message",
   detailType: "",
@@ -317,7 +315,7 @@ window._masterPlatforms = [];
 window._masterEntries = [];
 window._masterFilter = "";
 window._masterProviders = [];
- 
+// 框架是否支持 master.users 内的 global 保留键（由 /api/master 能力探测填充）
 window._masterGlobalKeySupported = false;
 window._scopeData = null;
 window._scopePlatformBots = {};

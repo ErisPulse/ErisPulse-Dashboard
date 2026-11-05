@@ -1,7 +1,7 @@
- 
- 
- 
- 
+// ErisPulse Dashboard – core/drag-scroll
+// 触屏 / VNC 拖拽滚动兜底：此类环境把触摸合成为鼠标拖拽，
+// 浏览器默认行为是拖选文字（配合全局 user-select:none 已抑制），
+// 这里把"鼠标按住拖动"翻译成容器滚动，让滑动 = 滚动。
 
 var _DRAG_IGNORE = [
   "button",
@@ -14,7 +14,7 @@ var _DRAG_IGNORE = [
   "[onclick]",
   ".CodeMirror",
   ".topo-canvas",
-   
+  // 内容豁免区：日志/会话记录/事件流/Markdown 详情保持拖选复制语义
   ".log-console",
   ".transcript-msg-list",
   ".dash-events",
@@ -23,7 +23,7 @@ var _DRAG_IGNORE = [
   ".fw-notes-callout",
   ".fw-notes-group-body",
 ].join(",");
-var _THRESHOLD = 6;  
+var _THRESHOLD = 6; // px，超过才视为拖拽（过滤点击抖动）
 
 var _dragging = false;
 var _startX = 0;
@@ -35,7 +35,7 @@ var _scroller = null;
 var _prevBehavior = "";
 
 function _enabled() {
-   
+  // ep_touch_scroll: "auto"(默认,触屏/VNC 探测) | "on" | "off"
   var mode = null;
   try {
     mode = localStorage.getItem("ep_touch_scroll");
@@ -49,7 +49,7 @@ function _enabled() {
 }
 
 function _onDown(e) {
-   
+  // 只接管被合成为鼠标的触摸拖拽；真触点走原生滚动
   if (e.pointerType !== "mouse" || e.button !== 0) return;
   if (!_enabled()) return;
   if (e.target.closest && e.target.closest(_DRAG_IGNORE)) return;
@@ -62,8 +62,7 @@ function _onDown(e) {
   _moved = false;
   _startX = _lastX = e.clientX;
   _startY = _lastY = e.clientY;
-   
-   
+  // 拖动中连续赋值互相打断导致"拖不动"——拖动期间强制 auto，结束后还原
   _prevBehavior = scroller.style.scrollBehavior;
   scroller.style.scrollBehavior = "auto";
 }
@@ -94,7 +93,7 @@ function _onUp() {
   _scroller = null;
 }
 
- 
+// 拖拽结束后吞掉紧随的一次 click，防止滑动松手误触按钮/卡片
 function _suppressClick() {
   var kill = function (e) {
     e.stopPropagation();
@@ -102,7 +101,7 @@ function _suppressClick() {
     document.removeEventListener("click", kill, true);
   };
   document.addEventListener("click", kill, true);
-   
+  // 兜底：异常路径下 400ms 后自动解除，避免永久吞点击
   setTimeout(function () {
     document.removeEventListener("click", kill, true);
   }, 400);
@@ -115,7 +114,7 @@ export function initDragScroll() {
   document.addEventListener(
     "pointermove",
     _onMove,
-    { passive: false }  
+    { passive: false } // 需要 preventDefault 阻断默认拖选
   );
   document.addEventListener("pointerup", _onUp, { passive: true });
   document.addEventListener("pointercancel", _onUp, { passive: true });

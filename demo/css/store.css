@@ -1,7 +1,7 @@
+/* ErisPulse Dashboard – store
+   模块商店（市场浏览 + 已装包管理） */
 
-
-
- 
+/* ───────────────────────── 工具条 ───────────────────────── */
 
 .store-toolbar {
     display: flex;
@@ -18,10 +18,9 @@
     width: auto;
 }
 
-
-
-
-
+/* ───────────────────────── 筛选区行距 ─────────────────────────
+   页面头栏（搜索工具条）、分类 chips 行、标签选择器三行回到区块标准节奏
+   （14px，design-language §2.3）。 */
 .store-toolbar,
 .store-category-chips,
 .store-tags {
@@ -66,20 +65,17 @@
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
- 
+/* ───────────────────────── 市场卡片 ───────────────────────── */
 
 .store-grid {
     margin-top: 12px;
 }
 
-
-
-
 .grid-3.store-grid {
     gap: 16px;
 }
 
- 
+/* 舒适档（默认）：padding 18px、卡内行距 10px（design-language 卡片 18–20px 一档） */
 .store-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -97,10 +93,10 @@
         box-shadow 0.18s var(--ease-smooth);
 }
 
-
-
-
-
+/* ───────────────────────── 密度双档 ─────────────────────────
+   紧凑档（html[data-density="compact"]）：维持既有紧凑表达——
+   padding 16px 18px / 卡内行距 8px / 网格 gap 14px；
+   舒适档参数见上方 .store-card 默认值（padding 18px / gap 10px / 网格 16px） */
 [data-density="compact"] .store-card {
     padding: 16px 18px;
     gap: 8px;
@@ -110,7 +106,7 @@
     gap: 14px;
 }
 
- 
+/* 窄屏（≤768px）：商店卡采用紧凑档参数，配合全局栅格单列回退呈现列表式原生感 */
 @media (max-width: 768px) {
     .store-card {
         padding: 16px 18px;
@@ -136,7 +132,7 @@
     min-width: 0;
 }
 
- 
+/* 图标瓦片：首字母头像，适配器 accent 染色 */
 .store-ico {
     width: 38px;
     height: 38px;
@@ -159,7 +155,7 @@
     color: var(--accent);
 }
 
- 
+/* 源数据声明的图片 / 内联 SVG 图标：约束在瓦片内，保持外观尺寸一致 */
 .store-ico img,
 .store-ico svg {
     width: 22px;
@@ -174,7 +170,7 @@
     flex: 1;
 }
 
- 
+/* 名称行独占标题块首行：溢出省略、悬停显全名，保证名称可读性优先 */
 .store-name {
     font-size: 14px;
     font-weight: 600;
@@ -195,7 +191,7 @@
     max-width: 100%;
 }
 
- 
+/* 徽标组：类型/分类/状态胶囊，位于名称与包名之下，可换行（标签行类名 store-card-tags 另有用途） */
 .store-card-badges {
     display: flex;
     align-items: center;
@@ -451,27 +447,27 @@
     border-color: var(--wr-bd);
 }
 
- 
+/* ───────────────────────── 表单卡（按名安装 / Git 安装） ───────────────────────── */
 
- 
+/* 同一 tab 内的后续卡片间距（如 Git 安装表单与其已装列表） */
 .pkg-gap-card {
     margin-top: 14px;
 }
 
- 
+/* 类型徽标胶囊：小号紧凑档，语义色由 chip-pr/chip-sc/chip-muted 提供 */
 .pkg-type-chip {
     font-size: 10px;
     padding: 1px 7px;
     font-weight: 600;
 }
 
- 
+/* 中性徽标：依赖库等无语义倾向的类型 */
 .chip-muted {
     background: var(--bg-s);
     color: var(--tx-t);
 }
 
- 
+/* 列表加载骨架：与 .pkg-list 同内边距的呼吸占位 */
 .pkg-skeleton {
     display: flex;
     flex-direction: column;
@@ -510,7 +506,7 @@
     line-height: 1.5;
 }
 
- 
+/* ════════════════ 高级选项（自定义 pip 参数） ════════════════ */
 .adv-opts {
     margin-top: 10px;
     border: 1px solid var(--bd);
@@ -612,7 +608,7 @@
     text-align: center;
 }
 
- 
+/* 更新红点 */
 .has-update-dot {
     position: relative;
 }
@@ -634,7 +630,7 @@
     display: block;
 }
 
- 
+/* 侧栏导航项红点（包管理有可用更新时） */
 .nav-item.show-update .nav-ico {
     position: relative;
 }
@@ -853,7 +849,7 @@
     animation: spin 1s linear infinite;
 }
 
- 
+/* 上传安装模态窗 */
 .upload-drop-zone {
     border: 2px dashed var(--bd);
     border-radius: 12px;
@@ -959,7 +955,7 @@
     border-color: var(--accent);
 }
 
- 
+/* 包详情模态窗 */
 .pkg-detail-meta {
     display: flex;
     align-items: center;
@@ -1144,7 +1140,7 @@
     margin: 0;
 }
 
- 
+/* 批量安装浮动栏 */
 .store-batch-bar {
     position: fixed;
     bottom: 24px;
@@ -1194,7 +1190,7 @@
     color: var(--accent);
 }
 
- 
+/* 商店标签筛选芯片 */
 .store-tag-chip {
     display: inline-block;
     font-size: 11px;
@@ -1218,7 +1214,7 @@
     border-color: var(--accent);
 }
 
- 
+/* 商店标签区域收起 */
 .store-tags-toggle {
     background: none;
     border: none;
@@ -1242,7 +1238,7 @@
     display: none;
 }
 
- 
+/* 商店卡片内标签 */
 .store-card-tags {
     display: flex;
     flex-wrap: wrap;
@@ -1273,7 +1269,7 @@
     min-height: calc(1.4em * 2);
 }
 
- 
+/* 安装确认选项 */
 .install-confirm-options {
     margin-top: 12px;
 }
@@ -1298,7 +1294,7 @@
 }
 
 
- 
+/* ════════════════ 模块商店分类筛选 ════════════════ */
 
 .store-category-chips {
     display: flex;
@@ -1357,7 +1353,7 @@
     border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
- 
+/* 活动中心 info 条目：可点击跳转 */
 .task-item.task-info {
     cursor: pointer;
 }
@@ -1368,9 +1364,9 @@
     background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
- 
+/* ══════════ 移动端（≤768）：商店/包管理工具条纵向堆叠 ══════════ */
 @media (max-width: 768px) {
-     
+    /* 搜索框独占一行，两个下拉共享一行 */
     .store-toolbar .store-search-wrap {
         flex: 1 1 100%;
     }
@@ -1383,7 +1379,7 @@
     .store-toolbar .ep-search,
     .store-search-wrap input {
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 
     .pkg-search {
@@ -1397,7 +1393,7 @@
     }
 }
 
- 
+/* 商店分类 chip 触控目标 + 卡片角标可读性 */
 @media (max-width: 768px) {
     .store-cat-chip {
         min-height: 40px;
@@ -1408,7 +1404,7 @@
     }
 }
 
- 
+/* 商店卡复选框：视觉 24px、命中区 40px（透明边框扩展命中） */
 @media (max-width: 768px) {
     .store-card-check {
         width: 40px;
@@ -1423,7 +1419,7 @@
     }
 }
 
- 
+/* ── 多选模式：默认隐藏复选框，工具条"多选"进入后浮现（html.store-selecting）── */
 .store-card-check {
     display: none;
 }
@@ -1437,7 +1433,6 @@ html.store-selecting .store-card:has(.store-card-check:checked) {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
- 
 html.store-selecting .store-grid {
     padding-bottom: 64px;
 }

@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/cluster
 
 export function isCapabilitySupported(capId) {
   if (currentNode === "local") return true;
@@ -219,7 +219,7 @@ export function _clusterNodeCardHtml(n) {
   h += "</div>";
   if (meta) h += '<div class="cluster-node-meta">' + meta + "</div>";
 
-   
+  // 能力矩阵常显于卡面：支持 = 语义色胶囊 / 不支持 = 中性弱化胶囊
   h += '<div class="cluster-cap-matrix">';
   h +=
     '<span class="cluster-cap-matrix-label">' +
@@ -380,7 +380,6 @@ export function _buildStatsHtml(overviewData) {
 export function _fillClusterCardDetail(nodeId, overviewData) {
   var el = document.getElementById("clusterCard-" + nodeId + "-detail");
   if (!el) return;
-   
   var h = _buildStatsHtml(overviewData);
   el.innerHTML =
     h || '<div style="font-size:12px;color:var(--tx-t);padding:4px 0">-</div>';

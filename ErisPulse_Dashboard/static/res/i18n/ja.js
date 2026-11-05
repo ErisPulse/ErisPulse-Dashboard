@@ -1,5 +1,5 @@
- 
- 
+// ErisPulse Dashboard i18n: ja
+// 本文件由构建维护，请勿直接编辑与 dash.js 内嵌字典同时修改。
 (function () {
   const I18N = window.__EP_I18N__ = window.__EP_I18N__ || {};
   I18N["ja"] = {
@@ -1164,7 +1164,7 @@ adapter: "アダプター",
     about_discussions: "ディスカッション",
     about_market: "モジュールマーケット",
   
-     
+    /* ── インストール設定ガイド / オンボーディング（UX） ── */
     install_guide_title: "インストール完了",
     install_guide_single: "「{name}」のインストールが完了しました。今すぐ設定しますか？",
     install_guide_multi: "以下の新コンポーネントがインストールされました。今すぐ設定しますか？",
@@ -1176,7 +1176,7 @@ adapter: "アダプター",
     accounts_empty_desc: "アダプターがプラットフォームに接続してメッセージを送受信するには、少なくとも1つのアカウント（Bot）が必要です。保存すると自動で再読み込みされ、後からいつでも編集できます。",
     add_first_account: "最初のアカウントを追加",
     view_docs: "ドキュメント",
-     
+    /* ── グローバル検索 ── */
     palette_placeholder: "ページ・コンポーネント・操作を検索…",
     palette_empty: "一致する結果がありません",
     palette_group_pages: "ページ",
@@ -1191,10 +1191,10 @@ adapter: "アダプター",
     palette_act_restart: "フレームワークを再起動",
     palette_act_sidebar: "サイドバーを折りたたむ / 展開",
     palette_act_privacy: "プライバシーモードを切り替え",
-     
+    /* ── 操作ガード ── */
     unsaved_confirm_title: "未保存の変更があります",
     unsaved_confirm_text: "このページを離れると未保存の変更は失われます。離れますか？",
-     
+    /* ── ガイド文案追加 ── */
     install_guide_later_hint: "「コンポーネント設定」からいつでも設定できます",
 
 
@@ -1244,7 +1244,7 @@ adapter: "アダプター",
     settings_upload_global_desc: "このデバイスの全設定をグローバル設定として送信し、同期が有効なすべてのデバイスに適用します",
     settings_upload_confirm: "現在のデバイスの設定でグローバル設定を上書きし、同期が有効なすべてのデバイスを更新します。続行しますか？",
 
-     
+    // ── セキュリティページ ──
     sec_copy: "コピー",
     sec_copied: "コピーしました",
     sec_token_title: "アクセスセキュリティ",

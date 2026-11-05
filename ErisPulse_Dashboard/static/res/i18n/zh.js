@@ -1,5 +1,5 @@
- 
- 
+// ErisPulse Dashboard i18n: zh
+// 本文件由构建维护，请勿直接编辑与 dash.js 内嵌字典同时修改。
 (function () {
   const I18N = window.__EP_I18N__ = window.__EP_I18N__ || {};
   I18N["zh"] = {
@@ -1143,7 +1143,7 @@ settings_tab_colorfont: "颜色与字体",
     about_discussions: "社区讨论",
     about_market: "模块市场",
   
-     
+    /* ── 安装配置引导 / 新手清单（UX） ── */
     install_guide_title: "安装成功",
     install_guide_single: "「{name}」安装成功，是否立即进行配置？",
     install_guide_multi: "以下新组件安装成功，是否立即进行配置？",
@@ -1155,7 +1155,7 @@ settings_tab_colorfont: "颜色与字体",
     accounts_empty_desc: "适配器需要至少一个账户（Bot）才能连接平台收发消息。保存后会自动重载，可随时修改。",
     add_first_account: "添加第一个账户",
     view_docs: "查看文档",
-     
+    /* ── 全局搜索 ── */
     palette_placeholder: "搜索页面、组件、操作…",
     palette_empty: "没有匹配的结果",
     palette_group_pages: "页面",
@@ -1170,10 +1170,10 @@ settings_tab_colorfont: "颜色与字体",
     palette_act_restart: "重启框架",
     palette_act_sidebar: "折叠 / 展开侧边栏",
     palette_act_privacy: "切换隐私模式",
-     
+    /* ── 交互兜底 ── */
     unsaved_confirm_title: "有未保存的修改",
     unsaved_confirm_text: "离开当前页面将丢失未保存的修改，确定要离开吗？",
-     
+    /* ── 引导文案补充 ── */
     install_guide_later_hint: "可随时在「组件配置」中继续配置",
 
 
@@ -1223,7 +1223,7 @@ settings_tab_colorfont: "颜色与字体",
     settings_upload_global_desc: "将当前设备的全部设置推送为全局设置，所有开启同步的设备会自动套用",
     settings_upload_confirm: "将用当前设备的设置覆盖全局设置，所有开启同步的设备都会更新。确定继续？",
 
-     
+    // ── 安全页 ──
     sec_copy: "复制",
     sec_copied: "已复制",
     sec_token_title: "访问安全",

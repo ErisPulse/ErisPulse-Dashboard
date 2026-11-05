@@ -46,7 +46,7 @@ class ApiObservabilityMixin:
             else:
                 return JSONResponse({"error": "Config file not found"}, status_code=404)
 
-     
+    # ════════════════ API · 日志 / 审计 / 生命周期 / 性能 ════════════════
 
     async def _api_logs(self, request: Request) -> JSONResponse:
         """获取日志（从 Dashboard 按级别分缓冲读取）"""
@@ -65,7 +65,7 @@ class ApiObservabilityMixin:
 
         logs_list = []
 
-         
+        # 从 Dashboard 按级别分缓冲读取
         buf = []
         for lvl, deq in self._log_by_level.items():
             if requested_levels is not None and lvl not in requested_levels:
@@ -93,7 +93,7 @@ class ApiObservabilityMixin:
                     "level_num": level_num,
                 })
         else:
-             
+            # 回退：从 sdk.logger._logs 读取（受全局日志级别限制）
             try:
                 internal_logs = self.sdk.logger._logs
                 for module_name, entries in internal_logs.items():
@@ -119,7 +119,7 @@ class ApiObservabilityMixin:
                             "level_num": level_num,
                         })
             except Exception:
-                 
+                # 最终回退：公开 API（旧版本，无级别信息）
                 all_logs = self.sdk.logger.get_logs()
                 import re
                 for module_name, logs in all_logs.items():
@@ -187,7 +187,7 @@ class ApiObservabilityMixin:
 
         system_status = await self._get_system_status()
 
-         
+        # 添加 WebSocket 连接统计
         ws_stats = {
             "active_connections": len(self._ws_clients),
             "uptime_seconds": system_status["uptime_seconds"],
@@ -240,7 +240,7 @@ class ApiObservabilityMixin:
                     except Exception:
                         urls = {}
 
-                 
+                # HTTP 行：path + methods + url（get_module_routes 为主，list_namespaces 纯路径兜底）
                 url_http = {
                     i.get("path"): i.get("url", "") for i in (urls.get("http") or [])
                 }
@@ -263,7 +263,7 @@ class ApiObservabilityMixin:
                         path, {"path": path, "methods": [], "url": url_http.get(path, "")}
                     )
 
-                 
+                # WS / SSE 行：detail 提供认证与流式标记，list_namespaces 提供路径兜底
                 detail_ws = {
                     i.get("path"): bool(i.get("auth"))
                     for i in detail.get("websocket") or []
@@ -302,7 +302,7 @@ class ApiObservabilityMixin:
                     "sse": [{"path": p, "url": url_sse.get(p, "")} for p in sse_paths],
                 }
         else:
-             
+            # 旧 SDK 回退：私有路由表内省（仅结构化信息）
             http_routes_dict = getattr(router_manager, "_http_routes", None) or {}
             ws_routes_dict = getattr(router_manager, "_websocket_routes", None) or {}
             if isinstance(http_routes_dict, dict):
@@ -329,7 +329,7 @@ class ApiObservabilityMixin:
                             {"path": path, "url": "", "auth": auth_handler is not None}
                         )
 
-         
+        # 旧版扁平字段：由 kind 分组数据派生（移除模块前缀的展示路径与原字段保持一致）
         http_routes: list = []
         ws_routes: list = []
         for ns, kinds in namespaces.items():
@@ -364,7 +364,7 @@ class ApiObservabilityMixin:
             }
         )
 
-     
+    # ════════════════ API · 健康聚合 / 连接注册表 / 日志导出 ════════════════
 
     async def _api_health(self, request: Request) -> JSONResponse:
         """框架核心组件健康聚合（对齐 SDK /health 语义，进程内直接组装，不做 HTTP 自调用）。
@@ -377,7 +377,7 @@ class ApiObservabilityMixin:
         detail: dict = {}
         storage_error = ""
 
-         
+        # ---- storage：优先 _is_ready 探测（与 SDK /health 同源），无则兜底查询 ----
         storage_ok: bool | None = None
         is_ready = getattr(s.storage, "_is_ready", None)
         if is_ready is not None:
@@ -399,7 +399,7 @@ class ApiObservabilityMixin:
         if storage_error:
             detail["storage"]["error"] = storage_error
 
-         
+        # ---- adapters：get_status_summary 为主，_started_instances 计数兜底 ----
         adapters_summary: dict = {}
         summary_fn = getattr(s.adapter, "get_status_summary", None)
         if summary_fn is not None:
@@ -431,7 +431,7 @@ class ApiObservabilityMixin:
             "online_bots": online_bots,
         }
 
-         
+        # ---- modules：_loaded_modules 计数，公开 list_loaded 兜底 ----
         loaded_modules = getattr(s.module, "_loaded_modules", None)
         if not isinstance(loaded_modules, (set, list, tuple)):
             try:
@@ -441,7 +441,7 @@ class ApiObservabilityMixin:
         modules_ok = len(loaded_modules) > 0
         detail["modules"] = {"loaded": len(loaded_modules)}
 
-         
+        # ---- router：_uvicorn_server 探测；属性缺失时以"本请求已被路由"为真 ----
         uvicorn_server = getattr(s.router, "_uvicorn_server", None)
         router_ok = True if uvicorn_server is None else uvicorn_server is not None
         detail["router"] = {"listening": router_ok}
@@ -545,7 +545,7 @@ class ApiObservabilityMixin:
         try:
             success = bool(await conn_mgr.close(conn_id))
         except Exception as first_err:
-             
+            # 跨 owner 关闭被权限校验拒绝时，按管理面语义强制关闭（框架回收路径同参）
             try:
                 success = bool(await conn_mgr.close(conn_id, force=True))
             except Exception as second_err:
@@ -609,25 +609,23 @@ class ApiObservabilityMixin:
     async def _api_message_stats(self, request: Request) -> JSONResponse:
         """获取消息统计"""
 
-         
+        # 从事件日志中统计
         type_counts = {}
         platform_counts = {}
 
         for event in self._event_log:
-             
             event_type = event.get("type", "unknown")
             type_counts[event_type] = type_counts.get(event_type, 0) + 1
 
-             
             platform = event.get("platform", "unknown")
             platform_counts[platform] = platform_counts.get(platform, 0) + 1
 
-         
+        # 按小时聚合（最近24小时）
         hourly_stats = {}
         now = time.time()
         for event in self._event_log:
             event_time = event.get("time", 0)
-            if now - event_time > 86400:   
+            if now - event_time > 86400:  # 超过24小时
                 continue
 
             hour_key = int(event_time // 3600) * 3600
@@ -706,10 +704,10 @@ class ApiObservabilityMixin:
             }
         )
 
-     
+    # ════════════════ API · 备份 ════════════════
 
     async def _api_backup_export(self, request: Request) -> JSONResponse:
-         
+        # 优先公开 API 全量读取，旧 SDK 回退私有 _cache
         if hasattr(self.sdk.config, "getAllConfig"):
             config_data = dict(self.sdk.config.getAllConfig())
         else:

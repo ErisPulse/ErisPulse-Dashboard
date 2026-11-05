@@ -1,7 +1,7 @@
- 
+/* ErisPulse Dashboard – dashboard */
 
- 
- 
+/* ════════════════ 核心指标 stat 网格 ════════════════ */
+/* auto-fit 自适应：窄屏自动收拢，无空轨道 */
 #statGrid.stat-grid,
 .stat-grid {
     display: grid;
@@ -10,7 +10,7 @@
     margin-bottom: 20px;
 }
 
- 
+/* stat 瓦片：图标软底方块 + 大数字，radius 14（契约：stat 卡档） */
 .stat-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -74,7 +74,7 @@
     white-space: nowrap;
 }
 
- 
+/* 可点击统计卡 - 下钻：hover 上浮 + 边框点亮 + 数字转 accent */
 .stat-card.is-link {
     cursor: pointer;
 }
@@ -92,7 +92,7 @@
     box-shadow: 0 0 0 3.5px var(--accent-soft);
 }
 
- 
+/* 首载骨架瓦片 */
 .stat-card.stat-skel {
     pointer-events: none;
 }
@@ -149,7 +149,7 @@
     }
 }
 
- 
+/* ════════════════ 实时事件卡（页面尾区块，限高内部滚动） ════════════════ */
 .live-card {
     display: flex;
     flex-direction: column;
@@ -157,19 +157,17 @@
 
 .dash-events {
     flex: 1;
-    min-height: 228px;  
-    max-height: 380px;  
+    min-height: 228px; /* 兜底约 6 行 */
+    max-height: 380px; /* 约 10 行（行高 ≈ 38px），内部滚动 */
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 4px 0;
 }
 
- 
+/* ── 性能卡（全宽单行）：环区居左 + 指标格居右铺满剩余宽度，自然高度 ── */
 .perf-card {
     margin-bottom: 14px;
 }
-
-
 
 .perf-side {
     flex: 1;
@@ -179,8 +177,8 @@
     gap: 10px;
 }
 
-
-
+/* 健康项与指标格同一网格：与 perf-extra-cell 同语言（无胶囊无大色点），
+   语义色仅用于状态字；异常格用 wr 底色晕染提示 */
 .perf-health {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
@@ -210,7 +208,7 @@
     padding: 6px clamp(14px, 1.8vw, 18px) 16px;
 }
 
- 
+/* 环区：固定内容宽度靠左，不被拉伸 */
 .perf-card .card-body.perf-grid,
 .perf-grid {
     display: grid;
@@ -300,9 +298,9 @@
     dominant-baseline: central;
 }
 
- 
-
-
+/* ── 轻量指标格：2 列自适应小格（label 上 / value 下），格间 14px gap，无通栏分隔线 ── */
+/* ── 轻量指标格：居右铺满剩余宽度（auto-fit 4-5 列自适应小格，无分隔线）──
+   处于 .perf-side 纵向 flex 内，宽度由 stretch 铺满 */
 .perf-extra {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
@@ -342,7 +340,7 @@
     white-space: nowrap;
 }
 
- 
+/* ── 实时事件卡：卡底跳转脚注 ── */
 .dash-events .skeleton {
     margin: 10px 18px;
 }
@@ -362,15 +360,15 @@
     font-size: 12px;
 }
 
- 
-
-
+/* ════════════════ 消息统计卡 ════════════════ */
+/* 适配器/模块双列列表区（grid-2 栅格由 overrides 提供）：
+   stretch 等高使双卡底线对齐；两卡内容量相近，等高差值由列表区 flex:1 吸收 */
 .dash-list-grid {
     align-items: stretch;
     margin-bottom: 14px;
 }
 
- 
+/* 卡体纵向弹性：card-body 即列表区，等高产生的余量全部留在列表区内部 */
 .dash-list-grid > .card {
     display: flex;
     flex-direction: column;
@@ -383,12 +381,12 @@
     flex-direction: column;
 }
 
- 
+/* 短卡呈现空态时垂直居中 */
 .dash-list-grid .empty-state {
     margin: auto 0;
 }
 
- 
+/* 页面尾卡：消息统计（下接实时事件卡） */
 .msg-stats-card {
     min-width: 0;
     margin-bottom: 14px;
@@ -408,7 +406,7 @@
     margin-top: 14px;
 }
 
- 
+/* 适配器/模块列表行内文字 */
 .dash-list-name {
     flex: 1;
     min-width: 0;
@@ -432,7 +430,7 @@
     text-transform: capitalize;
 }
 
- 
+/* ════════════════ 性能详情浮层（popover） ════════════════ */
 .popover {
     position: fixed;
     z-index: 1000;
@@ -554,7 +552,7 @@
     font-variant-numeric: tabular-nums;
 }
 
- 
+/* ════════════════ 消息统计图表（api-routes.js loadMessageStats 注入） ════════════════ */
 .stat-bar-chart {
     display: flex;
     align-items: center;
@@ -602,7 +600,7 @@
     font-variant-numeric: tabular-nums;
 }
 
- 
+/* 24小时趋势柱状图 */
 .hourly-chart {
     display: flex;
     align-items: flex-end;
@@ -644,7 +642,7 @@
     font-variant-numeric: tabular-nums;
 }
 
- 
+/* ════════════════ 快捷导航 pins ════════════════ */
 .home-section-hd {
     display: flex;
     align-items: center;
@@ -771,7 +769,7 @@
 .home-pin-add {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);  
+    transform: translateX(-50%);
     bottom: -18px;
     z-index: 10;
 }
@@ -781,7 +779,7 @@
     left: 50%;
     transform: translateX(-50%);
     bottom: calc(100% + 8px);
-     
+    /* 上限约束在内容宽度内：100vw 含滚动条与侧栏占位，直接引用会造成横向溢出 */
     max-width: min(340px, calc(100vw - 32px));
     padding: 8px;
     border: 1px solid var(--bd);
@@ -789,7 +787,7 @@
     background: var(--bg-t);
     box-shadow: var(--shadow-hover);
     display: grid;
-    grid-template-columns: 1fr;  
+    grid-template-columns: 1fr; /* 单列列表：页面/子 tab 层级用缩进表达 */
     gap: 2px;
     max-height: 260px;
     min-width: 230px;
@@ -819,7 +817,7 @@
     flex-shrink: 0;
 }
 
- 
+/* Pin 选择器子 tab */
 .home-pin-subgroup {
     margin-top: 4px;
     padding-left: 12px;
@@ -867,7 +865,7 @@
     height: 14px;
 }
 
- 
+/* ════════════════ tab 区容器（跨页通用） ════════════════ */
 .tab-section {
     display: none;
 }
@@ -876,8 +874,8 @@
     display: block;
 }
 
- 
- 
+/* ════════════════ 响应式 ════════════════ */
+/* <960px：性能卡竖排回退（环区上/指标格下）、适配器+模块单列堆叠（DOM 源序即视觉序） */
 @media (max-width: 960px) {
     .perf-card .card-body.perf-card-body {
         flex-direction: column;
@@ -895,15 +893,15 @@
     }
 }
 
- 
+/* <768px：仪表盘移动端整页适配（规则全部收在本页与媒体查询内，桌面布局不动） */
 @media (max-width: 768px) {
-     
+    /* 四边统一 16px 边距（id 优先级覆盖 overrides 后置的 .page 12px 档） */
     #p-dashboard {
         padding: 16px;
     }
 
-    
-
+    /* 统计网格：强制 2 列铺满（auto-fit 200px 起步在窄屏会塌成 1 列），
+       网格间距与瓦片内距收紧，22/11 大小字号层级保持一眼可扫 */
     #statGrid.stat-grid,
     #p-dashboard .stat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -930,7 +928,7 @@
         height: 19px;
     }
 
-     
+    /* 性能卡竖排（<960px 已环上格下）：收紧环区与指标格纵向节奏 */
     .perf-card .card-body.perf-card-body {
         gap: 14px;
         padding: 4px 12px 14px;
@@ -949,7 +947,7 @@
         gap: 10px;
     }
 
-     
+    /* 环体尺寸需以 id 优先级盖过 overrides 后置的 .circular-progress 56px */
     #p-dashboard .circular-progress {
         width: 68px;
         height: 68px;
@@ -959,7 +957,7 @@
         font-size: 13px;
     }
 
-     
+    /* 快捷 pin：改横滑轨道（拇指滑动不折行），pin 定宽、标签省略、近距吸附 */
     #p-dashboard .home-pins {
         display: flex;
         gap: 10px;
@@ -982,7 +980,7 @@
         scroll-snap-align: start;
     }
 
-     
+    /* 实时事件：上限收小至约 6 行（行高约 40px），缩短移动端首屏 */
     .dash-events {
         min-height: 120px;
         max-height: 240px;
@@ -992,7 +990,7 @@
         padding: 4px 12px 6px;
     }
 
-     
+    /* 触屏命中区 ≥40px：图标按钮/文字链接放大到可点尺寸，仅本页生效 */
     #p-dashboard .btn-icon,
     #p-dashboard .btn-icon-sm {
         min-width: 40px;
@@ -1008,13 +1006,13 @@
         padding: 8px 12px;
     }
 
-     
+    /* popover 在触屏上由环区点开，关闭键同步放大 */
     #p-dashboard .popover-close {
         width: 40px;
         height: 40px;
     }
 
-     
+    /* pin 移除点：视觉 24px + 外扩 8px 透明命中区凑足 40px */
     #p-dashboard .home-pin-remove {
         width: 24px;
         height: 24px;
@@ -1034,7 +1032,7 @@
 }
 
 @media (max-width: 480px) {
-     
+    /* 窄档环体再收一档：68 → 56（id 优先级与上方 768 档对齐才能覆盖） */
     #p-dashboard .circular-progress {
         width: 56px;
         height: 56px;

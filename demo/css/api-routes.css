@@ -1,6 +1,6 @@
- 
+/* ErisPulse Dashboard – api-routes */
 
- 
+/* ════════════════ 消息统计（首页 loadMessageStats 注入） ════════════════ */
 .msg-stats-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -12,8 +12,8 @@
     padding: 8px 0 0;
 }
 
- 
- 
+/* ════════════════ 分组卡节奏 ════════════════ */
+/* 工具条计数组：HTTP / WS 徽标并排 */
 .route-count-group {
     display: flex;
     align-items: center;
@@ -57,7 +57,7 @@
     white-space: nowrap;
 }
 
- 
+/* ════════════════ 路由表：sticky 表头 + 行 hover ════════════════ */
 .route-group-body {
     max-height: 440px;
     overflow-y: auto;
@@ -66,7 +66,7 @@
 
 .route-table {
     width: 100%;
-     
+    /* separate 模式保证 sticky 表头边框滚动时不消失 */
     border-collapse: separate;
     border-spacing: 0;
     font-size: 13px;
@@ -83,7 +83,7 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--tx-t);
-     
+    /* 横向 padding 与 .card-header 对齐（clamp 同参） */
     padding: 8px clamp(16px, 2.6vw, 20px);
     border-bottom: 1px solid var(--bd);
     white-space: nowrap;
@@ -133,7 +133,7 @@
     vertical-align: 1px;
 }
 
- 
+/* ════════════════ 方法徽标：胶囊化 ════════════════ */
 .method-badge {
     display: inline-flex;
     align-items: center;
@@ -178,7 +178,7 @@
     color: var(--sc-c);
 }
 
- 
+/* kind 徽标三色语义：http=pr / ws=sc / sse=ok */
 .method-http {
     background: var(--pr-bg);
     color: var(--pr-c);
@@ -195,7 +195,7 @@
     color: var(--tx-s);
 }
 
- 
+/* 路由完整 URL：path 下方小字提示（get_module_urls 派生，缺省不渲染） */
 .route-url {
     display: block;
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
@@ -207,8 +207,8 @@
     max-width: 460px;
 }
 
- 
- 
+/* ════════════════ 首页健康行（loadHealthStatus 注入） ════════════════ */
+/* 渲染语境：性能卡 .perf-health 区（容器样式见 dashboard.css） */
 
 .health-row {
     display: flex;
@@ -224,7 +224,7 @@
     background: var(--bg-s);
 }
 
- 
+/* 状态标识：静态色点（状态点禁止脉冲动画） */
 .health-dot {
     width: 8px;
     height: 8px;
@@ -262,7 +262,7 @@
     flex-shrink: 0;
 }
 
- 
+/* ════════════════ 响应式 ════════════════ */
 @media (max-width: 640px) {
     .msg-stats-grid {
         grid-template-columns: 1fr;
@@ -293,13 +293,13 @@
     filter: none;
 }
 
- 
+/* ══════════ 移动端（≤768）：路由表路径换行 + 表头字号 ══════════ */
 @media (max-width: 768px) {
     .route-table {
         font-size: 13px;
     }
 
-     
+    /* 长路径在单元格内折行 */
     .route-table td {
         overflow-wrap: anywhere;
         white-space: normal;

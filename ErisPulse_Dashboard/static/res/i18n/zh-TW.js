@@ -1,5 +1,5 @@
- 
- 
+// ErisPulse Dashboard i18n: zh-TW
+// 本文件由构建维护，请勿直接编辑与 dash.js 内嵌字典同时修改。
 (function () {
   const I18N = window.__EP_I18N__ = window.__EP_I18N__ || {};
   I18N["zh-TW"] = {
@@ -1140,7 +1140,7 @@ adapter: "介面卡",
     about_discussions: "社群討論",
     about_market: "模組市場",
   
-     
+    /* ── 安裝設定引導 / 新手清單（UX） ── */
     install_guide_title: "安裝成功",
     install_guide_single: "「{name}」安裝成功，是否立即進行設定？",
     install_guide_multi: "以下新元件安裝成功，是否立即進行設定？",
@@ -1152,7 +1152,7 @@ adapter: "介面卡",
     accounts_empty_desc: "適配器需要至少一個帳戶（Bot）才能連線平台收發訊息。儲存後會自動重載，可隨時修改。",
     add_first_account: "新增第一個帳戶",
     view_docs: "查看文件",
-     
+    /* ── 全域搜尋 ── */
     palette_placeholder: "搜尋頁面、元件、操作…",
     palette_empty: "沒有符合的結果",
     palette_group_pages: "頁面",
@@ -1167,10 +1167,10 @@ adapter: "介面卡",
     palette_act_restart: "重新啟動框架",
     palette_act_sidebar: "摺疊 / 展開側邊欄",
     palette_act_privacy: "切換隱私模式",
-     
+    /* ── 互動兜底 ── */
     unsaved_confirm_title: "有未儲存的修改",
     unsaved_confirm_text: "離開目前頁面將遺失未儲存的修改，確定要離開嗎？",
-     
+    /* ── 引導文案補充 ── */
     install_guide_later_hint: "可隨時在「組件配置」中繼續設定",
 
 
@@ -1220,7 +1220,7 @@ adapter: "介面卡",
     settings_upload_global_desc: "將目前裝置的全部設定推送為全域設定，所有開啟同步的裝置會自動套用",
     settings_upload_confirm: "將以目前裝置的設定覆蓋全域設定，所有開啟同步的裝置都會更新。確定繼續？",
 
-     
+    // ── 安全頁 ──
     sec_copy: "複製",
     sec_copied: "已複製",
     sec_token_title: "存取安全",

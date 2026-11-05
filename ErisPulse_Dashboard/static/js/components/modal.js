@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – components/modal
 
 export function showModal(title, text, actions) {
   return new Promise((r) => {
@@ -13,7 +13,7 @@ export function showModal(title, text, actions) {
       ov.classList.remove("show");
       r(value);
     }
-     
+    // Esc 与点击遮罩空白处都视为取消；捕获阶段拦截
     function onKey(e) {
       if (e.key !== "Escape") return;
       e.preventDefault();
@@ -89,7 +89,7 @@ export function prompt2(title, text, defaultValue) {
     okBtn.onclick = function () {
       finish(input.value);
     };
-     
+    // Enter 直接确认；遮罩空白处点击取消
     input.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();

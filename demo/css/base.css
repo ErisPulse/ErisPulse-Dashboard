@@ -1,4 +1,4 @@
- 
+/* ErisPulse Dashboard – base */
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +6,7 @@
 }
 
 
- 
+/* Light */
 [data-theme="light"],
 :root,
 [data-ui-style="eris"][data-theme="light"],
@@ -53,7 +53,7 @@
     --er-fill: #d32f2f;
 }
 
- 
+/* Dark */
 [data-theme="dark"],
 [data-ui-style="eris"][data-theme="dark"],
 [data-ui-style="classic"][data-theme="dark"] {
@@ -94,7 +94,7 @@
     --er-fill: #ef5350;
 }
 
- 
+/* Auto */
 [data-theme="auto"] {
 
 }
@@ -140,7 +140,7 @@
     }
 }
 
- 
+/* OLED */
 [data-oled="on"][data-theme="dark"],
 [data-ui-style="eris"][data-oled="on"][data-theme="dark"] {
     --bg-p: #000000;
@@ -152,7 +152,6 @@
     --modal: rgba(0, 0, 0, 0.85);
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
     --shadow-hover: 0 6px 18px -6px rgba(0, 0, 0, 0.75);
-     
     --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 @media (prefers-color-scheme: dark) {
@@ -337,7 +336,6 @@ body {
     }
 }
 
- 
 @keyframes modalIn {
     from {
         opacity: 0;
@@ -353,7 +351,6 @@ body {
     }
 }
 
- 
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -363,13 +360,12 @@ body {
     }
 }
 
- 
+/* btn */
 .btn {
     position: relative;
     overflow: hidden;
 }
 
- 
 .btn::after {
     display: none;
 }
@@ -386,7 +382,6 @@ body {
     filter: none;
 }
 
- 
 @keyframes gentleFloat {
     0%,
     100% {
@@ -429,22 +424,22 @@ body {
     animation: breatheGlow 3s ease-in-out infinite;
 }
 
- 
+/* 进度条 - 平滑填充 */
 .progress-bar-fill {
     transition: width 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
- 
+/* 圆形进度 - 平滑旋转 */
 .circular-progress circle {
     transition: stroke-dashoffset 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
- 
+/* Chip标签 */
 .chip:hover {
     transform: none;
 }
 
- 
+/* 输入框聚焦 - 极简边框 */
 input,
 textarea,
 select {
@@ -461,7 +456,7 @@ select:focus {
     outline: none;
 }
 
- 
+/* 减少动画模式 */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -476,7 +471,7 @@ select:focus {
 }
 
 
- 
+/* Splash */
 .splash {
     position: fixed;
     inset: 0;
@@ -573,10 +568,10 @@ select:focus {
     --radius-lg: 14px;
     --radius-xl: 20px;
     --radius-2xl: 28px;
-     
+    /* 悬浮壳：页面四周呼吸间隙 + 面板圆角 */
     --radius-panel: 20px;
     --gap-shell: 18px;
-     
+    /* accent 柔和底（运行时换 accent 自动跟随；派生自 --accent，勿写死色值） */
     --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
 
     --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -590,7 +585,7 @@ select:focus {
     --shadow-accent: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
- 
+/* 减少动画 */
 @media (prefers-reduced-motion: reduce) {
     .splash.hide,
     .splash.hide .splash-content,
@@ -607,8 +602,6 @@ select:focus {
         opacity: 1;
     }
 }
-
-
 
 * {
     scrollbar-width: thin;
@@ -636,14 +629,7 @@ select:focus {
     background-clip: content-box;
 }
 
-
-
-
-
-
-
-
- 
+/* ── 标准档（默认） ── */
 html.bg-image {
     --bg-p: color-mix(in srgb, #f6f7f9 30%, transparent);
     --bg-s: color-mix(in srgb, #eef0f3 62%, transparent);
@@ -661,7 +647,7 @@ html[data-theme="dark"].bg-image {
         --bg-t: color-mix(in srgb, #1c2027 82%, transparent);
     }
 }
- 
+/* ── 轻档：表面收紧、更接近实底 ── */
 html.bg-image.bg-level-soft {
     --bg-p: color-mix(in srgb, #f6f7f9 45%, transparent);
     --bg-s: color-mix(in srgb, #eef0f3 78%, transparent);
@@ -679,7 +665,7 @@ html[data-theme="dark"].bg-image.bg-level-soft {
         --bg-t: color-mix(in srgb, #1c2027 92%, transparent);
     }
 }
- 
+/* ── 强档：全线更透，背景图持续可见 ── */
 html.bg-image.bg-level-strong {
     --bg-p: color-mix(in srgb, #f6f7f9 20%, transparent);
     --bg-s: color-mix(in srgb, #eef0f3 50%, transparent);
@@ -697,7 +683,6 @@ html[data-theme="dark"].bg-image.bg-level-strong {
         --bg-t: color-mix(in srgb, #1c2027 72%, transparent);
     }
 }
- 
 html[data-oled="on"].bg-image,
 html[data-oled="on"][data-theme="dark"].bg-image {
     --bg-p: color-mix(in srgb, #000000 20%, transparent);
@@ -737,7 +722,7 @@ html[data-oled="on"][data-theme="dark"].bg-image.bg-level-strong {
         --bg-t: color-mix(in srgb, #0a0d12 88%, transparent);
     }
 }
- 
+/* cel 皮肤例外：纸面风格保持不透明（档位对其无效） */
 html[data-ui-style="cel"].bg-image {
     --bg-p: #fafaf5;
     --bg-s: #ffffff;
@@ -756,8 +741,6 @@ html[data-ui-style="cel"][data-theme="dark"].bg-image {
     }
 }
 
-
-
 html.bg-image .modal-box,
 html.bg-image .node-dropdown {
     -webkit-backdrop-filter: blur(12px);
@@ -774,10 +757,6 @@ html[data-ui-style="cel"].bg-image .node-dropdown {
     backdrop-filter: none;
 }
 
-
-
-
-
 html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .header,
 html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .sidebar,
 html[data-ui-style="eris"].bg-image[data-bg-effect="frosted"] .card,
@@ -792,14 +771,13 @@ html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] .stat-card {
     -webkit-backdrop-filter: blur(8px) saturate(1.05);
     backdrop-filter: blur(8px) saturate(1.05);
 }
- 
+/* 雾感：表面再收实一档，配合加深遮罩形成雾面 */
 html[data-ui-style="eris"].bg-image[data-bg-effect="misty"] {
     --bg-p: color-mix(in srgb, var(--bg-p) 82%, #ffffff);
 }
 html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
     --bg-p: color-mix(in srgb, var(--bg-p) 82%, #0a0d12);
 }
- 
 @media (max-width: 768px) {
     html.bg-image[data-bg-effect="frosted"] .header,
     html.bg-image[data-bg-effect="frosted"] .sidebar,
@@ -815,8 +793,8 @@ html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
 }
 
 
- 
- 
+/* ══════════ 移动端触控基础（触屏/粗指针设备） ══════════ */
+/* 交互元素禁用双击缩放手势 */
 @media (hover: none), (pointer: coarse) {
     a, button, input, select, textarea, label,
     [role="button"], [onclick] {
@@ -825,15 +803,13 @@ html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
     }
 }
 
- 
-
-
+/* ══════════ 触屏 / VNC 拖拽体验：滑动 = 滚动，不选中文字 ══════════ */
 .app {
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
 }
- 
+/* 内容豁免：日志 / 会话记录 / 事件流 / Markdown 详情 / 编辑器 / 表单控件仍可选中复制 */
 .log-console,
 .transcript-msg-list,
 .dash-events,

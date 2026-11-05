@@ -6,7 +6,7 @@ import time
 from ErisPulse.Core import HttpClient
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
 
- 
+# 后备 API 探测列表（当自动发现失败时使用）
 FALLBACK_CAPABILITY_PROBES: dict[str, str] = {
     "auth_status": "/api/auth/status",
     "status": "/api/status",
@@ -46,7 +46,7 @@ FALLBACK_CAPABILITY_PROBES: dict[str, str] = {
     "cluster_overview": "/api/cluster/overview",
 }
 
- 
+# 跳过探测的 API 端点（动态路径或不需要探测的端点）
 SKIP_CAPABILITY_PROBES = {
     "/api/auth",
     "/api/cluster/nodes",
@@ -56,7 +56,7 @@ SKIP_CAPABILITY_PROBES = {
     "/ws",
 }
 
- 
+# API 路径到 capability ID 的映射表
 API_TO_CAPABILITY_MAP = {
     "/api/auth/status": "auth_status",
     "/api/status": "status",
@@ -195,7 +195,7 @@ class NodeProxy:
         client = self._get_client()
         url = f"{self.url}/Dashboard{path}"
         try:
-             
+            # 映射 HTTP 方法到 HttpClient 方法
             method_upper = method.upper()
             if method_upper == "GET":
                 resp = await client.get(url, **kwargs)
@@ -242,7 +242,7 @@ class NodeProxy:
         client = self._get_client()
         url = f"{self.url}{path}"
         try:
-             
+            # 映射 HTTP 方法到 HttpClient 方法
             method_upper = method.upper()
             if method_upper == "GET":
                 resp = await client.get(url, **kwargs)
@@ -324,7 +324,6 @@ class NodeProxy:
         for route in http_routes:
             path = route.get("path", "")
             method = route.get("method", "")
-             
             if method == "GET" and path.startswith("/api/"):
                 api_paths.add(path)
 
@@ -348,26 +347,21 @@ class NodeProxy:
         """
         results: dict[str, dict] = {}
 
-         
         api_paths = await self._fetch_api_routes()
 
         if api_paths is None:
-             
             api_paths = list(FALLBACK_CAPABILITY_PROBES.values())
 
-         
         probe_paths = [
             path
             for path in api_paths
             if not any(skip in path for skip in SKIP_CAPABILITY_PROBES)
         ]
 
-         
         for api_path in probe_paths:
-             
             cap_id = API_TO_CAPABILITY_MAP.get(api_path)
             if cap_id is None:
-                 
+                # 默认生成方式：去掉 /api/ 前缀，用下划线替换斜杠
                 cap_id = api_path.replace("/api/", "").replace("/", "_")
 
             result = await self.request("GET", api_path)

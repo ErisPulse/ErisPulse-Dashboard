@@ -1,17 +1,15 @@
+/* ══════════════════════════════════════════════════════════════
+   ErisPulse Dashboard – 赛璐璐动画风（Cel Shading / Toon Shading）
+   作用域：html[data-ui-style="cel"]
+   规范：3px 实心描边 #1a1a2e、纯色块、硬位移阴影（无渐变无模糊）、
+   高饱和配色、直角、抽帧动效（≤75ms linear）、hover 斜纹高光扫过。 */
 
-
-
-
-
-
-
-
- 
+/* ── 色板与形状 Token（固定浅色纸面；dark/auto 在此风格下不改变色板） ── */
 html[data-ui-style="cel"] {
     --cel-ink: #1a1a2e;
     --cel-shadow: #1a1a2e;
     --cel-paper: #fafaf5;
-     
+    /* cel-paper 深浅主题各自定义 */
     --cel-red: #e63946;
     --cel-blue: #4ea8de;
     --cel-green: #2ecc71;
@@ -55,7 +53,7 @@ html[data-ui-style="cel"] {
     --shadow-glow: none;
 }
 
- 
+/* 全局动效抽帧化：极短过渡 + 线性（覆盖各处 0.15-0.35s 丝滑曲线） */
 html[data-ui-style="cel"] *,
 html[data-ui-style="cel"] *::before,
 html[data-ui-style="cel"] *::after {
@@ -64,9 +62,9 @@ html[data-ui-style="cel"] *::after {
     animation-timing-function: linear !important;
 }
 
- 
+/* 底纹：动漫平铺图 + 纸白叠层保证对比度 */
 
- 
+/* ── 卡片：3px 黑边 + 硬阴影 + 直角 ── */
 html[data-ui-style="cel"] .card,
 html[data-ui-style="cel"] .stat-card,
 html[data-ui-style="cel"] .settings-card {
@@ -90,7 +88,7 @@ html[data-ui-style="cel"] .stat-card {
     cursor: pointer;
 }
 
- 
+/* ── 按钮：粗边硬阴影，按下阴影归零（打击感）── */
 html[data-ui-style="cel"] .btn {
     border: 3px solid var(--cel-ink) !important;
     border-radius: 0;
@@ -113,7 +111,7 @@ html[data-ui-style="cel"] .btn:active {
     transform: translate(2px, 2px);
     box-shadow: 0 0 0 var(--cel-shadow);
 }
- 
+/* hover 斜纹高光扫过 */
 html[data-ui-style="cel"] .btn::after {
     content: "";
     position: absolute;
@@ -148,7 +146,7 @@ html[data-ui-style="cel"] .btn-danger:hover {
     background: var(--cel-red);
 }
 
- 
+/* ── 侧栏 / 顶栏：纸面 + 粗黑分隔 ── */
 html[data-ui-style="cel"] .sidebar {
     background: var(--bg-p);
     border-right: 3px solid var(--cel-ink);
@@ -178,7 +176,7 @@ html[data-ui-style="cel"] .nav-item.active::before {
     display: none;
 }
 
- 
+/* ── 输入控件 ── */
 html[data-ui-style="cel"] .form-input,
 html[data-ui-style="cel"] .fw-input,
 html[data-ui-style="cel"] input[type="text"],
@@ -199,7 +197,7 @@ html[data-ui-style="cel"] select:focus {
     box-shadow: 3px 3px 0 var(--focus-ring);
 }
 
- 
+/* ── chips / 徽章：实边提饱和 ── */
 html[data-ui-style="cel"] .chip {
     border: 2px solid var(--cel-ink);
     border-radius: 0;
@@ -220,7 +218,7 @@ html[data-ui-style="cel"] .chip-wr {
     color: var(--cel-ink);
 }
 
- 
+/* ── 模态 / 浮层 ── */
 html[data-ui-style="cel"] .modal-overlay,
 html[data-ui-style="cel"] #modalOv,
 html[data-ui-style="cel"] #outputOv,
@@ -260,7 +258,7 @@ html[data-ui-style="cel"] .toast-er {
     border-color: var(--cel-ink);
 }
 
- 
+/* ── 标题字重 ── */
 html[data-ui-style="cel"] .page-title,
 html[data-ui-style="cel"] .card-header span,
 html[data-ui-style="cel"] .settings-item-label,
@@ -268,7 +266,7 @@ html[data-ui-style="cel"] .stat-val {
     font-weight: 900;
 }
 
- 
+/* ── 开关：方轨道 + 方旋钮，粗黑描边 ── */
 html[data-ui-style="cel"] .switch {
     width: 44px;
     height: 24px;
@@ -294,15 +292,15 @@ html[data-ui-style="cel"] .switch input:checked + .switch-slider:before {
     background: #ffffff;
 }
 
- 
+/* ── 进度环描边 ── */
 html[data-ui-style="cel"] .circular-progress-ring,
 html[data-ui-style="cel"] .circular-progress {
     stroke: var(--cel-ink);
 }
 
- 
+/* ── 移动端：保持同风格（粗边在窄屏依旧成立，无需降级） ── */
 
- 
+/* ── 暗色适配：墨夜纸面（描边改为亮墨，硬阴影用纯黑） ── */
 html[data-ui-style="cel"][data-theme="dark"],
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"],
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"][data-theme="dark"] {
@@ -339,9 +337,9 @@ html[data-ui-style="cel"][data-oled="on"][data-theme="dark"][data-theme="dark"] 
         --sc-c: #c4b5fd;
     }
 }
- 
+/* 暗色底纹：深色遮罩压住平铺图，保对比度 */
 
- 
+/* ── OLED 纯黑：面板压至纯黑，与普通暗色（#20242f 墨面）拉开层次 ── */
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"],
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] body
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] {
@@ -365,7 +363,7 @@ html[data-ui-style="cel"][data-oled="on"] .header {
     background: #000000;
 }
 
- 
+/* ── 悬浮壳适配：面板直角 + 硬位移阴影 + 方形图标卡 ── */
 html[data-ui-style="cel"] {
     --radius-panel: 0;
     --gap-shell: 14px;
@@ -381,7 +379,7 @@ html[data-ui-style="cel"] .header {
     border-radius: 0;
     box-shadow: 4px 4px 0 var(--cel-shadow);
 }
- 
+/* 圆形图标卡在 cel 下为方形纸面小卡，hover 描边、active 黄底 */
 html[data-ui-style="cel"] .nav-ico {
     border-radius: 0;
     background: var(--cel-paper);
@@ -398,7 +396,7 @@ html[data-ui-style="cel"] .nav-item.active .nav-ico {
 html[data-ui-style="cel"] .nav-item.active .nav-ico svg {
     color: var(--cel-ink);
 }
- 
+/* 折叠态气泡 tooltip：直角 + 硬阴影 */
 html[data-ui-style="cel"] .sidebar.collapsed .nav-item::after {
     border-radius: 0;
     border: 3px solid var(--cel-ink);

@@ -18,7 +18,7 @@ class RoutesMixin:
 
         static_dir = Path(__file__).parent.parent / "static"
 
-         
+        # 根路径 - HTML（入口文档不缓存
         async def _html(request: Request) -> HTMLResponse:
             html_path = static_dir / "dash.html"
             return HTMLResponse(
@@ -26,7 +26,7 @@ class RoutesMixin:
                 headers={"Cache-Control": "no-cache"},
             )
 
-         
+        # CSS 文件
         async def _css(request: Request):
             from fastapi.responses import Response
 
@@ -35,7 +35,6 @@ class RoutesMixin:
                 content=css_path.read_text(encoding="utf-8"), media_type="text/css"
             )
 
-         
         async def _js(request: Request):
             from fastapi.responses import Response
 
@@ -99,7 +98,7 @@ class RoutesMixin:
             mn, "/static/res/{path:path}", handler=_static_res, methods=["GET"]
         )
 
-         
+        # 通用静态资源
         async def _static_any(request: Request):
             subpath = request.path_params.get("path", "")
             file_path = static_dir / subpath
@@ -126,9 +125,9 @@ class RoutesMixin:
             mn, "/static/{path:path}", handler=_static_any, methods=["GET"]
         )
 
-         
+        # API 路由保持不变
 
-         
+        # 认证中间件：统一校验 /Dashboard/api/* 的 token（公开端点放行）
         async def _auth_middleware(request: Request):
             """
             统一校验 /Dashboard/api/* 请求的 token（公开端点放行）。
@@ -143,15 +142,15 @@ class RoutesMixin:
                 "/Dashboard/api/adapter-logos",
             ):
                 return request
-             
+            # viewer 登录走公开端点校验（成功后仅只读）
             token = self._get_token_from_request(request)
             ok, role, _key_id, key_pages = self._resolve_access(token)
             if not ok:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
-             
+            # viewer 只读：非 GET 一律 403（kiosk/触屏墙场景）
             if role != "admin" and request.method not in ("GET", "HEAD", "OPTIONS"):
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
-             
+            # viewer 页面白名单：GET 须命中白名单页面的 API 前缀
             if role != "admin" and key_pages:
                 rel = str(request.url.path).replace("/Dashboard", "", 1)
                 if not self._page_allowed(key_pages, rel):
@@ -244,7 +243,7 @@ class RoutesMixin:
             mn, "/api/events/clear", handler=self._api_events_clear, methods=["POST"]
         )
 
-         
+        # 会话收件箱（transcript）相关 API
         r.register_http_route(
             mn, "/api/transcript/info", handler=self._api_transcript_info, methods=["GET"]
         )
@@ -326,7 +325,7 @@ class RoutesMixin:
             handler=self._api_storage_delete,
             methods=["POST"],
         )
-         
+        # 存储表浏览器（具体路径须在参数化路径 /api/storage/table 之前注册）
         r.register_http_route(
             mn,
             "/api/storage/tables",
@@ -435,7 +434,7 @@ class RoutesMixin:
             methods=["POST"],
         )
 
-         
+        # 多密钥体系（Dashboard.keys；写入操作 handler 内要求 admin）
         r.register_http_route(
             mn,
             "/api/security/pages",
@@ -467,7 +466,7 @@ class RoutesMixin:
             methods=["POST"],
         )
 
-         
+        # 事件构建器相关 API
         r.register_http_route(
             mn,
             "/api/builder/validate",
@@ -487,7 +486,7 @@ class RoutesMixin:
             methods=["GET"],
         )
 
-         
+        # 配置源码相关 API
         r.register_http_route(
             mn,
             "/api/config/source",
@@ -513,7 +512,7 @@ class RoutesMixin:
             methods=["GET"],
         )
 
-         
+        # 日志相关 API
         r.register_http_route(mn, "/api/logs", handler=self._api_logs, methods=["GET"])
         r.register_http_route(
             mn, "/api/logs/clear", handler=self._api_logs_clear, methods=["POST"]
@@ -522,7 +521,7 @@ class RoutesMixin:
             mn, "/api/logs/export", handler=self._api_logs_export, methods=["GET"]
         )
 
-         
+        # 生命周期相关 API
         r.register_http_route(
             mn, "/api/lifecycle", handler=self._api_lifecycle, methods=["GET"]
         )
@@ -533,22 +532,22 @@ class RoutesMixin:
             methods=["POST"],
         )
 
-         
+        # 性能监控相关 API
         r.register_http_route(
             mn, "/api/performance", handler=self._api_performance, methods=["GET"]
         )
 
-         
+        # API 路由列表相关 API
         r.register_http_route(
             mn, "/api/routes", handler=self._api_routes, methods=["GET"]
         )
 
-         
+        # 健康聚合 API（核心组件状态，进程内直接组装）
         r.register_http_route(
             mn, "/api/health", handler=self._api_health, methods=["GET"]
         )
 
-         
+        # 连接注册表面板 API（具体路径 /api/connections/close 无参数化冲突）
         r.register_http_route(
             mn, "/api/connections", handler=self._api_connections, methods=["GET"]
         )
@@ -559,7 +558,7 @@ class RoutesMixin:
             methods=["POST"],
         )
 
-         
+        # 消息统计相关 API
         r.register_http_route(
             mn, "/api/message-stats", handler=self._api_message_stats, methods=["GET"]
         )
@@ -629,7 +628,7 @@ class RoutesMixin:
         r.register_http_route(
             mn, "/api/commands", handler=self._api_commands, methods=["GET"]
         )
-         
+        # 具体路径必须在参数化路径之前注册，否则会被 {name} 匹配
         r.register_http_route(
             mn,
             "/api/commands/settings",
@@ -649,7 +648,7 @@ class RoutesMixin:
             mn, "/api/master", handler=self._api_master_update, methods=["PUT"]
         )
 
-         
+        # 作用域（scope）相关 API
         r.register_http_route(
             mn, "/api/scope", handler=self._api_scope_get, methods=["GET"]
         )
@@ -699,7 +698,7 @@ class RoutesMixin:
             mn, "/api/scope/import", handler=self._api_scope_import, methods=["POST"]
         )
 
-         
+        # 拓扑树 API
         r.register_http_route(
             mn, "/api/topology", handler=self._api_topology, methods=["GET"]
         )
@@ -708,7 +707,7 @@ class RoutesMixin:
             mn, "/api/views", handler=self._api_views, methods=["GET"]
         )
 
-         
+        # 集群管理 API
         r.register_http_route(
             mn,
             "/api/cluster/nodes",
@@ -826,7 +825,7 @@ class RoutesMixin:
         r = self.sdk.router
         mn = "Dashboard"
 
-         
+        # 优先公开 API 一次性注销整个命名空间，旧 SDK 回退私有字典内省
         unregister_all = getattr(r, "unregister_all_by_namespace", None)
         if unregister_all is not None:
             try:
@@ -861,11 +860,11 @@ class RoutesMixin:
             return auth[7:]
         return request.query_params.get("token")
 
-     
+    # ════════════════ WebSocket 实时通道 ════════════════
 
     async def _ws_handler(self, websocket: WebSocket):
         token = websocket.query_params.get("token", "")
-         
+        # 多密钥：主令牌或任意启用密钥（viewer 也能连——WS 为只读事件流）
         ok, _role, _key_id, _pages = self._resolve_access(token)
         if not ok:
             await websocket.close(code=1008, reason="Unauthorized")

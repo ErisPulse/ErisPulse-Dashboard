@@ -9,7 +9,7 @@ class ViewsMixin:
     """模块内嵌视图注册（对外公开 API）与视图标题 i18n 解析。"""
 
 
-     
+    # ════════════════ 视图标题 i18n 解析 ════════════════
 
     def _resolve_view_value(self, value, lang_key: str) -> str:
         """将单个标题/分组标题的值解析为指定前端语言键下的字符串。
@@ -19,12 +19,12 @@ class ViewsMixin:
         2. {"<lang>": text, ...}           — 逐语言字典（命中 lang_key 取该值）
         3. 纯字符串 / None                 — 原样返回
         """
-         
+        # 逐语言字典
         if isinstance(value, dict) and "i18n" not in value:
             if value.get(lang_key):
                 return value[lang_key]
             return value.get("zh") or value.get("en") or ""
-         
+        # i18n 引用
         if isinstance(value, dict) and "i18n" in value:
             return self._do_view_i18n_resolve(
                 value.get("i18n"), value.get("default"), lang_key
@@ -60,7 +60,7 @@ class ViewsMixin:
         out = {}
         for lk in VIEW_LANG_KEY_TO_I18N:
             if isinstance(value, dict) and "i18n" not in value:
-                 
+                # 逐语言字典：命中取该值，否则回退到 zh -> en -> 兜底
                 if value.get(lk):
                     out[lk] = self._resolve_view_value(value[lk], lk)
                 else:
@@ -68,17 +68,17 @@ class ViewsMixin:
                         value.get("zh") or value.get("en") or fallback, lk
                     )
             elif isinstance(value, dict):
-                 
+                # i18n 引用：每种语言都按引用解析
                 out[lk] = self._resolve_view_value(value, lk)
             else:
-                 
+                # 纯字符串 / None：非 zh/zh-TW 语言回退到 primary_en 或该字符串
                 src = value or fallback
                 if lk not in ("zh", "zh-TW"):
                     src = primary_en or src
                 out[lk] = self._resolve_view_value(src, lk)
         return out
 
-     
+    # ════════════════ 模块内嵌视图 i18n ════════════════
 
     def register_view(
         self,
@@ -115,7 +115,7 @@ class ViewsMixin:
                 f"register_view: view '{id}' already registered, overwriting"
             )
 
-         
+        # 构建多语言标题字典
         if titles and isinstance(titles, dict):
             view_titles = self._build_view_lang_dict(titles, title_en, title or id)
         else:
@@ -130,7 +130,7 @@ class ViewsMixin:
                 group_title, group_title_en, group_title or ""
             )
 
-         
+        # 保留向后兼容的「主标题」字段（前后端兜底用）
         default_title = view_titles.get("zh") or title or id
         default_title_en = view_titles.get("en") or title_en or default_title
         default_grp = grp_titles.get("zh") or group_title or ""
@@ -174,9 +174,8 @@ class ViewsMixin:
     def get_registered_views(self) -> list[dict]:
         return list(self._registered_views.values())
 
-     
-     
-     
+    # ════════════════ 注册表持久化 ════════════════
+    # 注册表纯内存会随 Dashboard 模块自升级重载（unload+load 重建实例）丢失，
 
     def _persist_registrations(self):
         try:
@@ -204,10 +203,10 @@ class ViewsMixin:
         if isinstance(sections, dict) and sections:
             self._registered_sections.update(sections)
 
-     
+    # ════════════════ 认证辅助 ════════════════
 
     def verify_token(self, token: str) -> bool:
-         
+        # 多密钥：主令牌或任意启用密钥均视为有效（供模块内其它校验点复用）
         if not token:
             return False
         ok, _role, _key_id, _pages = self._resolve_access(str(token))
@@ -216,7 +215,7 @@ class ViewsMixin:
     def verify_request(self, request: Request) -> bool:
         return self.verify_token(self._get_token_from_request(request))
 
-     
+    # ════════════════ 扩展区注册（向导/面板挂载点）════════════════
 
     def register_section(
         self,
@@ -282,7 +281,7 @@ class ViewsMixin:
         if id not in self._registered_sections:
             return False
         del self._registered_sections[id]
-         
+        # 目录（__ep_section_catalog__）刻意不清除：适配器重启窗口内仍可回退展示
         self._persist_registrations()
         self._safe_broadcast(
             {"type": "sections_changed", "data": {"action": "unregister", "id": id}}
@@ -299,8 +298,8 @@ class ViewsMixin:
                 continue
             merged[sec.get("id")] = sec
 
-         
-         
+        # 目录回退：适配器重启/框架冷启动的瞬态窗口内注册表可能短暂为空，
+        # 此时已安装适配器（仍处于注册状态）的持久化目录条目继续可用
         try:
             catalog = self.storage.get("__ep_section_catalog__")
         except Exception:
@@ -320,7 +319,7 @@ class ViewsMixin:
                     continue
                 if registered_adapters is not None:
                     if plats and not any(p in registered_adapters for p in plats):
-                        continue   
+                        continue  # 归属适配器已不存在：幽灵卡片，跳过
                     if not plats and not registered_adapters:
                         continue
                 merged[sec_id] = sec

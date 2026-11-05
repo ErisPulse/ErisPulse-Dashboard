@@ -1,7 +1,7 @@
- 
- 
- 
- 
+// ErisPulse Dashboard – components/onboarding-card
+// 首页"快速开始"引导清单：安装适配器 → 配置账户 → 连接成功；
+// 状态由 /api/status 的 adapters/bots 实时驱动；全部完成时先道声恭喜再收尾；
+// 关闭支持 4 秒撤销（toastUndo），防误触永久隐藏
 
 var ONBOARDING_KEY = "ep_onboarding_done";
 var _onbLastAdapters = null;
@@ -27,7 +27,7 @@ export function dismissOnboarding() {
   if (el) el.innerHTML = "";
 }
 
- 
+// 关闭后给 4 秒撤销窗口，误触不至于永久失去引导
 export function dismissOnboardingWithUndo() {
   dismissOnboarding();
   toastUndo(t("onboarding_hidden"), function () {
@@ -38,7 +38,7 @@ export function dismissOnboardingWithUndo() {
   });
 }
 
- 
+// adapters: refreshDashboard 中取到的 /api/status adapters 对象
 export function updateOnboardingCard(adapters) {
   _onbLastAdapters = adapters || {};
   var host = document.getElementById("onboardingCard");
@@ -59,14 +59,14 @@ export function updateOnboardingCard(adapters) {
       return (a.bots[b] || {}).status === "online";
     });
   });
-   
+  // 配置完整度（/api/status 的 adapter_config_status；旧后端无此数据视为完成）
   var cfgStatus = window._adapterConfigStatus || {};
   var needCfg = Object.keys(cfgStatus).filter(function (p) {
     return cfgStatus[p] === "unconfigured" || cfgStatus[p] === "incomplete";
   });
   var cfgDone = hasAdapter ? needCfg.length === 0 : true;
   if (hasAdapter && hasAccount && hasOnline && cfgDone) {
-     
+    // 引导"毕业"：如果卡片正展示着，先道一声恭喜再收尾；持久化隐藏，之后不再出现
     if (host.querySelector(".onboarding-card"))
       toast(t("onboarding_congrats"), "ok");
     dismissOnboarding();
@@ -82,7 +82,7 @@ export function updateOnboardingCard(adapters) {
     },
     {
       done: hasAccount,
-       
+      // 还没装适配器时"去配置"只会看到空页，不显示 CTA
       label: t("onboarding_step2"),
       cta: hasAdapter ? t("goto_config") : "",
       page: "adapter",
@@ -157,7 +157,7 @@ export function updateOnboardingCard(adapters) {
     "</div>";
 }
 
- 
+// 「完成适配器配置」CTA：直达第一个未配置/不完整适配器的配置表单
 export function gotoOnboardingConfig() {
   var cfgStatus = window._adapterConfigStatus || {};
   var need = Object.keys(cfgStatus).filter(function (p) {

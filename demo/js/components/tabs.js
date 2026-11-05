@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – components/tabs
 
 export function switchPkgTab(tab, btn) {
   btn
@@ -20,7 +20,7 @@ export function switchPkgTab(tab, btn) {
 }
 
 export function switchMergeTab(tabPrefix, btn, onSwitch) {
-   
+  // 找到最近的 tab bar
   var bar = btn.closest(".view-toggle");
   if (bar) {
     bar.querySelectorAll(".view-btn").forEach(function (b) {
@@ -28,7 +28,6 @@ export function switchMergeTab(tabPrefix, btn, onSwitch) {
     });
   }
   btn.classList.add("active");
-   
   var section = document.getElementById(tabPrefix + "-tab");
   if (section) {
     var parent = section.parentElement;

@@ -1,8 +1,8 @@
- 
- 
+// ErisPulse Dashboard – components/update-hint
+// 更新完成后的重载引导条：告诉用户本次更新建议如何重载（框架→重启 / Dashboard→已自动重载）
 
 var UPDATE_HINT_KEY = "ep_update_hint";
-var UPDATE_HINT_TTL = 24 * 60 * 60 * 1000;  
+var UPDATE_HINT_TTL = 24 * 60 * 60 * 1000; // 超过 24h 的未处理提示自动过期
 
 export function getUpdateHint() {
   try {
@@ -27,7 +27,7 @@ export function clearUpdateHint() {
   if (el) el.remove();
 }
 
- 
+// 记录并立即显示提示；kind: "framework" | "dashboard"
 export function showUpdateHint(kind, version) {
   var hint = { kind: kind, version: version || "", ts: Date.now() };
   try {
@@ -36,9 +36,9 @@ export function showUpdateHint(kind, version) {
   renderUpdateHint(hint);
 }
 
- 
+// 页面刷新/重登后从 localStorage 恢复未处理的提示
 export function restoreUpdateHint() {
-   
+  // Dashboard 更新确认刷新已完成：清掉提示并告知新版生效
   try {
     if (sessionStorage.getItem("ep_dash_updated")) {
       sessionStorage.removeItem("ep_dash_updated");
@@ -78,7 +78,7 @@ export function renderUpdateHint(hint) {
   bar.appendChild(actions);
 
   if (!isFw) {
-     
+    // Dashboard 更新：主操作是刷新页面加载新版；重启框架仅作异常兜底
     var reloadBtn = document.createElement("button");
     reloadBtn.className = "btn btn-primary btn-xs update-hint-restart";
     reloadBtn.textContent = t("update_hint_reload_page");

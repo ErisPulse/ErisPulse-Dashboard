@@ -1,35 +1,35 @@
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// ErisPulse Dashboard – pages/topology
+//
+// 渲染与性能契约：
+// - 单 <canvas> 绘制，无逐元素 DOM/SVG；布局收敛后 rAF 循环自动停止，
+//   平移/缩放/悬停等交互按需单帧重绘，仅在「流动动画模式」下持续重绘。
+// - 数据刷新按节点 id 复用旧节点位置（增量），不重置视图，不闪白。
+// - 视口外节点/边跳过绘制；标签截断结果缓存在节点上；邻居查询 O(1)。
+// - 流动动画（scope 边 marching-ants）默认关闭，需用户显式开启；
+//   尊重设置页动效开关（data-anim="off"）与 prefers-reduced-motion。
 
-var _TOPO_ANIM_NODE_CAP = 160;  
-var _topoAnimUserOn = null;     
-var _topoFlowOn = false;        
+var _TOPO_ANIM_NODE_CAP = 160; // 流动动画的节点数上限，超过自动降级为静态
+var _topoAnimUserOn = null;    // 用户动画开关（缓存 localStorage）
+var _topoFlowOn = false;       // 当前是否处于流动动画（连续重绘）状态
 var _topoDegradeNotified = false;
-var _topoPrevById = null;       
-var _topoTipNodeId = null;      
+var _topoPrevById = null;      // 增量重建时上一轮节点快照（保留位置）
+var _topoTipNodeId = null;     // tooltip 增量渲染：当前已渲染的节点 id
 var _topoTipW = 0;
 var _topoTipH = 0;
 var _topoThemeTimer = 0;
 var _topoMql = null;
-var _topoFitPending = false;    
-var _topoMobileFit = false;     
-var _topoUserViewed = false;    
+var _topoFitPending = false;   // 移动端首次布局收敛后待执行的 fit-view
+var _topoMobileFit = false;    // 移动端 fit 模式（画布宽 <600px 自动适配后启用，放宽标签阈值）
+var _topoUserViewed = false;   // 用户是否已手动平移/缩放（是则不再自动 fit，尊重用户视图）
 
- 
+// 窄屏判定：以画布容器宽为准（移动端竖屏与小窗口均命中；桌面宽容器不受影响）
 function _topoIsNarrow() {
   var canvas = document.getElementById("topoCanvas");
   return !!(canvas && canvas.parentElement && canvas.parentElement.clientWidth < 600);
 }
 
- 
- 
+// fit-view：遍历节点 bounding box，缩放并居中使全部节点可见
+// （scale 下限 0.15 / 上限 1；低缩放时额外留出标签宽度）
 export function _topoFitView() {
   var canvas = document.getElementById("topoCanvas");
   if (!canvas || !_topoGraph.nodes.length) return;
@@ -40,7 +40,7 @@ export function _topoFitView() {
   var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (var i = 0; i < nodes.length; i++) {
     var nd = nodes[i];
-    var m = _topoNodeRadius(nd) + 10;  
+    var m = _topoNodeRadius(nd) + 10; // 节点半径 + 描边余量
     if (nd.x - m < minX) minX = nd.x - m;
     if (nd.x + m > maxX) maxX = nd.x + m;
     if (nd.y - m < minY) minY = nd.y - m;
@@ -51,7 +51,7 @@ export function _topoFitView() {
   if (bw <= 0 || bh <= 0) return;
   var k = Math.min(w / bw, h / bh);
   k = Math.max(0.15, Math.min(1, k));
-   
+  // 低缩放区间标签以屏幕常驻字号绘制，按比例收缩留出标签空间
   if (k < 0.3) k *= 0.78;
   k = Math.max(0.15, k);
   var cx = (minX + maxX) / 2;
@@ -61,7 +61,7 @@ export function _topoFitView() {
 }
 
 function _topoT(key, zh, en) {
-   
+  // i18n 词条缺失时的兜底文案（语言包文件不在本页可编辑范围）
   var s = t(key);
   if (s === key) {
     var lg = window.lang || "";
@@ -71,7 +71,7 @@ function _topoT(key, zh, en) {
 }
 
 export async function loadTopology() {
-   
+  // 每次进入页面重新测量画布尺寸（display:none → block 时缓存可能过期）
   _topoInvalidateSize();
   var d = await api("/api/topology");
   _topoRaw = d;
@@ -81,7 +81,7 @@ export async function loadTopology() {
   _refreshTopoColors();
   _topoWatchTheme();
   _topoBindEvents();
-  _topoRebuild(false);  
+  _topoRebuild(false); // 增量刷新：保留已有节点位置与视图
   _renderTopoLegend();
   var topo = (_topoRaw && _topoRaw.topology) || {};
   var botCount = 0;
@@ -101,7 +101,7 @@ export function _cssVar(name) {
   }
 }
 
- 
+// 画布取色一律走 token；主题/accent/皮肤切换时由 _topoWatchTheme 触发重读
 export function _refreshTopoColors() {
   _topoColors = {
     module: _cssVar("--accent"),
@@ -135,7 +135,7 @@ export function _topoAnimPref() {
   return _topoAnimUserOn;
 }
 
- 
+// 计算流动动画是否生效（用户开启 && 动效允许 && 图规模未超限）
 export function _topoEvalFlow() {
   _topoFlowOn =
     _topoAnimPref() &&
@@ -171,7 +171,7 @@ export function topoSetAnim(on) {
   }
 }
 
- 
+// 主题 / accent / 皮肤 / 动效设置变化 → 重读 token 并重绘（rAF 级防抖）
 export function _topoWatchTheme() {
   if (window._topoThemeWatched) return;
   window._topoThemeWatched = true;
@@ -181,7 +181,7 @@ export function _topoWatchTheme() {
       _topoThemeTimer = 0;
       if (!_topoRaw || !_topoRaw.supported) return;
       _refreshTopoColors();
-      _topoTipNodeId = null;  
+      _topoTipNodeId = null; // 字号/字体可能变化，tooltip 尺寸缓存失效
       var was = _topoFlowOn;
       _topoEvalFlow();
       _topoSyncAnimUI();
@@ -223,8 +223,8 @@ export function _topoTypeLabel(type) {
 export function _topoRebuild(reset) {
   var canvas = document.getElementById("topoCanvas");
   if (!canvas) return;
-   
-   
+  // 移动端首次布局（画布尚无节点）或显式重排：布局收敛后自动 fit-view；
+  // 增量刷新（已有节点）不改变视图
   _topoFitPending = _topoIsNarrow() && (reset || _topoGraph.nodes.length === 0);
   var showRes = document.getElementById("topoShowCommands");
   var showScope = document.getElementById("topoShowScope");
@@ -266,7 +266,7 @@ export function _addTopoNode(id, type, label, data) {
     degree: 0,
     adj: {},
   };
-   
+  // 增量刷新：同 id 节点继承上一轮位置
   var prev = _topoPrevById && _topoPrevById[id];
   if (prev) {
     node.x = prev.x;
@@ -410,7 +410,7 @@ export function _initTopoLayout(reset) {
     _topoView = { x: 0, y: 0, k: 1 };
     return;
   }
-   
+  // 增量摆放：已定位节点原位保留；新节点（x==0&&y==0）BFS 摆到已定位邻居旁
   var queue = [];
   for (i = 0; i < n; i++) {
     node = nodes[i];
@@ -418,7 +418,7 @@ export function _initTopoLayout(reset) {
     else queue.push(node);
   }
   if (!queue.length) {
-     
+    // 首次加载：根节点（模块/适配器）落内环，其余由 BFS 展开
     var roots = [];
     for (i = 0; i < n; i++) {
       if (nodes[i].type === "module" || nodes[i].type === "adapter") roots.push(nodes[i]);
@@ -441,7 +441,7 @@ export function _initTopoLayout(reset) {
     for (var j = 0; j < nbrs.length; j++) {
       var nb = cur.adj[nbrs[j]];
       if (!nb || !nb._new) continue;
-      var ang = (seed * 2.399963) % (2 * Math.PI);  
+      var ang = (seed * 2.399963) % (2 * Math.PI); // 黄金角散布
       var dist = 70 + (seed % 3) * 24;
       nb.x = cur.x + Math.cos(ang) * dist;
       nb.y = cur.y + Math.sin(ang) * dist;
@@ -450,7 +450,7 @@ export function _initTopoLayout(reset) {
       seed++;
     }
   }
-   
+  // 兜底：与已定位部分无连接的孤立新节点落外环
   var left = [];
   for (i = 0; i < n; i++) if (nodes[i]._new) left.push(nodes[i]);
   if (left.length) {
@@ -494,7 +494,7 @@ export function _startTopoSim() {
         else _topoSim.still = 0;
         if (_topoSim.ticks >= _topoMaxTicks() || _topoSim.still >= 30) _topoSim.settled = true;
       }
-       
+      // 首次布局收敛后执行待定的移动端 fit-view（节点位置已定，bbox 才有意义）
       if (_topoSim.settled && _topoFitPending) {
         _topoFitPending = false;
         if (_topoIsNarrow() && !_topoUserViewed) {
@@ -503,7 +503,7 @@ export function _startTopoSim() {
         }
       }
       _topoDraw(ts || 0);
-       
+      // 布局已定格且无流动动画 → 停止常驻循环，之后由交互事件按需单帧重绘
       if (_topoSim.settled && !_topoFlowOn) {
         _topoSim.running = false;
         _topoSim.raf = 0;
@@ -650,7 +650,7 @@ export function _topoQuadPoint(p0, c, p1, t) {
   };
 }
 
- 
+// 网格点：用离屏 pattern 一次填充
 var _topoGridPattern = null;
 var _topoGridPatternColor = "";
 
@@ -677,8 +677,8 @@ export function _topoDrawGrid(ctx, w, h) {
   ctx.restore();
 }
 
- 
- 
+// 画布尺寸缓存：避免每帧读取 clientWidth/clientHeight 触发同步重排
+// （动画/拖拽时 60fps 会变成每秒 60 次强制布局，低端设备明显掉帧）
 var _topoCachedW = 0;
 var _topoCachedH = 0;
 var _topoSizeObserver = null;
@@ -712,7 +712,7 @@ export function _topoDraw(ts) {
   }
   var w = _topoCachedW;
   var h = _topoCachedH;
-  if (!w || !h) return;  
+  if (!w || !h) return; // 页面不可见（display:none）时不绘制
   var bw = Math.round(w * dpr);
   var bh = Math.round(h * dpr);
   if (canvas.width !== bw || canvas.height !== bh) {
@@ -728,7 +728,7 @@ export function _topoDraw(ts) {
   var k = _topoView.k;
   ctx.scale(k, k);
 
-   
+  // 视口（世界坐标）粗裁剪：视口外的边与节点直接跳过绘制
   var pad = 80 / k;
   var vx0 = (-w / 2 - _topoView.x) / k - pad;
   var vx1 = (w / 2 - _topoView.x) / k + pad;
@@ -755,7 +755,7 @@ export function _topoDraw(ts) {
       ctx.setLineDash([7, 5]);
     } else if (e.kind === "scope") {
       ctx.setLineDash([2, 5]);
-       
+      // marching-ants 仅在流动动画模式下运行；静态模式不产生持续重绘
       if (flow) ctx.lineDashOffset = -(((ts / 40) % 7) * 2);
     } else {
       ctx.setLineDash([]);
@@ -788,12 +788,12 @@ export function _topoDraw(ts) {
 
   var nodes = _topoGraph.nodes;
   var total = nodes.length;
-   
-   
+  // 缩放过深/图过大时隐藏小节点标签，主节点标签低缩放仍保留；
+  // 移动端 fit 模式放宽阈值（fit 后 scale 常落在 0.12-0.3 区间），保证缩小后标签默认全显示
   var showSmallLabels = k >= (_topoMobileFit ? 0.12 : 0.65) && total <= 240;
   var showMainLabels = k >= (_topoMobileFit ? 0.2 : 0.3);
-   
-   
+  // fit 模式低缩放下按 1/k 补偿字号（封顶 5 倍），标签在屏幕上保持常驻可读；
+  // 桌面端（非 fit 模式）字号仍随缩放缩小，行为不变
   var lblScale = _topoMobileFit && k < 0.3 ? Math.min(1 / k, 5) : 1;
   for (i = 0; i < total; i++) {
     var node = nodes[i];
@@ -809,7 +809,7 @@ export function _topoDraw(ts) {
     ctx.fillStyle = color;
     ctx.fill();
     if (isMain) {
-       
+      // 用卡面 token 色描边，双主题下均可分离
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = _topoColors.surface;
       ctx.globalAlpha = dim ? 0.15 : 0.9;
@@ -827,7 +827,7 @@ export function _topoDraw(ts) {
     }
     var showLabel = isMain ? showMainLabels : showSmallLabels;
     if (!showLabel) continue;
-     
+    // 标签截断结果缓存于节点
     var lbl = node._lbl;
     if (lbl === undefined) {
       lbl = node.label.length > 26 ? node.label.slice(0, 24) + "…" : node.label;
@@ -853,7 +853,7 @@ export function _topoDraw(ts) {
 
 export function _nodeAdjacent(a, b) {
   if (!a || !b) return false;
-  if (a.adj) return !!a.adj[b.id];  
+  if (a.adj) return !!a.adj[b.id]; // O(1) 邻接表，替代 O(E) 全边扫描
   for (var i = 0; i < _topoGraph.edges.length; i++) {
     var e = _topoGraph.edges[i];
     if ((e.source === a && e.target === b) || (e.source === b && e.target === a)) return true;
@@ -904,8 +904,7 @@ export function _topoBindEvents() {
     }
   });
   window.addEventListener("mousemove", function (ev) {
-     
-     
+    // 廉价可见性判断（class 读取，无布局开销）：页面不可见时直接返回，
     if (!canvas.closest(".page.active")) return;
     var rect = canvas.getBoundingClientRect();
     var px = ev.clientX - rect.left;
@@ -916,7 +915,7 @@ export function _topoBindEvents() {
       _topoDrag.y = pos.y;
       _startTopoSim();
     } else if (_topoPanning && canvas._panStart) {
-      _topoUserViewed = true;  
+      _topoUserViewed = true; // 手动平移后不再自动 fit，尊重用户视图
       _topoView.x = canvas._panStart.vx + (ev.clientX - canvas._panStart.x);
       _topoView.y = canvas._panStart.vy + (ev.clientY - canvas._panStart.y);
       _topoDraw();
@@ -942,7 +941,7 @@ export function _topoBindEvents() {
   });
   canvas.addEventListener("wheel", function (ev) {
     ev.preventDefault();
-    _topoUserViewed = true;  
+    _topoUserViewed = true; // 手动缩放后不再自动 fit
     var factor = ev.deltaY < 0 ? 1.12 : 0.9;
     var newK = Math.max(0.15, Math.min(3.5, _topoView.k * factor));
     var rect = canvas.getBoundingClientRect();
@@ -959,7 +958,7 @@ export function _topoBindEvents() {
   }, { passive: false });
   canvas.addEventListener("dblclick", function () {
     _topoUserViewed = true;
-     
+    // 窄屏双击复位 = 重新 fit-view；桌面端保持复位到默认视图
     if (_topoIsNarrow()) _topoFitView();
     else _topoView = { x: 0, y: 0, k: 1 };
     _topoDraw();
@@ -971,7 +970,7 @@ export function _topoBindEvents() {
     _topoDraw(0);
   });
 
-   
+  // ---- 触摸：单指拖动/平移，双指捏合缩放，双击复位 ----
 
   canvas.addEventListener("touchstart", function (ev) {
     if (ev.touches.length === 1) {
@@ -1010,7 +1009,7 @@ export function _topoBindEvents() {
 
   canvas.addEventListener("touchmove", function (ev) {
     if (ev.touches.length === 2 && canvas._pinch) {
-      _topoUserViewed = true;  
+      _topoUserViewed = true; // 双指缩放后不再自动 fit
       var a = ev.touches[0];
       var b = ev.touches[1];
       var p = canvas._pinch;
@@ -1043,7 +1042,7 @@ export function _topoBindEvents() {
         _startTopoSim();
         ev.preventDefault();
       } else if (_topoPanning && canvas._panStart) {
-        _topoUserViewed = true;  
+        _topoUserViewed = true; // 手动平移后不再自动 fit，尊重用户视图
         _topoView.x = canvas._panStart.vx + (tch.clientX - canvas._panStart.x);
         _topoView.y = canvas._panStart.vy + (tch.clientY - canvas._panStart.y);
         _topoDraw();
@@ -1057,7 +1056,7 @@ export function _topoBindEvents() {
       _topoSelected = _topoDrag;
       _showTopoDetail(_topoDrag);
     }
-     
+    // 双击空白复位
     var moved = 0;
     if (canvas._tapStart && canvas._tapLast) {
       moved = Math.hypot(
@@ -1069,7 +1068,7 @@ export function _topoBindEvents() {
       var now = Date.now();
       if (now - (canvas._lastTap || 0) < 300) {
         _topoUserViewed = true;
-         
+        // 窄屏双击复位 = 重新 fit-view；宽屏保持复位到默认视图
         if (_topoIsNarrow()) _topoFitView();
         else _topoView = { x: 0, y: 0, k: 1 };
         _topoDraw();
@@ -1093,7 +1092,7 @@ export function _topoUpdateTooltip(node, px, py) {
   var tip = document.getElementById("topoTooltip");
   if (!tip) return;
   var id = node ? node.id : null;
-   
+  // 增量渲染：节点未变时只更新坐标，不重建 innerHTML
   if (id !== _topoTipNodeId) {
     _topoTipNodeId = id;
     if (!node) {
@@ -1124,8 +1123,8 @@ export function _topoHideTooltip() {
 
 export function _topoIsVisible(canvas) {
   if (!canvas) return false;
-   
-   
+  // 优先用 class 判断（无布局开销）：动画循环每帧都会调用，
+  // offsetParent 读取会触发同步重排，低端设备上明显拖慢帧率
   var page = canvas.closest ? canvas.closest(".page") : null;
   if (page) return page.classList.contains("active");
   return canvas.offsetParent !== null;
@@ -1218,7 +1217,7 @@ export function _topoScopeChipsHtml(bucket, platform, subKey) {
   }
 }
 
- 
+// 图例颜色全部由 CSS token 类驱动，主题切换即时生效，无需 JS 重染
 export function _renderTopoLegend() {
   var legend = document.getElementById("topoLegend");
   if (!legend) return;
@@ -1250,8 +1249,8 @@ window.addEventListener("resize", function () {
     if (typeof _topoInvalidateSize === "function") _topoInvalidateSize();
   var canvas = document.getElementById("topoCanvas");
   if (!_topoIsVisible(canvas)) return;
-   
-   
+  // 窄屏（含旋转方向变化）：用户未手动交互过视图时重新 fit；
+  // 回到宽屏则退出 fit 模式（标签阈值回到桌面档），视图位置不动
   if (_topoIsNarrow()) {
     if (!_topoUserViewed && _topoGraph.nodes.length) {
       _topoMobileFit = true;

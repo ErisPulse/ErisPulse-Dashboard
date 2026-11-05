@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/about
 
 export function updateAboutCard() {
   var fw = window._fwStatus || {};
@@ -25,7 +25,7 @@ export function initRippleEffects() {
     btn.style.setProperty("--ripple-x", x + "%");
     btn.style.setProperty("--ripple-y", y + "%");
     btn.classList.remove("ripple");
-    void btn.offsetWidth;  
+    void btn.offsetWidth; // 强制重绘
     btn.classList.add("ripple");
 
     setTimeout(() => btn.classList.remove("ripple"), 600);
@@ -77,7 +77,7 @@ export async function loadAboutContributors() {
 }
 
 
- 
+// ── 诊断快照导出（dump_state 守卫由后端处理） ──
 export async function exportDiagnostics() {
   const d = await api("/api/diagnostics");
   if (!d) return toast(t("export_diagnostics_failed"), "er");

@@ -1,11 +1,11 @@
- 
+// ErisPulse Dashboard – pages/config
 
 export async function loadConfig() {
   const c = await api("/api/config");
   if (c && c.config) {
     window._kvData = c.config;
     window._fwData = c.config["ErisPulse"] || {};
-     
+    // 过滤掉 ErisPulse 键，不在树形视图中显示
     const treeData = {};
     for (const [k, v] of Object.entries(c.config)) {
       if (k !== "ErisPulse") treeData[k] = v;
@@ -31,7 +31,7 @@ export async function loadConfig() {
     });
   }
 
-   
+  // 如果在源码视图，也加载源码
   if (document.getElementById("configBodySource").style.display !== "none") {
     await loadConfigSource();
   }
@@ -70,7 +70,7 @@ export function _ensureCfgSourceCM() {
     indentUnit: 4,
   });
   _cfgSourceCM.setSize("100%", "500px");
-   
+  // 设置页编辑器偏好（主题/字号/缩进）需要触达实例，模块私有变量经 window 暴露
   window._cfgSourceCM = _cfgSourceCM;
   _cfgSourceCM.on("change", function () {
     _cfgSourceDirty = true;
@@ -139,7 +139,7 @@ export async function loadConfigSource() {
   }
 }
 
- 
+// 危险操作守卫：源码有未保存修改时，重新加载前二次确认（丢弃修改不可撤销）
 export async function reloadConfigSourceGuard() {
   if (_cfgSourceDirty) {
     var ok = await confirm2(t("unsaved_title"), t("unsaved_confirm"));
@@ -180,7 +180,7 @@ export async function switchConfigView(view, btn) {
     var ok = await confirm2(t("unsaved_title"), t("unsaved_confirm"));
     if (!ok) return;
   }
-   
+  // 只作用于内部的 tree/source toggle，不影响外层 tab
   var headerActions = btn.closest(".header-actions");
   if (headerActions) {
     headerActions
@@ -210,7 +210,7 @@ document.addEventListener("keydown", function (e) {
     !e.target.isContentEditable
   ) {
     e.preventDefault();
-     
+    // 商店页内保留原语义（聚焦商店搜索框），其他页面打开全局搜索
     if (document.querySelector(".page.active#p-store")) {
       var s = document.getElementById("storeSearch");
       if (s) s.focus();
@@ -344,9 +344,9 @@ export async function delStorage(k, btn) {
   } else row.style.opacity = "1";
 }
 
- 
- 
- 
+// ════════════════ 存储表浏览器（Table Browser）════════════════
+// KV 之上的表级浏览：表清单（搜索/行数/内建徽标）→ 表数据分页视图 → 危险清空。
+// 后端端点：GET /api/storage/tables、GET /api/storage/table、POST /api/storage/table/clear
 
 let _stBackend = "";
 let _stTables = [];
@@ -366,7 +366,7 @@ function _stSkeletonCards(n) {
   return h;
 }
 
- 
+// 存储卡片内 KV / 数据表 视图切换（作用域限定本卡片 header-actions，与树形/源码切换互不影响）
 export async function switchStorageView(view, btn) {
   var headerActions = btn.closest(".header-actions");
   if (headerActions)
@@ -386,7 +386,7 @@ export async function switchStorageView(view, btn) {
   }
 }
 
- 
+// 存储卡片刷新按钮：按当前视图分派（KV 视图保持原有 loadConfig 行为）
 export function storageRefresh() {
   var tablesPane = document.getElementById("storagePaneTables");
   if (tablesPane && tablesPane.style.display !== "none") {
@@ -501,7 +501,7 @@ export function stBackToList() {
   _stCurrent = "";
   document.getElementById("stDataView").style.display = "none";
   document.getElementById("stListView").style.display = "block";
-   
+  // 返回清单时静默刷新行数（清空等操作后保持一致）
   loadStorageTables(true);
 }
 
@@ -581,7 +581,7 @@ export async function loadStorageTableData() {
   }
 }
 
- 
+// 单元格渲染：NULL 灰字 / BLOB 徽标 / 超长截断标记；title 承载全文
 function stCellHtml(cell) {
   if (!cell || cell.v == null)
     return '<td><span class="st-cell st-cell-null">NULL</span></td>';
@@ -631,7 +631,7 @@ export async function stSetSize(v) {
   await loadStorageTableData();
 }
 
- 
+// 危险操作：confirm2 说明后果 → 输入表名二次确认 → 后端 Delete 全表（记审计）
 export async function clearStorageTable() {
   var name = _stCurrent;
   if (!name) return;

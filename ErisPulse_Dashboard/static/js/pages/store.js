@@ -1,5 +1,5 @@
 import { cmpVer } from "../core/utils.js";
- 
+// ErisPulse Dashboard – pages/store
 
 export function debounceStore() {
   clearTimeout(_storeTimer);
@@ -26,8 +26,8 @@ export function initMirrorSelects() {
   });
 }
 
- 
- 
+// 分类体系：与官方市场 packages.json 的 category 编号契约一致
+// （编号表见 erisdev.com 前端 config.js 的 MODULE_CATEGORIES）
 const STORE_CATEGORIES = [
   { id: 1, key: "tool" },
   { id: 2, key: "fun" },
@@ -46,7 +46,7 @@ function _categoryName(item) {
   return "";
 }
 
- 
+// 分类 chips 行：全部 + 有条目的分类（带计数）+ 未分类（仅有未分类条目时）
 export function _renderStoreCategories(pk) {
   var host = document.getElementById("storeCategoryChips");
   if (!host) return;
@@ -149,7 +149,7 @@ export async function loadStore(forceRefresh) {
   const typeFilter = document.getElementById("storeTypeFilter")?.value || "all";
   let remotePackages = null;
 
-   
+  // 远程注册表数据变化少，可缓存；但已安装版本必须实时获取
   if (!forceRefresh) {
     try {
       const c = JSON.parse(localStorage.getItem(STORE_CACHE_KEY));
@@ -168,7 +168,7 @@ export async function loadStore(forceRefresh) {
     }
   }
 
-   
+  // 已安装版本始终实时获取（不缓存）
   const instResp = await api("/api/packages");
   const installedVersions = {};
   if (instResp && Array.isArray(instResp.packages)) {
@@ -187,7 +187,7 @@ export async function loadStore(forceRefresh) {
   }
   const pk = d.packages;
 
-   
+  // 渲染分类 chips 与标签筛选项
   _renderStoreCategories(pk);
   _renderStoreTags(pk);
 
@@ -203,7 +203,7 @@ export async function loadStore(forceRefresh) {
       type: "adapter",
     })),
   ];
-   
+  // 多层筛选
   var f = all;
   if (typeFilter !== "all") {
     f = f.filter(function (i) {
@@ -279,12 +279,12 @@ export async function loadStore(forceRefresh) {
               t("install") +
               "</button>";
           }
-           
+          // 分类徽章
           var catName = _categoryName(i);
           var catBadge = catName
             ? '<span class="chip chip-cat">' + esc(catName) + "</span>"
             : "";
-           
+          // 标签徽章
           var tagBadges = "";
           if (Array.isArray(i.tags) && i.tags.length) {
             tagBadges =
@@ -296,8 +296,8 @@ export async function loadStore(forceRefresh) {
                 .join("") +
               "</div>";
           }
-           
-           
+          // 图标瓦片三级回退（与模块管理页同链）：
+          // ① 源数据 logo_url 外链图片 → ② icon_svg 内联 SVG → ③ 名称首字母（accent-soft 底）
           var icoInner;
           if (i.logo_url) {
             icoInner =
@@ -324,8 +324,8 @@ export async function loadStore(forceRefresh) {
             '">' +
             icoInner +
             "</span>" +
-             
-             
+            // 名称行独占：标题块内名称在上（溢出省略 + 悬停完整名），
+            // 类型/分类/状态胶囊下沉为第二行标签组
             '<div class="store-card-title">' +
             '<span class="store-name" title="' +
             esc(i.name) +
@@ -441,7 +441,7 @@ function _isInstallBusy(pkg) {
 
 export async function installPkg(pkg) {
   if (!authed) return showLogin();
-   
+  // 同包已在安装中：不重复起任务（pip 并发装同包会互相干扰）
   if (_isInstallBusy(pkg)) {
     toast(pkg + ": " + t("installing"), "wr");
     return;
@@ -534,7 +534,7 @@ export function formatFileSize(bytes) {
 }
 
 export function doUpload(file) {
-   
+  // 两段式第一阶段：仅上传保存，返回 token；点"开始安装"才真正安装
   const fd = new FormData();
   fd.append("file", file);
   const xhr = new XMLHttpRequest();
@@ -576,7 +576,7 @@ export function doUpload(file) {
 }
 
 export async function startUploadInstall() {
-   
+  // 两段式第二阶段：此刻才读选项并发起安装
   if (!_uploadState.token) return;
   const body = {
     token: _uploadState.token,
@@ -702,7 +702,7 @@ export async function openPkgDetail(name, pkg, type) {
   }
 
   const versions = (d.versions || []).slice().sort(function (a, b) {
-    return cmpVer(b, a);  
+    return cmpVer(b, a); // 语义版本降序：最新在前
   });
   if (versions.length) {
     document.getElementById("pkgDetailVersionsSection").style.display = "";
@@ -810,7 +810,7 @@ export async function doInstallWithOptions(pkg, defaultForce, isUpgrade) {
 }
 
 export function updateBatchBar() {
-   
+  // 多选模式（html.store-selecting）下底栏常驻；非模式严格按勾选数显隐
   const selecting = document.documentElement.classList.contains(
     "store-selecting",
   );
@@ -827,7 +827,7 @@ export function updateBatchBar() {
   }
 }
 
- 
+// ── 多选模式：点击工具条"多选"进入（复选框浮现），"完成"或再点按钮退出 ──
 export function toggleStoreSelecting(force) {
   const on =
     typeof force === "boolean"

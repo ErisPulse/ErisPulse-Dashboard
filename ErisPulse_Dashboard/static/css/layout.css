@@ -1,17 +1,16 @@
- 
- 
+/* ErisPulse Dashboard – layout */
+/* 悬浮壳：页面四周与区块之间露出 var(--gap-shell) 的 --bg-p 底色 */
 .app.authed {
     padding: var(--gap-shell);
     gap: var(--gap-shell);
 }
 
- 
 .app .task-panel {
     top: calc(var(--gap-shell) + 64px + 6px);
     right: var(--gap-shell);
 }
 
- 
+/* 悬浮壳：header 为独立圆角卡片，浮在 --bg-p 底色上（间隙由 .app 的 gap 提供） */
 .header {
     background: var(--bg-t);
     padding: 12px 20px;
@@ -181,7 +180,7 @@
     color: var(--tx-s);
 }
 
- 
+/* ── WS 连接详情面板 ── */
 .conn-badge {
     cursor: pointer;
     user-select: none;
@@ -259,7 +258,7 @@ code.ws-insp-val {
     font-size: 11px;
     cursor: help;
 }
- 
+/* 移动/平板（≤1023px，抽屉模式）：WS 面板固定定位铺满宽度 */
 @media (max-width: 1023px) {
     .ws-inspector {
         position: fixed;
@@ -353,7 +352,7 @@ code.ws-insp-val {
     min-height: 0;
 }
 
- 
+/* 悬浮圆角面板：与卡片同 surface 语言（--bg-t 浮在 --bg-p 上），独立滚动由 .sidebar-nav 承担 */
 .sidebar {
     width: 232px;
     background: var(--bg-t);
@@ -364,7 +363,7 @@ code.ws-insp-val {
     flex-shrink: 0;
     min-height: 0;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-     
+    /* 节点下拉（折叠态左探出）与折叠态 tooltip 需要溢出可见 */
     overflow: visible;
 }
 
@@ -395,7 +394,7 @@ code.ws-insp-val {
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-     
+    /* 触屏/VNC：双轴原生滚动 */
     touch-action: pan-y;
     overscroll-behavior: contain;
     padding: 8px 6px;
@@ -518,7 +517,7 @@ code.ws-insp-val {
     position: relative;
 }
 
- 
+/* 圆形图标卡：状态标识集中在 ico 上，item 本体不吃药丸底 */
 .nav-ico {
     flex-shrink: 0;
     width: 28px;
@@ -567,7 +566,7 @@ code.ws-insp-val {
     opacity: 1;
 }
 
- 
+/* 文字标签样式（.nav-ico 是图标卡容器，须排除） */
 .nav-item > span:not(.nav-ico) {
     white-space: nowrap;
     overflow: hidden;
@@ -628,7 +627,7 @@ code.ws-insp-val {
     padding-top: 0;
 }
 
- 
+/* 折叠态隐藏组分隔线：光杆图标间只保留留白 */
 .sidebar.collapsed .nav-group + .nav-group::before {
     display: none;
 }
@@ -647,7 +646,7 @@ code.ws-insp-val {
     gap: 0;
 }
 
- 
+/* 折叠态 = 悬浮圆形图标列：激活/悬停状态沿用展开态的 .nav-ico 规则（ico 着色），item 本体无底色 */
 
 .sidebar.collapsed .nav-ico svg {
     opacity: 0.9;
@@ -658,9 +657,9 @@ code.ws-insp-val {
     display: none;
 }
 
-
-
-
+/* 气泡 tooltip 需要探出面板右缘：折叠态默认放开滚动裁剪。
+   内容超出视口时由 main.js 挂 is-scrollable 切回内部滚动——
+   footer 始终吸底（展开按钮永不因高度不足丢失），代价仅是该极端场景下气泡被裁 */
 .sidebar.collapsed .sidebar-nav {
     overflow: visible;
 }
@@ -670,7 +669,7 @@ code.ws-insp-val {
     overflow-x: hidden;
 }
 
- 
+/* 折叠态 hover 气泡：文案来自 data-tip（main.js 在 i18n 后同步） */
 .sidebar.collapsed .nav-item::after {
     content: attr(data-tip);
     position: absolute;
@@ -717,7 +716,6 @@ code.ws-insp-val {
 
 .sidebar.collapsed .node-selector-header {
     padding: 8px;
-     
     border: 1px solid var(--bd);
     border-radius: var(--radius-sm);
 }
@@ -743,8 +741,8 @@ code.ws-insp-val {
     margin-left: 4px;
 }
 
- 
- 
+/* ── 节点选择器：统一到面板语言（surface 底上以次级底色做 hover，圆角/发丝线节奏与 nav 一致）── */
+/* 用 .sidebar 前缀抬高优先级覆盖 cluster.css 的基础样式 */
 .sidebar .node-selector {
     padding: 10px 10px 8px;
     border-bottom: 1px solid color-mix(in srgb, var(--bd) 50%, transparent);
@@ -826,7 +824,7 @@ code.ws-insp-val {
     display: none;
     flex: 1;
     overflow-y: auto;
-     
+    /* 触屏/VNC：双轴原生滚动 */
     touch-action: pan-y;
     overscroll-behavior: contain;
     padding: 28px;
@@ -837,7 +835,7 @@ code.ws-insp-val {
     display: block;
 }
 
- 
+/* 滚动条走 base.css 全局镂空样式 + overrides.css [data-scrollbar] 显隐档位 */
 
 .page-title {
     font-size: 26px;
@@ -913,21 +911,21 @@ code.ws-insp-val {
 }
 
 
- 
+/* 关于页面 - 始终底部 */
 .sidebar-about {
     padding: 4px 8px 0;
     border-top: 1px solid var(--bd);
     margin-top: auto;
 }
 
- 
+/* ── 移动/平板 ≤1023px：回到全高抽屉 + 全宽 header（hamburger/overlay 机制见 overrides.css） ── */
 @media (max-width: 1023px) {
     .app.authed {
         padding: 0;
         gap: 0;
     }
 
-     
+    /* header 全宽贴顶 */
     .header {
         border-radius: 0;
         border: none;
@@ -935,12 +933,12 @@ code.ws-insp-val {
     }
 
     .app .task-panel {
-         
+        /* header 实高 ~64px（12px 上下留白 + 40px 内容），58px 会被 header 压住 */
         top: 70px;
         right: 10px;
     }
 
-     
+    /* 侧栏 = 全高抽屉：直角贴边；dvh 避免 iOS 底部工具栏遮挡，底部留 safe-area */
     .sidebar {
         border-radius: 0;
         border: none;
@@ -949,7 +947,7 @@ code.ws-insp-val {
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-     
+    /* 抽屉态恢复滚动与文字（overrides.css 已 revert 文字），tooltip 不适用 */
     .sidebar.collapsed .sidebar-nav {
         overflow-y: auto;
         overflow-x: hidden;
@@ -959,20 +957,20 @@ code.ws-insp-val {
         display: none;
     }
 
-     
+    /* WS 连接详情面板与 task-panel 同步避开 header 实高 */
     .ws-inspector {
         top: 70px;
     }
 }
 
- 
+/* ── 手机 ≤768px：header 重排 + 触控目标放大 ── */
 @media (max-width: 768px) {
     .header {
         padding: 10px 12px;
         gap: 8px;
     }
 
-     
+    /* 标题单行截断 */
     .header-left {
         min-width: 0;
         flex: 1;
@@ -996,7 +994,7 @@ code.ws-insp-val {
         text-overflow: ellipsis;
     }
 
-     
+    /* 触控目标 ≥40px */
     .btn-icon {
         width: 40px;
         height: 40px;
@@ -1007,13 +1005,12 @@ code.ws-insp-val {
         height: 40px;
     }
 
-     
+    /* 抽屉导航：字号 14、整行 ≥44px */
     .sidebar .nav-item {
         font-size: 14px;
         padding: 10px 12px;
     }
 
-     
     .sidebar,
     .sidebar.collapsed {
         max-width: 85vw;

@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/settings
 
 export function applySettingUiStyle(val) {
   applyUiStyle(val);
@@ -16,7 +16,7 @@ export function initFontSelector() {
   if (!container) return;
   container.innerHTML = "";
 
-   
+  // 系统默认卡片
   var sys = document.createElement("div");
   sys.className = "font-card";
   sys.dataset.font = "system";
@@ -32,7 +32,7 @@ export function initFontSelector() {
   sys.appendChild(sysLabel);
   container.appendChild(sys);
 
-   
+  // 用户上传的字体卡片（可删除）
   (window._customFonts || []).forEach(function(f) {
     var card = document.createElement("div");
     card.className = "font-card";
@@ -60,7 +60,7 @@ export function initFontSelector() {
     container.appendChild(card);
   });
 
-   
+  // 上传入口卡片
   var up = document.createElement("div");
   up.className = "font-card font-card-upload";
   up.title = t("font_upload");
@@ -72,7 +72,7 @@ export function initFontSelector() {
   syncFontCards();
 }
 
- 
+// 上传字体：保存到服务端 → 记入外观 custom_fonts → 应用
 export async function _uploadFontFile(input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
@@ -128,9 +128,9 @@ export function applySettingOled(on) {
   applyOled(on);
 }
 
- 
+// ════════════════ 背景与透感设置卡（所见即所得） ════════════════
 
- 
+// 平铺开关：仅改变背景铺设方式，透感档位与遮罩不受影响
 export function applySettingBgTile(on) {
   setSetting("bg_tile", on ? "1" : "0");
   var img = getSetting("bg_image", "");
@@ -138,7 +138,7 @@ export function applySettingBgTile(on) {
   syncBgCardUI();
 }
 
- 
+// 透感三档选择器（bgLevelSeg）激活态同步
 export function syncBgLevelSeg() {
   var seg = document.getElementById("bgLevelSeg");
   if (!seg) return;
@@ -148,7 +148,7 @@ export function syncBgLevelSeg() {
   });
 }
 
- 
+// 背景卡整体回显：预览缩略图 / 平铺开关 / 透感档位 / 效果档 / 自动取色 / 清除按钮 / OLED 提示
 export function syncBgCardUI() {
   var img = getSetting("bg_image", "");
   var bgColor = getSetting("bg_color", "");
@@ -160,7 +160,7 @@ export function syncBgCardUI() {
   if (im) {
     if (has) {
       im.style.backgroundImage = 'url("' + img + '")';
-       
+      // 预览与实际铺设方式一致：图案平铺 / 照片封面
       im.style.backgroundRepeat = tile ? "repeat" : "no-repeat";
       im.style.backgroundSize = tile ? "64px auto" : "cover";
     } else {
@@ -171,7 +171,7 @@ export function syncBgCardUI() {
   }
   if (box) {
     box.classList.toggle("has-bg", has);
-     
+    // 纯色背景也进预览（WYSIWYG）
     if (!has && bgColor) box.style.background = bgColor;
     else box.style.removeProperty("background");
   }
@@ -179,7 +179,7 @@ export function syncBgCardUI() {
   var tileEl = document.getElementById("settingsBgTile");
   if (tileEl) tileEl.checked = tile;
   syncBgLevelSeg();
-   
+  // 效果档激活态
   var beSeg = document.getElementById("bgEffectSeg");
   if (beSeg) {
     var cur = typeof getBgEffect === "function" ? getBgEffect() : "none";
@@ -191,13 +191,13 @@ export function syncBgCardUI() {
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();
   var clearBtn = document.getElementById("bgClearBtn");
-   
+  // 纯色背景也可"清除"（清除后回到空态）
   if (clearBtn) clearBtn.style.display = has || bgColor ? "inline-flex" : "none";
   syncBgPatternActive();
   updateOledHint();
 }
 
- 
+// OLED + 背景图同时开启时给出提示
 export function updateOledHint() {
   var hint = document.getElementById("bgOledHint");
   if (!hint) return;
@@ -205,13 +205,13 @@ export function updateOledHint() {
   hint.style.display = show ? "block" : "none";
 }
 
- 
+// 图案库缩略图（BG_PATTERNS 来自 state.js；小图 + 平铺 + 自动取色）
 export function renderBgPatternGrid() {
   var grid = document.getElementById("bgPatternGrid");
   if (!grid) return;
   grid.innerHTML = "";
   if (!(BG_PATTERNS || []).length) {
-     
+    // 空状态（内置图案目录缺失/为空）
     var tip = document.createElement("div");
     tip.className = "bg-pattern-empty";
     tip.setAttribute("data-i18n", "settings_bg_pattern_empty");
@@ -223,7 +223,7 @@ export function renderBgPatternGrid() {
     b.type = "button";
     b.className = "bg-pattern-thumb";
     b.title = t("settings_bg_pattern");
-     
+    // img 探测：文件缺失时隐藏坏档瓦片（bg_patterns 目录为 git 跟踪，正常必有）
     var probe = new Image();
     probe.onerror = function () {
       b.style.display = "none";
@@ -247,13 +247,13 @@ export function syncBgPatternActive() {
   });
 }
 
- 
+// 预览卡「清除背景」：移除图片与纯色，保留透感档位偏好
 export function clearBgFromCard() {
   resetBg();
   syncBgCardUI();
 }
 
- 
+// ── 每卡局部重置（设置卡右上角 ↺）──
 export async function resetSettingsGroup(group) {
   var key = "settings_reset_group_" + group;
   var ok = await confirm2(t("settings_card_reset"), t(key));
@@ -326,8 +326,8 @@ export function showSettings() {
 
 export function closeSettings() {}
 
- 
- 
+// ════════════════ 分区导航（索引 + 详情两栏） ════════════════
+// 面板懒加载器：进入分区时按需拉取数据
 var SETTINGS_SEC_LOADERS = {
   "sec-update": function () { loadFrameworkVersions(); },
   "sec-about": function () { loadAbout(); },
@@ -343,14 +343,14 @@ function _selectSettingsPane(paneId, remember) {
   document.querySelectorAll("#settingsDetail .settings-pane").forEach(function (p) {
     p.classList.toggle("active", p === pane);
   });
-   
+  // 子面板归属父分区：导航高亮跟随父项
   var navSec = pane.dataset.parent || paneId;
   var activeBtn = null;
   document.querySelectorAll("#settingsNav .settings-nav-item").forEach(function (b) {
     b.classList.toggle("active", b.dataset.sec === navSec);
     if (b.dataset.sec === navSec) activeBtn = b;
   });
-   
+  // 移动端 chips 行：激活项滚入可视范围
   if (activeBtn && _settingsMobileMQ.matches) _scrollNavChipIntoView(activeBtn);
   if (remember && !pane.dataset.parent) setSetting("settings_section", paneId);
   var loader = SETTINGS_SEC_LOADERS[paneId];
@@ -362,16 +362,16 @@ function _selectSettingsPane(paneId, remember) {
   syncSettingsSectionUI();
 }
 
- 
+// ── 断点形态：桌面 ≥960px 索引+详情两栏；移动 ≤959px 顶部 tab（chips 行）+ 常驻详情 ──
 var _settingsMobileMQ = window.matchMedia("(max-width: 959px)");
 
- 
+// 移动端无滑入式二级视图；旧 class 残留会在断点切换时统一清理
 function _clearMobileDetailView() {
   var shell = document.getElementById("settingsShell");
   if (shell) shell.classList.remove("show-detail");
 }
 
- 
+// chips 行激活项水平滚入可视范围（仅调 scrollLeft，不触发页面纵向滚动）
 function _scrollNavChipIntoView(btn) {
   var nav = document.getElementById("settingsNav");
   if (!nav) return;
@@ -381,15 +381,15 @@ function _scrollNavChipIntoView(btn) {
   else if (br.right > nr.right - 8) nav.scrollLeft += br.right - nr.right + 8;
 }
 
- 
+// 用户点击入口（导航项 / 值行）：移动端 tab 等价于桌面选分区，详情面板常驻
 export function switchSettingsSection(sec) {
   _selectSettingsPane(sec, true);
-   
+  // 仅桌面存在二级视图状态；移动端直接切换分区即可
   if (_settingsMobileMQ.matches) return;
   _clearMobileDetailView();
 }
 
- 
+// 断点跨越时清理移动端残留的 show-detail
 if (typeof _settingsMobileMQ.addEventListener === "function") {
   _settingsMobileMQ.addEventListener("change", function (e) {
     if (!e.matches) _clearMobileDetailView();
@@ -400,7 +400,7 @@ if (typeof _settingsMobileMQ.addEventListener === "function") {
   });
 }
 
- 
+// 返回：子面板回到父分区（顶级分区在两端均由导航/tab 直达，无返回键）
 export function settingsGoBack() {
   var pane = document.querySelector(".settings-pane.active");
   var parent = pane && pane.dataset.parent;
@@ -411,7 +411,7 @@ export function settingsGoBack() {
   _clearMobileDetailView();
 }
 
- 
+// 兼容旧 tab 入口（PAGE_REDIRECTS / 活动中心 / 默认起始页均按旧 tab id 调用）
 export function switchSettingsTab(tab, btn) {
   var map = {
     "settings-appearance": "sec-appearance",
@@ -423,7 +423,7 @@ export function switchSettingsTab(tab, btn) {
   switchSettingsSection(map[tab] || "sec-appearance");
 }
 
- 
+// 分区行条目回显：行内分段选择器与值行副标题
 export function syncSettingsSectionUI() {
   var themeSeg = document.getElementById("themeModeSeg");
   if (themeSeg) {
@@ -464,7 +464,7 @@ export function syncSettingsSectionUI() {
     }
     fontVal.textContent = label;
   }
-   
+  // 行内分段控件激活态回显（语言 / 时间格式 / 编辑器缩进·主题·字号）
   var langSeg = document.getElementById("langSeg");
   if (langSeg) {
     langSeg.querySelectorAll("button").forEach(function (b) {
@@ -495,7 +495,7 @@ export function syncSettingsSectionUI() {
       b.classList.toggle("active", b.dataset.efs === getEditorFontSize());
     });
   }
-   
+  // 触屏滚动 / 滚动条档位 / 自动检查更新
   var tssSeg = document.getElementById("touchScrollSeg");
   if (tssSeg) {
     var tsm = localStorage.getItem("ep_touch_scroll") || "auto";
@@ -535,19 +535,19 @@ export async function loadGlobalAppearance() {
     var scopeEl = document.getElementById("settingsGlobalScope");
     if (scopeEl) scopeEl.checked = !!app._global_enabled;
     window._globalSyncEnabled = !!app._global_enabled;
-     
+    // 用户上传的自定义字体清单（先注册 @font-face 再应用字体）
     window._customFonts = Array.isArray(app.custom_fonts) ? app.custom_fonts : [];
     (window._customFonts || []).forEach(function (f) {
       _ensureFontFace(f.name, f.url);
     });
     if (window._globalSyncEnabled) {
       if (app._device && app._device === _syncDeviceId) {
-         
-         
+        // 本机推送的广播回声：跳过应用并解除静音，
+        // 打断 "异步尾部写回 → 推送 → 广播 → 应用" 的自激回环
         window._syncMuted = false;
       } else {
-         
-         
+        // 其它设备变更：本机静音，应用远端快照（设置 + 字体），并同步开关 UI。
+        // 静音窗 2s：覆盖应用器异步尾部（自动取色回写等）的落盘窗口
         window._syncMuted = true;
         if (app.font) {
           localStorage.setItem("ep_font", app.font);
@@ -568,7 +568,7 @@ var APPEARANCE_BACKUP_KEY = "ep_appearance_backup";
 export async function onSettingsScopeChange(checked) {
   try {
     if (checked) {
-       
+      // 开启前快照本地外观，关闭时可恢复到开启前的样子
       try {
         localStorage.setItem(APPEARANCE_BACKUP_KEY, JSON.stringify(collectAppearanceData()));
       } catch (e) {}
@@ -580,7 +580,7 @@ export async function onSettingsScopeChange(checked) {
     if (d && d.success) {
       window._globalSyncEnabled = checked;
       if (checked) {
-        await loadGlobalAppearance();  
+        await loadGlobalAppearance(); // 立即套用全局外观，而非等下次加载
         toast(t("settings_sync_on_applied"), "ok");
       } else {
         _restoreAppearanceBackup();
@@ -614,7 +614,7 @@ export function applyDashTitle(title) {
   var el = document.getElementById("appTitle");
   if (el) el.textContent = title;
   document.title = title;
-   
+  // 联动：侧边栏头部（移动端抽屉顶部）同步仪表盘标题
   var sbTitle = document.getElementById("sidebarPageTitle");
   if (sbTitle) sbTitle.textContent = title;
 }
@@ -703,7 +703,7 @@ export function _availableNavPages() {
       var c = navItemContent(page);
       var pageLabel = (c && c.title) || page;
       out.push({ value: page, label: pageLabel, icon: (c && c.svg) || "", isSub: false });
-       
+      // 子 tab 变体（同主页 pin 逻辑；与页面同名的 tab 跳过）
       var tabs = MERGED_PAGE_TABS[page];
       if (tabs) {
         tabs.forEach(function (tabInfo) {
@@ -722,11 +722,7 @@ export function _availableNavPages() {
   return out;
 }
 
- 
- 
- 
- 
- 
+// 默认起始页选择器：原生 <select> + EP 组件库自动增强（触发器在容器内，菜单挂 body）。
 export function _renderDefaultPagePicker() {
   var host = document.getElementById("defaultPagePicker");
   if (!host) return;
@@ -742,14 +738,14 @@ export function _renderDefaultPagePicker() {
     sel = document.createElement("select");
     sel.id = "defaultPageSelect";
     sel.className = "settings-select ep-select";
-     
+    // change 挂既有持久化函数：增强/降级为原生两种形态下均触发同一持久化路径
     sel.addEventListener("change", function () {
       applySettingDefaultPage(sel.value);
     });
     host.appendChild(sel);
   }
   sel.setAttribute("aria-label", t("settings_default_page"));
-   
+  // options 同既有数据源：导航页 + 子 tab（“└ ” 标识层级）+ 自定义入口
   var html = pages
     .map(function (p) {
       return (
@@ -762,7 +758,7 @@ export function _renderDefaultPagePicker() {
     })
     .join("");
   html += '<option value="__custom__">' + esc(t("settings_default_custom")) + "</option>";
-   
+  // 当前值不在已知页（历史自定义 id）：补一个回显项
   if (!known && cur && cur !== "dashboard") {
     html = '<option value="' + esc(cur) + '">' + esc(cur) + "</option>" + html;
   }
@@ -795,7 +791,7 @@ export function getDefaultPage() {
 export function applyDefaultPageOnLogin() {
   var p = getDefaultPage();
   if (!p || p === "dashboard") return;
-   
+  // "page:tab" 形式：先切页再点 tab（nav-item 上没有 tab 后缀，直接查会永远找不到）
   var parts = p.split(":");
   var page = parts[0];
   var tab = parts[1];
@@ -806,7 +802,7 @@ export function applyDefaultPageOnLogin() {
       if (tabBtn) tabBtn.click();
     }
   };
-   
+  // 模块视图异步渲染，轮询等待 nav-item 出现后跳转
   var attempts = 0;
   var timer = setInterval(function () {
     attempts++;
@@ -848,8 +844,8 @@ export function getEditorLineWrap() {
   return getSetting("editor_line_wrap", "1") !== "0";
 }
 
- 
- 
+// ── CodeMirror 主题（ep_setting_editor_theme：auto 跟随明暗 / default / dracula）──
+// 已 vendor 的主题样式仅 dracula.min.css，选项以实测可用项为准
 export function getEditorTheme() {
   var v = getSetting("editor_theme", "auto");
   return v === "dracula" || v === "default" ? v : "auto";
@@ -859,7 +855,7 @@ export function _editorAutoTheme() {
   return getEffectiveTheme() === "dark" ? "dracula" : "default";
 }
 
- 
+// 归纳实例应使用的主题：auto 保留页面侧写入的明暗联动值，显式偏好强制覆盖
 function _resolveEditorTheme(current) {
   var pref = getEditorTheme();
   if (pref === "auto") return current || _editorAutoTheme();
@@ -872,7 +868,7 @@ export function applySettingEditorTheme(v) {
   syncSettingsSectionUI();
 }
 
- 
+// ── 编辑器字号（ep_setting_editor_font_size：s/m/l；m 为默认，等价当前继承字号）──
 var EDITOR_FONT_SIZES = { s: "12px", m: "", l: "16px" };
 
 export function getEditorFontSize() {
@@ -880,8 +876,8 @@ export function getEditorFontSize() {
   return EDITOR_FONT_SIZES[v] !== undefined ? v : "m";
 }
 
- 
- 
+// 字号经 CSS 变量全局下发（settings.css 统一规则），已打开实例仅 refresh 重排
+// 编辑器实例归 files.js / config.js 模块私有，经 window 暴露（见各页创建处）
 function _applyEditorFontSize() {
   var px = EDITOR_FONT_SIZES[getEditorFontSize()];
   if (px) document.documentElement.style.setProperty("--ep-cm-font-size", px);
@@ -897,8 +893,8 @@ export function applySettingEditorFontSize(v) {
   syncSettingsSectionUI();
 }
 
- 
- 
+// CodeMirror 实例分散在文件管理器 / 配置源码两处且每次打开重建：
+// 在工厂与 setOption 两层注入用户偏好
 (function _patchCodeMirrorEditorPrefs() {
   if (typeof CodeMirror === "undefined" || CodeMirror.__epEditorPrefs) return;
   CodeMirror.__epEditorPrefs = true;
@@ -913,7 +909,7 @@ export function applySettingEditorFontSize(v) {
   };
   var _setOption = CodeMirror.prototype.setOption;
   CodeMirror.prototype.setOption = function (opt, val) {
-     
+    // 用户强制指定主题时，页面侧的明暗联动写入一并改写为偏好值
     if (opt === "theme") val = _resolveEditorTheme(val);
     return _setOption.call(this, opt, val);
   };
@@ -1082,13 +1078,13 @@ document.addEventListener(
 );;
 
 export function syncSettingsUI() {
-   
+  // Style cards (eris 经典 / cel 赛璐璐 / kawaii 可爱极简)
   var curStyle = getUiStyle();
   document.querySelectorAll(".style-card").forEach(function(card) {
     card.classList.toggle("active", card.dataset.style === curStyle);
   });
 
-   
+  // Theme cards (Light / Dark / Auto)
   var curTheme = getTheme();
   document.querySelectorAll(".theme-card").forEach(function(card) {
     card.classList.toggle("active", card.dataset.themeCard === curTheme);
@@ -1121,22 +1117,22 @@ export function syncSettingsUI() {
   if (animEl) animEl.value = getAnimStyle();
   var dtEl = document.getElementById("settingsDashTitle");
   if (dtEl) dtEl.value = getSetting("dash_title", "ErisPulse Dashboard");
-   
+  // Apply saved accent color to CSS variables (not just sync UI)
   var savedAccent = getSetting("accent_color", "");
   if (savedAccent) applyAccentColor(savedAccent);
   else syncAccentUI("#4fa6de");
   var bgInput = document.getElementById("settingsBg");
   if (bgInput) bgInput.value = getSetting("bg_color", "") || "#f4f7fb";
-   
+  // 背景与透感卡整体回显（预览/平铺/档位/自动取色/OLED 提示）
   syncBgCardUI();
-   
+  // 偏好设置回显
   _renderDefaultPagePicker();
   var dnEl = document.getElementById("settingsDensity");
   if (dnEl) dnEl.value = getDensity();
   var lwEl = document.getElementById("settingsLineWrap");
   if (lwEl) lwEl.checked = getEditorLineWrap();
-   
-   
+  // 行内分段控件（语言/时间格式/编辑器缩进·主题·字号）的激活态统一在 syncSettingsSectionUI 回显
+  // 桌面通知：开关状态 + 权限被拒/能力缺失时置灰
   var ntEl = document.getElementById("settingsDesktopNotify");
   if (ntEl) {
     ntEl.checked = getDesktopNotify();
@@ -1153,7 +1149,7 @@ export function syncSettingsUI() {
   var atEl = document.getElementById("settingsEventAutoTop");
   if (atEl) atEl.checked = getEventAutoTop();
   document.body.classList.toggle("privacy-on", getPrivacyMode());
-   
+  // 分区行条目（分段选择器/值行副标题）随设置变化同步
   syncSettingsSectionUI();
 }
 
@@ -1168,7 +1164,7 @@ export function applySettingLang(v) {
   lang = v;
   localStorage.setItem("ep_lang", lang);
   applyI18n();
-   
+  // 行内语言分段激活态随语言切换回显
   syncSettingsSectionUI();
   loadAll();
 }
@@ -1211,10 +1207,10 @@ export function getEventDensity() {
   return getSetting("event_density", "comfy");
 }
 
- 
+// ── 时间显示格式（getTimeFormat/formatTime 定义在 core/state.js）──
 export function applySettingTimeFormat(v) {
   setSetting("time_format", v === "12" ? "12" : "24");
-   
+  // 已渲染的时间戳随事件流重绘即时生效；日志/审计在下次加载时应用
   refreshEventViews();
   syncSettingsUI();
 }
@@ -1233,13 +1229,13 @@ export function applySettingEventAutoTop(on) {
   setSetting("event_auto_top", on ? "1" : "0");
 }
 
- 
+// ════════════════ 桌面通知（页面隐藏时经系统通知提示关键 WS 消息） ════════════════
 
 export function getDesktopNotify() {
   return getSetting("desktop_notify", "0") === "1";
 }
 
- 
+// 权限不可用/被拒时开关置灰：能力缺失或 Notification.permission === "denied"
 export function _desktopNotifyBlocked() {
   return (
     typeof Notification === "undefined" || Notification.permission === "denied"
@@ -1266,7 +1262,7 @@ export function applySettingDesktopNotify(on) {
   if (Notification.permission === "default") {
     Notification.requestPermission().then(function (p) {
       if (p !== "granted") {
-         
+        // 授权被拒：回落关闭
         setSetting("desktop_notify", "0");
         toast(t("settings_notify_denied"), "er");
       } else {
@@ -1278,7 +1274,7 @@ export function applySettingDesktopNotify(on) {
   syncSettingsUI();
 }
 
- 
+// 行内状态副标题：描述文案 / 已开启 / 权限被拒
 function _notifyStateText() {
   if (_desktopNotifyBlocked()) return t("settings_notify_denied");
   if (getDesktopNotify()) return t("settings_notify_enabled");
@@ -1288,7 +1284,7 @@ function _notifyStateText() {
 var _notifyLastTs = 0;
 var _notifySuppressed = 0;
 
- 
+// 关键消息筛选：事件流消息节流聚合，安装/模块变更即时提示
 function _maybeDesktopNotify(type, raw) {
   if (!getDesktopNotify()) return;
   if (!document.hidden) return;
@@ -1303,7 +1299,7 @@ function _maybeDesktopNotify(type, raw) {
   var title = document.title || "ErisPulse Dashboard";
   var body = "";
   if (type === "event") {
-     
+    // 高频流节流：10s 窗口内仅提示一次，其余折算进条数
     var now = Date.now();
     if (now - _notifyLastTs < 10000) {
       _notifySuppressed++;
@@ -1333,7 +1329,7 @@ function _maybeDesktopNotify(type, raw) {
   try {
     var n = new Notification(title, { body: body, tag: "ep-dashboard" });
     n.onclick = function () {
-       
+      // 点击通知聚焦窗口
       try {
         window.focus();
       } catch (e) {}
@@ -1342,8 +1338,8 @@ function _maybeDesktopNotify(type, raw) {
   } catch (e) {}
 }
 
- 
- 
+// WS 帧统一经 wsLogPush 上报（先于各消息分支处理），在此单点挂钩即可覆盖全部消息；
+// main.js 在模块求值后才把各导出挂到 window，故推迟到 DOMContentLoaded 再包一层
 function _installDesktopNotifyHook() {
   if (window.__epNotifyHooked) return;
   window.__epNotifyHooked = true;
@@ -1417,7 +1413,7 @@ export function resetAllSettings() {
 
 export function applySettingNodeSelector(show) {
   localStorage.setItem("ep_show_node_selector", show);
-   
+  // 重新应用显隐逻辑
   updateNodeSelectorVisibility();
 }
 
@@ -1434,7 +1430,7 @@ export function applySettingAnimStyle(val) {
   applyAnimStyle(val);
 }
 
- 
+// 滚动条显隐档位：always（默认胶囊常显）/ hover / hidden
 export function getScrollbarMode() {
   var v = localStorage.getItem("ep_scrollbar");
   return v === "hover" || v === "hidden" ? v : "always";
@@ -1451,18 +1447,18 @@ export function applySettingScrollbar(mode) {
   syncSettingsUI();
 }
 
- 
+// 触屏滚动兜底：auto（默认，触屏/VNC 探测）/ on / off
 export function applySettingTouchScroll(val) {
   localStorage.setItem("ep_touch_scroll", val);
   syncSettingsUI();
 }
 
- 
+// 自动检查更新（框架 + 包，含启动延迟检查与徽标）
 export function applySettingAutoCheckUpdates(on) {
   setSetting("auto_check_updates", on ? "1" : "0");
   syncSettingsUI();
   if (!on) {
-     
+    // 关闭即清提示；缓存也一并清掉
     var nav = document.querySelector('.nav-item[data-page="packages"]');
     if (nav) nav.classList.remove("show-update");
     removeTask("pkg-update-available");
@@ -1470,7 +1466,7 @@ export function applySettingAutoCheckUpdates(on) {
       localStorage.removeItem("ep_pkg_updates_cache");
     } catch (e) {}
   } else {
-     
+    // 打开后 3s 内静默补一次检查
     setTimeout(function () {
       checkFwUpdateBadge();
       checkPkgUpdateBadge();
@@ -1534,8 +1530,8 @@ export async function importBackup(input) {
   input.value = "";
 }
 
- 
- 
+// ════════════════ 全局同步（一开全开，全量同步）════════════════
+// 同步范围：外观 + 行为 + 语言 + 布局（下列 localStorage 键）
 var SYNC_LOCAL_KEYS = [
   "ep_theme", "ep_oled", "ep_font", "ep_lang", "ep_anim_style", "ep_ui_style",
   "ep_home_pins", "ep_nav_group_states", "ep_sidebar_collapsed",
@@ -1551,7 +1547,7 @@ var SYNC_LOCAL_KEYS = [
   "ep_setting_event_density", "ep_setting_event_auto_top",
 ];
 var _syncPushTimer = null;
- 
+// 本机同步会话标识：随快照上行，广播回声按此跳过——打断 push→broadcast→apply→push 回环
 var _syncDeviceId =
   Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -1559,7 +1555,7 @@ export function _globalSyncEnabled() {
   return !!window._globalSyncEnabled;
 }
 
- 
+// 同步快照推送（同步开启时，任意同步设置变更 → 推送 → 广播到全部设备）
 export async function _pushSyncSnapshot() {
   if (!_globalSyncEnabled() || !authed) return;
   var settings = {};
@@ -1576,7 +1572,7 @@ export async function _pushSyncSnapshot() {
   await api("/api/appearance", { method: "PUT", body: JSON.stringify(payload) });
 }
 
- 
+// 拦截同步键的写入（同步开启时自动推送；应用远端快照期间静音）
 var _origSetItem = Storage.prototype.setItem;
 Storage.prototype.setItem = function (k, v) {
   _origSetItem.call(this, k, v);
@@ -1593,7 +1589,7 @@ Storage.prototype.setItem = function (k, v) {
   } catch (e) {}
 };
 
- 
+// 同步键 → 应用函数（收到广播/快照后恢复到本机）
 var SYNC_APPLIERS = {
   ep_theme: function (v) { applyTheme(v); },
   ep_oled: function (v) { applyOled(v === "on"); },
@@ -1620,9 +1616,7 @@ var SYNC_APPLIERS = {
     onThemeChanged();
   },
   ep_setting_custom_css: function (v) {
-     
-     
-     
+    // 远端应用：直接注入同步值，静默——不读 textarea、不 toast
     var style = document.getElementById("epCustomCss");
     if (!style) {
       style = document.createElement("style");
@@ -1639,7 +1633,7 @@ var SYNC_APPLIERS = {
   ep_setting_editor_theme: function (v) { applySettingEditorTheme(v); },
   ep_setting_editor_font_size: function (v) { applySettingEditorFontSize(v); },
   ep_setting_time_format: function (v) { applySettingTimeFormat(v); },
-   
+  // 通知权限是浏览器级每设备状态，不随同步开关翻转，仅回写本地偏好
   ep_setting_desktop_notify: function (v) { setSetting("desktop_notify", v === "1" ? "1" : "0"); syncSettingsUI(); },
   ep_setting_refresh_interval: function (v) { applySettingRefresh(v); },
   ep_setting_event_limit: function (v) { applySettingEventLimit(v); },
@@ -1647,7 +1641,7 @@ var SYNC_APPLIERS = {
   ep_setting_event_auto_top: function (v) { applySettingEventAutoTop(v === "1"); },
 };
 
- 
+// 应用远端设置快照（静音本机推送
 export async function _applySyncedSettings(st) {
   window._syncMuted = true;
   try {
@@ -1664,7 +1658,7 @@ export async function _applySyncedSettings(st) {
   }
 }
 
- 
+// ── 背景：图片链接自定义 ──
 export async function applyBgImageUrl() {
   var url = await prompt2(
     t("bg_custom_url"),
@@ -1681,7 +1675,7 @@ export async function applyBgImageUrl() {
   applyBgImage(url);
   toast(t("config_saved"), "ok");
 }
- 
+// ── 主题包：zip 包上传（theme.json/theme.css/theme.js/assets，完整 JS/CSS 权限） ──
 export async function applyThemePackFile(input) {
   var f = input.files && input.files[0];
   if (!f) return;
@@ -1728,15 +1722,15 @@ export function syncThemePackUI() {
   el.textContent = pack && pack.name ? pack.name : t('theme_pack_none');
 }
 
- 
+// ── 主题变量编辑器模态：打开时按已存主题重建表单，Esc/遮罩点击关闭 ──
 var _customThemeEscHandler = null;
 
 export function openCustomThemeModal() {
   var ov = document.getElementById('customThemeOv');
   if (!ov) return;
-  initCustomThemeEditor();  
+  initCustomThemeEditor(); // 按当前保存值重建变量表单与开关状态
   ov.classList.add('show');
-   
+  // 捕获阶段拦截 Esc
   _customThemeEscHandler = function (e) {
     if (e.key !== 'Escape') return;
     e.preventDefault();
@@ -1755,7 +1749,7 @@ export function closeCustomThemeModal() {
   }
 }
 
- 
+// ════════════════ 通用：访问令牌 ════════════════
 
 export function loadGeneralTab() {
   loadAccessTokenCard();
@@ -1766,7 +1760,7 @@ export function loadGeneralTab() {
 export function loadAccessTokenCard() {
   var host = document.getElementById("generalTokenCard");
   if (!host) return;
-   
+  // 单行：标题 + 掩码 + 复制 + 重新生成（按钮保持同行不换行）
   host.innerHTML =
     '<div class="card set-group">' +
     '<div class="set-row set-row--wrap"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>' +
@@ -1779,7 +1773,7 @@ export function loadAccessTokenCard() {
   applyI18n();
 }
 
- 
+// ════════════════ API 密钥（多密钥体系） ════════════════
 
 function _fmtTime(ts) {
   if (!ts) return "-";
@@ -1812,7 +1806,7 @@ export async function loadApiKeyCard() {
   }
   var keys = (d && d.keys) || [];
   var html = "";
-   
+  // 添加密钥行（名称 + 角色 + 添加按钮）
   html +=
     '<div class="set-row set-row--wrap"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>' +
     '<span class="set-main"><span class="set-title" data-i18n="sec_keys_add"></span><span class="set-sub" data-i18n="sec_keys_add_desc"></span></span>' +
@@ -1821,7 +1815,7 @@ export async function loadApiKeyCard() {
     '<select class="settings-select" id="newKeyRole"><option value="viewer" selected data-i18n-option="sec_key_role_viewer"></option><option value="admin" data-i18n-option="sec_key_role_admin"></option></select> ' +
     '<button class="btn btn-primary btn-sm" onclick="createApiKey()"><span data-i18n="sec_keys_create"></span></button>' +
     "</span></div>";
-   
+  // 密钥列表
   if (!keys.length) {
     html +=
       '<div class="set-row"><span class="set-main" style="justify-content:center"><span class="set-sub" data-i18n="sec_keys_empty"></span></span></div>';
@@ -1876,7 +1870,7 @@ export async function loadApiKeyCard() {
 }
 
 function _showKeyOnce(key) {
-   
+  // 明文仅创建/重生成时一次性展示
   showModal(
     t("sec_key_created_ok"),
     '<div style="word-break:break-all"><code style="user-select:all;font-size:13px">' +
@@ -1918,9 +1912,9 @@ export async function createApiKey() {
   if (d.key) _showKeyOnce(d.key);
 }
 
- 
- 
- 
+// viewer 密钥的页面白名单编辑（空 = 全部只读页）
+// 页面清单与"页面 → API 前缀"映射由后端 /api/security/pages 提供（单一数据源），
+// 标签用前端 i18n 页面名；后端可在 Dashboard.rbac.page_api_map 覆盖映射。
 var _PAGE_LABELS = {
   dashboard: "仪表盘",
   "event-stream": "事件流",
@@ -1950,7 +1944,7 @@ async function _loadPagePermissionMap() {
   }
   var pages = (d && d.pages) || null;
   if (!pages) {
-     
+    // 后端不支持时退回内置清单（旧版仅自护）
     pages = {};
     Object.keys(_PAGE_LABELS).forEach(function (k) { pages[k] = []; });
   }
@@ -1968,7 +1962,7 @@ export async function editKeyPages(id) {
   var cur = key.pages || [];
   var pmap = await _loadPagePermissionMap();
   var ids = Object.keys(pmap.pages);
-   
+  // 稳定的页面顺序：内置标签顺序优先，未知页面追加在后
   ids.sort(function (a, b) {
     var ia = Object.prototype.hasOwnProperty.call(_PAGE_LABELS, a) ? Object.keys(_PAGE_LABELS).indexOf(a) : 999;
     var ib = Object.prototype.hasOwnProperty.call(_PAGE_LABELS, b) ? Object.keys(_PAGE_LABELS).indexOf(b) : 999;
@@ -2071,7 +2065,7 @@ export function copyAccessTokenPreview() {
   toast(t("sec_copied"), "ok");
 }
 
- 
+// ── 令牌重生成：预览 → 复制 → 确认应用（应用前旧令牌始终有效） ──
 function _randomAccessToken() {
   var bytes = new Uint8Array(32);
   if (window.crypto && crypto.getRandomValues) {
@@ -2086,7 +2080,7 @@ function _randomAccessToken() {
 
 export async function regenAccessToken() {
   if (!authed) return showLogin();
-   
+  // 步骤 1：本地生成新令牌并预览，用户复制确认前什么都不会发生
   var newToken = _randomAccessToken();
   var preview = await showModal(
     t("sec_token_preview_title"),
@@ -2105,8 +2099,8 @@ export async function regenAccessToken() {
       { label: t("sec_token_apply"), value: "apply", primary: true },
     ],
   );
-  if (preview !== "apply") return;  
-   
+  if (preview !== "apply") return; // 取消：旧令牌继续有效，本次生成作废
+  // 步骤 2：应用（旧令牌立即失效）
   var d = await api("/api/security/token/regenerate", {
     method: "POST",
     body: JSON.stringify({ token: newToken }),
@@ -2117,7 +2111,7 @@ export async function regenAccessToken() {
   loadAccessTokenCard();
 }
 
- 
+// ════════════════ 通用：登录失败保护（配置存 Dashboard.login_lockout_*） ════════════════
 
 export async function loadLoginLockout() {
   try {
@@ -2131,7 +2125,7 @@ export async function loadLoginLockout() {
     if (sw) sw.checked = enabled;
     var sum = document.getElementById("loginLockoutSummary");
     if (sum) {
-       
+      // 移除 data-i18n：否则后续 applyI18n 会用未替换的模板覆盖插值结果
       sum.removeAttribute("data-i18n");
       sum.textContent = t("login_lockout_params_desc")
         .replace("{n}", maxFails)
@@ -2200,8 +2194,8 @@ export async function openLoginLockoutModal() {
   loadLoginLockout();
 }
 
- 
- 
+// ════════════════ 框架行为（ErisPulse 段常用项，持久写 /api/config） ════════════════
+// 完整配置仍在 配置管理 → 框架配置；此处只放高频项
 
 function _fwbSwitch(id, titleKey, descKey, key, on) {
   return (
@@ -2300,7 +2294,7 @@ export async function saveFwBehaviorKey(key, value) {
 
 export function goFwConfigPage() {
   go("config");
-   
+  // 激活 框架配置 tab（go() 不带 tab 参数，进页后点击目标 tab）
   setTimeout(function () {
     var tab = document.querySelector('[data-tab="cfg-framework"]');
     if (tab) tab.click();

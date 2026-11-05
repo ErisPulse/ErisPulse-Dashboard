@@ -41,8 +41,7 @@ class StatusMixin:
         psutil_ok = False
         proc = None
         try:
-             
-             
+            # 重新 import 可能拿到磁盘上被替换一半的模块导致属性缺失
             psutil = self._psutil_mod
             if psutil is None:
                 import psutil as _psutil
@@ -59,9 +58,9 @@ class StatusMixin:
             self.logger.warning(f"获取系统信息失败: {e}")
 
         if psutil_ok:
-             
-             
-             
+            # 逐项独立采集：任何一项失败只跳过该项（不设键），
+            # 不影响其它指标——兼容 Android rootfs / 受限容器等
+            # 部分 /proc 不可读的环境
 
             try:
                 mem_info_rss = proc.memory_info()
@@ -147,7 +146,7 @@ class StatusMixin:
 
         mem["psutil_ok"] = psutil_ok
 
-         
+        # ---- 降级链：psutil 缺失/部分失败时直接读 /proc 与 resource ----
         need_sys_mem = "system_percent" not in mem
         need_proc_mem = "rss_mb" not in mem
         need_proc_cpu = "cpu_percent" not in mem
@@ -193,7 +192,7 @@ class StatusMixin:
 
                     maxrss = resource.getrusage(
                         resource.RUSAGE_SELF
-                    ).ru_maxrss   
+                    ).ru_maxrss  # Linux 下为 KB
                     mem["rss_mb"] = round(maxrss / 1024, 1)
                 except Exception as e:
                     self.logger.debug(f"getrusage fallback failed: {e}")
@@ -257,7 +256,7 @@ class StatusMixin:
             t = e["type"]
             ec[t] = ec.get(t, 0) + 1
 
-         
+        # 工作目录所在磁盘用量（受限环境降级为 None，前端不展示）
         disk = None
         try:
             import psutil as _psutil
@@ -286,10 +285,10 @@ class StatusMixin:
             "total_events": self._total_event_count,
         }
 
-     
+    # ════════════════ API · 认证与系统状态 ════════════════
 
     async def _api_auth(self, request: Request) -> JSONResponse:
-         
+        # 登录失败锁定参数可配置（Dashboard.login_lockout_*，见设置-通用）
         cfg = self._load_config()
         lockout_enabled = cfg.get("login_lockout_enabled", True)
         max_fails = int(cfg.get("login_lockout_max_fails", 10) or 10)
@@ -315,7 +314,7 @@ class StatusMixin:
             )
         body = await request.json()
         token = body.get("token", "")
-         
+        # 多密钥：主令牌或任意启用密钥均可登录（viewer 登录后仅只读）
         ok, role, _key_id, key_pages = self._resolve_access(token)
         if ok:
             self._login_fails = 0

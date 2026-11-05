@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/events
 
 export function isHeartbeatEvent(e) {
   return (
@@ -18,7 +18,7 @@ export function evHtml(e, count) {
   var type = e.type || "meta";
   var ico = EV_TYPE_ICONS[type] || EV_TYPE_ICONS.meta;
   var hb = isHeartbeatEvent(e);
-   
+  // 悬停展开的详情字段（紧凑行 + hover 详情：密度分级）
   var details = [];
   if (e.detail_type) details.push(["detail_type", e.detail_type]);
   if (e.platform) details.push(["platform", e.platform]);
@@ -97,19 +97,19 @@ export function renderEventsHtml(events) {
   return html;
 }
 
-
-
-
-var _pendEvents = [];  
+/* ═══ WS 事件渲染管线：入队 → 合帧 → 批量前插 → 容量裁剪 ═══
+   core/ws.js 逐条调用 prependEventHtml（core 层不可改），合帧收敛在本层完成：
+   事件风暴期每秒最多 4 次批量渲染，杜绝逐条插入与全量 innerHTML 重建 */
+var _pendEvents = []; // [container, ev] 到达序
 var _pendRAF = 0;
 var _pendTimer = null;
 var _pendLast = 0;
-var _EVENT_FLUSH_MS = 250;  
-var _EVENT_LIST_DOM_CAP = 300;  
-var _DASH_EVENTS_DOM_CAP = 20;  
+var _EVENT_FLUSH_MS = 250; // 合帧窗口：rAF 对齐 + 250ms 节流
+var _EVENT_LIST_DOM_CAP = 300; // 事件流页 DOM 行数上限（超出从尾部移除）
+var _DASH_EVENTS_DOM_CAP = 20; // 首页最近事件行数上限
 
 export function prependEventHtml(container, ev) {
-   
+  // 首条事件到达时清掉首载骨架（dash.html 内置 .skeleton 占位）
   var skels = container.querySelectorAll(":scope > .skeleton");
   if (skels.length) skels.forEach(function (n) { n.remove(); });
   _pendEvents.push([container, ev]);
@@ -139,7 +139,7 @@ function _flushPendEvents() {
   var batch = _pendEvents;
   _pendEvents = [];
   if (!batch.length) return;
-   
+  // 按容器分组（首页/事件流两视口互不干扰），保持到达顺序
   var byContainer = new Map();
   batch.forEach(function (it) {
     if (!byContainer.has(it[0])) byContainer.set(it[0], []);
@@ -162,12 +162,12 @@ function _clearPendingEvents() {
   }
 }
 
-
-
+/* 批量前插：evs 为到达序（旧→新）。语义与逐条版等价——
+   同平台心跳并入当前逻辑首行（DOM 直改计数/时间），其余拼串后一次 insertAdjacentHTML（新在上） */
 function _prependBatch(container, evs) {
-  var items = [];  
-  var headEl = container.firstElementChild;  
-  var headIdx = -1;  
+  var items = []; // [{ev, count}]
+  var headEl = container.firstElementChild; // 逻辑首行（DOM 引用）
+  var headIdx = -1; // 或批内虚拟首行（items 下标）
   var tmFmt = {
     hour: "2-digit",
     minute: "2-digit",
@@ -176,7 +176,7 @@ function _prependBatch(container, evs) {
   evs.forEach(function (ev) {
     var hb = isHeartbeatEvent(ev);
     var plat = ev.platform || "";
-     
+    // 与逻辑首行同平台心跳：只更新计数与时间（0-2 个节点级改动）
     if (hb && headEl && headEl.classList.contains("ev-hb") && headEl.dataset.platform === plat) {
       var c = (parseInt(headEl.dataset.count || "1", 10) || 1) + 1;
       headEl.dataset.count = c;
@@ -199,25 +199,25 @@ function _prependBatch(container, evs) {
     items.push({ ev: ev, count: 1 });
   });
   if (items.length) {
-     
+    // 最新在最上：一次批量插入
     var html = "";
     for (var i = items.length - 1; i >= 0; i--)
       html += evHtml(items[i].ev, items[i].count);
     container.insertAdjacentHTML("afterbegin", html);
-     
+    // 容量裁剪：超出上限从尾部移除
     var cap =
       container.id === "dashEvents" ? _DASH_EVENTS_DOM_CAP : _EVENT_LIST_DOM_CAP;
     while (container.children.length > cap)
       container.removeChild(container.lastChild);
   }
-   
+  // 搜索过滤激活时，同步本容器各行可见性（仅当事件流列表）
   var input = document.getElementById("eSearchFilter");
   if (container.id === "eventList" && input && input.value.trim()) {
     filterEventRows();
   }
 }
 
- 
+/* 工具条即时搜索：客户端按行文本过滤（不动数据源） */
 export function filterEventRows() {
   var input = document.getElementById("eSearchFilter");
   var list = document.getElementById("eventList");
@@ -252,7 +252,7 @@ export async function loadEvents() {
   if (pf) u.set("platform", pf);
   const d = await api("/api/events?" + u);
   if (!d) return;
-   
+  // 全量重建路径（过滤器/切页/清空/重连）：先丢弃在途增量，防止重建后陈旧前插
   _clearPendingEvents();
   allEvents = d.events || [];
   if (d.total_count !== undefined) _totalEventCount = d.total_count;
@@ -304,7 +304,7 @@ export function _relativeTime(ts) {
 }
 
 export function refreshEventViews() {
-   
+  // 全量重建路径（设置项变更：隐私模式/行密度）：清在途增量后按最新呈现重绘
   _clearPendingEvents();
   var evl = document.getElementById("eventList");
   var dh = document.getElementById("dashEvents");
@@ -345,7 +345,7 @@ export function _flushEventStream() {
   }
   const em = el.querySelector(".empty-state");
   if (em) em.remove();
-   
+  // 缓冲并入统一管线后同步落盘（调用方已是 500ms 节流，此处无需再等帧）
   var buf = _wsEventBuffer;
   _wsEventBuffer = [];
   buf.forEach(function (ev) {
@@ -412,13 +412,9 @@ const EVENT_TYPES = {
 };;
 
 export async function initEventBuilder() {
-   
   await loadPlatforms();
-   
   updateDetailTypeOptions();
-   
   updateEventPreview();
-   
   await loadMessageSegmentTypes();
 }
 
@@ -464,19 +460,15 @@ export async function loadBotsForPlatform(platform) {
 export function selectEventType(type) {
   builderState.eventType = type;
 
-   
   document.querySelectorAll(".type-btn").forEach((btn) => {
     btn.classList.remove("active");
     if (btn.dataset.type === type) btn.classList.add("active");
   });
 
-   
   updateDetailTypeOptions();
 
-   
   updateRequiredFields();
 
-   
   const msgCard = document.getElementById("messageBuilderCard");
   if (msgCard) {
     msgCard.style.display = type === "message" ? "block" : "none";
@@ -550,7 +542,7 @@ export function toggleCustomBot() {
 }
 
 export function updateRequiredFields() {
-   
+  // 清空附加字段区域（user_id 和 alt_message 已自动处理）
   const container = document.getElementById("optionalFields");
   container.innerHTML = "";
 }
@@ -561,7 +553,7 @@ export function addOptionalField(key = "", value = "", label = "") {
   const div = document.createElement("div");
   div.className = "optional-field";
   div.dataset.key = key;
-   
+  // 确定 placeholder
   var ph = t("field_value_placeholder");
   if (label) {
     ph = t(label) || label;
@@ -582,7 +574,6 @@ export function addOptionalField(key = "", value = "", label = "") {
 }
 
 export function updateOptionalFieldKey(div) {
-   
   var keyInput = div.querySelector("input:first-child");
   if (keyInput) div.dataset.key = keyInput.value;
   updateEventPreview();
@@ -662,7 +653,6 @@ export function changeSegmentType(select) {
   builderState.messageSegments[index].type = type;
   builderState.messageSegments[index].fields = {};
 
-   
   const segmentType = (window.messageSegmentTypes.standard_segments || []).find(
     (s) => s.type === type,
   );
@@ -727,7 +717,7 @@ export function buildEventData() {
     },
   };
 
-   
+  // 添加消息段
   if (builderState.eventType === "message") {
     event.message = builderState.messageSegments.map((seg) => ({
       type: seg.type,
@@ -735,7 +725,7 @@ export function buildEventData() {
     }));
   }
 
-   
+  // 添加附加字段（用户手动添加的）
   const optionalFields = document.querySelectorAll(".optional-field");
   optionalFields.forEach((field) => {
     const inputs = field.querySelectorAll("input");
@@ -748,7 +738,7 @@ export function buildEventData() {
     }
   });
 
-   
+  // 添加会话信息
   const sessionType = document.getElementById("sessionType").value;
   const sessionId = document.getElementById("sessionId").value;
 
@@ -760,19 +750,19 @@ export function buildEventData() {
     event.channel_id = event.channel_id || sessionId;
   }
 
-   
+  // user_id 默认使用 bot 的 ID（OneBot12 标准字段）
   if (!event.user_id) {
     event.user_id = botId || "test_user";
   }
 
-   
+  // alt_message 自动从消息段生成
   if (builderState.eventType === "message") {
     if (!event.alt_message) {
       event.alt_message = (event.message || [])
         .filter((seg) => seg.type === "text" && seg.data && seg.data.text)
         .map((seg) => seg.data.text)
         .join("");
-       
+      // 没有文本段时给一个占位值
       if (!event.alt_message) event.alt_message = "[test message]";
     }
   }
@@ -830,7 +820,7 @@ export async function submitEvent() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-   
+  // 监听平台自定义输入
   const platformCustom = document.getElementById("platformCustom");
   if (platformCustom) {
     platformCustom.addEventListener("input", function () {
@@ -839,7 +829,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-   
+  // 监听 Bot 自定义输入
   const botCustom = document.getElementById("botCustom");
   if (botCustom) {
     botCustom.addEventListener("input", function () {
@@ -848,7 +838,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-   
+  // 监听会话类型和 ID
   const sessionType = document.getElementById("sessionType");
   const sessionId = document.getElementById("sessionId");
   if (sessionType) {
@@ -858,7 +848,7 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionId.addEventListener("input", updateEventPreview);
   }
 
-   
+  // 按钮涟漪效果
   initRippleEffects();
 });;
 

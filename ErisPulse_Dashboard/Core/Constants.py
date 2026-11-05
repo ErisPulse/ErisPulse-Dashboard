@@ -33,11 +33,11 @@ from ErisPulse.Core.constants import (
     DEFAULT_USE_GLOBAL_DB,
 )
 
- 
- 
- 
- 
- 
+# ==============================================================================
+# 框架默认配置（与 ErisPulse 官方 frame_config.DEFAULT_ERISPULSE_CONFIG 一致）
+#
+# Dashboard 自身配置请使用 ConfigClass（见 Config.py）。
+# ==============================================================================
 DEFAULT_ERISPULSE_CONFIG = {
     "server": {
         "host": DEFAULT_SERVER_HOST,
@@ -45,7 +45,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "auto_start": DEFAULT_SERVER_AUTO_START,
         "ssl_certfile": None,
         "ssl_keyfile": None,
-         
+        # 内联 PEM（优先于文件路径）；与前端 framework.js _fwDefaults 保持一致
         "ssl_cert": None,
         "ssl_key": None,
     },
@@ -65,16 +65,16 @@ DEFAULT_ERISPULSE_CONFIG = {
             "ignore_self": DEFAULT_MESSAGE_IGNORE_SELF,
         },
         "command": {
-             
+            # prefix 可以是字符串（单个前缀）或列表（多个前缀）
             "prefix": DEFAULT_COMMAND_PREFIX,
             "case_sensitive": DEFAULT_COMMAND_CASE_SENSITIVE,
             "allow_space_prefix": DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
             "must_at_bot": DEFAULT_COMMAND_MUST_AT_BOT,
         },
     },
-     
-     
-     
+    # 框架主人系统配置
+    # users 为 dict 时按平台指定: {"yunhu": ["123"], "telegram": ["456"]}
+    # users 为 list 时为全局主人（所有平台生效）: ["123", "456"]
     "master": {
         "users": {},
     },
@@ -86,7 +86,7 @@ DEFAULT_ERISPULSE_CONFIG = {
             "modules": [],
             "adapters": [],
         },
-         
+        # 性能优化与主动 GC 配置
         "handler_max_concurrency": DEFAULT_HANDLER_MAX_CONCURRENCY,
         "proactive_gc_interval": DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
         "offline_bot_expiry": DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
@@ -96,24 +96,24 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
 }
 
- 
- 
- 
- 
- 
+# ==============================================================================
+# 文件管理安全限制
+#
+# 使用位置: Core.py 文件管理 API（_is_sensitive_file / read / upload）
+# ==============================================================================
 
- 
- 
+# 禁止读取/写入的敏感文件名（白名单黑名单，大小写敏感）。
+# 修改影响: 文件管理面板对这些文件的读写被拒绝。
 SENSITIVE_FILES = {".env", "credentials.json", "id_rsa", "id_ed25519", ".htpasswd"}
 
- 
- 
+# 单文件读取大小上限（字节），超过返回 413。
+# 修改影响: 防止通过文件管理读取超大文件导致内存占用。
 MAX_READ_SIZE = 2 * 1024 * 1024
 
- 
- 
+# 单文件上传大小上限（字节），超过拒绝。
+# 修改影响: 文件管理上传的大小限制。
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024
 
- 
- 
+# SSL 证书/私钥单文件上传大小上限（字节），超过拒绝。
+# 修改影响: 安全页证书上传的大小限制。
 MAX_SSL_UPLOAD_SIZE = 1024 * 1024

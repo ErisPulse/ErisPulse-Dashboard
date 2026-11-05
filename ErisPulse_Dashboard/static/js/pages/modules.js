@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/modules
 
 export async function loadModules() {
   const d = await api("/api/modules");
@@ -28,7 +28,7 @@ export async function loadModules() {
   });
   document.getElementById("adapterCount").textContent = adapters.length;
   document.getElementById("moduleCount").textContent = modules.length;
-   
+  // Update summary stats
   var allItems = d.modules || [];
   var allAdapters = allItems.filter(function (m) {
     return m.type === "adapter";
@@ -81,7 +81,7 @@ export function renderPluginRow(m, isAd) {
   } else if (m.enabled) {
     statusDot = "enabled";
     if (m.load_strategy && m.load_strategy.lazy_load) {
-       
+      // 懒加载模块已挂载，首次调用时框架会自动加载——不是"出了问题没加载"
       isLazyModule = true;
       statusText = t("module_lazy_pending");
       statusClass = "chip-pr";
@@ -91,7 +91,7 @@ export function renderPluginRow(m, isAd) {
     }
   } else {
     statusDot = "disabled";
-     
+    // 未注册（失去句柄）的禁用模块：展示为"禁用中"，与常规已禁用区分
     statusText = m.unregistered ? t("module_disabled_running") : t("module_disabled");
     statusClass = "chip-er";
   }
@@ -102,9 +102,9 @@ export function renderPluginRow(m, isAd) {
   if (m.description) meta += "<span>" + esc(m.description) + "</span>";
   if (!meta) meta = "<span>" + t("module_no_desc") + "</span>";
 
-   
+  // 主操作按钮：加载/启用（实心）、停止加载（描边）；低频与危险操作收进 ⋯ 菜单
   let acts = "";
-   
+  // 声明了配置的组件提供"去配置"直达入口（适配器含账户配置）
   var canCfg = isAd ? m.has_config || m.has_accounts : m.has_config;
   if (canCfg) {
     acts +=
@@ -144,7 +144,7 @@ export function renderPluginRow(m, isAd) {
       t("enable_module") +
       "</button> ";
   }
-   
+  // ⋯ 菜单：重载（仅模块）、影子测试（仅模块且 SDK 支持）、禁用/启用、卸载（仅模块）
   var menuItems = [];
   if (m.loaded && !isAd)
     menuItems.push({ label: t("reload"), action: "reload", danger: false });
@@ -190,10 +190,10 @@ export function renderPluginRow(m, isAd) {
       '" onclick="toggleModuleMenu(event, this)"><svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>';
   }
 
-   
+  // Build detail section
   var detailHtml = "";
   var detailItems = [];
-   
+  // 详情：状态说明（适配器/模块通用）
   detailItems.push(
     '<span class="module-detail-item"><strong>' +
       t("loaded_status") +
@@ -201,7 +201,7 @@ export function renderPluginRow(m, isAd) {
       esc(statusText) +
       "</span>",
   );
-   
+  // 详情：完整描述
   if (m.description)
     detailItems.push(
       '<span class="module-detail-item">' +
@@ -315,7 +315,7 @@ export function renderPluginRow(m, isAd) {
       detailItems.push(
         '<span class="module-detail-item"><span class="chip chip-pr module-git-chip">Git</span></span>',
       );
-     
+    // 已注册命令清单：展开时按需拉取；模块未注册命令时移除占位不渲染
     if (m.name)
       detailItems.push(
         '<span class="module-detail-item modcmd-item" data-modcmd="' +
@@ -332,12 +332,12 @@ export function renderPluginRow(m, isAd) {
       "</div></div>";
   }
 
-   
-   
-   
-   
-   
-   
+  // 图标三级回退：① 适配器品牌 logo（/api/adapter-logos）→ ② 模块元数据声明
+  // （m.logo_url 外链图片 / m.icon_svg 内联 SVG，见 docs/module-view-registration.md）→ ③ 首字母头像
+  // （accent-soft 底 + 主文字色，全 token 化，不做按名哈希随机彩色，保持家族一致性）
+  // adapterLogoImg() 在无品牌 logo 时返回的是占位空 span（真值字符串），不能用于判空
+  // 此处改用 getAdapterLogo() 取品牌 logo 地址判空，保证适配器条目与普通模块共用同一条回退链，
+  // 品牌 logo 加载失败时经 onerror 直降 ③ 首字母头像（与 logo_url 分支行为一致）
   var brandLogo = isAd ? getAdapterLogo(m.name) : null;
   let icoHtml = "";
   if (brandLogo) {
@@ -395,7 +395,7 @@ export function renderPluginRow(m, isAd) {
   return html;
 }
 
- 
+// 兜底图标：模块名首字母头像（token 化配色，见 .module-ico-initial）
 export function moduleIconFallback(name) {
   var initial = ((name || "?").trim().charAt(0) || "?").toUpperCase();
   return (
@@ -418,7 +418,7 @@ export function toggleModuleDetail(el) {
   if (detail.classList.contains("hidden")) {
     detail.classList.remove("hidden");
     wrap.classList.add("expanded");
-     
+    // 首次展开时按需拉取已注册命令清单（空集 / 不支持时移除占位）
     var cmdItem = wrap.querySelector("[data-modcmd]");
     if (cmdItem) _loadModuleCommands(cmdItem.dataset.modcmd, cmdItem);
   } else {
@@ -576,7 +576,7 @@ export function goToModuleConfig() {
   if (btn) btn.click();
 }
 
- 
+// ════════════════ 模块已注册命令清单 ════════════════
 
 async function _loadModuleCommands(name, itemEl) {
   if (!itemEl || itemEl.dataset.loaded === "1") return;
@@ -584,7 +584,7 @@ async function _loadModuleCommands(name, itemEl) {
   var d = await api("/api/modules/" + encodeURIComponent(name) + "/commands");
   var list = itemEl.querySelector(".modcmd-list");
   if (!list) return;
-   
+  // SDK 无命令总览能力 / 模块未注册命令：移除占位项（空则不渲染）
   if (!d || !d.supported) {
     itemEl.remove();
     return;
@@ -630,9 +630,9 @@ function _renderModuleCommand(c) {
   return html;
 }
 
- 
+// ════════════════ 资源归属审计（诊断页） ════════════════
 
- 
+// 计数面主列覆盖的资源类；其余归入"其他"列并以 tooltip 展示明细
 const _OWN_KNOWN_KINDS = [
   "tasks",
   "timers",
@@ -779,12 +779,12 @@ function _renderOwnershipRow(o, orphanSet) {
   );
 }
 
- 
+// ════════════════ 影子测试 ════════════════
 
 var _shadowModalModule = "";
 var _shadowWhlFile = null;
-var _SHADOW_DIFF_MAX = 50;  
-var _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024;  
+var _SHADOW_DIFF_MAX = 50; // JSON 对比块最多渲染条数（账本环形上限 500，防长列表卡顿）
+var _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024; // 与后端 whl 大小限制一致
 
 export function closeShadowModal() {
   var ov = document.getElementById("shadowOv");
@@ -873,7 +873,7 @@ export async function refreshShadowDiff() {
   }
   _setShadowActionButtons(active);
   _toggleShadowDiff(active, d.count || 0, active ? d.aligned || [] : null);
-   
+  // 已有影子运行时隐藏启动表单与上传区（SDK 不允许并发影子）
   if (startRow) startRow.style.display = active ? "none" : "flex";
   var upSec = document.getElementById("shadowUploadSec");
   if (upSec) upSec.style.display = active ? "none" : "block";
@@ -932,7 +932,7 @@ export async function shadowAction(action) {
 
 export async function shadowPromote() {
   if (!_shadowModalModule) return;
-   
+  // 转正语义：卸载当前版本 → 影子以真名注册加载；失败自动回滚旧实例
   var ok = await confirm2(t("shadow_promote_title"), t("shadow_promote_confirm"));
   if (!ok) return;
   shadowAction("promote");
@@ -945,9 +945,9 @@ export async function shadowDismiss() {
   shadowAction("dismiss");
 }
 
- 
- 
- 
+// ════════════════ 影子源 whl 上传 ════════════════
+// 流程：选择 .whl → POST /api/modules/{name}/shadow/upload（XHR 带进度）→
+// 成功后把返回的 source 填入路径输入框并自动启动影子
 
 export function shadowPickWhl() {
   var input = document.getElementById("shadowWhlInput");
@@ -1008,7 +1008,7 @@ export function shadowUploadWhl() {
       if (fill) fill.style.width = "100%";
       if (pct) pct.textContent = "100%";
       toast(t("shadow_upload_done"), "ok");
-       
+      // 填充 source 输入框并自动启动影子；启动失败时输入框已就绪可重试
       var input = document.getElementById("shadowSourceInput");
       if (input) input.value = d.source;
       _shadowWhlFile = null;
@@ -1030,7 +1030,7 @@ export function shadowUploadWhl() {
   xhr.send(fd);
 }
 
- 
+// 遮罩空白处点击 / Esc 关闭影子模态（confirm2 等上层弹窗以捕获阶段优先处理 Esc）
 document.addEventListener("click", function (e) {
   var ov = document.getElementById("shadowOv");
   if (ov && ov.classList.contains("show") && e.target === ov) closeShadowModal();

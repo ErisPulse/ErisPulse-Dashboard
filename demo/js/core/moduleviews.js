@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – core/moduleviews
 
 export function _runModuleViewLoader(name) {
   var loader = _moduleViewLoaders && _moduleViewLoaders[name];
@@ -39,7 +39,7 @@ export async function loadModuleViews() {
     const d = await api("/api/views");
     if (!d || !d.views) return;
     _renderModuleViews(d.views);
-     
+    // 模块视图可能影响默认起始页选项，刷新选择器
     if (typeof _renderDefaultPagePicker === "function") _renderDefaultPagePicker();
   } catch (e) {
     console.error("loadModuleViews error", e);
@@ -171,7 +171,7 @@ export function _renderModuleViews(views) {
         toggleNavGroup(this);
       };
       if (groupKey.startsWith("group_") && firstView.group_title) {
-         
+        // Use multi-language group_titles if available
         var gtText =
           (firstView.group_titles && firstView.group_titles[lang]) ||
           firstView.group_title;
@@ -182,7 +182,7 @@ export function _renderModuleViews(views) {
         groupTitle.textContent = i18nText !== groupKey ? i18nText : groupKey;
         groupTitle.setAttribute("data-i18n", groupKey);
       } else {
-         
+        // Use multi-language group_titles if available
         if (firstView.group_titles && firstView.group_titles[lang]) {
           groupTitle.textContent = _viewText(firstView.group_titles[lang], groupKey);
         } else {
@@ -227,11 +227,11 @@ export function _renderModuleViews(views) {
       const iconSvg =
         v.icon_svg ||
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>';
-       
+      // 与静态侧栏同构：svg 包进圆形图标卡 .nav-ico
       navItem.innerHTML = '<span class="nav-ico">' + iconSvg + "</span>";
 
       const span = document.createElement("span");
-       
+      // Use multi-language titles dict if available
       if (v.titles && v.titles[lang]) {
         span.textContent = _viewText(v.titles[lang], v.id);
       } else {
@@ -243,7 +243,7 @@ export function _renderModuleViews(views) {
         }
       }
       navItem.appendChild(span);
-       
+      // 折叠态悬浮气泡文案（动态项无 data-i18n span，生成时直接写入）
       navItem.setAttribute("data-tip", span.textContent || v.id);
       navGroup.appendChild(navItem);
     });
@@ -251,7 +251,7 @@ export function _renderModuleViews(views) {
 
   _moduleViewsLoaded = true;
 
-   
+  // 动态视图加载后，刷新主页 pin（已 pin 的动态视图会自动出现）
   applyI18n();
   renderHomePins();
 }

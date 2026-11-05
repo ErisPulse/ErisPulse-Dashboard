@@ -14,16 +14,14 @@ class ApiDashboardMixin:
 
 
     async def _api_bots(self, request: Request) -> JSONResponse:
-         
         all_bots = self.sdk.adapter.list_bots()
         platforms = list(all_bots.keys())
         if not platforms:
             return JSONResponse({"bots": []})
 
-         
         async def _fetch_caps(p: str):
             try:
-                 
+                # list_sends 如果不可用则可能在同步上下文运行；用线程池兜底
                 loop = asyncio.get_running_loop()
                 return p, await loop.run_in_executor(
                     None, lambda pp=p: self.sdk.adapter.list_sends(pp) or []
@@ -37,7 +35,6 @@ class ApiDashboardMixin:
         cap_results = await asyncio.gather(*[_fetch_caps(p) for p in platforms])
         capabilities_cache = dict(cap_results)
 
-         
         bots = []
         for p, bs in all_bots.items():
             try:
@@ -67,7 +64,7 @@ class ApiDashboardMixin:
         return JSONResponse({"bots": bots})
 
     async def _api_events(self, request: Request) -> JSONResponse:
-         
+        # query 参数防御：空串/非数字一律回退默认（客户端可能发送 ?limit=）
         try:
             limit = int(request.query_params.get("limit") or 50)
         except ValueError:
@@ -96,14 +93,13 @@ class ApiDashboardMixin:
         return JSONResponse({"success": True})
 
     async def _api_config(self, request: Request) -> JSONResponse:
-         
+        # 优先公开 API 全量读取，旧 SDK 回退私有 _cache
         if hasattr(self.sdk.config, "getAllConfig"):
             config = dict(self.sdk.config.getAllConfig())
         else:
             config = dict(self.sdk.config._cache)
-         
         config.pop("Dashboard", None)
-         
+        # 内联 SSL PEM 内容脱敏（与 PUT 侧 "******" 视为未修改的约定配套）
         ep_cfg = config.get("ErisPulse")
         if isinstance(ep_cfg, dict) and isinstance(ep_cfg.get("server"), dict):
             server_sec = dict(ep_cfg["server"])
@@ -117,7 +113,7 @@ class ApiDashboardMixin:
                 ep_copy = dict(ep_cfg)
                 ep_copy["server"] = server_sec
                 config["ErisPulse"] = ep_copy
-         
+        # 单独返回 Dashboard 配置（脱敏 token、移除 base64）
         dash_cfg = self.sdk.config.getConfig("Dashboard") or {}
         if isinstance(dash_cfg, dict):
             safe_dash = dict(dash_cfg)
@@ -171,7 +167,7 @@ class ApiDashboardMixin:
         if isinstance(body, dict):
             new_token = str(body.get("token") or "")
         if new_token:
-             
+            # 客户端提交：校验格式（token_urlsafe 兼容，长度 32-128）
             if (
                 len(new_token) < 32
                 or len(new_token) > 128
@@ -246,7 +242,7 @@ class ApiDashboardMixin:
         except Exception:
             body = {}
         frontend_lang = str(body.get("lang", "") or "")
-         
+        # 前端语言码 → 框架语言码映射
         lang_map = {
             "zh": "zh-CN",
             "zh-CN": "zh-CN",
@@ -267,13 +263,13 @@ class ApiDashboardMixin:
                 )
         except Exception:
             pass
-         
+        # 1) 运行时切换：内存 + 全局持久化（立即生效）
         try:
             if hasattr(self.sdk.i18n, "set_language"):
                 self.sdk.i18n.set_language(mapped)
         except Exception:
             pass
-         
+        # 2) 配置持久化：写入 ErisPulse.i18n.language 作为兜底，保证配置与运行态一致
         try:
             self.sdk.config.setConfig(
                 "ErisPulse.i18n.language", mapped, immediate=True
@@ -289,11 +285,10 @@ class ApiDashboardMixin:
             pass
         return JSONResponse({"success": True, "language": current or mapped})
 
-     
+    # ════════════════ 外观 ════════════════
 
     async def _api_appearance(self, request: Request) -> JSONResponse:
         appearance = self.sdk.config.getConfig("Dashboard.appearance") or {}
-         
         appearance = self._sanitize_appearance(appearance)
         return JSONResponse({"appearance": appearance})
 
@@ -305,18 +300,16 @@ class ApiDashboardMixin:
         appearance_changed 广播后自动套用该外观。
         """
         body = await request.json()
-         
         body = self._sanitize_appearance(body)
-         
         existing = self.sdk.config.getConfig("Dashboard.appearance") or {}
         if not isinstance(existing, dict):
             existing = {}
         merged = {**existing, **body}
         if "_global_enabled" in body:
-             
+            # 显式切换全局同步开关（True/False 均按请求值生效）
             pass
         else:
-             
+            # 主动上传外观 → 视为开启全局外观，供其他端自动套用
             merged["_global_enabled"] = True
         self.sdk.config.setConfig("Dashboard.appearance", merged)
         self._add_audit_log("appearance_update", "Dashboard.appearance", request)
@@ -349,7 +342,7 @@ class ApiDashboardMixin:
             filename = f"bg_{_uuid.uuid4().hex}{ext}"
             file_path = upload_dir / filename
             data = await file.read()
-             
+            # 限制大小（5MB）
             if len(data) > 5 * 1024 * 1024:
                 return JSONResponse(
                     {"error": "image too large (max 5MB)"}, status_code=400
@@ -371,7 +364,7 @@ class ApiDashboardMixin:
             clean["bg_image"] = ""
         return clean
 
-     
+    # ════════════════ 存储 ════════════════
 
     async def _api_storage(self, request: Request) -> JSONResponse:
         keys = self.storage.get_all_keys()

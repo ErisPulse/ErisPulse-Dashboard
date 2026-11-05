@@ -11,7 +11,7 @@ Dashboard 配置定义
 {!--< /tips >!--}
 """
 
- 
+# Dashboard 模块自身配置默认值（首次写入配置时使用）
 DASHBOARD_DEFAULT_CONFIG = {
     "max_event_log": 500,
     "log_retention_days": 14,

@@ -1,9 +1,9 @@
- 
+// ErisPulse Dashboard – pages/appearance
 
 export function getTheme() {
   var s = localStorage.getItem("ep_theme");
   if (s === "light" || s === "dark") return s;
-   
+  // auto or unset — follow system
   return "auto";
 }
 
@@ -18,7 +18,7 @@ export function getEffectiveTheme() {
 export function applyTheme(th) {
   if (th === "auto") {
     document.documentElement.setAttribute("data-theme", "auto");
-     
+    // The actual CSS is driven by @media (prefers-color-scheme) on [data-theme="auto"]
   } else {
     document.documentElement.setAttribute("data-theme", th);
   }
@@ -28,7 +28,7 @@ export function applyTheme(th) {
 export function onThemeChanged() {
   var img = getSetting("bg_image", "");
   if (img) {
-    applyBgImage(img);  
+    applyBgImage(img); // 更新深/浅遮罩与透感档位类
     if (bgAutoThemeEnabled()) {
       extractImageColor(img, function (hex) {
         applyAccentColor(hex);
@@ -38,7 +38,7 @@ export function onThemeChanged() {
     var col = getSetting("bg_color", "");
     if (col) applyAccentColor(deriveAccentFromBg(col));
   }
-   
+  // 手动强调色：表面（明暗/OLED/cel）变化后重算对比度
   if (!bgAutoThemeEnabled()) {
     var accent = getSetting("accent_color", "");
     if (accent) applyAccentColor(accent);
@@ -46,8 +46,8 @@ export function onThemeChanged() {
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
- 
- 
+// 外观链路统一刷新：OLED / 皮肤 / 透感档位等变化后调用
+// （主题切换走 onThemeChanged，此处覆盖其余会改变「表面色」或「透感」的入口）
 export function refreshAppearanceChains() {
   var img = getSetting("bg_image", "");
   if (img) applyBgImage(img);
@@ -73,7 +73,7 @@ export function applyUiStyle(style) {
   if (style !== "cel") style = "eris";
   localStorage.setItem("ep_ui_style", style);
   document.documentElement.setAttribute("data-ui-style", style);
-   
+  // 皮肤切换改变表面色（cel 为不透明纸面）：联动重算透感与 accent 对比度
   refreshAppearanceChains();
 }
 
@@ -104,7 +104,7 @@ function _ensureFontFace(name, url) {
 
 export function applyFont(id) {
   var root = document.documentElement;
-   
+  // 用户上传的自定义字体（id = "custom:<url>"，清单在 window._customFonts）
   if (id && id.indexOf("custom:") === 0) {
     var url = id.slice(7);
     var hit = (window._customFonts || []).find(function (f) {
@@ -119,7 +119,7 @@ export function applyFont(id) {
       return;
     }
   }
-   
+  // 系统默认：移除内联覆盖，回落到 CSS 默认系统字体栈
   if (!id || id === "system") {
     root.style.removeProperty("--font-body");
     root.style.removeProperty("--font-display");
@@ -151,7 +151,7 @@ export function applyOled(on) {
   } else {
     document.documentElement.removeAttribute("data-oled");
   }
-   
+  // OLED 切换会改变表面色与遮罩需求：联动重算透感遮罩与 accent 对比度
   refreshAppearanceChains();
 }
 
@@ -189,7 +189,7 @@ function hexToRgbObj(hex) {
   };
 }
 
- 
+// WCAG 相对亮度（近似 sRGB 公式）与对比度
 export function relLuminance(rgb) {
   var f = function (v) {
     v = v / 255;
@@ -206,7 +206,7 @@ export function contrastRatio(hexA, hexB) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
- 
+// 当前实际卡片表面色（与 base.css 各主题块同源；用于 accent 对比度自检的锚点）
 function _surfaceHexForContrast() {
   var dark = getEffectiveTheme() === "dark";
   if (getUiStyle() === "cel") return dark ? "#20242f" : "#ffffff";
@@ -214,25 +214,25 @@ function _surfaceHexForContrast() {
   return dark ? "#1c2027" : "#ffffff";
 }
 
- 
- 
- 
+// 对比度自检：不足时沿明暗方向微调（保持色相，步进 3%）
+// 目标 4.5:1（WCAG AA）；原本已接近可读（≥2.6）的配色只轻推到 3.4（大字号 AA 档）
+// 真正不可读的配色（<2.6）则全力修正到 4.5。
 export function ensureAccentReadable(hex) {
   var surface = _surfaceHexForContrast();
   var ratio = contrastRatio(hex, surface);
   if (ratio >= 4.5) return hex;
   var target = ratio >= 2.6 ? 3.4 : 4.5;
-  var darken = relLuminance(hexToRgbObj(surface)) > 0.35;  
+  var darken = relLuminance(hexToRgbObj(surface)) > 0.35; // 浅色表面 → 加深
   var out = hex;
   for (var i = 0; i < 20 && contrastRatio(out, surface) < target; i++) {
     var next = shadeHex(out, darken ? -3 : 3);
-    if (next === out) break;  
+    if (next === out) break; // 已到纯黑/纯白
     out = next;
   }
   return out;
 }
 
- 
+// 填充色（主按钮底）保证白字可读：不足 3.0:1 时继续加深
 function ensureFillReadable(hex) {
   var out = hex;
   for (var i = 0; i < 16 && contrastRatio(out, "#ffffff") < 3.0; i++) {
@@ -245,12 +245,12 @@ function ensureFillReadable(hex) {
 
 export function applyAccentColor(hex) {
   if (!hex) return;
-  hex = ensureAccentReadable(hex);  
+  hex = ensureAccentReadable(hex); // 对比度自检（随主题表面重算）
   setSetting("accent_color", hex);
   var root = document.documentElement.style;
   root.setProperty("--accent", hex);
   root.setProperty("--accent-rgb", hexToRgbStr(hex));
-   
+  // 派生链：fill 比 accent 更深并保证白字可读；--lk（链接色）跟随 accent
   root.setProperty("--accent-fill", ensureFillReadable(shadeHex(hex, -18)));
   root.setProperty("--accent-fill-h", ensureFillReadable(shadeHex(hex, -28)));
   root.setProperty("--accent-h", shadeHex(hex, -10));
@@ -258,7 +258,7 @@ export function applyAccentColor(hex) {
   syncAccentUI(hex);
 }
 
- 
+// 屏幕取色（EyeDropper API，不可用时降级为取色板）
 export async function pickAccentFromScreen() {
   if (window.EyeDropper) {
     try {
@@ -268,8 +268,8 @@ export async function pickAccentFromScreen() {
         return;
       }
     } catch (e) {
-      if (e && e.name === "AbortError") return;  
-       
+      if (e && e.name === "AbortError") return; // 用户取消
+      // 其他异常降级到取色板
     }
   }
   var input = document.getElementById("settingsAccent");
@@ -277,7 +277,7 @@ export async function pickAccentFromScreen() {
 }
 
 export function applyAccentColorManual(hex) {
-   
+  // 手动选择强调色时自动关闭自动取色，避免刷新后被覆盖
   if (bgAutoThemeEnabled()) {
     localStorage.setItem("ep_setting_bg_auto_theme", "false");
     var autoChk = document.getElementById("settingsBgAutoTheme");
@@ -291,7 +291,7 @@ export function applyBgColor(hex) {
   setSetting("bg_color", hex);
   document.documentElement.style.setProperty("--bg-p", hex);
   clearBgImage();
-   
+  // 默认：背景色变化时同步推导一个柔和的强调色
   if (bgAutoThemeEnabled()) {
     applyAccentColor(deriveAccentFromBg(hex));
   }
@@ -305,15 +305,14 @@ export function applyBgColorManual(hex) {
 
 export function applyBgImageFile(file) {
   if (!file) return;
-   
+  // 处理后重置 input：同一文件再次选择也能触发 onchange
   var fileInput = document.getElementById("settingsBgFile");
   if (fileInput) fileInput.value = "";
   var reader = new FileReader();
   reader.onload = function (e) {
     var dataUrl = e.target.result;
-     
-     
-    setSetting("bg_tile", "0");  
+    // 先同步写入本地值（dataUrl）：挡位切换/预览刷新立即读到新图，
+    setSetting("bg_tile", "0"); // 上传照片默认封面模式
     setSetting("bg_image", dataUrl);
     applyBgImage(dataUrl);
     showBgAutoThemeRow(true);
@@ -322,13 +321,13 @@ export function applyBgImageFile(file) {
         applyAccentColor(hex);
       });
     }
-     
+    // 上传到服务器成功后，把本地值替换为 URL（体积小、可同步）
     uploadBgImage(file).then(function (url) {
       if (url && getSetting("bg_image", "") === dataUrl) {
         setSetting("bg_image", url);
         applyBgImage(url);
       }
-       
+      // 上传失败保持 dataUrl（仅本地；setSetting 内部失败静默，不炸配额）
     });
   };
   reader.readAsDataURL(file);
@@ -347,8 +346,8 @@ export async function uploadBgImage(file) {
   }
 }
 
- 
- 
+// ── 透感档位 ──
+// 读取统一走 ep_setting_bg_trans；兼容早期版本的 ep_setting_bg_level 键（一次性迁移）
 export function getBgTrans() {
   var v = getSetting("bg_trans", null);
   if (v === null) {
@@ -363,7 +362,7 @@ export function getBgTrans() {
   return BG_TRANS_LEVELS.indexOf(v) !== -1 ? v : "standard";
 }
 
- 
+// 档位 → html 附加类（standard 无附加类，base.css 透感块按档位调整 --bg-* 不透明度）
 export function applyBgTransClass() {
   var root = document.documentElement.classList;
   root.remove("bg-level-soft", "bg-level-strong");
@@ -372,23 +371,22 @@ export function applyBgTransClass() {
   else if (lvl === "strong") root.add("bg-level-strong");
 }
 
- 
+// 设置卡「透感三档选择器」入口（dash.html 绑定名）
 export function applySettingBgLevel(level) {
   if (BG_TRANS_LEVELS.indexOf(level) === -1) level = "standard";
   setSetting("bg_trans", level);
   applyBgTransClass();
-   
-   
+  // 仅重算遮罩与预览，不重读存储重涂背景（当前背景由 applyBgImage 维护，
   document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
- 
+// 兼容别名：早期实现名，保留以防外部引用
 export function applySettingBgTrans(level) {
   applySettingBgLevel(level);
 }
 
- 
+// 遮罩透明度表：主题 × 档位（soft 表面更实 → 遮罩更重；strong 表面更透 → 遮罩更轻）
 var BG_OVERLAY_ALPHA = {
   light: { soft: 0.72, standard: 0.58, strong: 0.42 },
   dark: { soft: 0.66, standard: 0.52, strong: 0.36 },
@@ -400,14 +398,13 @@ function _bgOverlayCss() {
   var rgb = oled ? "0, 0, 0" : dark ? "10,14,23" : "244,247,252";
   var a = (BG_OVERLAY_ALPHA[dark ? "dark" : "light"] || BG_OVERLAY_ALPHA.light)[getBgTrans()];
   if (typeof a !== "number") a = 0.55;
-   
+  // 雾感效果：遮罩整体加深，营造雾面观感
   if (getBgEffect() === "misty") a = Math.min(0.92, a + 0.14);
-   
   if (oled) a = Math.min(0.94, a + 0.1);
   return "linear-gradient(rgba(" + rgb + "," + a + "),rgba(" + rgb + "," + a + "))";
 }
 
- 
+// ── 背景效果档：none / frosted（磨砂）/ misty（雾感） ──
 export function getBgEffect() {
   var v = getSetting("bg_effect", "none");
   return v === "frosted" || v === "misty" ? v : "none";
@@ -424,12 +421,12 @@ export function applySettingBgEffect(eff) {
   if (eff !== "frosted" && eff !== "misty") eff = "none";
   setSetting("bg_effect", eff);
   applyBgEffectClass();
-   
+  // 雾感改变遮罩强度，需重涂
   document.body.style.backgroundImage = _bgOverlayCss() + _currentBgImageCss();
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
- 
+// 当前生效背景（applyBgImage 维护；切挡位/效果时复用，不回读存储）
 var _curBgImage = "";
 
 function _currentBgImageCss() {
@@ -439,14 +436,14 @@ function _currentBgImageCss() {
 export function applyBgImage(dataUrl) {
   if (!dataUrl) return;
   _curBgImage = dataUrl;
-   
-   
-   
+  // 透感模式（设计语言 §2.6）：表面保持平面半透明
+  // 磨砂/雾感效果由 [data-bg-effect] 在 base.css 单独开启表面 blur；
+  // 遮罩按档位调和可读性
   document.documentElement.classList.add("bg-image");
   applyBgTransClass();
   applyBgEffectClass();
   document.body.style.backgroundImage = _bgOverlayCss() + ', url("' + dataUrl + '")';
-   
+  // 平铺模式（图案库小图）vs 封面模式（上传照片）
   if (getSetting("bg_tile", "0") === "1") {
     document.body.style.backgroundRepeat = "repeat";
     document.body.style.backgroundSize = "460px auto";
@@ -456,12 +453,12 @@ export function applyBgImage(dataUrl) {
   }
   document.body.style.backgroundPosition = "center";
   document.body.style.backgroundAttachment = "fixed";
-   
+  // 纯色背景失效
   document.documentElement.style.removeProperty("--bg-p");
   if (typeof syncBgCardUI === "function") syncBgCardUI();
 }
 
- 
+// 图案库：小图 + 平铺 + 自动取色
 export function applyBgPattern(url) {
   if (!url) return;
   setSetting("bg_image", url);
@@ -503,7 +500,7 @@ export function extractImageColor(dataUrl, cb) {
       cb("#4fa6de");
       return;
     }
-     
+    // 量化到 32 的颜色桶，统计频次并偏好饱和色
     var buckets = {};
     for (var i = 0; i < data.length; i += 4) {
       var r = data[i],
@@ -517,7 +514,7 @@ export function extractImageColor(dataUrl, cb) {
       var key = qr + "," + qg + "," + qb;
       var mx = Math.max(r, g, b),
         mn = Math.min(r, g, b);
-      var sat = mx === 0 ? 0 : (mx - mn) / mx;  
+      var sat = mx === 0 ? 0 : (mx - mn) / mx; // 饱和度
       if (!buckets[key]) buckets[key] = { n: 0, r: 0, g: 0, b: 0, sat: 0 };
       var bk = buckets[key];
       bk.n++;
@@ -531,7 +528,7 @@ export function extractImageColor(dataUrl, cb) {
     Object.keys(buckets).forEach(function (k) {
       var bk = buckets[k];
       var avgSat = bk.sat / bk.n;
-       
+      // 评分：频次 × (饱和度加权)
       var score = bk.n * (0.4 + avgSat * 1.6);
       if (score > bestScore) {
         bestScore = score;
@@ -545,7 +542,7 @@ export function extractImageColor(dataUrl, cb) {
     var hr = Math.round(best.r / best.n),
       hg = Math.round(best.g / best.n),
       hb = Math.round(best.b / best.n);
-     
+    // 若提取色太灰，退回默认蓝
     var mx2 = Math.max(hr, hg, hb),
       mn2 = Math.min(hr, hg, hb);
     if (mx2 - mn2 < 18) cb("#4fa6de");
@@ -571,9 +568,9 @@ export function deriveAccentFromBg(hex) {
   var mx = Math.max(r, g, b),
     mn = Math.min(r, g, b);
   var sat = mx === 0 ? 0 : (mx - mn) / mx;
-   
+  // 背景几乎无色彩 → 保持默认蓝
   if (sat < 0.12) return "#4fa6de";
-   
+  // 有色彩 → 取背景主色，并按当前主题压暗/提亮
   return themeAwareAccent("#" + hex);
 }
 
@@ -594,7 +591,7 @@ export function showBgAutoThemeRow(show) {
 export function onBgAutoThemeToggle(checked) {
   localStorage.setItem("ep_setting_bg_auto_theme", checked);
   if (checked) {
-     
+    // 开启自动取色：立即按当前背景重算
     var img = getSetting("bg_image", "");
     var col = getSetting("bg_color", "");
     if (img) {
@@ -642,7 +639,7 @@ export function syncAccentUI(hex) {
   if (accentInput) accentInput.value = hex;
 }
 
- 
+// 预设色板：色块 + 「Aa」实际效果预览，选中态用该预设的柔和底（--chip 派生，零硬编码）
 export function initAccentSwatches() {
   var wrap = document.getElementById("accentSwatches");
   if (!wrap) return;
@@ -760,7 +757,7 @@ export function applyCustomTheme() {
   var accent = getSetting("accent_color", "");
   var auto = bgAutoThemeEnabled();
   if (img) {
-     
+    // 有背景图：应用图，并按自动取色推导强调色
     applyBgImage(img);
     if (auto) {
       extractImageColor(img, function (hex) {
@@ -772,7 +769,7 @@ export function applyCustomTheme() {
   } else if (col) {
     applyBgColor(col);
   } else if (accent && !auto) {
-     
+    // 无背景、手动选过强调色
     applyAccentColor(accent);
   }
 }

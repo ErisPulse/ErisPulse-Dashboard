@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – components/kv
 
 export function kvRow(k, v, mode, fk) {
   const tp = v === null ? "null" : typeof v;
@@ -6,7 +6,7 @@ export function kvRow(k, v, mode, fk) {
   const isMultiline = ds.includes("\n") || ds.length > 100;
   const saveFn = mode === "config" ? "saveConfig(this)" : "saveStorage(this)";
 
-   
+  // 只允许编辑子项属性，不允许定义根值
   const isRootLevel = fk && !fk.includes(".");
   const canEdit = mode === "config" ? !isRootLevel : true;
 

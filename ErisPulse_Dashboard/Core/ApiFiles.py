@@ -20,7 +20,7 @@ def _content_disposition(filename: str, disposition: str = "attachment") -> str:
     return f'{disposition}; filename="{quoted}"; filename*=UTF-8\'\'{quoted}'
 
 
- 
+# mimetypes 在精简环境（无 /etc/mime.types、无注册表项）可能缺失的常见媒体类型兜底
 _MEDIA_TYPE_FALLBACK = {
     ".webp": "image/webp",
     ".mkv": "video/x-matroska",
@@ -57,7 +57,7 @@ class ApiFilesMixin:
     """文件管理器 API（浏览 / 读写 / 上传下载 / 压缩等）。"""
 
 
-     
+    # ════════════════ 文件工具 ════════════════
 
     def _get_project_root(self) -> Path:
         return Path.cwd()
@@ -123,7 +123,7 @@ class ApiFilesMixin:
                 "error": "access_denied",
             }
 
-     
+    # ════════════════ API · 文件管理 ════════════════
 
     async def _api_files_browse(self, request: Request) -> JSONResponse:
         dir_path = request.query_params.get("path", ".")
@@ -273,8 +273,8 @@ class ApiFilesMixin:
 
     async def _api_files_download(self, request: Request):
         file_path = request.query_params.get("path", "")
-         
-         
+        # inline=1 供在线预览（img/video/audio/iframe）内联渲染；
+        # 非白名单类型自动回退 attachment，不开同源 HTML/SVG 脚本口子
         inline = request.query_params.get("inline", "") in ("1", "true")
         target = self._resolve_safe_path(file_path)
         if target is None:
@@ -295,7 +295,7 @@ class ApiFilesMixin:
         start, end = 0, size - 1 if size else 0
         status_code = 200
 
-         
+        # Range 支持：视频拖动进度条 / PDF 分段加载 / 断点续传
         if size and request.headers.get("range", "").startswith("bytes="):
             spec = request.headers["range"][6:].split(",")[0].strip()
             try:
@@ -561,7 +561,7 @@ class ApiFilesMixin:
             name_lower = target.name.lower()
             if name_lower.endswith(".zip"):
                 with zipfile.ZipFile(target, "r") as zf:
-                     
+                    # 防 Zip Slip：拒绝绝对路径与 .. 上跳的条目
                     for member in zf.namelist():
                         normalized = member.replace("\\", "/")
                         if (
@@ -577,8 +577,8 @@ class ApiFilesMixin:
                 (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".tar")
             ):
                 with tarfile.open(target, "r:*") as tf:
-                     
-                     
+                    # 3.12+ 显式 data 过滤器（拒绝绝对路径/..逃逸/设备文件）；
+                    # 旧版本回退为逐成员校验
                     try:
                         tf.extractall(dest, filter="data")
                     except TypeError:

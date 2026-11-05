@@ -44,12 +44,12 @@ def test_ascii_name_unchanged():
 
 def test_chinese_name_rfc5987_and_latin1_safe():
     value = _content_disposition("ErisPulse_hot_reload_修改说明书.md")
-    value.encode("latin-1")   
+    value.encode("latin-1")  # HTTP 头必须 latin-1 可编码，抛错即失败
     assert "filename*=UTF-8''" in value
-    assert "%E4%BF%AE" in value   
+    assert "%E4%BF%AE" in value  # 「修」的 UTF-8 百分号编码
     extended = value.split("filename*=UTF-8''", 1)[1]
-    assert " " not in extended   
-    assert value.count('"') == 2   
+    assert " " not in extended  # 参数值内不得有裸空格（须编码为 %20）
+    assert value.count('"') == 2  # 仅 fallback filename 一对引号，filename* 不带引号
 
 
 def test_header_injection_neutralized():

@@ -18,10 +18,10 @@ ROLE_ADMIN = "admin"
 ROLE_VIEWER = "viewer"
 _VALID_ROLES = (ROLE_ADMIN, ROLE_VIEWER)
 
- 
- 
- 
- 
+# 页面 → 其数据 API 前缀映射（viewer 密钥页面白名单的后端拦截依据；
+# /api/auth*、/api/capabilities、/api/appearance、/api/adapter-logos 等全局端点恒放行）
+# 可在配置 Dashboard.rbac.page_api_map 中按页覆盖（值为前缀数组），
+# 用于模块新增页面或自定义端点前缀；页面 id 与导航 data-page 一致。
 DEFAULT_PAGE_API_PREFIXES: dict[str, tuple[str, ...]] = {
     "dashboard": ("/api/status", "/api/health", "/api/performance", "/api/message-stats", "/api/dashboard/"),
     "event-stream": ("/api/events",),
@@ -42,7 +42,7 @@ DEFAULT_PAGE_API_PREFIXES: dict[str, tuple[str, ...]] = {
     "about": (),
 }
 
- 
+# last_used 内存跟踪（重启清零，不落盘）
 _key_last_used: dict[str, float] = {}
 
 _HASH_ALGO = "sha256"
@@ -76,7 +76,7 @@ def _new_key_entry(name: str, role: str, raw: str | None = None) -> tuple[dict, 
 class ApiKeysMixin:
     """密钥 CRUD 与角色化验证，混入 Dashboard 主类。"""
 
-     
+    # ── 读写配置段 ──
 
     def _load_keys(self) -> list[dict]:
         raw = self.sdk.config.getConfig("Dashboard.keys")
@@ -94,7 +94,7 @@ class ApiKeysMixin:
     def _save_keys(self, keys: list[dict]) -> None:
         self.sdk.config.setConfig("Dashboard.keys", keys, immediate=True)
 
-     
+    # ── 角色化验证（Base._verify_token 的多密钥扩展） ──
 
     def _resolve_access(self, provided: str | None) -> tuple[bool, str, str, list]:
         """解析凭据为 (ok, role, key_id, pages)。
@@ -106,7 +106,7 @@ class ApiKeysMixin:
         if not provided:
             return False, "", "", []
         provided_str = str(provided)
-         
+        # 主令牌
         try:
             if secrets.compare_digest(
                 provided_str.encode("utf-8"), self._token.encode("utf-8")
@@ -114,7 +114,7 @@ class ApiKeysMixin:
                 return True, ROLE_ADMIN, "primary", []
         except Exception:
             pass
-         
+        # 多密钥（加盐哈希）
         for k in self._load_keys():
             salt_hex = str(k.get("key_salt", ""))
             try:
@@ -158,7 +158,7 @@ class ApiKeysMixin:
     def _page_allowed(self, pages: list, api_path: str) -> bool:
         """viewer 页面白名单下的 API 放行判定（api_path 为 /Dashboard 相对路径）。"""
         if not pages:
-            return True   
+            return True  # 无白名单 = 全部只读页
         page_map = self._page_api_map()
         for page in pages:
             prefixes = page_map.get(page)
@@ -169,7 +169,7 @@ class ApiKeysMixin:
                     return True
         return False
 
-     
+    # ── REST handlers ──
 
     def _sanitize_key(self, k: dict) -> dict:
         return {
@@ -184,7 +184,7 @@ class ApiKeysMixin:
         }
 
     async def _api_keys_list(self, request: Request) -> JSONResponse:
-         
+        # viewer 也能看列表（脱敏）；写入操作在 handler 内要求 admin
         keys = [self._sanitize_key(k) for k in self._load_keys()]
         return JSONResponse({"keys": keys})
 
@@ -223,7 +223,7 @@ class ApiKeysMixin:
             return JSONResponse(
                 {"error": f"role must be one of {_VALID_ROLES}"}, status_code=400
             )
-         
+        # 页面白名单仅对 viewer 有意义
         if role == ROLE_ADMIN:
             pages = []
         entry, raw = _new_key_entry(name, role)
@@ -231,7 +231,7 @@ class ApiKeysMixin:
         keys.append(entry)
         self._save_keys(keys)
         self._add_audit_log("api_key_create", f"{entry['id']} name={name} role={role}", request)
-         
+        # 明文仅此一次返回
         return JSONResponse({"success": True, "key": raw, "key_info": self._sanitize_key(entry)})
 
     async def _api_keys_update(self, request: Request) -> JSONResponse:

@@ -16,7 +16,7 @@ class ApiBuilderMixin:
         body = await request.json()
         event_type = body.get("type")
 
-         
+        # 事件类型定义
         EVENT_TYPES = {
             "message": {
                 "detail_types": [
@@ -71,12 +71,10 @@ class ApiBuilderMixin:
         type_def = EVENT_TYPES[event_type]
         errors = []
 
-         
         for field in type_def["required_fields"]:
             if field not in body or body[field] is None or body[field] == "":
                 errors.append(f"缺少必填字段: {field}")
 
-         
         if "time" in body:
             try:
                 timestamp = int(body["time"])
@@ -94,7 +92,6 @@ class ApiBuilderMixin:
 
         body = await request.json()
 
-         
         validation = await self._api_builder_validate(request)
         validation_data = (
             validation.body.decode() if hasattr(validation, "body") else {}
@@ -108,7 +105,6 @@ class ApiBuilderMixin:
                 status_code=400,
             )
 
-         
         try:
             await self.sdk.adapter.emit(body)
             return JSONResponse({"success": True, "message": "事件已提交"})

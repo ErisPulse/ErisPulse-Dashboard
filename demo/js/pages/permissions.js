@@ -1,4 +1,4 @@
- 
+// ErisPulse Dashboard – pages/permissions
 
 export async function loadAuditLog() {
   const actionFilterEl = document.getElementById("auditActionFilter");
@@ -245,7 +245,7 @@ export async function loadCommands() {
 export function renderCmdGlobalSettings(gs) {
   var prefixes = gs.prefixes || [gs.prefix || "/"];
   var prefixStr = prefixes.join(",");
-   
+  // 双列表单网格：前缀输入通栏，三个开关各占一格
   var html =
     '<div class="cmd-settings-field span-2">' +
     "<label>" +
@@ -323,7 +323,7 @@ export function initMasterState(masterConfig, platforms) {
     for (var platform in users) {
       var ids = users[platform];
       if (!Array.isArray(ids)) ids = [ids];
-       
+      // 框架的全局主人保留键：UI 侧统一显示为"未指定平台"（=全局）
       var isGlobalKey = String(platform).toLowerCase() === "global";
       for (var j = 0; j < ids.length; j++) {
         _masterEntries.push({
@@ -341,7 +341,7 @@ export function renderMasterConfig() {
   var countEl = document.getElementById("masterCount");
   if (countEl) countEl.textContent = _masterEntries.length;
 
-   
+  // Update stats
   var globalCount = 0;
   var platformCount = 0;
   for (var i = 0; i < _masterEntries.length; i++) {
@@ -355,7 +355,7 @@ export function renderMasterConfig() {
   if (statGlobal) statGlobal.textContent = globalCount;
   if (statPlatform) statPlatform.textContent = platformCount;
 
-   
+  // 平台分布可视化
   var distEl = document.getElementById("masterDist");
   if (distEl) {
     if (!_masterEntries.length) {
@@ -389,7 +389,7 @@ export function renderMasterConfig() {
     }
   }
 
-   
+  // Update add-form platform options
   renderMasterAddPlatformOptions();
 
   if (!_masterEntries.length) {
@@ -432,7 +432,7 @@ export function renderMasterConfig() {
     return;
   }
 
-   
+  // Group visible entries: global first, then by platform
   var globalEntries = [];
   var platformGroups = {};
   var platformOrder = [];
@@ -451,7 +451,7 @@ export function renderMasterConfig() {
 
   var html = "";
 
-   
+  // Global section
   if (globalEntries.length > 0) {
     html +=
       '<div class="perm-group">' +
@@ -467,7 +467,7 @@ export function renderMasterConfig() {
     html += "</div></div>";
   }
 
-   
+  // Platform sections
   for (var pi = 0; pi < platformOrder.length; pi++) {
     var platform = platformOrder[pi];
     var indices = platformGroups[platform];
@@ -484,7 +484,7 @@ export function renderMasterConfig() {
     html += "</div></div>";
   }
 
-   
+  // Hint at bottom
 
   html += _masterProvidersHtml();
 
@@ -555,7 +555,7 @@ export function renderMasterAddPlatformOptions() {
 export function onMasterAddPlatformChange() {
   var sel = document.getElementById("masterAddPlatform");
   if (!sel || sel.value !== "__custom__") return;
-   
+  // Replace select with text input for custom platform
   var wrapper = sel.parentElement;
   sel.outerHTML =
     '<input id="masterAddPlatform" class="fw-input" style="width:150px;flex-shrink:0;font-size:13px" placeholder="' + t("master_add_platform") +
@@ -588,7 +588,7 @@ export function addMasterFromForm() {
   }
   _masterEntries.push({ platform: platform, userId: userId });
   idInput.value = "";
-   
+  // Reset platform selector if it was custom
   if (sel && sel.dataset && sel.dataset.custom === "1") {
     renderMasterConfig();
   }
@@ -645,7 +645,7 @@ export async function saveMasterConfig() {
   var platformEntries = entries.filter(function (e) { return e.platform; });
   var users;
   if (platformEntries.length === 0) {
-     
+    // 纯全局：list 形态（旧框架同样认，且天然覆盖后续新增平台）
     users = globalEntries.map(function (e) { return e.userId; });
   } else {
     users = {};
@@ -656,15 +656,15 @@ export async function saveMasterConfig() {
     }
     if (globalEntries.length) {
       if (_masterGlobalKeySupported) {
-         
+        // 全局主人写入保留键，不复制进平台桶：语义无损，新平台自动生效
         var globalIds = [];
         for (var i = 0; i < globalEntries.length; i++) {
           if (globalIds.indexOf(globalEntries[i].userId) === -1) globalIds.push(globalEntries[i].userId);
         }
         users["global"] = globalIds;
       } else {
-         
-         
+        // 旧框架不认识 global 键（会被当平台名）：退回展开写法，
+        // 无法表达"全局"语义，建议升级框架
         for (var i = 0; i < globalEntries.length; i++) {
           for (var p2 in users) {
             if (users[p2].indexOf(globalEntries[i].userId) === -1) users[p2].push(globalEntries[i].userId);
@@ -1189,7 +1189,7 @@ export function openScopeModuleEditor(target) {
   var sessionInput = document.getElementById("scopeModuleSession");
   if (sessionInput) sessionInput.value = session;
 
-   
+  // 读取现有绑定（会话 > Bot > 平台）
   var existing = {};
   if (_scopeData && _scopeData.topology) {
     var topo = _scopeData.topology;
@@ -1974,7 +1974,7 @@ export async function saveCmdEdit() {
   }
 }
 
- 
+// ── 主人快速选择：最近消息发送者候选浮层 ──
 
 var _masterCandOv = null;
 
@@ -2032,7 +2032,7 @@ export async function openMasterCandidates() {
       if (!c) return;
       var sel = document.getElementById("masterAddPlatform");
       var idInput = document.getElementById("masterAddId");
-       
+      // 平台存在则选中，否则走自定义值
       if (sel) {
         var found = false;
         for (var i = 0; i < sel.options.length; i++) {

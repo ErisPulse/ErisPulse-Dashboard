@@ -1,8 +1,8 @@
 import { openAccountWizard } from "../components/account-wizard.js";
- 
+// ErisPulse Dashboard – pages/component-config
 
- 
- 
+// ── 未保存修改跟踪 ──
+// [data-ackey] 控件输入/变更即记入脏 key；各保存点按前缀清除；router.go 借此拦截意外丢失
 document.addEventListener("input", _cfgMarkDirty);
 document.addEventListener("change", _cfgMarkDirty);
 
@@ -26,7 +26,7 @@ function _cfgClearDirtyPrefix(prefix) {
   if (keys.length) _cfgUpdateSaveDot();
 }
 
- 
+// 保存按钮脏点：该按钮负责的前缀下仍有未保存字段时点亮
 export function _cfgUpdateSaveDot() {
   document.querySelectorAll(".cfg-save-btn").forEach(function (btn) {
     var prefix = btn.dataset.cfgPrefix;
@@ -58,7 +58,7 @@ export async function loadAdapterConfigPage() {
   const empty = document.getElementById("adapterConfigEmpty");
 
   if (_adapterConfigPlatforms.length === 0) {
-     
+    // 没适配器 — 显示空状态 + 引导去商店安装
     if (empty) empty.style.display = "flex";
     panel.innerHTML = "";
     panel.appendChild(empty);
@@ -74,7 +74,7 @@ export async function loadAdapterConfigPage() {
 
   if (empty) empty.style.display = "none";
 
-   
+  // 创建水平适配器选择列表
   let selectorHtml = [
     '<div class="adapter-selector-bar">',
     '<div class="adapter-chip-list" id="adapterChipList">',
@@ -112,17 +112,15 @@ export async function loadAdapterConfigPage() {
   selectorHtml.push("</div></div>");
   selectorHtml = selectorHtml.join("");
 
-   
   panel.innerHTML = selectorHtml;
 
-   
   if (
     !_adapterConfigCurrent ||
     !_adapterConfigPlatforms.some((a) => a.platform === _adapterConfigCurrent)
   ) {
     _adapterConfigCurrent = _adapterConfigPlatforms[0].platform;
   }
-   
+  // 高亮当前选中
   document.querySelectorAll(".adapter-chip").forEach((el) => {
     el.classList.toggle(
       "active",
@@ -144,7 +142,7 @@ export async function loadAdapterConfigDetail(platform) {
   const panel = document.getElementById("adapterConfigPanel");
   if (!panel) return;
 
-   
+  // 保留选择器，只替换内容区
   let container = document.getElementById("adapterConfigContent");
   if (!container) {
     container = document.createElement("div");
@@ -172,7 +170,7 @@ export async function loadAdapterConfigDetail(platform) {
 
   var html = '<div class="adapter-config-detail">';
 
-   
+  // 全局配置卡片：仅在适配器声明了可用配置项时渲染
   if (
     d.has_config &&
     d.schema &&
@@ -218,7 +216,7 @@ export async function loadAdapterConfigDetail(platform) {
 
 export function renderAdapterSchemaFields(fields, values, keyPrefix, opts) {
   opts = opts || {};
-   
+  // 顶层字段绑定的取值来源（show_if/disabled_if 渲染期预计算）
   opts.bindValues = values;
   if (!fields || Object.keys(fields).length === 0)
     return (
@@ -283,15 +281,15 @@ export function toggleSecretVisibility(btn) {
   }
 }
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// ══════════════════════════════════════════════════════════════
+// 满血配置组件系统
+// 约定文档：docs/config-widgets.md
+// 所有控件 renderer(name, schema, value, fullKey, ctx) 返回控件 HTML 字符串。
+// 值收集约定：单一原生控件直接带 data-ackey；复合控件（多选/键值/列表）用
+// hidden input 承载序列化值（tp=object → JSON.parse，tp=number → Number()），
+// 编辑器操作经 msSync / kvSync / listSync 同步 hidden 后按需触发保存。
+// 旧 widget（text/password/switch/select/textarea/number）行为完全兼容。
+// ══════════════════════════════════════════════════════════════
 
 function _cfgAttrs(fullKey, tp, widget) {
   return (
@@ -312,8 +310,8 @@ function _cfgNumAttrs(schema) {
   return a;
 }
 
- 
- 
+// 字段绑定条件求值：{field, op, value}
+// op: eq/ne/in/nin/gt/lt/gte/lte/truthy（value 为数组时用于 in/nin）
 function _cfgEvalBind(cond, getVal) {
   if (!cond || !cond.field) return true;
   var v = getVal(cond.field);
@@ -350,7 +348,7 @@ function _cfgEvalBind(cond, getVal) {
   }
 }
 
- 
+// 运行时按 DOM 重算全部绑定行（change 事件驱动；页面字段量级下全量重算足够快）
 function _cfgFieldValue(root, field) {
   if (!root || !field) return undefined;
   var el = null;
@@ -402,7 +400,7 @@ document.addEventListener("change", function (e) {
     _cfgBindRescan();
 });
 
- 
+// hidden input 同步后统一触发：脏键 + 按需逐字段保存
 function _cfgCommitHidden(hidden) {
   hidden.dispatchEvent(new Event("input", { bubbles: true }));
   hidden.dispatchEvent(new Event("change", { bubbles: true }));
@@ -412,8 +410,8 @@ function _cfgCommitHidden(hidden) {
   }
 }
 
- 
- 
+// 值形态推断：字段为整数/数字且选项为数字 → mask（位掩码）；数组字段 → array；
+// 其余按 JSON 字符串。使多选在旧版 SDK 未透传 value_type 时仍写入正确类型。
 function _cfgMsInferType(schema) {
   var tp = String(schema.type || "").toLowerCase();
   var opts = schema.options || [];
@@ -427,7 +425,7 @@ function _cfgMsInferType(schema) {
   return "json";
 }
 
- 
+// multiselect 值形态：json（默认，存 JSON 字符串）/ array（存原生数组）/ mask（存位掩码整数）
 function _cfgMsRead(value, valueType) {
   var items = [];
   if (valueType === "mask") {
@@ -457,7 +455,7 @@ function _cfgMsSerialize(items, valueType) {
   return { raw: JSON.stringify(items), tp: "string" };
 }
 
- 
+// ── 控件注册表 ──
 var _cfgWidgets = {
   text: function (name, schema, value, fullKey, ctx) {
     return (
@@ -665,7 +663,7 @@ var _cfgWidgets = {
   },
 
   multiselect: function (name, schema, value, fullKey, ctx) {
-     
+    // 值形态：显式 value_type 优先；缺省时按字段类型推断（旧 SDK 未透传时仍正确）
     var valueType = schema.value_type || _cfgMsInferType(schema);
     var items = _cfgMsRead(value, valueType);
     var sel = items.map(String);
@@ -797,8 +795,8 @@ var _cfgWidgets = {
   },
 };
 
- 
- 
+// list 行渲染：item.fields 存在时为对象行（行内控件带 data-itemfield），
+// 否则为标量行（单个输入带 data-itemvalue）
 function _cfgListRow(fullKey, item, rowValue) {
   var delBtn =
     '<button class="kv-btn" type="button" onclick="this.parentElement.remove();listSync(this.closest(\'[data-listgroup]\').querySelector(\'input[type=hidden]\'))" title="' +
@@ -853,9 +851,9 @@ function _cfgListRow(fullKey, item, rowValue) {
   );
 }
 
- 
+// ── 单控件交互（全局函数，经 main.js Object.assign(window, ns) 暴露）──
 
- 
+// slider 拖动：进度填充 + 数值徽标即时刷新
 export function cfgSliderPaint(el) {
   var min = el.min !== "" ? Number(el.min) : 0;
   var max = el.max !== "" ? Number(el.max) : 100;
@@ -865,13 +863,13 @@ export function cfgSliderPaint(el) {
   if (val) val.textContent = el.value;
 }
 
- 
+// color 色板拖动 → 同步 hex 输入
 export function colorPaint(el) {
   var hex = el.parentElement.querySelector("[data-colorhex]");
   if (hex && hex.value.toLowerCase() !== el.value.toLowerCase()) hex.value = el.value;
 }
 
- 
+// hex 文本输入 → 合法时同步色板
 export function colorHex(el) {
   var v = el.value.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(v)) {
@@ -880,7 +878,7 @@ export function colorHex(el) {
   }
 }
 
- 
+// 预设色点选 → 设值并触发隐藏链保存
 export function colorPick(dot) {
   var key = dot.dataset.colortarget;
   var v = dot.dataset.colorval;
@@ -893,9 +891,9 @@ export function colorPick(dot) {
   if (picker) _cfgCommitHidden(picker);
 }
 
- 
+// ── 复合控件编辑操作 ──
 
- 
+// kv/list 增行统一构造（带删除按钮；group 为容器元素）
 function _cfgNewRow(kind, itemHtml) {
   var row = document.createElement("div");
   row.className = "cfg-row";
@@ -917,7 +915,7 @@ export function msSync(box) {
     'input[type="hidden"][data-ackey="' + key + '"], input[type="hidden"][data-itemfield="' + key + '"]',
   );
   if (!hidden) return;
-   
+  // 值形态优先读渲染时写入的 data-valuetype；缺失时按 hidden tp 推断兼容旧渲染
   var valueType = hidden.dataset.valuetype;
   if (!valueType) {
     var tpHint = hidden.dataset.adapterTp;
@@ -972,7 +970,7 @@ export function listAddRow(btn) {
   var hint = group.querySelector(".cfg-empty-hint");
   if (hint) hint.remove();
   var inner = _cfgListRow("", item, item.fields ? {} : "");
-   
+  // _cfgListRow 自带行壳（.cfg-row），抽出其 innerHTML 复用 _cfgNewRow 统一删除按钮
   var tmp = document.createElement("div");
   tmp.innerHTML = inner;
   var innerFields = tmp.querySelector(".cfg-row-fields");
@@ -1011,7 +1009,7 @@ export function listSync(hidden) {
   _cfgCommitHidden(hidden);
 }
 
- 
+// ── 主渲染入口（控件分发表驱动；未知 widget 回退 text）──
 
 export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
   opts = opts || {};
@@ -1036,7 +1034,7 @@ export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
     tp: tp,
   };
 
-   
+  // 嵌套 dataclass 子树（schema 带 fields）：渲染为可折叠嵌套分组，递归渲染子字段
   if (schema.fields && typeof schema.fields === "object" && !Array.isArray(schema.fields)) {
     var subValues = value && typeof value === "object" && !Array.isArray(value) ? value : {};
     var subOpts = Object.assign({}, opts, { bindValues: Object.assign({}, opts.bindValues, subValues) });
@@ -1064,7 +1062,7 @@ export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
     );
   }
 
-   
+  // 控件分发：显式 widget → 类型/选项推断 → text 兜底
   var w = widget;
   if (!w) {
     if (tp === "boolean") w = "switch";
@@ -1093,7 +1091,7 @@ export function renderAdapterConfigField(name, schema, value, keyPrefix, opts) {
   );
 }
 
- 
+// 字段绑定行属性：show_if / disabled_if（渲染期用 bindValues 预计算初始态）
 function _cfgBindRowAttrs(schema, name, keyPrefix, opts) {
   var out = { attrs: "", hide: false, disable: false };
   var bindValues = (opts && opts.bindValues) || {};
@@ -1101,7 +1099,7 @@ function _cfgBindRowAttrs(schema, name, keyPrefix, opts) {
     if (field in bindValues) return bindValues[field];
     if (keyPrefix) {
       var full = keyPrefix + "." + field;
-       
+      // 逐级回溯完整键（a.b.c → a.b.c / a.c）
       var parts = keyPrefix.split(".");
       for (var i = parts.length; i >= 0; i--) {
         var k = parts.slice(0, i).concat(field).join(".");
@@ -1253,7 +1251,6 @@ export async function loadAdapterAccounts(platform) {
   );
   if (!d || d.error) return;
 
-   
   var oldSection = document.getElementById("adapterAccountsSection");
   if (oldSection) oldSection.remove();
 
@@ -1267,8 +1264,8 @@ export async function loadAdapterAccounts(platform) {
   var accounts = d.accounts || {};
   var schema = d.schema;
 
-   
-   
+  // 首配置引导（通用推断）：唯一账户且声明为必填的字段存在空值 →
+  // 提示用户完成配置（扫码扩展区若注册则一并给出）。适配器无需任何额外声明。
   var setupGuide = _accountNeedsSetup(accounts, schema);
   if (setupGuide) {
     html +=
@@ -1301,7 +1298,7 @@ export async function loadAdapterAccounts(platform) {
   html += "</div>";
 
   if (Object.keys(accounts).length === 0) {
-     
+    // 账户空状态引导：说明账户的作用并引导添加第一个账户
     html +=
       '<div class="account-empty-guide">' +
       '<div class="account-empty-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>' +
@@ -1329,7 +1326,7 @@ export async function loadAdapterAccounts(platform) {
   }
   html += "</div>";
 
-   
+  // 追加到内容区
   var container = document.getElementById("adapterConfigContent");
   if (container) {
     container.insertAdjacentHTML("beforeend", html);
@@ -1337,7 +1334,7 @@ export async function loadAdapterAccounts(platform) {
     panel.innerHTML += html;
   }
 
-   
+  // 新增账户后自动定位并高亮新卡片，引导用户"去填这里"
   if (window._cfgNewAccountFlash) {
     _cfgNewAccountFlash = false;
     var cards = document.querySelectorAll(
@@ -1354,7 +1351,7 @@ export async function loadAdapterAccounts(platform) {
   }
 }
 
- 
+// 唯一账户且必填字段存在空值 → 返回该账户名（否则 null）。纯 schema 推断，零适配器声明。
 function _accountNeedsSetup(accounts, schema) {
   var keys = Object.keys(accounts || {});
   if (keys.length !== 1) return null;
@@ -1370,7 +1367,7 @@ function _accountNeedsSetup(accounts, schema) {
   return null;
 }
 
- 
+// 向导入口包装（全局）：供内联 onclick 使用
 export function openAccountWizardEntry(platform, opts) {
   openAccountWizard(platform, opts).then(function (done) {
     if (done) {
@@ -1537,7 +1534,7 @@ export async function saveAdapterAccount(platform, accountName) {
 }
 
 export async function addAdapterAccount(platform) {
-   
+  // 分步向导：手动配置 / 适配器注册的扩展接入方式（如扫码）
   var done = await openAccountWizard(platform);
   if (!done) return;
   window._cfgNewAccountFlash = true;
@@ -1562,7 +1559,7 @@ async function _addAdapterAccountLegacy(platform) {
   if (result && result.success) {
     toast(t("account_added"), "ok");
     if (result.message) toast(result.message);
-     
+    // 重渲后自动滚动到新账户卡片
     window._cfgNewAccountFlash = true;
     loadAdapterConfigDetail(platform);
   } else {
@@ -1607,7 +1604,7 @@ export async function loadModuleConfigPage() {
   const d = await api("/api/modules");
   if (!d) return;
 
-   
+  // 只保留有配置 schema 的模块
   _moduleConfigNames = (d.modules || []).filter(function (m) {
     return m.type === "module" && m.has_config;
   });
@@ -1624,7 +1621,7 @@ export async function loadModuleConfigPage() {
 
   if (empty) empty.style.display = "none";
 
-   
+  // 构建选择器（与适配器配置一致的芯片式布局）
   var selectorHtml = [
     '<div class="adapter-selector-bar">',
     '<div class="adapter-chip-list" id="moduleChipList">',
@@ -1653,7 +1650,7 @@ export async function loadModuleConfigPage() {
   });
   selectorHtml.push("</div></div>");
 
-   
+  // 保留内容区
   var existingContent = document.getElementById("moduleConfigContent");
   panel.innerHTML = selectorHtml.join("");
   if (existingContent) {
@@ -1673,7 +1670,7 @@ export async function loadModuleConfigPage() {
     _moduleConfigCurrent = _moduleConfigNames[0].name;
   }
 
-   
+  // 高亮当前
   var chips = panel.querySelectorAll(".adapter-chip[data-module]");
   chips.forEach(function (el) {
     el.classList.toggle("active", el.dataset.module === _moduleConfigCurrent);
@@ -1807,7 +1804,7 @@ export async function saveModuleConfigAll(moduleName) {
 }
 
 
- 
+// ── 保存后重启引导（适配器运行中且可能需要重启才能完全生效） ──
 export async function promptAdapterRestart(platform) {
   const choice = await showModal(
     t("adapter_restart_title"),

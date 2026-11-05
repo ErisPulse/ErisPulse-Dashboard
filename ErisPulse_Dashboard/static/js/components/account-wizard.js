@@ -1,9 +1,9 @@
- 
- 
- 
- 
- 
- 
+// ErisPulse Dashboard – components/account-wizard
+// 通用账户添加向导：方式选择（手动 / 适配器注册的扩展区）→ 配置 → 完成。
+// 扩展区（section）由适配器侧 sdk.Dashboard.register_section(target="account_wizard")
+// 注册自包含 HTML，向导以 iframe srcdoc 渲染；section 通过 postMessage 通知结果：
+//   parent.postMessage({ type: "ep_section_done", success: true, message: "..." }, "*")
+// section 内可 fetch 同源 Dashboard API（携带 localStorage token 的 Bearer 头）。
 
 var _awCleanup = null;
 
@@ -48,8 +48,8 @@ async function _awAccountSchema(platform) {
   return (d && d.schema) || null;
 }
 
- 
- 
+// 手动配置表单：账户名 + schema 自适应字段（复用组件配置页控件：select/密码/开关等；
+// 容器带绑定根，show_if 显隐随选择实时联动）
 function _awManualForm(platform, schema, ctx) {
   var fieldsHtml = "";
   if (schema && schema.fields) {
@@ -143,7 +143,7 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
   var body = box.querySelector(".aw-body");
   var foot = box.querySelector(".aw-foot");
 
-   
+  // 步骤指示
   var steps = box.querySelector(".aw-steps");
   if (sections.length) {
     steps.style.display = "";
@@ -258,24 +258,22 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
   });
 }
 
-
-
-
-
+/**
+ * 打开账户添加向导。
+ * @returns Promise<boolean> 用户是否完成添加（true 时调用方应刷新配置页）
+ */
 export async function openAccountWizard(platform, opts) {
   opts = opts || {};
   var sections = [];
   try {
     sections = await _awSections(platform);
     if (!sections.length) {
-       
       await new Promise(function (r) {
         setTimeout(r, 800);
       });
       sections = await _awSections(platform);
     }
   } catch (e) {
-     
     await new Promise(function (r) {
       setTimeout(r, 600);
     });
@@ -335,7 +333,7 @@ export async function openAccountWizard(platform, opts) {
         ctx.close(false);
       }
     }, true);
-     
+    // 无扩展区时跳过方式选择，直接手动配置
     _awRender(ov, platform, sections.length ? 1 : 2, sections, "manual", ctx);
   });
 }

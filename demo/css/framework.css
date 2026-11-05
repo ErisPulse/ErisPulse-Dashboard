@@ -1,5 +1,5 @@
- 
- 
+/* ErisPulse Dashboard – framework */
+/* 框架更新卡：设置页更新分区内的全宽卡（卡头规范见 .card-header） */
 .fw-update-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
@@ -9,7 +9,7 @@
     margin: 0;
 }
 
- 
+/* 卡头右侧操作区：状态徽标与刷新按钮成组（图标尺寸独立于卡头标题图标） */
 .fw-update-card .card-header-actions {
     gap: 8px;
 }
@@ -19,7 +19,7 @@
     height: 15px;
 }
 
- 
+/* 状态徽标：最新 = ok 语义柔和底；有更新 = accent 柔和底 */
 .fw-status-badge {
     display: inline-flex;
     align-items: center;
@@ -86,8 +86,8 @@
     }
 }
 
-
-
+/* 版本区：卡头之下直接呈现版本数字，无额外边框堆叠；
+   最新版本大字 tabular-nums 主导，当前版本小字陪衬（尺寸对比制造层级） */
 .fw-hero {
     padding: 18px 20px 8px;
 }
@@ -142,7 +142,7 @@
     padding: 14px 20px 20px;
 }
 
- 
+/* 显示密度：紧凑模式 */
 [data-density="compact"] .page {
     padding: 18px 20px;
 }
@@ -177,7 +177,7 @@
     font-size: 26px;
 }
 
- 
+/* Windows 提示条：语义 wr 三件套（低透明底 + 同色边 + 实色字） */
 .fw-win-warn {
     font-size: 12px;
     color: var(--wr-c);
@@ -189,7 +189,7 @@
     line-height: 1.5;
 }
 
- 
+/* 工具条：左组（版本选择 + pre 开关）与右组（GitHub 链接 + 更新按钮）基线对齐 */
 .fw-toolbar {
     display: flex;
     align-items: center;
@@ -214,7 +214,7 @@
     min-width: 200px;
 }
 
- 
+/* pre 开关组：开关与 --pre 标签合并为单一命中区 */
 .fw-pre-toggle {
     display: inline-flex;
     align-items: center;
@@ -236,7 +236,7 @@
     margin-left: auto;
 }
 
- 
+/* GitHub 链接：ghost 小按钮（.btn-secondary 承载主样式，此处仅补充锚点重置） */
 .fw-gh-link {
     text-decoration: none;
     white-space: nowrap;
@@ -246,12 +246,12 @@
     flex-shrink: 0;
 }
 
- 
+/* 发行说明 */
 .fw-notes {
     font-size: 13px;
 }
 
- 
+/* 加载态：骨架占位（bg-s 块 + 呼吸动画），优先于文字 spinner */
 .fw-skel {
     display: flex;
     flex-direction: column;
@@ -287,7 +287,7 @@
     }
 }
 
- 
+/* 回退态（无发行说明）：链接引导 */
 .fw-notes-loading {
     padding: 24px 0;
     text-align: center;
@@ -482,7 +482,7 @@
     line-height: 1.65;
 }
 
- 
+/* 发行说明 Markdown 渲染 */
 .fw-notes h1,
 .fw-notes h2,
 .fw-notes h3,
@@ -613,7 +613,7 @@
 }
 
 
- 
+/* 框架配置页面样式 */
 .restart-banner {
     background: var(--wr-bg);
     border: 1px solid var(--wr-bd);
@@ -638,12 +638,12 @@
     border: 1px solid var(--bd);
 }
 
- 
+/* 分区容器：与顶部提示条保持节奏 */
 .fw-body {
     margin-top: 14px;
 }
 
- 
+/* 危险操作区：右对齐的重启等破坏性操作，与常规操作区视觉隔离 */
 .fw-danger-bar {
     margin-top: 14px;
     padding-top: 14px;
@@ -794,8 +794,7 @@
 }
 
 
- 
- 
+/* ════════════════ 移动端：字段名+介绍在上、控件在下 ════════════════ */
 @media (max-width: 768px) {
     .fw-row {
         flex-direction: column;
@@ -826,10 +825,10 @@
     }
 }
 
- 
+/* ══════════ 移动端（≤768）：框架页输入触控目标 ══════════ */
 @media (max-width: 768px) {
     .fw-input {
         min-height: 40px;
-        font-size: 16px;  
+        font-size: 16px;
     }
 }

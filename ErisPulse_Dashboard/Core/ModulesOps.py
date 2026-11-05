@@ -53,17 +53,17 @@ class ModulesOpsMixin:
                             },
                             "module_class": module_class,
                         }
-                         
+                        # 注册配置（默认禁用，遵守配置中已有的禁用状态）
                         self.sdk.module._config_register(ep_name, True)
                         self.sdk.module.register(ep_name, module_class, module_info)
 
-                         
+                        # 仅当模块未被禁用时才加载
                         if self.sdk.module.is_enabled(ep_name):
                             if self._loop and not self._loop.is_closed():
                                 asyncio.run_coroutine_threadsafe(
                                     self.sdk.module.load(ep_name), self._loop
                                 )
-                             
+                            # 仅实际加载了才提示"已动态加载"；禁用的仅注册进列表
                             self._safe_broadcast(
                                 {
                                     "type": "module_changed",
@@ -130,7 +130,7 @@ class ModulesOpsMixin:
 
                 async def _startup_new_adapters():
                     for platform in new_adapter_names:
-                         
+                        # 仅当适配器未被禁用时才启动
                         if not self.sdk.adapter.is_enabled(platform):
                             self.logger.info(
                                 f"Adapter {platform} is disabled, skip startup"
@@ -147,7 +147,7 @@ class ModulesOpsMixin:
                 asyncio.run_coroutine_threadsafe(_startup_new_adapters(), self._loop)
 
             for ep_name in new_adapter_names:
-                 
+                # 禁用的适配器仅注册不启动，不提示"已动态加载"（列表刷新后可见其禁用状态）
                 if not self.sdk.adapter.is_enabled(ep_name):
                     self.logger.info(
                         f"Adapter {ep_name} is disabled, skip loaded notice"
@@ -162,7 +162,7 @@ class ModulesOpsMixin:
         except Exception as e:
             self.logger.warning(f"Dynamic module loading failed: {e}")
 
-     
+    # ════════════════ 自升级重载 ════════════════
 
     def _schedule_dashboard_self_reload(self, delay: float = 1.5):
         """
@@ -174,16 +174,15 @@ class ModulesOpsMixin:
                 return
 
             async def _reload():
-                 
-                 
-                 
+                # 热重载必须走 SDK reload：内部会清理 sys.modules 并重新
+                # import 磁盘新代码；朴素 unload+load 只会重新实例化注册
                 reloaded = False
                 try:
                     reloaded = await self.sdk.module.reload("Dashboard")
                 except Exception as e:
                     self.logger.warning(f"Dashboard hot reload error: {e}")
                 if not reloaded:
-                     
+                    # 旧 SDK 无 reload 能力时回退旧路径（需重启框架才能完全生效）
                     try:
                         await self.sdk.module.unload("Dashboard")
                     except Exception:
@@ -283,7 +282,7 @@ class ModulesOpsMixin:
                     except Exception as e:
                         self.logger.warning(f"Hot reload adapter {name} error: {e}")
                     if not reloaded:
-                         
+                        # 旧 SDK 无 reload：尽力重启适配器（代码仍需重启框架才生效）
                         try:
                             await self.sdk.adapter.shutdown(name)
                         except Exception:
@@ -298,7 +297,7 @@ class ModulesOpsMixin:
 
         asyncio.run_coroutine_threadsafe(_reload_all(), self._loop)
 
-     
+    # ════════════════ ghost 模块 ════════════════
 
     def _ghost_enabled(self, kind: str, name: str) -> bool:
         """未注册模块从配置读取启用状态：仅显式 False 视为禁用"""
