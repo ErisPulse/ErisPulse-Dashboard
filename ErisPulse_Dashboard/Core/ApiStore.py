@@ -256,4 +256,5 @@ class ApiStoreMixin:
         )
         t.start()
         self._add_audit_log("package_git_upgrade", git_url, request)
+        self._get_pkg_manager().invalidate_caches()
         return JSONResponse({"success": True, "task_id": task_id})
