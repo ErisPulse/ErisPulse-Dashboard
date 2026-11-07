@@ -2,8 +2,28 @@
 
 const I18N = window.__EP_I18N__ || {};;
 
+// 支持的前端语言码（与 res/i18n/*.js 字典键一致）
+export const SUPPORTED_LANGS = ["zh", "en", "zh-TW", "ja", "ru"];
+
+// 语言码归一化：把 zh-CN / zh_CN / zh-Hans / ja-JP 等变体收敛到字典键。
+// 非法或空值返回 ""，由调用方决定回退策略。
+export function normalizeLang(v) {
+  if (!v) return "";
+  var s = String(v).trim().toLowerCase();
+  if (!s) return "";
+  if (s.indexOf("zh") === 0) {
+    if (s.indexOf("tw") !== -1 || s.indexOf("hk") !== -1 || s.indexOf("hant") !== -1)
+      return "zh-TW";
+    return "zh";
+  }
+  if (s.indexOf("ja") === 0) return "ja";
+  if (s.indexOf("ru") === 0) return "ru";
+  if (s.indexOf("en") === 0) return "en";
+  return "";
+}
+
 export function detectLang() {
-  const saved = localStorage.getItem("ep_lang");
+  const saved = normalizeLang(localStorage.getItem("ep_lang"));
   if (saved) return saved;
   const bl = (
     navigator.language ||
@@ -29,8 +49,29 @@ export function getLocale() {
 
 window.lang = detectLang();
 
+// 自愈：历史版本或外部同步可能写入 zh-CN 之类的非法语言码，
+// 归一化后回写，避免每次启动都落到兜底字典
+try {
+  var _storedLang = localStorage.getItem("ep_lang");
+  if (_storedLang && _storedLang !== window.lang) {
+    localStorage.setItem("ep_lang", window.lang);
+  }
+} catch (e) {}
+
+// 取当前语言字典；语言码异常或字典缺失时逐级回退，
+// 避免整站显示原始 i18n key（历史上存了 zh-CN 之类的非法码会触发）
+function _dict() {
+  var d = I18N[lang];
+  if (d) return d;
+  var norm = normalizeLang(lang);
+  if (norm && I18N[norm]) return I18N[norm];
+  return I18N.zh || I18N.en || null;
+}
+
 export function t(k) {
-  return I18N[lang]?.[k] || k;
+  var d = _dict();
+  if (d && d[k]) return d[k];
+  return k;
 }
 
 export function toggleLang() {
@@ -85,7 +126,7 @@ export function toggleLang() {
 export function applyI18n() {
   // 语言字典缺失防御：资源文件加载/解析失败时跳过渲染（保留英文 key 兜底），
   // 不因 I18N[lang] 为 undefined 连锁崩溃调用方（如模块视图加载）
-  const dict = I18N[lang];
+  const dict = _dict();
   if (!dict) return;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const k = el.getAttribute("data-i18n");

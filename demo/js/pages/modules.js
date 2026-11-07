@@ -4,6 +4,8 @@ export async function loadModules() {
   const d = await api("/api/modules");
   if (!d) return;
   const items = d.modules || [];
+  _shadowPersistSupported = !!d.shadow_persist;
+  renderShadowAggregate(d.shadows || []);
   const search = (
     document.getElementById("moduleSearch")?.value || ""
   ).toLowerCase();
@@ -67,6 +69,39 @@ export async function loadModules() {
       '</p><button class="empty-action" onclick="go(\'store\')">' +
       t("store") +
       "</button></div>";
+}
+
+// 顶部影子聚合区：活跃影子一览（真实模块 / 影子 owner / diff 计数 / 转正 / 解散）
+export function renderShadowAggregate(shadows) {
+  var el = document.getElementById("shadowAggregate");
+  if (!el) return;
+  if (!shadows.length) {
+    el.innerHTML = "";
+    return;
+  }
+  var rows = shadows
+    .map(function (s) {
+      return (
+        '<div class="shadow-agg-row" style="display:flex;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap;">' +
+        '<span class="chip chip-ok shadow-state-chip">' + esc(t("shadow_badge")) + "</span>" +
+        '<strong>' + esc(s.module) + "</strong>" +
+        '<span class="shadow-owner-name">' + esc(s.shadow_owner) + "</span>" +
+        '<span class="shadow-diff-count">' +
+        t("shadow_diff_count").replace("{n}", s.diff_count || 0) +
+        "</span>" +
+        '<button class="btn btn-secondary btn-xs" onclick="openShadowModal(\'' + _jsq(s.module) + '\')">' +
+        t("shadow_menu") + "</button>" +
+        "</div>"
+      );
+    })
+    .join("");
+  el.innerHTML =
+    '<details class="shadow-aggregate" style="margin-bottom:12px;">' +
+    '<summary style="cursor:pointer;font-weight:600;">' +
+    t("shadows_title").replace("{n}", shadows.length) +
+    "</summary>" +
+    '<div style="padding:8px 4px;">' + rows + "</div>" +
+    "</details>";
 }
 
 export function renderPluginRow(m, isAd) {
@@ -365,6 +400,13 @@ export function renderPluginRow(m, isAd) {
     esc(m.name) +
     "</span>" +
     (m.version ? '<span class="module-version">v' + esc(m.version) + "</span>" : "") +
+    (m.shadow_active
+      ? '<span class="chip chip-ok shadow-state-chip" title="' +
+        esc(t("shadow_badge_tip")) +
+        '">' +
+        esc(t("shadow_badge")) +
+        "</span>"
+      : "") +
     '<span class="chip ' +
     statusClass +
     ' module-status-chip"' +
@@ -783,6 +825,10 @@ function _renderOwnershipRow(o, orphanSet) {
 
 var _shadowModalModule = "";
 var _shadowWhlFile = null;
+// 最近一次 whl 上传落盘的原件路径（供「转正并持久化」使用，模块维度缓存）
+var _shadowWhlPaths = {};
+// SDK 侧持久化能力（2.12+）：由 /api/modules 的 shadow_persist 标志驱动
+var _shadowPersistSupported = false;
 var _SHADOW_DIFF_MAX = 50; // JSON 对比块最多渲染条数（账本环形上限 500，防长列表卡顿）
 var _SHADOW_WHL_MAX_BYTES = 50 * 1024 * 1024; // 与后端 whl 大小限制一致
 
@@ -835,9 +881,15 @@ function _setShadowStateRow(html) {
 
 function _setShadowActionButtons(active) {
   var promoteBtn = document.getElementById("shadowPromoteBtn");
+  var persistBtn = document.getElementById("shadowPersistBtn");
   var dismissBtn = document.getElementById("shadowDismissBtn");
   if (promoteBtn) promoteBtn.style.display = active ? "inline-flex" : "none";
   if (dismissBtn) dismissBtn.style.display = active ? "inline-flex" : "none";
+  // 「转正并持久化」需 SDK 2.12+ 且该模块存在已落盘的 whl 原件
+  var hasWhl = !!(_shadowModalModule && _shadowWhlPaths[_shadowModalModule]);
+  if (persistBtn)
+    persistBtn.style.display =
+      active && _shadowPersistSupported && hasWhl ? "inline-flex" : "none";
 }
 
 export async function refreshShadowDiff() {
@@ -938,6 +990,34 @@ export async function shadowPromote() {
   shadowAction("promote");
 }
 
+// 转正并持久化：promote 成功后后台 pip install 落盘的 whl 原件（重启不回退）
+export async function shadowPromotePersist() {
+  if (!authed) return showLogin();
+  var name = _shadowModalModule;
+  if (!name) return;
+  var whlPath = _shadowWhlPaths[name];
+  if (!whlPath) return toast(t("shadow_persist_no_whl"), "wr");
+  var ok = await confirm2(t("shadow_persist_title"), t("shadow_persist_confirm"));
+  if (!ok) return;
+  var d = await api("/api/modules/" + encodeURIComponent(name) + "/shadow", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "promote_persist",
+      whl_path: whlPath,
+    }),
+  });
+  if (d && d.success) {
+    toast(t("shadow_persist_started"), "ok");
+    delete _shadowWhlPaths[name];
+    refreshShadowDiff();
+    loadModules();
+  } else if (d && d.rolled_back) {
+    toast(t("shadow_promote_rolled_back"), "er");
+  } else {
+    toast((d && d.error) || t("action_failed"), "er");
+  }
+}
+
 export async function shadowDismiss() {
   if (!_shadowModalModule) return;
   var ok = await confirm2(t("shadow_dismiss_title"), t("shadow_dismiss_confirm"));
@@ -1011,6 +1091,7 @@ export function shadowUploadWhl() {
       // 填充 source 输入框并自动启动影子；启动失败时输入框已就绪可重试
       var input = document.getElementById("shadowSourceInput");
       if (input) input.value = d.source;
+      if (d.whl_path) _shadowWhlPaths[name] = d.whl_path;
       _shadowWhlFile = null;
       shadowAction("start");
     } else {

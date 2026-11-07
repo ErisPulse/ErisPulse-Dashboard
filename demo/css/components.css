@@ -1014,6 +1014,11 @@ select.form-select::-ms-expand {
     pointer-events: auto;
 }
 
+/* 语言不一致提醒条：与更新提示条同款样式，向下错位避免同时出现时重叠 */
+.lang-hint-bar {
+    top: 118px;
+}
+
 .update-hint-bar .update-hint-icon {
     display: flex;
     flex: none;

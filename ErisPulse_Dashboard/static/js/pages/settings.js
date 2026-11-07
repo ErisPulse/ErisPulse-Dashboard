@@ -1161,7 +1161,11 @@ export function applySettingTheme(theme) {
 }
 
 export function applySettingLang(v) {
-  lang = v;
+  // 归一化：zh-CN/zh_CN/zh-Hans 等变体收敛到字典键；非法值保持当前语言，
+  // 防止把非法语言码写进 ep_lang（会导致整站显示原始 i18n key、语言分段无高亮）
+  var norm = typeof normalizeLang === "function" ? normalizeLang(v) : "";
+  if (!norm) return;
+  lang = norm;
   localStorage.setItem("ep_lang", lang);
   applyI18n();
   // 行内语言分段激活态随语言切换回显
