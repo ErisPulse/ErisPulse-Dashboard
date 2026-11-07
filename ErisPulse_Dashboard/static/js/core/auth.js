@@ -38,6 +38,7 @@ export async function doLogin() {
     loadAll();
     // 恢复上次更新重载引导（如更新后刷新了页面）
     restoreUpdateHint();
+    if (typeof checkFrameworkLangSync === "function") checkFrameworkLangSync();
     wsConnect();
     restartRefreshTimer();
     loadClusterNodes();

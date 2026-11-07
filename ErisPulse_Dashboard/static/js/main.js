@@ -16,6 +16,7 @@ import * as m_components_account_wizard from "./components/account-wizard.js";
 import * as m_components_kv from "./components/kv.js";
 import * as m_components_tasks from "./components/tasks.js";
 import * as m_components_update_hint from "./components/update-hint.js";
+import * as m_components_lang_hint from "./components/lang-hint.js";
 import * as m_components_install_guide from "./components/install-guide.js";
 import * as m_components_search_palette from "./components/search-palette.js";
 import * as m_components_onboarding_card from "./components/onboarding-card.js";import * as m_components_status_icon from "./components/status-icon.js";
@@ -61,6 +62,7 @@ const __namespaces = [
   m_components_kv,
   m_components_tasks,
   m_components_update_hint,
+  m_components_lang_hint,
   m_components_install_guide,
   m_components_search_palette,
   m_components_onboarding_card,
@@ -157,6 +159,7 @@ for (const ns of __namespaces) Object.assign(window, ns);
       loadAll();
       // 恢复上次更新重载引导（如更新后刷新了页面）
       restoreUpdateHint();
+      checkFrameworkLangSync();
       wsConnect();
       restartRefreshTimer();
       loadClusterNodes();

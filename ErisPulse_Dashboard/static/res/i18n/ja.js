@@ -725,6 +725,8 @@
     settings_sync_off_restored: "同期をオフにし、ローカルの外観を復元しました",
     settings_upload_confirm: "現在のグローバル外観を上書きし、同期が有効なすべてのデバイスに適用されます。続行しますか？",
     settings_sync_framework_done: "フレームワーク言語を同期しました",
+    lang_hint_text: "フレームワークの言語は {sdk} で、インターフェースの言語と一致しません",
+    lang_hint_sync: "フレームワーク言語を同期",
     settings_sync_framework_fail: "フレームワーク言語の同期に失敗しました",
     settings_font: "フォント",
 settings_tab_colorfont: "色とフォント",

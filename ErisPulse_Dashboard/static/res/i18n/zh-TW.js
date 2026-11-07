@@ -713,6 +713,8 @@
     settings_sync_off_restored: "已關閉同步，恢復本機外觀",
     settings_upload_confirm: "將覆蓋目前的全域外觀，所有開啟同步的裝置都會被更新。確定繼續？",
     settings_sync_framework_done: "框架語言已同步",
+    lang_hint_text: "框架目前語言為 {sdk}，與介面語言不一致",
+    lang_hint_sync: "同步框架語言",
     settings_sync_framework_fail: "框架語言同步失敗",
     settings_font: "字體",
 settings_tab_colorfont: "顏色與字體",

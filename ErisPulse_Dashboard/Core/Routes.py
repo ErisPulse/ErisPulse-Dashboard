@@ -297,6 +297,12 @@ class RoutesMixin:
         )
         r.register_http_route(
             mn,
+            "/api/i18n/language",
+            handler=self._api_i18n_language_get,
+            methods=["GET"],
+        )
+        r.register_http_route(
+            mn,
             "/api/fonts/upload",
             handler=self._api_fonts_upload,
             methods=["POST"],

@@ -285,6 +285,22 @@ class ApiDashboardMixin:
             pass
         return JSONResponse({"success": True, "language": current or mapped})
 
+    async def _api_i18n_language_get(self, request: Request) -> JSONResponse:
+        """读取框架当前生效语言（供前端比对界面语言，决定是否提示同步）"""
+        language = None
+        try:
+            if hasattr(self.sdk.i18n, "get_language"):
+                language = self.sdk.i18n.get_language()
+        except Exception:
+            language = None
+        supported = []
+        try:
+            if hasattr(self.sdk.i18n, "get_supported_languages"):
+                supported = list(self.sdk.i18n.get_supported_languages() or [])
+        except Exception:
+            supported = []
+        return JSONResponse({"language": language, "supported": supported})
+
     # ════════════════ 外观 ════════════════
 
     async def _api_appearance(self, request: Request) -> JSONResponse:
