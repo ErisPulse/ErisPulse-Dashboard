@@ -845,6 +845,7 @@
     fr_setup_next: "次へ",
     fr_setup_skip: "スキップ",
     fr_setup_tour_hint: "ハイライトに沿って各ページを確認、カードをクリックして直接移動もできます",
+    fr_tour_page_desc: "ページの主要エリア。ここから操作を始めます",
     fr_tour_start: "ツアー開始",
     settings_onboarding: "初期設定ツアー",
     settings_onboarding_desc: "言語・ミラー・ページツアーの初期設定をやり直します",

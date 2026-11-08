@@ -856,6 +856,7 @@
     fr_setup_next: "Next",
     fr_setup_skip: "Skip",
     fr_setup_tour_hint: "Follow the highlighted stops to look around, or click a card to jump in",
+    fr_tour_page_desc: "The page's main work area — start from here",
     fr_tour_start: "Start tour",
     settings_onboarding: "Setup tour",
     settings_onboarding_desc: "Re-run the first-run wizard: language, mirror and page tour",

@@ -1,14 +1,15 @@
 // ErisPulse Dashboard – components/first-run-setup
 // 首次进入的三步初始设置：界面语言 → 默认 PyPI 镜像源 → 主要页面导览。
-// 导览三种入口：完成设置后自动开始、点卡片直达该页并从对应站继续、导览按钮手动开始。
-// 聚光站高亮侧边栏项（自动滚到可见），高亮项可点击直接跳转。
+// 导览每页两站：先高亮侧边栏入口，再切到该页高亮主要功能区。
+// 窄屏抽屉收起时自动展开侧边栏（仅导览代开的，结束时收回）。
 // 完成后写 localStorage(ep_setup_done)，不再弹出；设置页“系统”里可再次运行。
-// 全程不阻塞：登录态确立 1.5s 后检查触发（见 main.js）。
 
 var SETUP_DONE_KEY = "ep_setup_done";
 var _frShown = false;
-var _frTourIdx = -1;
+var _frSteps = [];
+var _frStepIdx = -1;
 var _frReposition = null;
+var _frDrawerOpened = false;
 
 var MIRRORS = [
   { v: "", label: "PyPI (Default)" },
@@ -29,43 +30,49 @@ var LANGS = [
   { v: "ru", label: "Русский" },
 ];
 
-// 导览站点：page 为 go() 路由名，sel 为侧边栏导航项（聚光目标），文案复用现有导航键
+// 导览站点：sel 为侧边栏入口，pageSel 为该页内的主要功能区（缺失则跳过内容站）
 var TOUR_PAGES = [
   {
     page: "dashboard",
     sel: '[data-page="dashboard"]',
     labelKey: "dashboard",
     descKey: "dashboard_desc",
+    pageSel: "#onboardingCard, .home-section-hd",
   },
   {
     page: "event-stream",
     sel: '[data-page="event-stream"]',
     labelKey: "event_stream",
     descKey: "events_desc",
+    pageSel: "#p-event-stream .pkg-tabs",
   },
   {
     page: "adapter",
     sel: '[data-page="adapter"]',
     labelKey: "adapter_config",
     descKey: "adapter_config_desc",
+    pageSel: "#p-adapter .pkg-tabs",
   },
   {
     page: "config",
     sel: '[data-page="config"]',
     labelKey: "config",
     descKey: "config_desc",
+    pageSel: "#p-config .pkg-tabs",
   },
   {
     page: "store",
     sel: '[data-page="store"]',
     labelKey: "store",
     descKey: "store_desc",
+    pageSel: "#p-store .pkg-tabs",
   },
   {
     page: "logs",
     sel: '[data-page="logs"]',
     labelKey: "sys_logs",
     descKey: "logs_desc",
+    pageSel: "#p-logs .pkg-tabs",
   },
 ];
 
@@ -75,18 +82,56 @@ function frEl(html) {
   return d.firstChild;
 }
 
-// 收尾：移除弹窗与聚光层，解绑监听
+// 组站：每页「侧边栏入口 → 页面内容」
+function frBuildSteps() {
+  var steps = [];
+  TOUR_PAGES.forEach(function (p) {
+    steps.push({ type: "nav", p: p });
+    if (p.pageSel) steps.push({ type: "page", p: p });
+  });
+  return steps;
+}
+
+function frPageStepIndex(pg) {
+  for (var k = 0; k < _frSteps.length; k++) {
+    if (_frSteps[k].type === "nav" && _frSteps[k].p.page === pg) return k;
+  }
+  return 0;
+}
+
+function frOpenDrawer() {
+  var sb = document.getElementById("sidebar");
+  if (!sb || sb.classList.contains("open")) return false;
+  sb.classList.add("open");
+  var ovEl = document.getElementById("overlay");
+  if (ovEl) ovEl.classList.add("show");
+  _frDrawerOpened = true;
+  return true;
+}
+
+function frCloseDrawerIfOurs() {
+  if (!_frDrawerOpened) return;
+  var sb = document.getElementById("sidebar");
+  if (sb) sb.classList.remove("open");
+  var ovEl = document.getElementById("overlay");
+  if (ovEl) ovEl.classList.remove("show");
+  _frDrawerOpened = false;
+}
+
+// 收尾：移除弹窗与聚光层，解绑监听，收回代开的抽屉
 function frTeardown() {
   var el = document.getElementById("firstRunSetup");
   if (el) el.remove();
   var sp = document.getElementById("frSpot");
   if (sp) sp.remove();
+  frCloseDrawerIfOurs();
   if (_frReposition) {
     window.removeEventListener("resize", _frReposition);
     window.removeEventListener("scroll", _frReposition, true);
     _frReposition = null;
   }
-  _frTourIdx = -1;
+  _frStepIdx = -1;
+  _frSteps = [];
 }
 
 function frFinish() {
@@ -223,13 +268,9 @@ function frRender(step, ctx) {
       var pg = btn.getAttribute("data-fr-page");
       frFinish();
       go(pg);
-      // 直达后从该页的导览站继续，对照侧边栏位置
-      for (var k = 0; k < TOUR_PAGES.length; k++) {
-        if (TOUR_PAGES[k].page === pg) {
-          frStartTour(k);
-          break;
-        }
-      }
+      // 直达后从该页的导览站继续
+      _frSteps = frBuildSteps();
+      frStartTour(frPageStepIndex(pg) + 1);
     };
   });
   var tourBtn = ov.querySelector("[data-fr-tour]");
@@ -267,10 +308,11 @@ function frRender(step, ctx) {
   };
 }
 
-// 聚光导览：隐藏向导弹窗，逐站高亮侧边栏项并浮出说明；可指定起始站
+// 聚光导览：逐站高亮（侧边栏入口 / 页面内容），浮窗说明
 function frStartTour(startIdx) {
   var wiz = document.getElementById("firstRunSetup");
   if (wiz) wiz.remove();
+  if (!_frSteps.length) _frSteps = frBuildSteps();
   var ov = frEl(
     '<div class="fr-spot" id="frSpot">' +
       '<div class="fr-spot-hole" id="frSpotHole"></div>' +
@@ -287,22 +329,42 @@ function frStartTour(startIdx) {
 }
 
 function frTourGo(i) {
-  _frTourIdx = i;
-  var st = TOUR_PAGES[i];
-  var el = document.querySelector(st.sel);
-  // 侧边栏内部滚动：无论目标在多靠下的位置都先滚到可见再定位
-  if (el) el.scrollIntoView({ block: "center" });
-  var last = i === TOUR_PAGES.length - 1;
+  _frStepIdx = i;
+  var step = _frSteps[i];
+  var p = step.p;
+  var isNav = step.type === "nav";
+  var delay = 0;
+  if (isNav) {
+    // 窄屏抽屉收起时先展开侧边栏，让目标真的可见
+    var navEl = document.querySelector(p.sel);
+    if (navEl) {
+      navEl.scrollIntoView({ block: "center" });
+      var r0 = navEl.getBoundingClientRect();
+      var off0 =
+        r0.width === 0 ||
+        r0.right <= 0 ||
+        r0.left >= window.innerWidth ||
+        r0.bottom <= 0 ||
+        r0.top >= window.innerHeight;
+      if (off0 && frOpenDrawer()) delay = 420;
+    }
+  } else {
+    // 内容站：切到目标页；窄屏收回代开的抽屉以免挡住内容
+    frCloseDrawerIfOurs();
+    go(p.page, null, { force: true });
+    delay = 80;
+  }
+  var last = i === _frSteps.length - 1;
   var tip = document.getElementById("frSpotTip");
   tip.innerHTML =
     '<div class="fr-spot-step">' +
-    (i + 1) + " / " + TOUR_PAGES.length +
+    (i + 1) + " / " + _frSteps.length +
     "</div>" +
     '<div class="fr-spot-title">' +
-    esc(t(st.labelKey)) +
+    esc(t(p.labelKey)) +
     "</div>" +
     '<div class="fr-spot-desc">' +
-    esc(t(st.descKey)) +
+    esc(t(isNav ? p.descKey : "fr_tour_page_desc")) +
     "</div>" +
     '<div class="fr-foot" style="margin-top:12px">' +
     '<button class="btn btn-secondary btn-sm" data-fr-exit>' +
@@ -321,19 +383,20 @@ function frTourGo(i) {
   void tip.offsetWidth;
   tip.classList.add("tip-in");
   requestAnimationFrame(frTourPlace);
+  if (delay) setTimeout(frTourPlace, delay);
 }
 
-// 定位：洞对齐导航项，浮窗贴其右侧（放不下换左侧），随滚动/缩放跟随
+// 定位：洞对齐目标，浮窗依次尝试右侧 → 左侧 → 下方；随滚动/缩放跟随
 function frTourPlace() {
-  var i = _frTourIdx;
-  if (i < 0) return;
-  var st = TOUR_PAGES[i];
+  var i = _frStepIdx;
+  if (i < 0 || !_frSteps[i]) return;
+  var p = _frSteps[i].p;
+  var isNav = _frSteps[i].type === "nav";
   var hole = document.getElementById("frSpotHole");
   var tip = document.getElementById("frSpotTip");
   if (!hole || !tip) return;
-  var el = document.querySelector(st.sel);
+  var el = document.querySelector(isNav ? p.sel : p.pageSel);
   var r = el ? el.getBoundingClientRect() : null;
-  // 目标不在视口内（窄屏抽屉收起时 rect 仍在屏外）→ 容器整屏压暗，浮窗居中
   var spot = document.getElementById("frSpot");
   var onScreen =
     r &&
@@ -358,10 +421,20 @@ function frTourPlace() {
   hole.style.height = r.height + pad * 2 + "px";
   var tw = tip.offsetWidth || 300;
   var th = tip.offsetHeight || 170;
-  var left = r.right + 14;
-  if (left + tw > window.innerWidth - 12) left = r.left - tw - 14;
-  left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
-  var top = r.top + r.height / 2 - th / 2;
+  var left, top;
+  if (r.right + 14 + tw <= window.innerWidth - 12) {
+    left = r.right + 14;
+    top = r.top + r.height / 2 - th / 2;
+  } else if (r.left - tw - 14 >= 12) {
+    left = r.left - tw - 14;
+    top = r.top + r.height / 2 - th / 2;
+  } else if (r.bottom + 12 + th <= window.innerHeight - 12) {
+    top = r.bottom + 12;
+    left = Math.max(12, Math.min(r.left, window.innerWidth - tw - 12));
+  } else {
+    top = Math.max(12, r.top - th - 12);
+    left = Math.max(12, Math.min(r.left, window.innerWidth - tw - 12));
+  }
   top = Math.max(12, Math.min(top, window.innerHeight - th - 12));
   tip.style.left = left + "px";
   tip.style.top = top + "px";
