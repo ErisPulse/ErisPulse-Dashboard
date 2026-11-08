@@ -846,6 +846,8 @@
     fr_setup_skip: "跳過",
     fr_setup_tour_hint: "跟著高亮引導逐個認識，或點擊卡片直接進入",
     fr_tour_start: "開始導覽",
+    settings_onboarding: "初始設定引導",
+    settings_onboarding_desc: "重新執行語言、鏡像源與頁面導覽的首次設定",
     dashboard_desc: "執行狀態、資源佔用與模組概覽",
     account_renamed: "賬戶已重新命名",
     account_rename_action: "重新命名賬戶",

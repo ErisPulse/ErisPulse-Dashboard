@@ -1,7 +1,8 @@
 // ErisPulse Dashboard – components/first-run-setup
 // 首次进入的三步初始设置：界面语言 → 默认 PyPI 镜像源 → 主要页面导览。
-// 导览两种方式：点击卡片直接进入，或逐步聚光高亮侧边栏项（可点高亮项直接跳转）。
-// 完成后写 localStorage(ep_setup_done)，不再弹出；关闭视为跳过（可在设置页随时再改）。
+// 导览三种入口：完成设置后自动开始、点卡片直达该页并从对应站继续、导览按钮手动开始。
+// 聚光站高亮侧边栏项（自动滚到可见），高亮项可点击直接跳转。
+// 完成后写 localStorage(ep_setup_done)，不再弹出；设置页“系统”里可再次运行。
 // 全程不阻塞：登录态确立 1.5s 后检查触发（见 main.js）。
 
 var SETUP_DONE_KEY = "ep_setup_done";
@@ -95,7 +96,7 @@ function frFinish() {
   frTeardown();
 }
 
-// 触发检查：已登录、未完成过设置时弹窗（main.js 启动序列调用）
+// 触发检查：已登录、未完成过设置时弹窗（main.js 启动序列 / auth.js 登录成功调用）
 export function maybeShowFirstRunSetup() {
   if (_frShown) return;
   var done = false;
@@ -107,6 +108,20 @@ export function maybeShowFirstRunSetup() {
   _frShown = true;
   frRender(0, { lang: localStorage.getItem("ep_lang") || "zh-cn", mirror: "" });
 }
+
+// 设置页“再次引导”：清除完成标记并从头运行向导（dash.html 内联 onclick 经 window 调用）
+export function runFirstRunSetup() {
+  try {
+    localStorage.removeItem(SETUP_DONE_KEY);
+  } catch (e) {}
+  frTeardown();
+  _frShown = true;
+  frRender(0, {
+    lang: localStorage.getItem("ep_lang") || "zh-cn",
+    mirror: localStorage.getItem("ep_default_mirror") || "",
+  });
+}
+window.runFirstRunSetupWizard = runFirstRunSetup;
 
 function frRender(step, ctx) {
   var old = document.getElementById("firstRunSetup");
@@ -208,6 +223,13 @@ function frRender(step, ctx) {
       var pg = btn.getAttribute("data-fr-page");
       frFinish();
       go(pg);
+      // 直达后从该页的导览站继续，对照侧边栏位置
+      for (var k = 0; k < TOUR_PAGES.length; k++) {
+        if (TOUR_PAGES[k].page === pg) {
+          frStartTour(k);
+          break;
+        }
+      }
     };
   });
   var tourBtn = ov.querySelector("[data-fr-tour]");
@@ -238,14 +260,15 @@ function frRender(step, ctx) {
       } catch (e) {}
     } else {
       frFinish();
+      frStartTour(0);
       return;
     }
     frRender(step + 1, ctx);
   };
 }
 
-// 聚光导览：隐藏向导弹窗，逐站高亮侧边栏项并浮出说明
-function frStartTour() {
+// 聚光导览：隐藏向导弹窗，逐站高亮侧边栏项并浮出说明；可指定起始站
+function frStartTour(startIdx) {
   var wiz = document.getElementById("firstRunSetup");
   if (wiz) wiz.remove();
   var ov = frEl(
@@ -260,24 +283,20 @@ function frStartTour() {
   };
   window.addEventListener("resize", _frReposition, { passive: true });
   window.addEventListener("scroll", _frReposition, true);
-  frTourGo(0);
+  frTourGo(startIdx || 0);
 }
 
 function frTourGo(i) {
   _frTourIdx = i;
   var st = TOUR_PAGES[i];
   var el = document.querySelector(st.sel);
-  if (el) {
-    var r = el.getBoundingClientRect();
-    if (r.width > 0 && (r.top < 0 || r.bottom > window.innerHeight)) {
-      el.scrollIntoView({ block: "center" });
-    }
-  }
+  // 侧边栏内部滚动：无论目标在多靠下的位置都先滚到可见再定位
+  if (el) el.scrollIntoView({ block: "center" });
   var last = i === TOUR_PAGES.length - 1;
   var tip = document.getElementById("frSpotTip");
   tip.innerHTML =
     '<div class="fr-spot-step">' +
-    i + 1 + " / " + TOUR_PAGES.length +
+    (i + 1) + " / " + TOUR_PAGES.length +
     "</div>" +
     '<div class="fr-spot-title">' +
     esc(t(st.labelKey)) +
@@ -314,13 +333,23 @@ function frTourPlace() {
   if (!hole || !tip) return;
   var el = document.querySelector(st.sel);
   var r = el ? el.getBoundingClientRect() : null;
-  if (!r || r.width === 0) {
-    // 目标不可见（如窄屏侧边栏收起）：整屏压暗，浮窗居中
+  // 目标不在视口内（窄屏抽屉收起时 rect 仍在屏外）→ 容器整屏压暗，浮窗居中
+  var spot = document.getElementById("frSpot");
+  var onScreen =
+    r &&
+    r.width > 0 &&
+    r.right > 0 &&
+    r.left < window.innerWidth &&
+    r.bottom > 0 &&
+    r.top < window.innerHeight;
+  if (!onScreen) {
+    spot.classList.add("fr-spot-full");
     hole.style.opacity = "0";
     tip.style.left = Math.max(12, (window.innerWidth - 300) / 2) + "px";
     tip.style.top = "18vh";
     return;
   }
+  spot.classList.remove("fr-spot-full");
   var pad = 6;
   hole.style.opacity = "1";
   hole.style.top = r.top - pad + "px";

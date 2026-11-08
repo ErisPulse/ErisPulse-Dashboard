@@ -683,7 +683,6 @@ html[data-theme="dark"].bg-image.bg-level-strong {
         --bg-t: color-mix(in srgb, #1c2027 72%, transparent);
     }
 }
-html[data-oled="on"].bg-image,
 html[data-oled="on"][data-theme="dark"].bg-image {
     --bg-p: color-mix(in srgb, #000000 20%, transparent);
     --bg-s: color-mix(in srgb, #0a0d12 60%, transparent);
@@ -696,7 +695,6 @@ html[data-oled="on"][data-theme="dark"].bg-image {
         --bg-t: color-mix(in srgb, #0a0d12 92%, transparent);
     }
 }
-html[data-oled="on"].bg-image.bg-level-soft,
 html[data-oled="on"][data-theme="dark"].bg-image.bg-level-soft {
     --bg-p: color-mix(in srgb, #000000 32%, transparent);
     --bg-s: color-mix(in srgb, #0a0d12 75%, transparent);
@@ -709,7 +707,6 @@ html[data-oled="on"][data-theme="dark"].bg-image.bg-level-soft {
         --bg-t: color-mix(in srgb, #0a0d12 96%, transparent);
     }
 }
-html[data-oled="on"].bg-image.bg-level-strong,
 html[data-oled="on"][data-theme="dark"].bg-image.bg-level-strong {
     --bg-p: color-mix(in srgb, #000000 14%, transparent);
     --bg-s: color-mix(in srgb, #0a0d12 50%, transparent);

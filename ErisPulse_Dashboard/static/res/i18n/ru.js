@@ -846,6 +846,8 @@
     fr_setup_skip: "Пропустить",
     fr_setup_tour_hint: "Следуйте за подсветкой или нажмите карточку, чтобы перейти сразу",
     fr_tour_start: "Начать обзор",
+    settings_onboarding: "Первичная настройка",
+    settings_onboarding_desc: "Запустить мастер первого запуска: язык, зеркало и обзор страниц",
     dashboard_desc: "Состояние, ресурсы и обзор модулей",
     account_renamed: "Аккаунт переименован",
     account_rename_action: "Переименовать аккаунт",

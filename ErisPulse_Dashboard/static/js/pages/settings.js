@@ -1434,14 +1434,14 @@ export function applySettingAnimStyle(val) {
   applyAnimStyle(val);
 }
 
-// 滚动条显隐档位：always（默认胶囊常显）/ hover / hidden
+// 滚动条显隐档位：always / hover / hidden（默认 hidden，滚动时才浮现的细条不占空间）
 export function getScrollbarMode() {
   var v = localStorage.getItem("ep_scrollbar");
-  return v === "hover" || v === "hidden" ? v : "always";
+  return v === "always" || v === "hover" ? v : "hidden";
 }
 
 export function applyScrollbarMode(mode) {
-  if (mode !== "hover" && mode !== "hidden") mode = "always";
+  if (mode !== "always" && mode !== "hover") mode = "hidden";
   document.documentElement.setAttribute("data-scrollbar", mode);
 }
 

@@ -343,8 +343,6 @@ html[data-ui-style="cel"][data-oled="on"][data-theme="dark"][data-theme="dark"] 
 /* 暗色底纹：深色遮罩压住平铺图，保对比度 */
 
 /* ── OLED 纯黑：面板压至纯黑，与普通暗色（#20242f 墨面）拉开层次 ── */
-html[data-ui-style="cel"][data-oled="on"][data-theme="dark"],
-html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] body
 html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] {
     --bg-p: #000000;
     --bg-s: #0a0c11;
@@ -357,13 +355,23 @@ html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] {
         --bg-t: #000000;
     }
 }
-html[data-ui-style="cel"][data-oled="on"] .card,
-html[data-ui-style="cel"][data-oled="on"] .stat-card,
-html[data-ui-style="cel"][data-oled="on"] .settings-card,
-html[data-ui-style="cel"][data-oled="on"] .modal-box,
-html[data-ui-style="cel"][data-oled="on"] .sidebar,
-html[data-ui-style="cel"][data-oled="on"] .header {
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .card,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .stat-card,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .settings-card,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .modal-box,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .sidebar,
+html[data-ui-style="cel"][data-oled="on"][data-theme="dark"] .header {
     background: #000000;
+}
+@media (prefers-color-scheme: dark) {
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .card,
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .stat-card,
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .settings-card,
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .modal-box,
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .sidebar,
+    html[data-ui-style="cel"][data-oled="on"][data-theme="auto"] .header {
+        background: #000000;
+    }
 }
 
 /* ── 悬浮壳适配：面板直角 + 硬位移阴影 + 方形图标卡 ── */

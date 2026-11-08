@@ -927,3 +927,12 @@
     gap: 10px;
     margin-top: 12px;
 }
+
+.fr-spot-tip {
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+}
+
+.fr-spot-full {
+    background: rgba(10, 14, 22, 0.52);
+}

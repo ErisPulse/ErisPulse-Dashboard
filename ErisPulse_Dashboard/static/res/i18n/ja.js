@@ -846,6 +846,8 @@
     fr_setup_skip: "スキップ",
     fr_setup_tour_hint: "ハイライトに沿って各ページを確認、カードをクリックして直接移動もできます",
     fr_tour_start: "ツアー開始",
+    settings_onboarding: "初期設定ツアー",
+    settings_onboarding_desc: "言語・ミラー・ページツアーの初期設定をやり直します",
     dashboard_desc: "実行状態・リソース・モジュールの概要",
     account_renamed: "アカウント名を変更しました",
     account_rename_action: "アカウント名を変更",

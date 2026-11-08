@@ -857,6 +857,8 @@
     fr_setup_skip: "Skip",
     fr_setup_tour_hint: "Follow the highlighted stops to look around, or click a card to jump in",
     fr_tour_start: "Start tour",
+    settings_onboarding: "Setup tour",
+    settings_onboarding_desc: "Re-run the first-run wizard: language, mirror and page tour",
     dashboard_desc: "Runtime status, resources and module overview",
     account_renamed: "Account renamed",
     account_rename_action: "Rename account",

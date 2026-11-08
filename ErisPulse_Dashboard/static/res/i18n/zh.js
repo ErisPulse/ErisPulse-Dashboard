@@ -857,6 +857,8 @@
     fr_setup_skip: "跳过",
     fr_setup_tour_hint: "跟着高亮引导逐个认识，或点击卡片直接进入",
     fr_tour_start: "开始导览",
+    settings_onboarding: "初始设置引导",
+    settings_onboarding_desc: "重新运行语言、镜像源与页面导览的首次设置",
     dashboard_desc: "运行状态、资源占用与模块概览",
     account_renamed: "账户已重命名",
     account_rename_action: "重命名账户",

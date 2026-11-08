@@ -1,5 +1,7 @@
 // ErisPulse Dashboard – core/auth
 
+import { maybeShowFirstRunSetup } from "../components/first-run-setup.js";
+
 export function showLogin() {
   document.querySelector(".app").classList.remove("authed");
   document.getElementById("loginOv").classList.add("show");
@@ -44,6 +46,8 @@ export async function doLogin() {
     loadClusterNodes();
     loadGlobalAppearance();
     applyDefaultPageOnLogin();
+    // 全新设备登录成功同样走首次设置检查（启动路径只覆盖已有会话）
+    setTimeout(maybeShowFirstRunSetup, 1500);
     toast(t("logged_in"), "ok");
   } else {
     if (!authed) localStorage.removeItem(TK);
