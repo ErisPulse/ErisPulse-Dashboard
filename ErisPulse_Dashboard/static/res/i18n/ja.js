@@ -857,7 +857,7 @@
     update_hint_reload_page: "再起動して適用",
     fw_update_done: "フレームワークの更新が完了しました",
     update_hint_framework: "ErisPulse フレームワークを v{v} に更新しました。新機能の適用とキャッシュ解放のため、フレームワークの再起動を推奨します。",
-    update_hint_dashboard: "Dashboard を更新し、モジュールを自動で再読み込みしました。不具合があればフレームワークの再起動を推奨します。",
+    update_hint_dashboard: "Dashboard が更新されました。「再起動」をクリックするとフレームワークを再起動して適用します。",
     update_hint_restart: "今すぐ再起動",
     expand_all: "すべて展開",
     collapse_all: "すべて折り畳む",

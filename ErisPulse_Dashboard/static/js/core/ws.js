@@ -1,9 +1,6 @@
 // ErisPulse Dashboard – core/ws
 
-import {
-  promptDashboardRefresh,
-  requestDashboardReload,
-} from "../components/update-hint.js";
+import { promptDashboardRefresh } from "../components/update-hint.js";
 
 // 是否为 Dashboard 自身的包名
 function isDashboardPkg(s) {
@@ -34,8 +31,8 @@ function clearFwUpdateIntent() {
     localStorage.removeItem("ep_fw_task");
   } catch (e) {}
 }
-// promptDashboardRefresh / requestDashboardReload：
-// 实现见 components/update-hint.js（文件顶部 import，升级确认流共用）
+// promptDashboardRefresh：实现见 components/update-hint.js（升级确认流共用）
+// requestDashboardReload：同为 update-hint.js 导出（按钮点击入口，经 window 挂载共用）
 
 export function wsConnect() {
   if (ws) {
@@ -77,6 +74,14 @@ export function wsConnect() {
   ws.onopen = () => {
     _wsMeta.connectedAt = Date.now();
     connStateChange(1, true);
+    // 框架硬重启后的首次回连：强刷加载新版前端（标记由 update-hint 写入）
+    try {
+      if (sessionStorage.getItem("ep_fw_restarting")) {
+        sessionStorage.removeItem("ep_fw_restarting");
+        location.reload();
+        return;
+      }
+    } catch (e) {}
   };
   ws.onclose = () => {
     if (_wsMeta.connectedAt) _wsMeta.reconnects++;

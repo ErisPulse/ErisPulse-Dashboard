@@ -4,34 +4,25 @@
 var UPDATE_HINT_KEY = "ep_update_hint";
 var UPDATE_HINT_TTL = 24 * 60 * 60 * 1000; // 超过 24h 的未处理提示自动过期
 
+var _dashRefreshPromptShown = false;
 
-// 触发 Dashboard 模块自重载（升级后新版生效的唯一入口；与 core/ws.js 共用）：
-// 标记落 sessionStorage，重载完成广播 dashboard_reloaded 后按标记直接强刷
+
+// 触发框架硬重启（Dashboard 升级后应用新版的唯一入口；与 core/ws.js 共用）：
+// 标记落 sessionStorage，进程重启完成后 WS 回连，ws.js 按标记直接强刷加载新版前端
 export function requestDashboardReload() {
-  try { sessionStorage.setItem("ep_dash_reloading", "1"); } catch (e) {}
-  toast(t("dashboard_reloading"), "");
-  api("/api/modules/action", {
-    method: "POST",
-    body: JSON.stringify({ action: "reload", name: "Dashboard", type: "module" }),
-  })
+  try { sessionStorage.setItem("ep_fw_restarting", "1"); } catch (e) {}
+  toast(t("restart_success"), "");
+  api("/api/restart", { method: "POST" })
     .then(function (d) {
       if (d && d.success) {
         clearUpdateHint();
-        // 兜底强刷：重载期间 WS 可能断开收不到 dashboard_reloaded 广播
-        setTimeout(function () {
-          try { sessionStorage.setItem("ep_dash_updated", "1"); } catch (e) {}
-          location.href =
-            location.pathname + "?_r=" + Date.now() + (location.hash || "");
-        }, 4000);
       } else {
-        // 404/旧后端：运行中的模块还没有重启入口，需重启框架后再试
-        try { sessionStorage.removeItem("ep_dash_reloading"); } catch (e) {}
-        toast(t("dashboard_reload_need_framework_restart"), "er");
+        try { sessionStorage.removeItem("ep_fw_restarting"); } catch (e) {}
+        toast(t("restart_failed"), "er");
       }
     })
     .catch(function () {
-      try { sessionStorage.removeItem("ep_dash_reloading"); } catch (e) {}
-      toast(t("restart_failed"), "er");
+      // 进程约 0.5s 后退出，fetch 随之中断属预期：保留标记等待回连后刷新
     });
 }
 window.requestDashboardReload = requestDashboardReload;
@@ -110,7 +101,7 @@ export function renderUpdateHint(hint) {
   bar.appendChild(actions);
 
   if (!isFw) {
-    // Dashboard 更新：主操作是重启 Dashboard 模块应用新版（升级后不自动重载）
+    // Dashboard 更新：唯一按钮 = 硬重启框架应用新版（不自动重启，用户点击才执行）
     var reloadBtn = document.createElement("button");
     reloadBtn.className = "btn btn-primary btn-xs update-hint-restart";
     reloadBtn.textContent = t("update_hint_reload_page");
@@ -119,17 +110,13 @@ export function renderUpdateHint(hint) {
     };
     actions.appendChild(reloadBtn);
   } else {
-    // 框架更新：仅提供框架重启按钮
+    // 框架更新：同一硬重启路径，点击立即执行
     var btn = document.createElement("button");
     btn.className = "btn btn-primary btn-xs update-hint-restart";
     btn.textContent = t("update_hint_restart");
-    btn.onclick = async function () {
-      var ok = await confirm2(t("restart"), t("restart_confirm"));
-      if (!ok) return;
+    btn.onclick = function () {
       clearUpdateHint();
-      toast(t("restart_success"), "");
-      var d = await api("/api/restart", { method: "POST" });
-      if (!d || !d.success) toast(t("restart_failed"), "er");
+      requestDashboardReload();
     };
     actions.appendChild(btn);
   }
@@ -168,4 +155,7 @@ export function echoDashboardVersion(v) {
   if (seen === v) return;
   toast(t("dashboard_version_changed_title").replace("{v}", v), "ok");
   try { localStorage.setItem("ep_dash_seen_ver", v); } catch (e) {}
+  // 手动 pip 更新不走任务管道，同样拉起重启引导条（按钮 = 硬重启框架）
+  _dashRefreshPromptShown = true;
+  try { showUpdateHint("dashboard", v); } catch (e) {}
 }

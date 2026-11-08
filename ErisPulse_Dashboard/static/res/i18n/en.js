@@ -868,7 +868,7 @@
     update_hint_reload_page: "Restart to apply",
     fw_update_done: "Framework update completed",
     update_hint_framework: "ErisPulse has been updated to v{v}. Restart the framework to apply new features and clear caches.",
-    update_hint_dashboard: "Dashboard has been updated and its module reloaded automatically. If anything misbehaves, restart the framework.",
+    update_hint_dashboard: "Dashboard updated — click Restart to hard-restart the framework and apply the new version.",
     update_hint_restart: "Restart Now",
     expand_all: "Expand All",
     collapse_all: "Collapse All",

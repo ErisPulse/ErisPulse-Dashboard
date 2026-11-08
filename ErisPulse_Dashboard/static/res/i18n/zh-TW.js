@@ -857,7 +857,7 @@
     update_hint_reload_page: "重啟應用",
     fw_update_done: "框架更新完成",
     update_hint_framework: "ErisPulse 框架已更新到 v{v}，建議重新啟動框架以套用新特性並清理快取。",
-    update_hint_dashboard: "Dashboard 已更新，模組已自動重新載入使新版生效；如遇異常，建議重新啟動框架。",
+    update_hint_dashboard: "Dashboard 已更新，點擊「重啟應用」硬重啟框架以套用新版。",
     update_hint_restart: "立即重新啟動",
     expand_all: "展開全部",
     collapse_all: "收起全部",
