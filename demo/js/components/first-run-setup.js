@@ -315,6 +315,10 @@ function frStartTour(startIdx) {
   if (!_frSteps.length) _frSteps = frBuildSteps();
   var ov = frEl(
     '<div class="fr-spot" id="frSpot">' +
+      '<div class="fr-spot-shield" id="frShieldTop"></div>' +
+      '<div class="fr-spot-shield" id="frShieldLeft"></div>' +
+      '<div class="fr-spot-shield" id="frShieldRight"></div>' +
+      '<div class="fr-spot-shield" id="frShieldBottom"></div>' +
       '<div class="fr-spot-hole" id="frSpotHole"></div>' +
       '<div class="fr-spot-tip" id="frSpotTip"></div>' +
       "</div>"
@@ -386,6 +390,26 @@ function frTourGo(i) {
   if (delay) setTimeout(frTourPlace, delay);
 }
 
+// 屏蔽带围出洞口：带外点击全部落在 shield 上，洞内直达目标
+function frPlaceShields(top, left, width, height) {
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var conf = [
+    ["frShieldTop", 0, 0, vw, Math.max(0, top)],
+    ["frShieldLeft", 0, top, Math.max(0, left), height],
+    ["frShieldRight", left + width, top, Math.max(0, vw - left - width), height],
+    ["frShieldBottom", 0, top + height, vw, Math.max(0, vh - top - height)],
+  ];
+  conf.forEach(function (c) {
+    var el = document.getElementById(c[0]);
+    if (!el) return;
+    el.style.top = c[1] + "px";
+    el.style.left = c[2] + "px";
+    el.style.width = c[3] + "px";
+    el.style.height = c[4] + "px";
+  });
+}
+
 // 定位：洞对齐目标，浮窗依次尝试右侧 → 左侧 → 下方；随滚动/缩放跟随
 function frTourPlace() {
   var i = _frStepIdx;
@@ -408,6 +432,7 @@ function frTourPlace() {
   if (!onScreen) {
     spot.classList.add("fr-spot-full");
     hole.style.opacity = "0";
+    frPlaceShields(0, 0, window.innerWidth, window.innerHeight);
     tip.style.left = Math.max(12, (window.innerWidth - 300) / 2) + "px";
     tip.style.top = "18vh";
     return;
@@ -419,6 +444,12 @@ function frTourPlace() {
   hole.style.left = r.left - pad + "px";
   hole.style.width = r.width + pad * 2 + "px";
   hole.style.height = r.height + pad * 2 + "px";
+  frPlaceShields(
+    r.top - pad,
+    r.left - pad,
+    r.width + pad * 2,
+    r.height + pad * 2
+  );
   var tw = tip.offsetWidth || 300;
   var th = tip.offsetHeight || 170;
   var left, top;

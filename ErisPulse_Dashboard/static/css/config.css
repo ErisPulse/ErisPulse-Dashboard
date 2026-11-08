@@ -864,8 +864,15 @@
     pointer-events: none;
 }
 
+/* 四条屏蔽带围出洞口：带外点击全部拦截，洞内直达目标 */
+.fr-spot-shield {
+    position: fixed;
+    pointer-events: auto;
+}
+
 .fr-spot-hole {
     position: fixed;
+    pointer-events: none;
     border-radius: 12px;
     border: 1.5px solid color-mix(in srgb, var(--accent) 55%, transparent);
     box-shadow: 0 0 0 9999px rgba(10, 14, 22, 0.52);
