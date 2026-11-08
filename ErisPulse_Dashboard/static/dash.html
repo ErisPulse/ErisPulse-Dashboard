@@ -23,7 +23,7 @@
         </script>
         <link
             rel="stylesheet"
-            href="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.css?v=169"
+            href="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.css?v=170"
         />
         <link
             rel="stylesheet"
@@ -33,31 +33,31 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/addon/hint/show-hint.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/transcript.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-subnav.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=169" />
-        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=169" />
-                <script src="/Dashboard/static/res/vendor/marked/marked.min.js?v=169"></script>
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/transcript.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-subnav.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=170" />
+        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=170" />
+                <script src="/Dashboard/static/res/vendor/marked/marked.min.js?v=170"></script>
     </head>
 
     <body>
@@ -4856,6 +4856,7 @@
 <section class="settings-pane" data-pane="sec-system">
   <div class="settings-pane-head"><button type="button" class="settings-back settings-back-top" onclick="settingsGoBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h2 class="settings-pane-title" data-i18n="settings_system"></h2></div>
   <div class="card set-group">
+  <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="20" x2="12" y2="4"/></svg></span><span class="set-main"><span class="set-title" data-i18n="settings_default_mirror"></span><span class="set-sub" data-i18n="settings_default_mirror_desc"></span></span><span class="set-end"><select class="settings-select" id="settingsDefaultMirror" onchange="applySettingDefaultMirror(this.value)"><option value="">PyPI (Default)</option><option value="https://pypi.tuna.tsinghua.edu.cn/simple">Tsinghua 清华</option><option value="https://mirrors.aliyun.com/pypi/simple/">Aliyun 阿里云</option><option value="https://pypi.doubanio.com/simple/">Douban 豆瓣</option><option value="https://repo.huaweicloud.com/repository/pypi/simple">Huawei 华为云</option></select></span></div>
   <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span><span class="set-main"><span class="set-title" data-i18n="restart"></span><span class="set-sub" data-i18n="settings_restart_desc"></span></span><span class="set-end"><button class="btn btn-danger btn-sm" onclick="restartFramework()" data-i18n="restart"></button></span></div>
   <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5.4L12 2.5 4 5.4V12c0 6 8 10 8 10z"/></svg></span><span class="set-main"><span class="set-title" data-i18n="settings_logout"></span><span class="set-sub" data-i18n="settings_logout_desc"></span></span><span class="set-end"><button class="btn btn-secondary btn-sm" onclick="doLogout()" data-i18n="settings_logout"></button></span></div>
   <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span><span class="set-main"><span class="set-title" data-i18n="settings_onboarding"></span><span class="set-sub" data-i18n="settings_onboarding_desc"></span></span><span class="set-end"><button class="btn btn-secondary btn-sm" onclick="runFirstRunSetupWizard()" data-i18n="fr_tour_start"></button></span></div>
@@ -6333,26 +6334,26 @@
                 </div>
             </div>
         </div>
-        <script src="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/javascript/javascript.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/python/python.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/xml/xml.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/htmlmixed/htmlmixed.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/css/css.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/markdown/markdown.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/toml/toml.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/yaml/yaml.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js?v=169"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js?v=169"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/javascript/javascript.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/python/python.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/xml/xml.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/htmlmixed/htmlmixed.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/css/css.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/markdown/markdown.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/toml/toml.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/yaml/yaml.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js?v=170"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js?v=170"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/hint/show-hint.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/hint/anyword-hint.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/selection/active-line.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=169"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=169"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=169"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=169"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=169"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=169"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=170"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=170"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=170"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=170"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=170"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=170"></script>
     </body>
 </html>

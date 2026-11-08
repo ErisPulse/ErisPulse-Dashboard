@@ -843,6 +843,8 @@
     fr_setup_tour_q: "主要ページのご紹介（クリックで直接移動）",
     fr_setup_finish: "設定を完了",
     fr_setup_next: "次へ",
+    settings_default_mirror: "デフォルト PyPI ミラー",
+    settings_default_mirror_desc: "モジュールやアダプタのインストール・更新時にソース未指定の場合に使うミラー",
     fr_setup_skip: "スキップ",
     fr_sync_framework_lang: "フレームワークの言語も合わせて設定",
     fr_setup_tour_hint: "ハイライトに沿って各ページを確認、カードをクリックして直接移動もできます",

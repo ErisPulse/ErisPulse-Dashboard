@@ -367,11 +367,13 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/audit'] = function () { return _json({ logs: _genAudit(20) }); };
     API_MAP['/api/audit/clear'] = function () { return _json({ success: true }); };
 
-    var _mockDashCfg = { title: 'ErisPulse Dashboard', max_event_log: 500, default_mirror: '', token: '***', login_lockout_enabled: true, login_lockout_max_fails: 10, login_lockout_window: 60 };
+    var _mockDashCfg = { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***', login_lockout_enabled: true, login_lockout_max_fails: 10, login_lockout_window: 60 };
+    var _mockEpDashCfg = { default_mirror: '' };
     function _mockConfig() {
         return {
             config: {
                 Dashboard: _mockDashCfg,
+                ErisPulse_Dashboard: _mockEpDashCfg,
                 ErisPulse: {
                     server: { host: '0.0.0.0', port: 8000, auto_start: true, ssl_certfile: null, ssl_keyfile: null },
                     logger: { level: 'INFO', format: 'rich', log_files: [], memory_limit: 1000 },
@@ -395,7 +397,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                 }
                 // 首次设置向导：默认镜像源（后端 PipOps 安装/升级回落用）
                 if (b && b.key === 'ErisPulse_Dashboard.default_mirror') {
-                    _mockDashCfg.default_mirror = String(b.value || '');
+                    _mockEpDashCfg.default_mirror = String(b.value || '');
                 }
             } catch (e) {}
             return _json({ success: true });

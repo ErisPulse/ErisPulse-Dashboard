@@ -843,6 +843,8 @@
     fr_setup_tour_q: "認識主要頁面（點擊可直接進入）",
     fr_setup_finish: "完成設定",
     fr_setup_next: "下一步",
+    settings_default_mirror: "預設 PyPI 鏡像源",
+    settings_default_mirror_desc: "安裝或更新模組、介面卡時未手動選源所使用的鏡像",
     fr_setup_skip: "跳過",
     fr_sync_framework_lang: "同步設定框架語言",
     fr_setup_tour_hint: "跟著高亮引導逐個認識，或點擊卡片直接進入",

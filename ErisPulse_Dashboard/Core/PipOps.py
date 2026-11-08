@@ -649,6 +649,15 @@ class PipOpsMixin:
         index_url: str = None,
         extra_args: str = None,
     ):
+        # 未显式指定镜像时回落默认镜像源（上传安装同样生效）
+        if not index_url:
+            try:
+                index_url = (
+                    self.sdk.config.getConfig("ErisPulse_Dashboard.default_mirror")
+                    or None
+                )
+            except Exception:
+                index_url = None
         self._install_tasks[task_id] = {
             "status": "running",
             "started_at": time.time(),

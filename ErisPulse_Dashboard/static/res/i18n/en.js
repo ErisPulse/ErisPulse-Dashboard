@@ -854,6 +854,8 @@
     fr_setup_tour_q: "Meet the main pages (click to jump right in)",
     fr_setup_finish: "Finish setup",
     fr_setup_next: "Next",
+    settings_default_mirror: "Default PyPI mirror",
+    settings_default_mirror_desc: "Mirror used when installing or updating modules and adapters without an explicit source",
     fr_setup_skip: "Skip",
     fr_sync_framework_lang: "Apply the same language to the framework",
     fr_setup_tour_hint: "Follow the highlighted stops to look around, or click a card to jump in",

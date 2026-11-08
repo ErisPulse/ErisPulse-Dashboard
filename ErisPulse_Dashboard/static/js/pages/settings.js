@@ -333,6 +333,7 @@ var SETTINGS_SEC_LOADERS = {
   "sec-about": function () { loadAbout(); },
   "sec-security": function () { loadGeneralTab(); },
   "sec-fwbehavior": function () { loadFwBehaviorPane(); },
+  "sec-system": function () { loadDefaultMirror(); },
 };
 
 function _selectSettingsPane(paneId, remember) {
@@ -1438,6 +1439,32 @@ export function applySettingAnimStyle(val) {
 export function getScrollbarMode() {
   var v = localStorage.getItem("ep_scrollbar");
   return v === "always" || v === "hover" ? v : "hidden";
+}
+
+// 默认 PyPI 镜像源：读后端配置回填下拉（安装/更新未显式选源时后端回落此值）
+export async function loadDefaultMirror() {
+  try {
+    const d = await api("/api/config");
+    const mirror =
+      (d && d.config && d.config.ErisPulse_Dashboard &&
+        d.config.ErisPulse_Dashboard.default_mirror) ||
+      "";
+    const el = document.getElementById("settingsDefaultMirror");
+    if (el) el.value = mirror;
+  } catch (e) {}
+}
+
+export async function applySettingDefaultMirror(v) {
+  try { sessionStorage.setItem("ep_dm_dirty", "1"); } catch (e) {}
+  const d = await api("/api/config", {
+    method: "PUT",
+    body: JSON.stringify({
+      key: "ErisPulse_Dashboard.default_mirror",
+      value: v || "",
+    }),
+  });
+  if (d && d.success) toast(t("settings_default_mirror_done"), "ok");
+  else toast(t("restart_failed"), "er");
 }
 
 export function applyScrollbarMode(mode) {

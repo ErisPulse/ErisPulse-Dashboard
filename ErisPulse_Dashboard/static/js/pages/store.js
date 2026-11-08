@@ -19,10 +19,46 @@ export function mirrorOptionsHtml() {
   );
 }
 
+// 默认镜像源缓存：设置页修改后置 ep_dm_dirty 触发重拉
+var _dmPromise = null;
+function fetchDefaultMirror() {
+  try {
+    if (sessionStorage.getItem("ep_dm_dirty")) {
+      sessionStorage.removeItem("ep_dm_dirty");
+      _dmPromise = null;
+    }
+  } catch (e) {}
+  if (!_dmPromise) {
+    _dmPromise = api("/api/config")
+      .then(function (d) {
+        return (
+          (d &&
+            d.config &&
+            d.config.ErisPulse_Dashboard &&
+            d.config.ErisPulse_Dashboard.default_mirror) ||
+          ""
+        );
+      })
+      .catch(function () {
+        return "";
+      });
+  }
+  return _dmPromise;
+}
+
 export function initMirrorSelects() {
   ["uploadMirrorSelect", "detailMirrorSelect"].forEach((id) => {
     const el = document.getElementById(id);
     if (el && !el.children.length) el.innerHTML = mirrorOptionsHtml();
+  });
+  // 下拉初始选中默认镜像源（引导/设置写入），所见即安装实际所用
+  fetchDefaultMirror().then(function (mirror) {
+    if (!mirror) return;
+    ["uploadMirrorSelect", "detailMirrorSelect"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el && el.querySelector('option[value="' + mirror + '"]'))
+        el.value = mirror;
+    });
   });
 }
 
