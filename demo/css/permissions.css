@@ -207,8 +207,8 @@
 }
 
 .cmd-platform-toggle:hover {
-    background: var(--accent-fill);
-    color: #fff;
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--accent);
 }
 
 .cmd-platform-toggle.active {

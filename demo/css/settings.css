@@ -748,7 +748,7 @@ button.set-row:hover .set-chevron {
     height: 16px;
     margin-top: 2px;
     border-radius: var(--radius-xs);
-    background: var(--accent-fill);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 .bg-preview-empty {
     position: absolute;

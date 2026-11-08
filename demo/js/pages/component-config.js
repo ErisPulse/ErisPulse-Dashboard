@@ -1256,8 +1256,15 @@ export async function loadAdapterAccounts(platform) {
 
   var html =
     '<div id="adapterAccountsSection" class="adapter-accounts-section">' +
+    '<div class="adapter-section-head">' +
     '<div class="adapter-section-heading">' +
     t("adapter_accounts") +
+    "</div>" +
+    '<button class="btn btn-primary btn-sm" onclick="addAdapterAccount(\'' +
+    esc(platform) +
+    "')\">+ " +
+    t("add_account") +
+    "</button>" +
     "</div>" +
     '<div class="adapter-account-list">';
 
@@ -1316,13 +1323,6 @@ export async function loadAdapterAccounts(platform) {
       t("add_first_account") +
       "</button>" +
       "</div>";
-  } else {
-    html +=
-      '<button class="btn btn-primary btn-sm adapter-add-account-btn" onclick="addAdapterAccount(\'' +
-      esc(platform) +
-      "')\">+ " +
-      t("add_account") +
-      "</button>";
   }
   html += "</div>";
 
@@ -1414,14 +1414,38 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '<span class="account-card-name">' +
     esc(accountName) +
     "</span>" +
-    '<div style="flex:1"></div>' +
-    '<button class="btn btn-danger btn-sm" onclick="removeAdapterAccount(\'' +
+    '<button class="btn-icon account-icon-btn account-icon-rename" onclick="startRenameAccount('' +
     esc(platform) +
     "','" +
     esc(accountName) +
-    "')\">" +
-    t("remove_account") +
-    "</button>" +
+    '', this)" title="' +
+    esc(t("account_rename_action")) +
+    '" aria-label="' +
+    esc(t("account_rename_action")) +
+    '"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>' +
+    '<div style="flex:1"></div>' +
+    '<button class="btn-icon cfg-save-btn account-icon-btn account-icon-save" data-cfg-prefix="accounts.' +
+    esc(accountName) +
+    "." +
+    esc(platform) +
+    '." onclick="saveAdapterAccount(\'' +
+    esc(platform) +
+    "','" +
+    esc(accountName) +
+    '\')" title="' +
+    esc(t("save_adapter_config")) +
+    '" aria-label="' +
+    esc(t("save_adapter_config")) +
+    '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>' +
+    '<button class="btn-icon account-icon-btn account-icon-delete" onclick="removeAdapterAccount(\'' +
+    esc(platform) +
+    "','" +
+    esc(accountName) +
+    '\')" title="' +
+    esc(t("remove_account")) +
+    '" aria-label="' +
+    esc(t("remove_account")) +
+    '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
     "</div>" +
     '<div class="account-card-body" data-cfgbind-root data-cfgbind-prefix="accounts.' +
     esc(accountName) +
@@ -1430,17 +1454,6 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '">' +
     fieldsHtml +
     "</div>" +
-    '<div class="account-card-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="accounts.' +
-    esc(accountName) +
-    "." +
-    esc(platform) +
-    '." onclick="saveAdapterAccount(\'' +
-    esc(platform) +
-    "','" +
-    esc(accountName) +
-    "')\">" +
-    t("save_adapter_config") +
-    "</button></div>" +
     "</div>"
   );
 }
@@ -1823,5 +1836,64 @@ export async function promptAdapterRestart(platform) {
     toast(t("adapter_restarted"), "ok");
   } else {
     toast(t("save_failed") + ": " + (r?.error || t("unknown_error")), "er");
+  }
+}
+
+
+// 账户重命名：内联编辑；保存为整字典迁移（复制数据到新键、删除旧键后 PUT）
+export function startRenameAccount(platform, accountName, el) {
+  var header = el.closest(".account-card-header");
+  var span = header && header.querySelector(".account-card-name");
+  if (!span || span.querySelector("input")) return;
+  var oldName = span.textContent;
+  span.innerHTML = '<input class="fw-input account-rename-input">';
+  var input = span.querySelector("input");
+  input.value = oldName;
+  input.focus();
+  input.select();
+  var finished = false;
+  var done = async function (commit) {
+    if (finished) return;
+    finished = true;
+    input.onkeydown = null;
+    input.onblur = null;
+    var newName = (input.value || "").trim();
+    if (!commit || !newName || newName === oldName) {
+      span.textContent = oldName;
+      return;
+    }
+    var d = await api(
+      "/api/adapter/" + encodeURIComponent(platform) + "/accounts"
+    );
+    if (d && d.accounts && d.accounts[newName] !== undefined) {
+      toast(t("account_wizard_name_exists"), "er");
+      span.textContent = oldName;
+      return;
+    }
+    var accounts = (d && d.accounts) || {};
+    accounts[newName] = accounts[oldName] || { enabled: true, name: "" };
+    delete accounts[oldName];
+    var r = await api(
+      "/api/adapter/" + encodeURIComponent(platform) + "/accounts",
+      { method: "PUT", body: JSON.stringify({ accounts: accounts }) }
+    );
+    if (r && r.success) {
+      toast(t("account_renamed") + ": " + newName, "ok");
+      if (typeof loadAdapterAccounts === "function")
+        loadAdapterAccounts(platform);
+      else span.textContent = newName;
+    } else {
+      toast(t("save_failed") + ": " + ((r && r.error) || ""), "er");
+      span.textContent = oldName;
+    }
+  };
+  input.onkeydown = function (e) {
+    if (e.key === "Enter") done(true);
+    if (e.key === "Escape") done(false);
+  };
+  input.onblur = function () {
+    setTimeout(function () {
+      done(true);
+    }, 120);
   }
 }

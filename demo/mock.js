@@ -168,7 +168,7 @@ var STORE_DATA = {"last_updated":"2026-08-05T05:18:07Z","modules":{"Dashboard":{
     };
 
 var _MODULES_LIST = [{"name":"Dashboard","type":"module","enabled":true,"loaded":true,"version":"1.9.1","author":"ErisPulse","description":"Web admin panel — system monitor, module management, config editor & event stream","package":"ErisPulse-Dashboard","has_config":false},{"name":"HelpModule","type":"module","enabled":true,"loaded":true,"version":"2.1.2","author":"wsu2059q","description":"为统一的命令系统提供一个help命令，用来在平台查看现有命令","package":"ErisPulse-HelpModule","has_config":true},{"name":"Cron","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"ErisPulse 定时任务调度模块 - 支持一次性/间隔/Cron定时，回调传参，SQLite持久化","package":"ErisPulse-Cron","has_config":false},{"name":"UmaMusume","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"CyanTea","description":"ErisPulse的赛马娘主题机器人模块","package":"ErisPulse-UmaMusume","has_config":false},{"name":"Feedback","type":"module","enabled":true,"loaded":true,"version":"1.1.2","author":"wsu2059","description":"ErisPulse 反馈系统模块，支持反馈提交、状态管理、多群聊反馈组和数据导入导出","package":"ErisPulse-Feedback","has_config":false},{"name":"EditVideoPlayer","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"一个通用的视频播放器模块，可将视频转换为点阵字符并在支持消息编辑的平台上播放","package":"ErisPulse-EditVideoPlayer","has_config":false},{"name":"InfoQuery","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"信息统计查询模块，用于查询InfoStats收集的统计数据","package":"ErisPulse-InfoQuery","has_config":false},{"name":"XiaomiMarathon","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"小米马拉松模拟器","package":"ErisPulse-XiaomiMarathon","has_config":false},{"name":"InfoStats","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"Event listener & statistics module for analytics","package":"ErisPulse-InfoStats","has_config":false},{"name":"GitHubParser","type":"module","enabled":true,"loaded":true,"version":"3.0.0","author":"wsu2059q","description":"GitHub链接解析模块，自动解析消息中的仓库/Issue/PR信息并以最佳格式展示","package":"ErisPulse-GitHubParser","has_config":false},{"name":"Weather","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ShanFish","description":"天气查询，支持绑定城市、今日天气、五日天气","package":"ErisPulse-Weather","has_config":true},{"name":"QvQChat","type":"module","enabled":true,"loaded":true,"version":"2.7.0","author":"wsu2059q","description":"一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天","package":"ErisPulse-QvQChat","has_config":false},{"name":"OpenAI","type":"module","enabled":true,"loaded":true,"version":"2.1.3","author":"wsu2059q","description":"A unified OpenAI API wrapper module for ErisPulse","package":"ErisPulse-OpenAI","has_config":false},{"name":"AIChat","type":"module","enabled":true,"loaded":true,"version":"3.0.4","author":"wsu2059q","description":"AIChat 聊天机器人模块（停更）","package":"ErisPulse-AIChat","has_config":false},{"name":"SeTu","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ShanFish","description":"简单的色图模块","package":"ErisPulse-SeTu","has_config":false},{"name":"SystemStatus","type":"module","enabled":true,"loaded":true,"version":"1.0.3","author":"ShanFish","description":"提供获取系统内存、CPU、硬盘占用的接口","package":"ErisPulse-SystemStatus","has_config":false},{"name":"ServerStatusMonitor","type":"module","enabled":true,"loaded":true,"version":"1.1.1","author":"wsu2059q","description":"系统信息查询模块-平台模块","package":"ErisPulse-ServerStatusMonitor","has_config":false},{"name":"AdminControl","type":"module","enabled":true,"loaded":true,"version":"2.0.0","author":"wsu2059q","description":"ErisPulse 管理控制模块 - 提供框架管理和命令执行功能","package":"ErisPulse-AdminControl","has_config":false},{"name":"EmailForwarder","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"wsu2059q","description":"监听邮件适配器并将邮件转发到其他平台的 ErisPulse 模块","package":"ErisPulse-EmailForwarder","has_config":false},{"name":"DFAFilter","type":"module","enabled":true,"loaded":true,"version":"2.0.0","author":"wsu2059q","description":"基于DFA算法的敏感词过滤模块，支持实时检测、自动替换和动态更新词库","package":"ErisPulse-DFAFilter","has_config":false},{"name":"GitHubWebhook","type":"module","enabled":true,"loaded":true,"version":"1.2.1","author":"wsu2059","description":"GitHub Webhook 聚合器模块，支持将 GitHub 事件转发到聊天平台","package":"ErisPulse-GitHubWebhook","has_config":false},{"name":"NekoCare","type":"module","enabled":true,"loaded":true,"version":"2.2.1","author":"wsu2059q, lin","description":"NekoCare - 虚拟猫猫养成模块","package":"ErisPulse-NekoCare","has_config":false},{"name":"InteractiveTest","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"ErisPulse 交互式对话与 OneBot12 消息构建器功能测试模块，类似echo模块但功能更强大","package":"ErisPulse-InteractiveTest","has_config":false},{"name":"ChatSonar","type":"module","enabled":true,"loaded":true,"version":"1.2.5","author":"wsu2059q","description":"消息声呐 - 可视化群聊社交距离与岛屿群落","package":"ErisPulse-ChatSonar","has_config":false},{"name":"UniBind","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"wsu2059q","description":"跨平台用户身份绑定模块，通过验证码关联不同平台的同一用户","package":"ErisPulse-UniBind","has_config":false},{"name":"BiliParser","type":"module","enabled":true,"loaded":true,"version":"1.1.1","author":"wsu2059q","description":"B站视频解析模块，自动解析消息中的B站视频链接并展示详细信息","package":"ErisPulse-BiliParser","has_config":false},{"name":"RssReader","type":"module","enabled":true,"loaded":true,"version":"1.1.2","author":"wsu2059q","description":"RSS订阅器模块——在聊天中订阅任意RSS/Atom源，自动推送更新","package":"ErisPulse-RssReader","has_config":false},{"name":"Raffle","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"ErisPulse","description":"General raffle module with Dashboard visualization, keyword signup & draw animation","package":"ErisPulse-Raffle","has_config":false},{"name":"AdapterConfig","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"ErisPulse","description":"Dashboard extension for visually configuring adapter parameters","package":"ErisPulse-AdapterConfig","has_config":false},{"name":"DashChat","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"跨平台实时消息收发模块，提供一个类即时通讯的聊天界面，支持用户在仪表盘内与各个平台进行对话","package":"ErisPulse-DashChat","has_config":false},{"name":"Echo","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"Echo - 回显消息内容，支持文本、图片等多种类型，支持引用回显","package":"ErisPulse-Echo","has_config":false},{"name":"MyServer","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"服务器管理模块 - 支持远程监控、WebSocket终端、Dashboard管理","package":"ErisPulse-MyServer","has_config":false},{"name":"CopyCat","type":"module","enabled":true,"loaded":true,"version":"1.0.1","author":"樱城の心","description":"复读机模块 - 检测群聊/私聊中连续重复消息并自动复读","package":"ErisPulse-CopyCat","has_config":false},{"name":"RateLimiter","type":"module","enabled":true,"loaded":true,"version":"1.0.0","author":"樱城の心","description":"ErisPulse message rate limiting module to prevent spam, supports fixed/sliding window, multi-dimensional limiting, and whitelist immunity","package":"ErisPulse-RateLimiter","has_config":false},{"name":"MsgCounter","type":"module","enabled":true,"loaded":true,"version":"1.1.0","author":"Future Tasks","description":"一个用于统计消息的模块，末日水系列机器人同款","package":"ErisPulse-MsgCounter","has_config":false},{"name":"Takumi","type":"module","enabled":true,"loaded":true,"version":"1.2.0","author":"ccd2s","description":"Use takumi-py to quickly render images.","package":"ErisPulse-Takumi","has_config":false}];
-var _ADAPTERS_LIST = [{"name":"Yunhu","type":"adapter","enabled":true,"loaded":true,"version":"4.2.0","author":"wsu2059q","description":"ErisPulse Yunhu adapter — enterprise IM over WebSocket/Webhook","package":"ErisPulse-YunhuAdapter"},{"name":"OneBot11","type":"adapter","enabled":true,"loaded":true,"version":"4.1.2","author":"wsu2059q","description":"ErisPulse OneBot11 adapter — compatible with any OneBot v11 implementation","package":"ErisPulse-OneBot11Adapter"},{"name":"OneBot12","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"wsu2059q","description":"ErisPulse OneBot12 adapter — baseline protocol, multi-account & dual-mode","package":"ErisPulse-OneBot12Adapter"},{"name":"Telegram","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Telegram adapter — Bot API with multi-account & rich media","package":"ErisPulse-TelegramAdapter","has_config":true,"has_accounts":false},{"name":"Email","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Email adapter — turn any mailbox into a Bot","package":"ErisPulse-EmailAdapter"},{"name":"YunhuUser","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"wsu2059q","description":"ErisPulse Yunhu-User adapter — driven by user-account protocol","package":"ErisPulse-YunhuUserAdapter"},{"name":"sandbox","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"ErisPulse","description":"ErisPulse Sandbox adapter — test your Bot in a web UI, zero setup","package":"ErisPulse-SandboxAdapter"},{"name":"Kook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ShanFish","description":"ErisPulse Kook adapter — messages, KMarkdown & cards","package":"ErisPulse-KookAdapter","has_config":true,"has_accounts":true},{"name":"Discord","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"ErisPulse","description":"ErisPulse Discord adapter — Gateway WS + REST API v10","package":"ErisPulse-DiscordAdapter"},{"name":"WechatMp","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ErisPulse","description":"ErisPulse WeChat MP adapter — webhook callback + customer/template messages","package":"ErisPulse-WechatMpAdapter"},{"name":"Matrix","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059","description":"ErisPulse Matrix adapter — decentralized chat via long-polling sync","package":"ErisPulse-MatrixAdapter"},{"name":"QQBot","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"wsu2059","description":"ErisPulse QQ Official Bot adapter — groups, DMs & channels","package":"ErisPulse-QQBotAdapter"},{"name":"Ideaura","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Ideaura (Allons) adapter — multi-scenario chat platform","package":"ErisPulse-Ideaura"},{"name":"Webhook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Webhook adapter — a low-code HTTP bridge to any system","package":"ErisPulse-WebhookAdapter"},{"name":"Terminal","type":"adapter","enabled":true,"loaded":true,"version":"1.0.0","author":"ErisPulse","description":"ErisPulse Terminal adapter — the terminal is the chat, zero-config","package":"ErisPulse-TerminalAdapter"}];
+var _ADAPTERS_LIST = [{"name":"Yunhu","type":"adapter","enabled":true,"loaded":true,"version":"4.2.0","author":"wsu2059q","description":"ErisPulse Yunhu adapter — enterprise IM over WebSocket/Webhook","package":"ErisPulse-YunhuAdapter"},{"name":"OneBot11","type":"adapter","enabled":true,"loaded":true,"version":"4.1.2","author":"wsu2059q","description":"ErisPulse OneBot11 adapter — compatible with any OneBot v11 implementation","package":"ErisPulse-OneBot11Adapter"},{"name":"SnowLuma","type":"adapter","enabled":true,"loaded":true,"version":"0.3.2","author":"ErisPulse","description":"ErisPulse SnowLuma adapter — NTQQ hook, OneBot v11, NapCat compatible","package":"ErisPulse-SnowLumaAdapter","has_accounts":true},{"name":"OneBot12","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"wsu2059q","description":"ErisPulse OneBot12 adapter — baseline protocol, multi-account & dual-mode","package":"ErisPulse-OneBot12Adapter"},{"name":"Telegram","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Telegram adapter — Bot API with multi-account & rich media","package":"ErisPulse-TelegramAdapter","has_config":true,"has_accounts":false},{"name":"Email","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059q","description":"ErisPulse Email adapter — turn any mailbox into a Bot","package":"ErisPulse-EmailAdapter"},{"name":"YunhuUser","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"wsu2059q","description":"ErisPulse Yunhu-User adapter — driven by user-account protocol","package":"ErisPulse-YunhuUserAdapter"},{"name":"sandbox","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"ErisPulse","description":"ErisPulse Sandbox adapter — test your Bot in a web UI, zero setup","package":"ErisPulse-SandboxAdapter"},{"name":"Kook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ShanFish","description":"ErisPulse Kook adapter — messages, KMarkdown & cards","package":"ErisPulse-KookAdapter","has_config":true,"has_accounts":true},{"name":"Discord","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"ErisPulse","description":"ErisPulse Discord adapter — Gateway WS + REST API v10","package":"ErisPulse-DiscordAdapter"},{"name":"WechatMp","type":"adapter","enabled":true,"loaded":true,"version":"4.0.0","author":"ErisPulse","description":"ErisPulse WeChat MP adapter — webhook callback + customer/template messages","package":"ErisPulse-WechatMpAdapter"},{"name":"Matrix","type":"adapter","enabled":true,"loaded":true,"version":"4.1.0","author":"wsu2059","description":"ErisPulse Matrix adapter — decentralized chat via long-polling sync","package":"ErisPulse-MatrixAdapter"},{"name":"QQBot","type":"adapter","enabled":true,"loaded":true,"version":"4.0.2","author":"wsu2059","description":"ErisPulse QQ Official Bot adapter — groups, DMs & channels","package":"ErisPulse-QQBotAdapter"},{"name":"Ideaura","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Ideaura (Allons) adapter — multi-scenario chat platform","package":"ErisPulse-Ideaura"},{"name":"Webhook","type":"adapter","enabled":true,"loaded":true,"version":"4.0.1","author":"ErisPulse","description":"ErisPulse Webhook adapter — a low-code HTTP bridge to any system","package":"ErisPulse-WebhookAdapter"},{"name":"Terminal","type":"adapter","enabled":true,"loaded":true,"version":"1.0.0","author":"ErisPulse","description":"ErisPulse Terminal adapter — the terminal is the chat, zero-config","package":"ErisPulse-TerminalAdapter"}];
 var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2.7.0", "2.6.3.dev0", "2.6.3", "2.6.2.dev1", "2.6.2", "2.6.1.dev0", "2.6.1", "2.6.0.dev1", "2.6.0.dev0", "2.6.0", "2.5.5", "2.5.4", "2.5.3", "2.5.2.dev4", "2.5.2.dev3", "2.5.2.dev2", "2.5.2.dev1", "2.5.2.dev0", "2.5.2", "2.5.1", "2.5.0.dev2", "2.5.0.dev1", "2.5.0.dev0", "2.5.0", "2.4.8", "2.4.7", "2.4.6.dev6", "2.4.6.dev5", "2.4.6.dev4", "2.4.6.dev3", "2.4.6.dev2", "2.4.6.dev1", "2.4.6.dev0", "2.4.6", "2.4.5.dev3", "2.4.5.dev2", "2.4.5.dev1", "2.4.5.dev0", "2.4.5", "2.4.4", "2.4.3.dev1", "2.4.3.dev0", "2.4.3", "2.4.2.dev1", "2.4.2.dev0", "2.4.2", "2.4.1"];
 
     var API_MAP = {};
@@ -206,6 +206,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/status'] = function () {
         return _json({
             framework: { version: '2.8.3', python_version: '3.13.0' },
+            dashboard_version: '2.7.3',
             adapters: {
                 Yunhu: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 10, info: { user_name: 'YunhuBot', nickname: 'YunhuBot' } } } },
                 OneBot11: { status: 'started', bots: { bot_001: { status: 'online', last_active: NOW - 120, info: { user_name: 'OneBot11', nickname: 'OneBot11' } } } },
@@ -366,7 +367,7 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/audit'] = function () { return _json({ logs: _genAudit(20) }); };
     API_MAP['/api/audit/clear'] = function () { return _json({ success: true }); };
 
-    var _mockDashCfg = { title: 'ErisPulse Dashboard', max_event_log: 500, token: '***', login_lockout_enabled: true, login_lockout_max_fails: 10, login_lockout_window: 60 };
+    var _mockDashCfg = { title: 'ErisPulse Dashboard', max_event_log: 500, default_mirror: '', token: '***', login_lockout_enabled: true, login_lockout_max_fails: 10, login_lockout_window: 60 };
     function _mockConfig() {
         return {
             config: {
@@ -391,6 +392,10 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                 if (b && b.key && String(b.key).indexOf('Dashboard.') === 0) {
                     var k = String(b.key).split('.').slice(1).join('.');
                     if (k && k !== 'token') _mockDashCfg[k] = b.value;
+                }
+                // 首次设置向导：默认镜像源（后端 PipOps 安装/升级回落用）
+                if (b && b.key === 'ErisPulse_Dashboard.default_mirror') {
+                    _mockDashCfg.default_mirror = String(b.value || '');
                 }
             } catch (e) {}
             return _json({ success: true });
@@ -892,6 +897,131 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
             }},
             accounts: { default: { enabled: true, mode: 'server', url: 'ws://127.0.0.1:3001', token: '', server_path: '/' } }
         },
+        SnowLuma: {
+                "config_key": "SnowLuma_Adapter",
+                "has_config": true,
+                "has_accounts": true,
+                "schema": {
+                        "fields": {}
+                },
+                "values": {},
+                "account_schema": {
+                        "fields": {
+                                "mode": {
+                                        "type": "string",
+                                        "widget": "select",
+                                        "description": "连接模式: client(主动连WS) / server(反向WS) / http(HTTP API+轮询) / webhook(HTTP API+上报)",
+                                        "group": "connection",
+                                        "order": 1,
+                                        "options": [
+                                                {
+                                                        "label": "Client",
+                                                        "value": "client"
+                                                },
+                                                {
+                                                        "label": "Server",
+                                                        "value": "server"
+                                                },
+                                                {
+                                                        "label": "HTTP",
+                                                        "value": "http"
+                                                },
+                                                {
+                                                        "label": "Webhook",
+                                                        "value": "webhook"
+                                                }
+                                        ]
+                                },
+                                "url": {
+                                        "type": "string",
+                                        "description": "Client 模式的 WebSocket 地址（SnowLuma 默认 ws://127.0.0.1:3001）",
+                                        "group": "connection",
+                                        "order": 2,
+                                        "show_if": {
+                                                "field": "mode",
+                                                "op": "eq",
+                                                "value": "client"
+                                        }
+                                },
+                                "server_path": {
+                                        "type": "string",
+                                        "description": "Server 模式的 WebSocket 路径",
+                                        "group": "connection",
+                                        "order": 3,
+                                        "show_if": {
+                                                "field": "mode",
+                                                "op": "eq",
+                                                "value": "server"
+                                        }
+                                },
+                                "http_url": {
+                                        "type": "string",
+                                        "description": "http/webhook 模式的 API 地址",
+                                        "group": "connection",
+                                        "order": 4,
+                                        "show_if": {
+                                                "field": "mode",
+                                                "op": "in",
+                                                "value": [
+                                                        "http",
+                                                        "webhook"
+                                                ]
+                                        }
+                                },
+                                "poll_interval": {
+                                        "type": "integer",
+                                        "description": "http 模式事件轮询间隔（秒）",
+                                        "group": "connection",
+                                        "order": 5,
+                                        "show_if": {
+                                                "field": "mode",
+                                                "op": "eq",
+                                                "value": "http"
+                                        }
+                                },
+                                "webhook_path": {
+                                        "type": "string",
+                                        "description": "webhook 模式上报路由前缀",
+                                        "group": "connection",
+                                        "order": 6,
+                                        "show_if": {
+                                                "field": "mode",
+                                                "op": "eq",
+                                                "value": "webhook"
+                                        }
+                                },
+                                "token": {
+                                        "type": "string",
+                                        "secret": true,
+                                        "description": "访问令牌（Bearer 认证）",
+                                        "group": "auth",
+                                        "order": 7
+                                }
+                        }
+                },
+                "accounts": {
+                        "小eris": {
+                                "enabled": true,
+                                "mode": "client",
+                                "url": "ws://127.0.0.1:3001",
+                                "token": "",
+                                "server_path": "/",
+                                "http_url": "http://127.0.0.1:3000",
+                                "poll_interval": 1.0,
+                                "webhook_path": "/snowluma_{account}"
+                        },
+                        "Amer": {
+                                "enabled": true,
+                                "mode": "client",
+                                "url": "ws://192.168.1.100:3001",
+                                "token": "",
+                                "server_path": "/",
+                                "http_url": "http://127.0.0.1:3000",
+                                "poll_interval": 1.0,
+                                "webhook_path": "/snowluma_{account}"
+                        }
+                }
+        },
         Discord: {
             config_key: 'Discord', has_config: false, has_accounts: true,
             schema: { fields: {} },
@@ -980,8 +1110,22 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                         } catch (e) { }
                         return _json({ success: true });
                     }
-                    if (aSub && init && init.method === 'DELETE') return _json({ success: true });
-                    if (init && init.method === 'PUT') return _json({ success: true });
+                    if (aSub && init && init.method === 'DELETE') {
+                        // 删除账户：落盘（移除对应键），保持与真实后端一致
+                        try {
+                            var delName = decodeURIComponent(aSub.slice(1));
+                            if (aCfg.accounts) delete aCfg.accounts[delName];
+                        } catch (e) { }
+                        return _json({ success: true });
+                    }
+                    if (init && init.method === 'PUT') {
+                        // 保存账户（含重命名迁移 / .bots→.accounts 场景）：整体写回
+                        try {
+                            var putBody = JSON.parse(init.body || '{}');
+                            if (putBody.accounts) aCfg.accounts = putBody.accounts;
+                        } catch (e) { }
+                        return _json({ success: true });
+                    }
                     return _json({
                         schema: aCfg.account_schema,
                         accounts: aCfg.accounts || {},

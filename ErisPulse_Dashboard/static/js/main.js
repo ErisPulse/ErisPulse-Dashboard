@@ -19,7 +19,8 @@ import * as m_components_update_hint from "./components/update-hint.js";
 import * as m_components_lang_hint from "./components/lang-hint.js";
 import * as m_components_install_guide from "./components/install-guide.js";
 import * as m_components_search_palette from "./components/search-palette.js";
-import * as m_components_onboarding_card from "./components/onboarding-card.js";import * as m_components_status_icon from "./components/status-icon.js";
+import * as m_components_onboarding_card from "./components/onboarding-card.js";
+import * as m_components_first_run from "./components/first-run-setup.js";import * as m_components_status_icon from "./components/status-icon.js";
 import * as m_components_ws_inspector from "./components/ws-inspector.js";
 import * as m_core_router from "./core/router.js";
 import * as m_core_moduleviews from "./core/moduleviews.js";
@@ -116,6 +117,10 @@ for (const ns of __namespaces) Object.assign(window, ns);
         m_components_update_hint.echoDashboardVersion(d.dashboard_version);
     })
     .catch(function () {});
+  // 首次进入：三步初始设置（语言 / 默认镜像源 / 页面导览），完成或跳过后不再弹出
+  setTimeout(function () {
+    m_components_first_run.maybeShowFirstRunSetup();
+  }, 1500);
   // 滚动条显隐档位（防 FOUC：与主题同批挂载）
   if (typeof applyScrollbarMode === "function") applyScrollbarMode(getScrollbarMode());
   // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）

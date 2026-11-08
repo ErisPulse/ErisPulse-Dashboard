@@ -1414,6 +1414,15 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '<span class="account-card-name">' +
     esc(accountName) +
     "</span>" +
+    '<button class="btn-icon account-icon-btn account-icon-rename" onclick="startRenameAccount('' +
+    esc(platform) +
+    "','" +
+    esc(accountName) +
+    '', this)" title="' +
+    esc(t("account_rename_action")) +
+    '" aria-label="' +
+    esc(t("account_rename_action")) +
+    '"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>' +
     '<div style="flex:1"></div>' +
     '<button class="btn-icon cfg-save-btn account-icon-btn account-icon-save" data-cfg-prefix="accounts.' +
     esc(accountName) +
@@ -1827,5 +1836,64 @@ export async function promptAdapterRestart(platform) {
     toast(t("adapter_restarted"), "ok");
   } else {
     toast(t("save_failed") + ": " + (r?.error || t("unknown_error")), "er");
+  }
+}
+
+
+// 账户重命名：内联编辑；保存为整字典迁移（复制数据到新键、删除旧键后 PUT）
+export function startRenameAccount(platform, accountName, el) {
+  var header = el.closest(".account-card-header");
+  var span = header && header.querySelector(".account-card-name");
+  if (!span || span.querySelector("input")) return;
+  var oldName = span.textContent;
+  span.innerHTML = '<input class="fw-input account-rename-input">';
+  var input = span.querySelector("input");
+  input.value = oldName;
+  input.focus();
+  input.select();
+  var finished = false;
+  var done = async function (commit) {
+    if (finished) return;
+    finished = true;
+    input.onkeydown = null;
+    input.onblur = null;
+    var newName = (input.value || "").trim();
+    if (!commit || !newName || newName === oldName) {
+      span.textContent = oldName;
+      return;
+    }
+    var d = await api(
+      "/api/adapter/" + encodeURIComponent(platform) + "/accounts"
+    );
+    if (d && d.accounts && d.accounts[newName] !== undefined) {
+      toast(t("account_wizard_name_exists"), "er");
+      span.textContent = oldName;
+      return;
+    }
+    var accounts = (d && d.accounts) || {};
+    accounts[newName] = accounts[oldName] || { enabled: true, name: "" };
+    delete accounts[oldName];
+    var r = await api(
+      "/api/adapter/" + encodeURIComponent(platform) + "/accounts",
+      { method: "PUT", body: JSON.stringify({ accounts: accounts }) }
+    );
+    if (r && r.success) {
+      toast(t("account_renamed") + ": " + newName, "ok");
+      if (typeof loadAdapterAccounts === "function")
+        loadAdapterAccounts(platform);
+      else span.textContent = newName;
+    } else {
+      toast(t("save_failed") + ": " + ((r && r.error) || ""), "er");
+      span.textContent = oldName;
+    }
+  };
+  input.onkeydown = function (e) {
+    if (e.key === "Enter") done(true);
+    if (e.key === "Escape") done(false);
+  };
+  input.onblur = function () {
+    setTimeout(function () {
+      done(true);
+    }, 120);
   }
 }

@@ -458,14 +458,14 @@ select:focus {
 
 /* 减少动画模式 */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) *,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) *::before,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-    .page {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .page {
         opacity: 1;
     }
 }
@@ -587,9 +587,9 @@ select:focus {
 
 /* 减少动画 */
 @media (prefers-reduced-motion: reduce) {
-    .splash.hide,
-    .splash.hide .splash-content,
-    .app.authed {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .splash.hide,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .splash.hide .splash-content,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .app.authed {
         animation: none !important;
     }
     .splash.hide {

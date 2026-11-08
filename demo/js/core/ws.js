@@ -1,5 +1,10 @@
 // ErisPulse Dashboard – core/ws
 
+import {
+  promptDashboardRefresh,
+  requestDashboardReload,
+} from "../components/update-hint.js";
+
 // 是否为 Dashboard 自身的包名
 function isDashboardPkg(s) {
   return /erispulse[-_]dashboard/i.test(s || "");
@@ -29,21 +34,8 @@ function clearFwUpdateIntent() {
     localStorage.removeItem("ep_fw_task");
   } catch (e) {}
 }
-// Dashboard 更新完成后引导刷新：由用户确认（底部引导条作为未刷新时的持久入口）
-var _dashRefreshPromptShown = false;
-function promptDashboardRefresh() {
-  if (_dashRefreshPromptShown) return;
-  _dashRefreshPromptShown = true;
-  try { showUpdateHint("dashboard", ""); } catch (e) {}
-  toast(t("dashboard_updated_reload"), "ok");
-  confirm2(t("dashboard_updated_reload"), t("dashboard_updated_refresh_confirm")).then(function (ok) {
-    if (!ok) return;
-    try { sessionStorage.setItem("ep_dash_updated", "1"); } catch (e) {}
-    clearUpdateHint();
-    location.href =
-      location.pathname + "?_r=" + Date.now() + (location.hash || "");
-  });
-}
+// promptDashboardRefresh / requestDashboardReload：
+// 实现见 components/update-hint.js（文件顶部 import，升级确认流共用）
 
 export function wsConnect() {
   if (ws) {
@@ -218,8 +210,31 @@ export function wsConnect() {
         }
         loadModules();
       } else if (m.type === "dashboard_reloaded") {
-        // 后端已完成 Dashboard 模块重载：引导用户刷新（确认制，不自动刷）
-        promptDashboardRefresh();
+        // 用户确认触发的重载完成：直接强刷拿到新版（意图已在标记里确认过）
+        var userInitiated = false;
+        try {
+          userInitiated = sessionStorage.getItem("ep_dash_reloading") === "1";
+          sessionStorage.removeItem("ep_dash_reloading");
+        } catch (e) {}
+        if (userInitiated) {
+          try { sessionStorage.setItem("ep_dash_updated", "1"); } catch (e) {}
+          clearUpdateHint();
+          location.href =
+            location.pathname + "?_r=" + Date.now() + (location.hash || "");
+        } else {
+          promptDashboardRefresh();
+        }
+      } else if (m.type === "modules_hot_reloaded") {
+        // 升级后的自动热重载结果：成功项轻提示；失败项醒目提示需重启框架
+        var hr = m.data || {};
+        var okNames = (hr.reloaded || []).join("、");
+        var badNames = (hr.failed || []).join("、");
+        if (okNames) toast(t("modules_hot_reloaded_ok").replace("{n}", okNames), "ok");
+        if (badNames)
+          toast(
+            t("modules_hot_reloaded_failed").replace("{n}", badNames),
+            "er",
+          );
       } else if (m.type === "ping") {
         ws.send(JSON.stringify({ type: "pong" }));
       } else if (m.type === "views_changed") {

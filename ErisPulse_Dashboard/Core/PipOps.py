@@ -188,6 +188,16 @@ class PipOpsMixin:
         index_url: str = None,
         extra_args: str = None,
     ):
+        # 未显式指定镜像时回落默认镜像源（ErisPulse_Dashboard.default_mirror，
+        # 首次设置向导/配置可写），国内网络直连 PyPI 易超时
+        if not index_url:
+            try:
+                index_url = (
+                    self.sdk.config.getConfig("ErisPulse_Dashboard.default_mirror")
+                    or None
+                )
+            except Exception:
+                index_url = None
         backend = self._get_pkg_manager().get_pip_backend()
         cmd = backend + ["install"]
         if force:
@@ -263,8 +273,18 @@ class PipOpsMixin:
             t_out.start()
             t_err.start()
 
+            # 大包（如 Dashboard 16MB）在国内直连 PyPI 时下载较慢，
+            # 超时默认 15 分钟，可用 ErisPulse_Dashboard.install_timeout 配置调整
+            timeout_s = 900
             try:
-                proc.wait(timeout=300)
+                timeout_s = int(
+                    self.sdk.config.getConfig("ErisPulse_Dashboard.install_timeout")
+                    or 900
+                )
+            except Exception:
+                pass
+            try:
+                proc.wait(timeout=timeout_s)
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
@@ -275,7 +295,10 @@ class PipOpsMixin:
                         "task_id": task_id,
                         "status": "error",
                         "packages": packages,
-                        "message": "Install timed out (5 min)",
+                        "message": (
+                            f"Install timed out ({timeout_s // 60} min) — "
+                            "try selecting a mirror (Tsinghua/Aliyun) in the store"
+                        ),
                     }
                 )
                 return
@@ -436,8 +459,24 @@ class PipOpsMixin:
         index_url: str = None,
         extra_args: str = None,
     ):
+        if not index_url:
+            try:
+                index_url = (
+                    self.sdk.config.getConfig("ErisPulse_Dashboard.default_mirror")
+                    or None
+                )
+            except Exception:
+                index_url = None
         backend = self._get_pkg_manager().get_pip_backend()
         cmd = backend + ["install", "--upgrade"]
+        # 大包国内直连 PyPI 下载慢：超时默认 15 分钟，可配置（同 install 路径）
+        timeout_s = 900
+        try:
+            timeout_s = int(
+                self.sdk.config.getConfig("ErisPulse_Dashboard.install_timeout") or 900
+            )
+        except Exception:
+            pass
         # git 直装没有可比较的版本号变化（pip 按版本号判断是否重装，同版本号的新
         # 提交会被 "already satisfied" 跳过）：强制重装该包本身，--no-deps 避免
         # 连带重装依赖（含运行中的框架自身）
@@ -527,7 +566,7 @@ class PipOpsMixin:
             t_err.start()
 
             try:
-                proc.wait(timeout=300)
+                proc.wait(timeout=timeout_s)
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
@@ -538,7 +577,10 @@ class PipOpsMixin:
                         "task_id": task_id,
                         "status": "error",
                         "packages": packages,
-                        "message": "Upgrade timed out (5 min)",
+                        "message": (
+                            f"Upgrade timed out ({timeout_s // 60} min) — "
+                            "try selecting a mirror (Tsinghua/Aliyun) in the store"
+                        ),
                     }
                 )
                 return

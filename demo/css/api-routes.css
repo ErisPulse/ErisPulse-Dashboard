@@ -279,8 +279,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .route-group-card .route-group-chevron,
-    .route-row {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .route-group-card .route-group-chevron,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .route-row {
         transition: none;
     }
 }

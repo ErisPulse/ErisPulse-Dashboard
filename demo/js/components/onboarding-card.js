@@ -108,6 +108,14 @@ export function updateOnboardingCard(adapters) {
   var remaining = steps.filter(function (s) {
     return !s.done;
   }).length;
+  // 主 CTA：第一个未完成且可跳转的步骤，收敛到卡底单一按钮（替代行内散落小按钮）
+  var firstTodo = null;
+  for (var i = 0; i < steps.length; i++) {
+    if (!steps[i].done && steps[i].cta) {
+      firstTodo = steps[i];
+      break;
+    }
+  }
   var stepsHtml = steps
     .map(function (s, i) {
       return (
@@ -120,17 +128,23 @@ export function updateOnboardingCard(adapters) {
         '<span class="onboarding-step-label">' +
         esc(s.label) +
         "</span>" +
-        (s.done || !s.cta
-          ? ""
-          : '<button class="btn btn-secondary btn-xs" onclick="' +
-            (s.run ? s.run + "()" : "go('" + s.page + "')") +
-            '">' +
-            esc(s.cta) +
-            "</button>") +
         "</div>"
       );
     })
     .join("");
+  var footHtml =
+    '<div class="onboarding-foot">' +
+    '<span class="onboarding-progress">' +
+    esc(t("onboarding_progress").replace("{n}", remaining)) +
+    "</span>" +
+    (firstTodo
+      ? '<button class="btn btn-primary btn-sm" onclick="' +
+        (firstTodo.run ? firstTodo.run + "()" : "go('" + firstTodo.page + "')") +
+        '">' +
+        esc(firstTodo.cta) +
+        "</button>"
+      : "") +
+    "</div>";
 
   host.innerHTML =
     '<div class="onboarding-card">' +
@@ -151,9 +165,7 @@ export function updateOnboardingCard(adapters) {
     '<div class="onboarding-steps">' +
     stepsHtml +
     "</div>" +
-    '<div class="onboarding-foot">' +
-    esc(t("onboarding_progress").replace("{n}", remaining)) +
-    "</div>" +
+    footHtml +
     "</div>";
 }
 
