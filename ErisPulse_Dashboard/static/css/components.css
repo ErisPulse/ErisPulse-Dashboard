@@ -204,14 +204,17 @@
     filter: none;
 }
 
+/* primary：accent 染色玻璃（accent 文字 + 弱底 + 同色描边），
+   与适配器配置 chip / 子导航选中态同一视觉语言；透感模式下不再压背景 */
 .btn-primary {
-    background: var(--accent-fill);
-    color: var(--fg-on-accent);
-    border: none;
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .btn-primary:hover {
-    background: var(--accent-fill-h);
+    background: color-mix(in srgb, var(--accent) 20%, var(--bg-t));
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
 }
@@ -233,15 +236,16 @@
     color: var(--accent);
 }
 
-/* danger：实底红，hover 朝主题文字色方向压深/提亮 */
+/* danger：er 染色玻璃（主题化 --er-bg/-c/-bd 令牌，明暗主题自适应） */
 .btn-danger {
-    background: var(--er-fill);
-    color: var(--fg-on-accent);
-    border: none;
+    background: var(--er-bg);
+    color: var(--er-c);
+    border: 1px solid var(--er-bd);
 }
 
 .btn-danger:hover {
-    background: color-mix(in srgb, var(--er-fill) 86%, var(--tx-p));
+    background: color-mix(in srgb, var(--er-c) 18%, var(--bg-t));
+    border-color: color-mix(in srgb, var(--er-c) 45%, transparent);
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
 }
@@ -1128,21 +1132,18 @@ select.form-select::-ms-expand {
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    border: 1.5px solid var(--bd);
-    color: var(--tx-t);
-    background: var(--bg-t);
+    color: var(--accent);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
 }
 
 .onboarding-step.done .onboarding-check {
-    border-color: transparent;
-    background: var(--ok-c);
-    color: var(--fg-on-accent);
+    color: var(--ok-c);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ok-c) 45%, transparent);
 }
 
 .onboarding-step.done .onboarding-step-label {
     color: var(--tx-t);
-    text-decoration: line-through;
-    text-decoration-color: color-mix(in srgb, var(--tx-t) 50%, transparent);
 }
 
 .onboarding-step .btn {
@@ -1156,11 +1157,23 @@ select.form-select::-ms-expand {
 }
 
 .onboarding-foot {
-    margin-top: 10px;
-    padding-top: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px dashed color-mix(in srgb, var(--bd) 60%, transparent);
     font-size: 12px;
     color: var(--tx-s);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.onboarding-progress {
+    flex: none;
+}
+
+.onboarding-foot .btn {
+    margin-left: auto;
 }
 
 @media (max-width: 768px) {

@@ -76,11 +76,11 @@
     background: var(--bg-s);
 }
 .node-dropdown-item.active {
-    background: var(--accent-fill);
-    color: #fff;
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--accent);
 }
 .node-dropdown-item.active .node-latency {
-    color: rgba(255, 255, 255, 0.7);
+    color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 .node-dropdown-label {
     flex: 1;

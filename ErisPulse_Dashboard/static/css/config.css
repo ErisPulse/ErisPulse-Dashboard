@@ -375,16 +375,6 @@
         box-sizing: border-box;
     }
 
-    .adapter-config-panel .account-card-footer {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .adapter-config-panel .account-card-footer .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
     .adapter-config-panel .fw-textarea {
         width: 100%;
         max-width: 100%;
@@ -412,17 +402,20 @@
     margin-top: 20px;
 }
 
-.adapter-section-heading {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--tx-t);
+/* 账户区块头：标题居左、添加账户居右 */
+.adapter-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
-.adapter-add-account-btn {
-    margin-top: 12px;
+.adapter-section-heading {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--tx-t);
 }
 
 .adapter-account-list {
@@ -468,11 +461,30 @@
     margin-bottom: 0;
 }
 
-.account-card-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 0 16px 12px;
+/* 账户卡图标按钮：保存（accent）/ 删除（er），弱底染色玻璃语言 */
+.account-icon-btn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--bd) 70%, transparent);
+}
+
+.account-icon-btn.account-icon-save {
+    color: var(--accent);
+}
+
+.account-icon-btn.account-icon-save:hover {
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.account-icon-btn.account-icon-delete {
+    color: var(--er-c);
+}
+
+.account-icon-btn.account-icon-delete:hover {
+    background: var(--er-bg);
+    border-color: var(--er-bd);
 }
 
 .fw-row-unknown {

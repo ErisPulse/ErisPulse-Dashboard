@@ -164,6 +164,15 @@ class ModulesOpsMixin:
 
     # ════════════════ 自升级重载 ════════════════
 
+    def request_dashboard_self_reload(self, delay: float = 2.0):
+        """
+        用户确认后的 Dashboard 自重载入口（升级后不再自动重载，见 PipOps）。
+
+        延迟只是为了先给前端返回响应；重载完成广播 dashboard_reloaded，
+        前端据其 sessionStorage 标记强刷页面。
+        """
+        self._schedule_dashboard_self_reload(delay)
+
     def _schedule_dashboard_self_reload(self, delay: float = 1.5):
         """
         升级涉及 Dashboard 自身：延迟卸载并重新加载模块，使新后端代码生效。
@@ -248,6 +257,9 @@ class ModulesOpsMixin:
         ) or not self._loop or self._loop.is_closed():
             return
 
+        reloaded_names: list = []
+        failed_names: list = []
+
         async def _reload_all():
             for name in module_targets:
                 if not self.sdk.module.is_enabled(name):
@@ -266,8 +278,10 @@ class ModulesOpsMixin:
                     if not reloaded:
                         await self.sdk.module.unload(name)
                         await self.sdk.module.load(name)
+                    reloaded_names.append(name)
                     self.logger.info(f"Module {name} reloaded after upgrade")
                 except Exception as e:
+                    failed_names.append(name)
                     self.logger.warning(f"Reload module {name} after upgrade failed: {e}")
             for name in adapter_targets:
                 if not self.sdk.adapter.is_enabled(name):
@@ -291,9 +305,21 @@ class ModulesOpsMixin:
                             await self.sdk.adapter.startup(name)
                         except Exception as e:
                             self.logger.warning(f"Adapter {name} restart failed: {e}")
+                            failed_names.append(name)
+                            continue
+                    reloaded_names.append(name)
                     self.logger.info(f"Adapter {name} reloaded after upgrade")
                 except Exception as e:
+                    failed_names.append(name)
                     self.logger.warning(f"Reload adapter {name} after upgrade failed: {e}")
+
+            # 结果广播：前端 toast 告知热重载结果（失败项提示需重启框架生效）
+            self._safe_broadcast(
+                {
+                    "type": "modules_hot_reloaded",
+                    "data": {"reloaded": reloaded_names, "failed": failed_names},
+                }
+            )
 
         asyncio.run_coroutine_threadsafe(_reload_all(), self._loop)
 

@@ -142,9 +142,9 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .stat-card .skel-ico,
-    .stat-card .skel-big,
-    .stat-card .skel-sm {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .stat-card .skel-ico,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .stat-card .skel-big,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .stat-card .skel-sm {
         animation: none;
     }
 }

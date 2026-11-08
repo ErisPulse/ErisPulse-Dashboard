@@ -109,6 +109,13 @@ for (const ns of __namespaces) Object.assign(window, ns);
   themepackRestore();
   applyFullCustomTheme();
   applyAnimStyle(getAnimStyle());
+  // Dashboard 版本回声：捕获绕过商店的手动 pip 安装（无升级广播），提示重启模块
+  api("/api/status")
+    .then(function (d) {
+      if (d && d.dashboard_version)
+        m_components_update_hint.echoDashboardVersion(d.dashboard_version);
+    })
+    .catch(function () {});
   // 滚动条显隐档位（防 FOUC：与主题同批挂载）
   if (typeof applyScrollbarMode === "function") applyScrollbarMode(getScrollbarMode());
   // 恢复保存的仪表盘标题（联动：appTitle / 标签页 / 侧边栏头部三者一致）

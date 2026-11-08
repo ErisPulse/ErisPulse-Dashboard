@@ -58,20 +58,27 @@ function _awManualForm(platform, schema, ctx) {
         ob = (b[1] || {}).order || 100;
       return oa - ob;
     });
+    // show_if 初始预计算的取值源：schema 默认值铺底（新增账户时 ctx.values
+    // 为空，mode 等依赖字段的默认值也要参与 show_if 求值，否则 url 等
+    // 条件字段在默认模式下不渲染，切换一次模式才出现）
+    var bindVals = {};
+    items.forEach(function (it) {
+      var d = (it[1] || {}).default;
+      if (d !== undefined) bindVals[it[0]] = d;
+    });
+    var cur = (ctx && ctx.values) || {};
+    for (var k in cur) bindVals[k] = cur[k];
     for (var i = 0; i < items.length; i++) {
       var fname = items[i][0],
         fschema = items[i][1] || {};
       if (fname === "enabled" || fname === "name") continue;
-      var fval =
-        ctx && ctx.values && ctx.values[fname] !== undefined
-          ? ctx.values[fname]
-          : fschema.default;
+      var fval = bindVals[fname] !== undefined ? bindVals[fname] : fschema.default;
       fieldsHtml += renderAdapterConfigField(
         fname,
         fschema,
         fval,
         "aw." + platform,
-        { fieldSave: false, bindValues: (ctx && ctx.values) || {} },
+        { fieldSave: false, bindValues: bindVals },
       );
     }
   }

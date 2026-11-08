@@ -1256,8 +1256,15 @@ export async function loadAdapterAccounts(platform) {
 
   var html =
     '<div id="adapterAccountsSection" class="adapter-accounts-section">' +
+    '<div class="adapter-section-head">' +
     '<div class="adapter-section-heading">' +
     t("adapter_accounts") +
+    "</div>" +
+    '<button class="btn btn-primary btn-sm" onclick="addAdapterAccount(\'' +
+    esc(platform) +
+    "')\">+ " +
+    t("add_account") +
+    "</button>" +
     "</div>" +
     '<div class="adapter-account-list">';
 
@@ -1316,13 +1323,6 @@ export async function loadAdapterAccounts(platform) {
       t("add_first_account") +
       "</button>" +
       "</div>";
-  } else {
-    html +=
-      '<button class="btn btn-primary btn-sm adapter-add-account-btn" onclick="addAdapterAccount(\'' +
-      esc(platform) +
-      "')\">+ " +
-      t("add_account") +
-      "</button>";
   }
   html += "</div>";
 
@@ -1415,13 +1415,28 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     esc(accountName) +
     "</span>" +
     '<div style="flex:1"></div>' +
-    '<button class="btn btn-danger btn-sm" onclick="removeAdapterAccount(\'' +
+    '<button class="btn-icon cfg-save-btn account-icon-btn account-icon-save" data-cfg-prefix="accounts.' +
+    esc(accountName) +
+    "." +
+    esc(platform) +
+    '." onclick="saveAdapterAccount(\'' +
     esc(platform) +
     "','" +
     esc(accountName) +
-    "')\">" +
-    t("remove_account") +
-    "</button>" +
+    '\')" title="' +
+    esc(t("save_adapter_config")) +
+    '" aria-label="' +
+    esc(t("save_adapter_config")) +
+    '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>' +
+    '<button class="btn-icon account-icon-btn account-icon-delete" onclick="removeAdapterAccount(\'' +
+    esc(platform) +
+    "','" +
+    esc(accountName) +
+    '\')" title="' +
+    esc(t("remove_account")) +
+    '" aria-label="' +
+    esc(t("remove_account")) +
+    '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
     "</div>" +
     '<div class="account-card-body" data-cfgbind-root data-cfgbind-prefix="accounts.' +
     esc(accountName) +
@@ -1430,17 +1445,6 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '">' +
     fieldsHtml +
     "</div>" +
-    '<div class="account-card-footer"><button class="btn btn-primary btn-sm cfg-save-btn" data-cfg-prefix="accounts.' +
-    esc(accountName) +
-    "." +
-    esc(platform) +
-    '." onclick="saveAdapterAccount(\'' +
-    esc(platform) +
-    "','" +
-    esc(accountName) +
-    "')\">" +
-    t("save_adapter_config") +
-    "</button></div>" +
     "</div>"
   );
 }

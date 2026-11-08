@@ -4,6 +4,38 @@
 var UPDATE_HINT_KEY = "ep_update_hint";
 var UPDATE_HINT_TTL = 24 * 60 * 60 * 1000; // 超过 24h 的未处理提示自动过期
 
+
+// 触发 Dashboard 模块自重载（升级后新版生效的唯一入口；与 core/ws.js 共用）：
+// 标记落 sessionStorage，重载完成广播 dashboard_reloaded 后按标记直接强刷
+export function requestDashboardReload() {
+  try { sessionStorage.setItem("ep_dash_reloading", "1"); } catch (e) {}
+  toast(t("dashboard_reloading"), "");
+  api("/api/modules/action", {
+    method: "POST",
+    body: JSON.stringify({ action: "reload", name: "Dashboard", type: "module" }),
+  })
+    .then(function (d) {
+      if (d && d.success) {
+        clearUpdateHint();
+        // 兜底强刷：重载期间 WS 可能断开收不到 dashboard_reloaded 广播
+        setTimeout(function () {
+          try { sessionStorage.setItem("ep_dash_updated", "1"); } catch (e) {}
+          location.href =
+            location.pathname + "?_r=" + Date.now() + (location.hash || "");
+        }, 4000);
+      } else {
+        // 404/旧后端：运行中的模块还没有重启入口，需重启框架后再试
+        try { sessionStorage.removeItem("ep_dash_reloading"); } catch (e) {}
+        toast(t("dashboard_reload_need_framework_restart"), "er");
+      }
+    })
+    .catch(function () {
+      try { sessionStorage.removeItem("ep_dash_reloading"); } catch (e) {}
+      toast(t("restart_failed"), "er");
+    });
+}
+window.requestDashboardReload = requestDashboardReload;
+
 export function getUpdateHint() {
   try {
     var raw = localStorage.getItem(UPDATE_HINT_KEY);
@@ -78,32 +110,29 @@ export function renderUpdateHint(hint) {
   bar.appendChild(actions);
 
   if (!isFw) {
-    // Dashboard 更新：主操作是刷新页面加载新版；重启框架仅作异常兜底
+    // Dashboard 更新：主操作是重启 Dashboard 模块应用新版（升级后不自动重载）
     var reloadBtn = document.createElement("button");
     reloadBtn.className = "btn btn-primary btn-xs update-hint-restart";
     reloadBtn.textContent = t("update_hint_reload_page");
     reloadBtn.onclick = function () {
-      clearUpdateHint();
-      location.href =
-        location.pathname + "?_r=" + Date.now() + (location.hash || "");
+      requestDashboardReload();
     };
     actions.appendChild(reloadBtn);
+  } else {
+    // 框架更新：仅提供框架重启按钮
+    var btn = document.createElement("button");
+    btn.className = "btn btn-primary btn-xs update-hint-restart";
+    btn.textContent = t("update_hint_restart");
+    btn.onclick = async function () {
+      var ok = await confirm2(t("restart"), t("restart_confirm"));
+      if (!ok) return;
+      clearUpdateHint();
+      toast(t("restart_success"), "");
+      var d = await api("/api/restart", { method: "POST" });
+      if (!d || !d.success) toast(t("restart_failed"), "er");
+    };
+    actions.appendChild(btn);
   }
-
-  var btn = document.createElement("button");
-  btn.className = isFw
-    ? "btn btn-primary btn-xs update-hint-restart"
-    : "btn btn-secondary btn-xs update-hint-restart";
-  btn.textContent = t("update_hint_restart");
-  btn.onclick = async function () {
-    var ok = await confirm2(t("restart"), t("restart_confirm"));
-    if (!ok) return;
-    clearUpdateHint();
-    toast(t("restart_success"), "");
-    var d = await api("/api/restart", { method: "POST" });
-    if (!d || !d.success) toast(t("restart_failed"), "er");
-  };
-  actions.appendChild(btn);
 
   var close = document.createElement("button");
   close.className = "btn-icon update-hint-close";
@@ -117,4 +146,26 @@ export function renderUpdateHint(hint) {
   requestAnimationFrame(function () {
     bar.classList.add("show");
   });
+}
+export function promptDashboardRefresh() {
+  if (_dashRefreshPromptShown) return;
+  _dashRefreshPromptShown = true;
+  try { showUpdateHint("dashboard", ""); } catch (e) {}
+  toast(t("dashboard_updated_reload"), "ok");
+}
+
+// 版本回声：捕获"绕过商店的手动 pip 安装"（这类更新不走任务管道，无任何广播）。
+// status.dashboard_version 与上次记录不同 → 提示重启模块应用后端新版；
+// store 升级场景由升级任务确认流先行处理，确认重启后 seen 更新，此处不再重复弹。
+export function echoDashboardVersion(v) {
+  if (!v) return;
+  var seen = null;
+  try { seen = localStorage.getItem("ep_dash_seen_ver"); } catch (e) {}
+  if (!seen) {
+    try { localStorage.setItem("ep_dash_seen_ver", v); } catch (e) {}
+    return;
+  }
+  if (seen === v) return;
+  toast(t("dashboard_version_changed_title").replace("{v}", v), "ok");
+  try { localStorage.setItem("ep_dash_seen_ver", v); } catch (e) {}
 }

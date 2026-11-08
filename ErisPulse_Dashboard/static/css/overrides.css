@@ -266,16 +266,20 @@ html[data-bg-effect="misty"] .header {
 }
 
 /* ─── 按钮 ─── */
+/* 与 components.css 的染色玻璃方案保持一致：accent 文字 + 弱底 + 同色描边，
+   不再实底填充（后加载文件会覆盖前者的 background，两处必须同步） */
 .btn-primary {
-    background: var(--accent-fill);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
     font-weight: 600;
     letter-spacing: 0.01em;
-    color: var(--fg-on-accent, white);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     transition: background-color 0.15s var(--ease-smooth), color 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth);
 }
 
 .btn-primary:hover {
-    background: var(--accent-fill-h);
+    background: color-mix(in srgb, var(--accent) 20%, var(--bg-t));
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
 }
@@ -950,12 +954,12 @@ input, textarea, select, button,
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .page.active {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .page.active {
         animation: none;
     }
 
-    .page.active .page-title,
-    .page.active .page-desc {
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .page.active .page-title,
+    html:not([data-anim="subtle"]):not([data-anim="playful"]) .page.active .page-desc {
         animation: none;
     }
 }

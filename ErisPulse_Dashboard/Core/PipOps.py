@@ -296,9 +296,8 @@ class PipOpsMixin:
                     }
                 )
                 self._dynamic_load_new_modules()
-                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
-                if _CoreHelpers._packages_contain_dashboard(packages):
-                    self._schedule_dashboard_self_reload()
+                # 升级涉及本模块时不再自动重载：是否应用新版由用户在
+                # Dashboard 点击"重启应用"确认（前端 promptDashboardRefresh）
             else:
                 self._install_tasks[task_id]["status"] = "error"
                 self._install_tasks[task_id]["error"] = "\n".join(combined_lines[-20:])
@@ -566,10 +565,7 @@ class PipOpsMixin:
                 reload_targets = installed_dists or packages
                 # 重载受升级影响的已注册模块（遵守 enabled 状态）
                 self._reload_upgraded_registered_modules(reload_targets)
-                # 升级涉及本模块时：延迟重载 Dashboard，使新后端代码生效
-                # （_reload_upgraded_registered_modules 会跳过 Dashboard，需单独处理）
-                if _CoreHelpers._packages_contain_dashboard(reload_targets):
-                    self._schedule_dashboard_self_reload()
+                # 升级涉及本模块时不再自动重载（同上，用户确认制）
                 self._safe_broadcast(
                     {"type": "module_changed", "data": {"action": "upgraded"}}
                 )
@@ -734,11 +730,7 @@ class PipOpsMixin:
                 installed_dists = self._parse_installed_dists(all_lines)
                 if installed_dists:
                     self._reload_upgraded_registered_modules(installed_dists)
-                # 本地文件安装涉及本模块时：延迟重载 Dashboard
-                if _CoreHelpers._packages_contain_dashboard(
-                    [filename]
-                ) or _CoreHelpers._packages_contain_dashboard(installed_dists):
-                    self._schedule_dashboard_self_reload()
+                # 本地文件安装涉及本模块时同样不自动重载（用户确认制，同远端安装）
             else:
                 self._install_tasks[task_id] = {
                     "status": "error",

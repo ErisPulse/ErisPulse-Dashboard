@@ -371,9 +371,9 @@ body.privacy-on .ev-item {
 }
 
 .type-btn.active {
-    border-color: var(--accent-fill);
-    background: var(--accent-fill);
-    color: #fff;
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--accent);
     box-shadow: none;
 }
 
@@ -724,8 +724,8 @@ body.privacy-on .ev-item {
 }
 
 .card-header .header-actions .btn-icon:hover {
-    background: var(--accent-fill);
-    color: #fff;
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--accent);
     transform: none;
 }
 

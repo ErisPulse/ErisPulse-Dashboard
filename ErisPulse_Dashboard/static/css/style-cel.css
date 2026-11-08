@@ -127,23 +127,26 @@ html[data-ui-style="cel"] .btn::after {
 html[data-ui-style="cel"] .btn:hover::after {
     left: 130%;
 }
+/* cel 手绘风：语义色走文字/描边而非实底填充，底与描边交给 .btn 统一 hover 链 */
 html[data-ui-style="cel"] .btn-primary {
-    background: var(--cel-red);
-    color: #ffffff;
+    background: var(--bg-t);
+    color: var(--cel-red);
 }
 html[data-ui-style="cel"] .btn-primary:hover {
-    background: var(--cel-red);
+    background: var(--bg-t);
+    color: var(--cel-red);
 }
 html[data-ui-style="cel"] .btn-secondary {
     background: var(--bg-t);
     color: var(--cel-ink);
 }
 html[data-ui-style="cel"] .btn-danger {
-    background: var(--cel-red);
-    color: #ffffff;
+    background: var(--bg-t);
+    color: var(--cel-red);
 }
 html[data-ui-style="cel"] .btn-danger:hover {
-    background: var(--cel-red);
+    background: var(--bg-t);
+    color: var(--cel-red);
 }
 
 /* ── 侧栏 / 顶栏：纸面 + 粗黑分隔 ── */

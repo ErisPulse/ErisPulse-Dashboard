@@ -315,8 +315,12 @@ class ApiModulesMixin:
             return JSONResponse({"success": True})
         elif action == "reload":
             if name == "Dashboard":
+                # 自重载会拆掉本 HTTP 服务：先返回成功，延迟执行
+                # （前端据 dashboard_reloaded 广播/兜底定时器刷新页面）
+                self._add_audit_log("reload_module", name, request)
+                self.request_dashboard_self_reload()
                 return JSONResponse(
-                    {"error": "Cannot reload Dashboard from dashboard"}, status_code=400
+                    {"success": True, "message": "reloading", "requires_restart": True}
                 )
             await self.sdk.module.unload(name)
             result = await self.sdk.module.load(name)

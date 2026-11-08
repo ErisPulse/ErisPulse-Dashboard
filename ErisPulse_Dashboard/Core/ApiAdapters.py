@@ -250,10 +250,16 @@ class ApiAdaptersMixin:
 
         config_key = adapter_instance._get_config_key()
         accounts_key = config_key + ".accounts"
-        old_accounts = self.sdk.config.getConfig(accounts_key)
-        if old_accounts is None:
-            accounts_key = config_key + ".bots"
-            old_accounts = self.sdk.config.getConfig(accounts_key) or {}
+        # 读取合并：.accounts 为准，存量 .bots（旧版键名）作基底并入，编辑不丢字段；
+        # 写入固定 .accounts——此前"回落写 .bots"会让旧格式用户的保存永远落在
+        # 运行时不再读取的死键上（表现为保存成功但 0 账户）
+        legacy_key = config_key + ".bots"
+        current = self.sdk.config.getConfig(accounts_key)
+        legacy = self.sdk.config.getConfig(legacy_key)
+        old_accounts = {
+            **(legacy if isinstance(legacy, dict) else {}),
+            **(current if isinstance(current, dict) else {}),
+        }
 
         merged_accounts = {}
         for aname, adata in accounts.items():
@@ -286,6 +292,11 @@ class ApiAdaptersMixin:
             )
 
         self.sdk.config.setConfig(accounts_key, merged_accounts)
+
+        # 存量迁移完成：清空旧 .bots 键（写空字典使其失活——.accounts 已存在时
+        # 各读取方的兼容回落不会再命中，空段仅作占位避免依赖删除语义）
+        if isinstance(legacy, dict) and legacy:
+            self.sdk.config.setConfig(legacy_key, {})
 
         reloaded = await self._reload_adapter_if_running(adapter_instance, platform)
 

@@ -24,8 +24,15 @@ class StatusMixin:
             version = importlib.metadata.version("ErisPulse")
         except importlib.metadata.PackageNotFoundError:
             version = "unknown"
+        try:
+            import importlib.metadata
+
+            dashboard_version = importlib.metadata.version("ErisPulse-Dashboard")
+        except Exception:
+            dashboard_version = ""
         return {
             "version": version,
+            "dashboard_version": dashboard_version,
             "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
             "platform": pf.system(),
             "is_windows": sys.platform == "win32",
