@@ -844,6 +844,7 @@
     fr_setup_finish: "完成設定",
     fr_setup_next: "下一步",
     fr_setup_skip: "跳過",
+    fr_sync_framework_lang: "同步設定框架語言",
     fr_setup_tour_hint: "跟著高亮引導逐個認識，或點擊卡片直接進入",
     fr_tour_page_desc: "頁面的主要功能區域，從這裡開始操作",
     fr_tour_start: "開始導覽",

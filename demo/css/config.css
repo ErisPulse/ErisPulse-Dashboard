@@ -943,3 +943,13 @@
 .fr-spot-full {
     background: rgba(10, 14, 22, 0.52);
 }
+
+.fr-sync-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--tx-s);
+    cursor: pointer;
+}

@@ -844,6 +844,7 @@
     fr_setup_finish: "設定を完了",
     fr_setup_next: "次へ",
     fr_setup_skip: "スキップ",
+    fr_sync_framework_lang: "フレームワークの言語も合わせて設定",
     fr_setup_tour_hint: "ハイライトに沿って各ページを確認、カードをクリックして直接移動もできます",
     fr_tour_page_desc: "ページの主要エリア。ここから操作を始めます",
     fr_tour_start: "ツアー開始",

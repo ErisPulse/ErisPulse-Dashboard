@@ -1,6 +1,6 @@
 // ErisPulse Dashboard – components/first-run-setup
-// 首次进入的三步初始设置：界面语言 → 默认 PyPI 镜像源 → 主要页面导览。
-// 导览每页两站：先高亮侧边栏入口，再切到该页高亮主要功能区。
+// 首次进入的两步初始设置：界面语言（可同步框架语言）→ 默认 PyPI 镜像源。
+// 完成后直接进入聚光导览：每页两站（侧边栏入口 → 页面主要功能区）。
 // 窄屏抽屉收起时自动展开侧边栏（仅导览代开的，结束时收回）。
 // 完成后写 localStorage(ep_setup_done)，不再弹出；设置页“系统”里可再次运行。
 
@@ -30,14 +30,14 @@ var LANGS = [
   { v: "ru", label: "Русский" },
 ];
 
-// 导览站点：sel 为侧边栏入口，pageSel 为该页内的主要功能区（缺失则跳过内容站）
+// 导览站点：sel 为侧边栏入口，pageSel 为该页内的主要功能区（运行时缺失则跳过内容站）
 var TOUR_PAGES = [
   {
     page: "dashboard",
     sel: '[data-page="dashboard"]',
     labelKey: "dashboard",
     descKey: "dashboard_desc",
-    pageSel: "#onboardingCard, .home-section-hd",
+    pageSel: "#statGrid",
   },
   {
     page: "event-stream",
@@ -65,7 +65,7 @@ var TOUR_PAGES = [
     sel: '[data-page="store"]',
     labelKey: "store",
     descKey: "store_desc",
-    pageSel: "#p-store .pkg-tabs",
+    pageSel: "#p-store .store-toolbar",
   },
   {
     page: "logs",
@@ -90,13 +90,6 @@ function frBuildSteps() {
     if (p.pageSel) steps.push({ type: "page", p: p });
   });
   return steps;
-}
-
-function frPageStepIndex(pg) {
-  for (var k = 0; k < _frSteps.length; k++) {
-    if (_frSteps[k].type === "nav" && _frSteps[k].p.page === pg) return k;
-  }
-  return 0;
 }
 
 function frOpenDrawer() {
@@ -190,7 +183,9 @@ function frRender(step, ctx) {
           "</option>"
         );
       }).join("") +
-      "</select>";
+      '</select><label class="fr-sync-row"><span class="switch"><input type="checkbox" id="frSyncLang" checked/><span class="switch-slider"></span></span><span class="fr-sync-text">' +
+      esc(t("fr_sync_framework_lang")) +
+      "</span></label>";
   } else if (step === 1) {
     bodyHtml =
       '<div class="fr-question">' +
@@ -211,28 +206,9 @@ function frRender(step, ctx) {
         );
       }).join("") +
       "</select>";
-  } else if (step === 2) {
-    bodyHtml =
-      '<div class="fr-question">' +
-      esc(t("fr_setup_tour_q")) +
-      '</div><div class="fr-tour-grid">' +
-      TOUR_PAGES.map(function (p) {
-        return (
-          '<button class="fr-tour-card" data-fr-page="' +
-          p.page +
-          '">' +
-          esc(t(p.labelKey)) +
-          '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
-          "</button>"
-        );
-      }).join("") +
-      '</div><div class="fr-tour-row"><span class="fr-desc" style="margin:0">' +
-      esc(t("fr_setup_tour_hint")) +
-      '</span><button class="btn btn-primary btn-sm" data-fr-tour>' +
-      esc(t("fr_tour_start")) +
-      "</button></div>";
   } else {
     frFinish();
+    frStartTour(0);
     return;
   }
 
@@ -243,9 +219,9 @@ function frRender(step, ctx) {
       esc(t("fr_setup_title")) +
       "</div>" +
       '<div class="fr-steps">' +
-      [0, 1, 2]
+      [0, 1]
         .map(function (n) {
-          return '<span class="' + (n <= step ? "on" : "") + '">' + (n + 1) + "/3</span>";
+          return '<span class="' + (n <= step ? "on" : "") + '">' + (n + 1) + "/2</span>";
         })
         .join("") +
       "</div>" +
@@ -257,24 +233,12 @@ function frRender(step, ctx) {
       esc(t("fr_setup_skip")) +
       "</button>" +
       '<button class="btn btn-primary btn-sm" data-fr-next>' +
-      esc(step === 2 ? t("fr_setup_finish") : t("fr_setup_next")) +
+      esc(step === 1 ? t("fr_setup_finish") : t("fr_setup_next")) +
       "</button>" +
       "</div></div></div>"
   );
   document.body.appendChild(ov);
 
-  ov.querySelectorAll(".fr-tour-card").forEach(function (btn) {
-    btn.onclick = function () {
-      var pg = btn.getAttribute("data-fr-page");
-      frFinish();
-      go(pg);
-      // 直达后从该页的导览站继续
-      _frSteps = frBuildSteps();
-      frStartTour(frPageStepIndex(pg) + 1);
-    };
-  });
-  var tourBtn = ov.querySelector("[data-fr-tour]");
-  if (tourBtn) tourBtn.onclick = frStartTour;
   ov.querySelector("[data-fr-skip]").onclick = frFinish;
   ov.querySelector("[data-fr-next]").onclick = function () {
     if (step === 0) {
@@ -285,6 +249,13 @@ function frRender(step, ctx) {
       } catch (e) {}
       if (typeof applyI18n === "function") applyI18n();
       ctx.lang = lang;
+      // 可选：把界面语言同步为框架语言（复用 /api/i18n/language）
+      if (ov.querySelector("#frSyncLang") && ov.querySelector("#frSyncLang").checked) {
+        api("/api/i18n/language", {
+          method: "POST",
+          body: JSON.stringify({ lang: lang }),
+        }).catch(function () {});
+      }
     } else if (step === 1) {
       var mirror = ov.querySelector("#frMirror").value;
       ctx.mirror = mirror;
@@ -299,7 +270,7 @@ function frRender(step, ctx) {
       try {
         localStorage.setItem("ep_default_mirror", mirror);
       } catch (e) {}
-    } else {
+      // 完成设置：直接进入聚光导览
       frFinish();
       frStartTour(0);
       return;
@@ -329,10 +300,12 @@ function frStartTour(startIdx) {
   };
   window.addEventListener("resize", _frReposition, { passive: true });
   window.addEventListener("scroll", _frReposition, true);
-  frTourGo(startIdx || 0);
+  frTourGo(typeof startIdx === "number" ? startIdx : 0);
 }
 
 function frTourGo(i) {
+  if (!_frSteps.length) _frSteps = frBuildSteps();
+  if (!_frSteps[i]) i = 0;
   _frStepIdx = i;
   var step = _frSteps[i];
   var p = step.p;
@@ -356,6 +329,15 @@ function frTourGo(i) {
     // 内容站：切到目标页；窄屏收回代开的抽屉以免挡住内容
     frCloseDrawerIfOurs();
     go(p.page, null, { force: true });
+    // 目标区域在该页不存在 → 跳过这一站
+    if (!document.querySelector(p.pageSel)) {
+      if (i === _frSteps.length - 1) {
+        frFinish();
+        return;
+      }
+      frTourGo(i + 1);
+      return;
+    }
     delay = 80;
   }
   var last = i === _frSteps.length - 1;
@@ -386,19 +368,22 @@ function frTourGo(i) {
   tip.classList.remove("tip-in");
   void tip.offsetWidth;
   tip.classList.add("tip-in");
+  // rAF 在后台页会被冻结，setTimeout 兜底保证定位必然执行
   requestAnimationFrame(frTourPlace);
+  setTimeout(frTourPlace, 40);
   if (delay) setTimeout(frTourPlace, delay);
 }
 
 // 屏蔽带围出洞口：带外点击全部落在 shield 上，洞内直达目标
+// conf 序：[id, top, left, width, height]
 function frPlaceShields(top, left, width, height) {
   var vw = window.innerWidth;
   var vh = window.innerHeight;
   var conf = [
     ["frShieldTop", 0, 0, vw, Math.max(0, top)],
-    ["frShieldLeft", 0, top, Math.max(0, left), height],
-    ["frShieldRight", left + width, top, Math.max(0, vw - left - width), height],
-    ["frShieldBottom", 0, top + height, vw, Math.max(0, vh - top - height)],
+    ["frShieldLeft", top, 0, height, Math.max(0, left)],
+    ["frShieldRight", top, left + width, height, Math.max(0, vw - left - width)],
+    ["frShieldBottom", top + height, 0, Math.max(0, vh - top - height), vw],
   ];
   conf.forEach(function (c) {
     var el = document.getElementById(c[0]);
@@ -422,6 +407,7 @@ function frTourPlace() {
   var el = document.querySelector(isNav ? p.sel : p.pageSel);
   var r = el ? el.getBoundingClientRect() : null;
   var spot = document.getElementById("frSpot");
+  // 目标不在视口内（窄屏抽屉收起时 rect 仍在屏外）→ 容器整屏压暗，浮窗居中
   var onScreen =
     r &&
     r.width > 0 &&
