@@ -1414,11 +1414,11 @@ export function renderAdapterAccountCard(platform, accountName, accountData, sch
     '<span class="account-card-name">' +
     esc(accountName) +
     "</span>" +
-    '<button class="btn-icon account-icon-btn account-icon-rename" onclick="startRenameAccount('' +
+    '<button class="btn-icon account-icon-btn account-icon-rename" onclick="startRenameAccount(\'' +
     esc(platform) +
     "','" +
     esc(accountName) +
-    '', this)" title="' +
+    '\', this)" title="' +
     esc(t("account_rename_action")) +
     '" aria-label="' +
     esc(t("account_rename_action")) +
