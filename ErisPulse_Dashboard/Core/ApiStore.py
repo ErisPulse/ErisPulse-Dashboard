@@ -1,11 +1,13 @@
 """ApiStoreMixin：插件商店与包管理 API"""
 
 import os
+import re
 import secrets
 import shutil
 import tempfile
 import threading
 import time
+from pathlib import Path
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -57,15 +59,24 @@ class ApiStoreMixin:
         if not file:
             return JSONResponse({"error": "file required"}, status_code=400)
         filename = file.filename or ""
-        if not (filename.endswith(".whl") or filename.endswith(".zip")):
+        lower = filename.lower()
+        if lower.endswith(".whl"):
+            ext = ".whl"
+        elif lower.endswith(".zip"):
+            ext = ".zip"
+        else:
             return JSONResponse(
                 {"error": "only .whl and .zip files are supported"}, status_code=400
             )
+        stem = os.path.splitext(os.path.basename(filename))[0]
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,120}", stem) or ".." in stem:
+            return JSONResponse({"error": "invalid filename"}, status_code=400)
         tmp_dir = tempfile.mkdtemp(prefix="ep_upload_")
-        file_path = os.path.join(tmp_dir, os.path.basename(filename))
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        file_path = os.path.join(tmp_dir, "ep_upload_" + stem + ext)
+        if not Path(file_path).resolve().is_relative_to(Path(tmp_dir).resolve()):
+            return JSONResponse({"error": "invalid filename"}, status_code=400)
+        content = await file.read()
+        Path(file_path).write_bytes(content)
         token = secrets.token_urlsafe(16)
         self._purge_stale_uploads()
         self._upload_tokens[token] = {

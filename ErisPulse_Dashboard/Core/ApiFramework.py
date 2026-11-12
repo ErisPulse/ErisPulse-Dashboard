@@ -244,8 +244,8 @@ except Exception:
     pass
 '''
         import tempfile
-        script_path = os.path.join(tempfile.gettempdir(), "ep_fw_update.py")
-        with open(script_path, "w", encoding="utf-8") as f:
+        fd, script_path = tempfile.mkstemp(prefix="ep_fw_update_", suffix=".py")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(update_script)
 
         try:
@@ -255,6 +255,10 @@ except Exception:
                 env={**os.environ, "EP_LANG": lang},
             )
         except Exception as e:
+            try:
+                os.remove(script_path)
+            except Exception:
+                pass
             self.logger.error(f"Windows update spawn failed: {e}")
             self._install_tasks[task_id]["status"] = "error"
             self._install_tasks[task_id]["error"] = str(e)

@@ -769,21 +769,21 @@ class ApiModulesMixin:
             total = sum(i.file_size for i in entries)
             if total > self._SHADOW_EXTRACT_MAX_BYTES:
                 raise ValueError(f"wheel decompressed size too large (max {self._SHADOW_EXTRACT_MAX_BYTES // (1024 * 1024)}MB)")
-            for info in entries:
-                n = info.filename.replace("\\", "/")
-                if n.startswith("/") or re.match(r"^[A-Za-z]:", n):
-                    raise ValueError(f"unsafe entry in wheel: {info.filename}")
-                if any(part == ".." for part in n.split("/")):
-                    raise ValueError(f"unsafe entry in wheel: {info.filename}")
             dest.mkdir(parents=True, exist_ok=True)
             dest_resolved = dest.resolve()
             for info in entries:
-                target = dest / info.filename.replace("\\", "/")
+                n = info.filename.replace("\\", "/")
+                if (
+                    n.startswith("/")
+                    or re.match(r"^[A-Za-z]:", n)
+                    or any(part == ".." for part in n.split("/"))
+                ):
+                    raise ValueError(f"unsafe entry in wheel: {info.filename}")
+                target = dest / n
                 target.parent.mkdir(parents=True, exist_ok=True)
-                if not str(target.resolve()).startswith(str(dest_resolved)):
+                if not target.resolve().is_relative_to(dest_resolved):
                     raise ValueError(f"entry escapes target dir: {info.filename}")
-                with zf.open(info) as src, open(target, "wb") as out:
-                    shutil.copyfileobj(src, out, length=1024 * 1024)
+                Path(target).write_bytes(zf.read(info))
         return self._derive_shadow_source(dest, dist_name)
 
     @staticmethod
