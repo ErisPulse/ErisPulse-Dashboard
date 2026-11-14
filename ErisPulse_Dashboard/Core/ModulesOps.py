@@ -1,6 +1,7 @@
 """ModulesOpsMixin：模块动态加载、ghost 模块注册与自升级重载"""
 
 import asyncio
+import os
 import threading
 import time
 
@@ -215,6 +216,30 @@ class ModulesOpsMixin:
         使"升级包后无需重启框架"即可让新代码生效。Dashboard 由
         _schedule_dashboard_self_reload 单独处理。
         """
+        if os.name == "nt":
+            # Windows：运行中进程锁定 site-packages 文件（.pyd/句柄不释放），
+            # 覆盖已加载依赖会失败并留下 dist-info 半写状态
+            # （METADATA 缺失 → 后续 pip/uv 读取报 os error 2）。
+            # 热重载改为提示硬重启，待下次启动加载新代码。
+            self.logger.warning(
+                "Windows: skip hot-reload after upgrade "
+                "(site-packages files are locked by the running process); "
+                "a framework restart is required to apply the upgrade"
+            )
+            self._safe_broadcast(
+                {
+                    "type": "install_progress",
+                    "task_id": "",
+                    "status": "success",
+                    "packages": list(packages or []),
+                    "message": (
+                        "Windows: upgrade applied on disk; restart the "
+                        "framework to load the new code (hot-reload skipped)"
+                    ),
+                }
+            )
+            return
+
         norm = set()
         for p in packages or []:
             norm.add(p.split("==", 1)[0].strip().lower().replace("_", "-"))
