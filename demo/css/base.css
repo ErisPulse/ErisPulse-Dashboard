@@ -801,7 +801,9 @@ html[data-ui-style="eris"][data-theme="dark"].bg-image[data-bg-effect="misty"] {
 }
 
 /* ══════════ 触屏 / VNC 拖拽体验：滑动 = 滚动，不选中文字 ══════════ */
-.app {
+/* 锁由 drag-scroll.js 动态挂到 <html>（auto 档探测命中或惰性确认到触摸才上锁）；
+   :where() 保持零权重，使下方内容豁免区的 user-select:text 仍按书写顺序覆盖 */
+:where(html.ep-drag-lock) .app {
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;

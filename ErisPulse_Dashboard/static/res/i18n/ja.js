@@ -1398,7 +1398,6 @@
     fw_section_empty: "このセクションに設定はありません",
     settings_touch_scroll: "タッチドラッグスクロール",
     settings_touch_scroll_desc: "タッチ/VNC 環境でドラッグしてスクロール（テキスト選択の代わり）",
-    settings_touch_scroll_auto: "自動",
     settings_touch_scroll_on: "オン",
     settings_touch_scroll_off: "オフ",
     settings_auto_check_updates: "更新の自動確認",

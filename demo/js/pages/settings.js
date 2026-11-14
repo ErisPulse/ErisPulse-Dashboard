@@ -499,7 +499,9 @@ export function syncSettingsSectionUI() {
   // 触屏滚动 / 滚动条档位 / 自动检查更新
   var tssSeg = document.getElementById("touchScrollSeg");
   if (tssSeg) {
-    var tsm = localStorage.getItem("ep_touch_scroll") || "auto";
+    // 默认开启；历史 auto 值按开启回显
+    var tsm = localStorage.getItem("ep_touch_scroll") || "on";
+    if (tsm === "auto") tsm = "on";
     tssSeg.querySelectorAll("button").forEach(function (b) {
       b.classList.toggle("active", b.dataset.ts === tsm);
     });
@@ -1478,9 +1480,11 @@ export function applySettingScrollbar(mode) {
   syncSettingsUI();
 }
 
-// 触屏滚动兜底：auto（默认，触屏/VNC 探测）/ on / off
+// 触屏拖拽滚动：默认开启，off 恢复原生拖选
 export function applySettingTouchScroll(val) {
   localStorage.setItem("ep_touch_scroll", val);
+  // 翻译逻辑按次按下实时读档，切档只需立即同步 user-select 锁
+  if (typeof applyTouchScrollMode === "function") applyTouchScrollMode();
   syncSettingsUI();
 }
 

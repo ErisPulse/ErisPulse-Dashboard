@@ -1402,7 +1402,6 @@
     fw_section_empty: "此分区暂无配置项",
     settings_touch_scroll: "触屏拖拽滚动",
     settings_touch_scroll_desc: "触屏/VNC 环境下按住拖动即可滚动页面（代替拖选文字）",
-    settings_touch_scroll_auto: "自动",
     settings_touch_scroll_on: "开启",
     settings_touch_scroll_off: "关闭",
     settings_auto_check_updates: "自动检查更新",

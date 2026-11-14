@@ -1392,7 +1392,6 @@
     fw_section_empty: "В этом разделе нет настроек",
     settings_touch_scroll: "Прокрутка перетаскиванием",
     settings_touch_scroll_desc: "На сенсорных/VNC-устройствах перетаскивание прокручивает страницу вместо выделения текста",
-    settings_touch_scroll_auto: "Авто",
     settings_touch_scroll_on: "Вкл",
     settings_touch_scroll_off: "Выкл",
     settings_auto_check_updates: "Автопроверка обновлений",

@@ -1398,7 +1398,6 @@
     fw_section_empty: "此分區暫無配置項",
     settings_touch_scroll: "觸屏拖曳捲動",
     settings_touch_scroll_desc: "觸屏/VNC 環境下按住拖動即可捲動頁面（代替拖選文字）",
-    settings_touch_scroll_auto: "自動",
     settings_touch_scroll_on: "開啟",
     settings_touch_scroll_off: "關閉",
     settings_auto_check_updates: "自動檢查更新",

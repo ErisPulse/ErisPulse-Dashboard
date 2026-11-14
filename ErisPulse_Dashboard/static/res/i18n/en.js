@@ -1402,7 +1402,6 @@
     fw_section_empty: "No configuration in this section",
     settings_touch_scroll: "Touch Drag Scroll",
     settings_touch_scroll_desc: "On touch/VNC devices, drag to scroll instead of selecting text",
-    settings_touch_scroll_auto: "Auto",
     settings_touch_scroll_on: "On",
     settings_touch_scroll_off: "Off",
     settings_auto_check_updates: "Auto Check Updates",

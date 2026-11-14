@@ -102,7 +102,7 @@ for (const ns of __namespaces) Object.assign(window, ns);
   applyUiStyle(getUiStyle());
   applyOled(getOled());
   applyFont(getFont());
-  // 触屏/VNC 拖拽滚动兜底（ep_touch_scroll: auto/on/off）
+  // 触屏/VNC 拖拽滚动（默认开启，ep_touch_scroll: on/off）
   if (typeof initDragScroll === "function") initDragScroll();
   applyI18n();
   applyCustomTheme();

@@ -1,7 +1,9 @@
 // ErisPulse Dashboard – core/drag-scroll
-// 触屏 / VNC 拖拽滚动兜底：此类环境把触摸合成为鼠标拖拽，
-// 浏览器默认行为是拖选文字（配合全局 user-select:none 已抑制），
+// 触屏 / VNC 拖拽滚动：此类环境把触摸合成为鼠标拖拽，
+// 浏览器默认行为是拖选文字（启用时由 html.ep-drag-lock 挂 user-select 锁抑制），
 // 这里把"鼠标按住拖动"翻译成容器滚动，让滑动 = 滚动。
+// 默认开启（ep_touch_scroll 缺省视为开启，历史 auto 值同）；设置页可关闭，
+// 关闭后恢复原生拖选行为。日志/会话/编辑器等豁免区始终保留拖选复制语义。
 
 var _DRAG_IGNORE = [
   "button",
@@ -23,6 +25,7 @@ var _DRAG_IGNORE = [
   ".fw-notes-callout",
   ".fw-notes-group-body",
 ].join(",");
+var _DRAG_SCROLLER = ".page, .sidebar-nav, .modal-box";
 var _THRESHOLD = 6; // px，超过才视为拖拽（过滤点击抖动）
 
 var _dragging = false;
@@ -34,18 +37,29 @@ var _moved = false;
 var _scroller = null;
 var _prevBehavior = "";
 
-function _enabled() {
-  // ep_touch_scroll: "auto"(默认,触屏/VNC 探测) | "on" | "off"
-  var mode = null;
+function _touchScrollMode() {
+  // ep_touch_scroll: "on"(默认) | "off"；历史 auto 值按开启处理
   try {
-    mode = localStorage.getItem("ep_touch_scroll");
-  } catch (e) {}
-  if (mode === "on") return true;
-  if (mode === "off") return false;
-  return (
-    (window.matchMedia && window.matchMedia("(any-pointer: coarse)").matches) ||
-    "ontouchstart" in window
-  );
+    return localStorage.getItem("ep_touch_scroll");
+  } catch (e) {
+    return null;
+  }
+}
+
+// 是否接管：默认开启；仅显式 off 关闭（off 同时恢复原生拖选）
+function _enabled() {
+  return _touchScrollMode() !== "off";
+}
+
+// 锁以 class 挂在 <html> 上（base.css 用 :where(html.ep-drag-lock) .app 匹配，
+// :where() 零权重，保证内容豁免区的 user-select:text 能按书写顺序覆盖）
+function _syncLock() {
+  document.documentElement.classList.toggle("ep-drag-lock", _enabled());
+}
+
+// 设置页切换档位后调用：翻译按次按下实时读档，只需立即同步选择锁
+export function applyTouchScrollMode() {
+  _syncLock();
 }
 
 function _onDown(e) {
@@ -54,7 +68,7 @@ function _onDown(e) {
   if (!_enabled()) return;
   if (e.target.closest && e.target.closest(_DRAG_IGNORE)) return;
   var scroller = e.target.closest
-    ? e.target.closest(".page, .sidebar-nav")
+    ? e.target.closest(_DRAG_SCROLLER)
     : null;
   if (!scroller) return;
   _scroller = scroller;
@@ -110,6 +124,7 @@ function _suppressClick() {
 export function initDragScroll() {
   if (window.__epDragScrollInit) return;
   window.__epDragScrollInit = true;
+  _syncLock();
   document.addEventListener("pointerdown", _onDown, { passive: true });
   document.addEventListener(
     "pointermove",
