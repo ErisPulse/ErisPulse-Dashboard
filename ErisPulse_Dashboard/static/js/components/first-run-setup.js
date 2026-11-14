@@ -23,8 +23,10 @@ var MIRRORS = [
 ];
 
 var LANGS = [
-  { v: "zh-cn", label: "简体中文" },
-  { v: "zh-tw", label: "繁體中文" },
+  // v 必须是与 i18n.js 字典键一致的规范码：变体码（zh-cn 等）写入 ep_lang 后
+  // 会让设置页语言分段的严格相等比较失配（表现为分段无高亮，观感"未选择语言"）
+  { v: "zh", label: "简体中文" },
+  { v: "zh-TW", label: "繁體中文" },
   { v: "en", label: "English" },
   { v: "ja", label: "日本語" },
   { v: "ru", label: "Русский" },
@@ -80,6 +82,16 @@ function frEl(html) {
   var d = document.createElement("div");
   d.innerHTML = html.trim();
   return d.firstChild;
+}
+
+// 读取并归一化当前界面语言：历史版本向导写入过 zh-cn 等变体码，
+// 不归一化会匹配不上 LANGS 与设置页语言分段的规范码
+function _frLang() {
+  var v = null;
+  try {
+    v = localStorage.getItem("ep_lang");
+  } catch (e) {}
+  return typeof normalizeLang === "function" ? normalizeLang(v) : "";
 }
 
 // 组站：每页「侧边栏入口 → 页面内容」
@@ -144,7 +156,7 @@ export function maybeShowFirstRunSetup() {
   if (done) return;
   if (!document.querySelector(".app.authed")) return;
   _frShown = true;
-  frRender(0, { lang: localStorage.getItem("ep_lang") || "zh-cn", mirror: "" });
+  frRender(0, { lang: _frLang() || "zh", mirror: "" });
 }
 
 // 设置页“再次引导”：清除完成标记并从头运行向导（dash.html 内联 onclick 经 window 调用）
@@ -155,7 +167,7 @@ export function runFirstRunSetup() {
   frTeardown();
   _frShown = true;
   frRender(0, {
-    lang: localStorage.getItem("ep_lang") || "zh-cn",
+    lang: _frLang() || "zh",
     mirror: localStorage.getItem("ep_default_mirror") || "",
   });
 }
@@ -242,12 +254,18 @@ function frRender(step, ctx) {
   ov.querySelector("[data-fr-skip]").onclick = frFinish;
   ov.querySelector("[data-fr-next]").onclick = function () {
     if (step === 0) {
-      var lang = ov.querySelector("#frLang").value;
+      // LANGS 已是规范码，仍过一次 normalizeLang 兜底，保证不把变体码写进 ep_lang
+      var lang =
+        typeof normalizeLang === "function"
+          ? normalizeLang(ov.querySelector("#frLang").value) || "zh"
+          : ov.querySelector("#frLang").value;
       try {
         localStorage.setItem("ep_lang", lang);
         window.lang = lang;
       } catch (e) {}
       if (typeof applyI18n === "function") applyI18n();
+      // 设置页已渲染时同步语言分段激活态（严格相等比较依赖规范码）
+      if (typeof syncSettingsSectionUI === "function") syncSettingsSectionUI();
       ctx.lang = lang;
       // 可选：把界面语言同步为框架语言（复用 /api/i18n/language）
       if (ov.querySelector("#frSyncLang") && ov.querySelector("#frSyncLang").checked) {
