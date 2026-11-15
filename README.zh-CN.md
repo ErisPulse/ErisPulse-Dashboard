@@ -37,6 +37,20 @@ ErisPulse Dashboard 是 ErisPulse 框架的官方 Web 管理面板模块。通�
 - **集群管理** — 多节点集群监控与管理
 - **统一 UI 组件** — 自定义下拉与可搜索多选替代原生控件，且保持向后兼容
 
+## 截图
+
+仪表盘总览：
+
+![Overview](.github/assets/overview.png)
+
+跨平台发现的机器人：
+
+![Bots](.github/assets/bots.png)
+
+模块商店 —— 在线安装包：
+
+![Module Store](.github/assets/module-store.png)
+
 ## 安装
 
 ```bash

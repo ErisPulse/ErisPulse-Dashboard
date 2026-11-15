@@ -68,6 +68,20 @@ ErisPulse Dashboard 是 ErisPulse 的官方 Web 管理面板：機器人掛在�
 
 深色 / 淺色 / OLED 純黑，賽璐璐動畫皮膚，8 種強調色，背景圖隨便換（介面會為背景讓利，半透明展示），字體也能上傳替換。設定支援多裝置同步。手機瀏覽器開啟一樣能用。
 
+## 截圖
+
+儀表板總覽：
+
+![Overview](.github/assets/overview.png)
+
+跨平台發現的機器人：
+
+![Bots](.github/assets/bots.png)
+
+模組商店 —— 線上安裝套件：
+
+![Module Store](.github/assets/module-store.png)
+
 ## 安裝
 
 ```bash

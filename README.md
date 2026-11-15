@@ -37,6 +37,20 @@ ErisPulse Dashboard is the official web admin panel for the ErisPulse framework.
 - **Cluster management** — monitor and manage multi-node clusters
 - **Unified UI components** — custom dropdowns and searchable multi-selects replace native controls while staying backward compatible
 
+## Screenshots
+
+Dashboard overview:
+
+![Overview](.github/assets/overview.png)
+
+Bots discovered across platforms:
+
+![Bots](.github/assets/bots.png)
+
+Module store — install packages online:
+
+![Module Store](.github/assets/module-store.png)
+
 ## Install
 
 ```bash

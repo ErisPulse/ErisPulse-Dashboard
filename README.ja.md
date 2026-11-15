@@ -68,6 +68,20 @@ ErisPulse Dashboard は ErisPulse公式の Web 管理パネルです。ボット
 
 ダーク / ライト / OLED 純黒、セルアニメ風スキン、8 色のアクセントカラー、背景画像の差し替え（UI は背景に譲り半透明表示）、フォントのアップロード、デスクトップ通知に対応。設定は複数デバイス間で同期できます。スマホブラウザにも対応しています。
 
+## スクリーンショット
+
+ダッシュボード概要：
+
+![Overview](.github/assets/overview.png)
+
+プラットフォーム横断で見つかったボット：
+
+![Bots](.github/assets/bots.png)
+
+モジュールストア — オンラインでインストール：
+
+![Module Store](.github/assets/module-store.png)
+
 ## インストール
 
 ```bash
