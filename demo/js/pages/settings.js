@@ -134,6 +134,11 @@ export function applySettingOled(on) {
 export function applySettingBgTile(on) {
   setSetting("bg_tile", on ? "1" : "0");
   var img = getSetting("bg_image", "");
+  // 当前背景来自图案库时，把选择记忆为图案来源的偏好，
+  // 避免下次点击图案被 applyBgPattern 强制改回平铺
+  if (img && typeof BG_PATTERNS !== "undefined" && (BG_PATTERNS || []).indexOf(img) !== -1) {
+    setSetting("bg_tile_pattern", on ? "1" : "0");
+  }
   if (img) applyBgImage(img);
   syncBgCardUI();
 }
@@ -187,6 +192,15 @@ export function syncBgCardUI() {
       b.classList.toggle("active", b.dataset.be === cur);
     });
   }
+  // 透感档位/效果档仅在有背景图时生效（表面 token 挂在 .bg-image 下）：无图置灰并提示
+  var fxUsable = has;
+  [document.getElementById("bgLevelSeg"), beSeg].forEach(function (seg) {
+    if (!seg) return;
+    seg.classList.toggle("is-disabled", !fxUsable);
+    seg.querySelectorAll("button").forEach(function (b) { b.disabled = !fxUsable; });
+  });
+  var fxHint = document.getElementById("bgFxHint");
+  if (fxHint) fxHint.style.display = fxUsable ? "none" : "block";
   showBgAutoThemeRow(has);
   var autoChk = document.getElementById("settingsBgAutoTheme");
   if (autoChk) autoChk.checked = bgAutoThemeEnabled();

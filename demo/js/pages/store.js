@@ -742,16 +742,42 @@ export async function openPkgDetail(name, pkg, type) {
   });
   if (versions.length) {
     document.getElementById("pkgDetailVersionsSection").style.display = "";
-    document.getElementById("pkgDetailVersions").innerHTML = versions
-      .map(
-        (v) =>
-          "<span style=\"display:inline-block;margin:2px 6px;cursor:pointer;color:var(--tx-s)\" onclick=\"document.getElementById('detailVersionSelect').value='" +
-          esc(v) +
-          "'\">" +
-          esc(v) +
-          "</span>",
-      )
-      .join("");
+    // 版本多时默认只展示最新 8 个，避免几十个 chip 淹没弹层；点击「显示全部」展开
+    const verEl = document.getElementById("pkgDetailVersions");
+    let showingAll = false;
+    const renderVerChips = () => {
+      const list = showingAll ? versions : versions.slice(0, 8);
+      verEl.innerHTML =
+        list
+          .map(
+            (v) =>
+              '<span class="pkg-ver-chip" data-ver="' +
+              esc(v) +
+              '">' +
+              esc(v) +
+              "</span>",
+          )
+          .join("") +
+        (versions.length > 8
+          ? '<span class="pkg-ver-toggle">' +
+            (showingAll
+              ? t("show_less")
+              : t("show_all_versions").replace("{n}", versions.length)) +
+            "</span>"
+          : "");
+    };
+    verEl.onclick = (e) => {
+      const chip = e.target.closest(".pkg-ver-chip");
+      if (chip) {
+        document.getElementById("detailVersionSelect").value = chip.dataset.ver;
+        return;
+      }
+      if (e.target.closest(".pkg-ver-toggle")) {
+        showingAll = !showingAll;
+        renderVerChips();
+      }
+    };
+    renderVerChips();
     vs.innerHTML =
       '<option value="">' +
       t("latest_version") +
@@ -788,7 +814,8 @@ export async function openPkgDetail(name, pkg, type) {
       doInstallWithOptions(pkg);
     };
   } else {
-    actionBtn.textContent = t("force_install");
+    // 同版本已安装：真正的语义是"重新安装"（底层 -‐‐force-reinstall），比"强制安装"更准确
+    actionBtn.textContent = t("pkg_reinstall");
     actionBtn.onclick = () => {
       ov.classList.remove("show");
       doInstallWithOptions(pkg, true);

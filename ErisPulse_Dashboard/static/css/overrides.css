@@ -126,7 +126,7 @@
     .route-item button.btn-xs {
         padding: 8px 14px;
         font-size: 13px;
-        border-radius: 6px;
+        border-radius: var(--radius-xs);
     }
 
     .kv-key {
@@ -991,13 +991,37 @@ input, textarea, select, button,
     text-align: left;
 }
 
+/* 统计卡图标：与仪表盘 .stat-ico 同语言（accent-soft 软底方块），
+   模块管理布局为右下角绝对定位，仅对齐尺寸/配色 */
 .stat-card-icon {
     position: absolute;
     right: 14px;
     bottom: 12px;
-    width: 38px !important;
-    height: 38px !important;
+    width: 42px !important;
+    height: 42px !important;
     margin: 0;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.stat-card-icon svg {
+    width: 21px;
+    height: 21px;
+}
+
+/* 大数字等宽：跳动时不抖版式 */
+.fw-ver-big,
+.cluster-stat-val {
+    font-variant-numeric: tabular-nums;
+}
+
+/* 统计数字语义色：>0 的拦截/禁用数用警示色（由 JS 加 stat-warn） */
+.stat-val.stat-warn {
+    color: var(--wr-c);
 }
 
 /* svg 的 margin-left:auto 独自负责右推；有 svg 时 actions 交出 auto margin */

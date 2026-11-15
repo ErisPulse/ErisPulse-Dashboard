@@ -93,18 +93,28 @@
     color: var(--er-c);
 }
 
-/* 类型列：固定宽度保证纵向对齐（表格化列 rhythm） */
+/* 类型列：统一为全站 chip 语言（描边→柔和底 pill，按事件类型着色） */
 .ev-type-tag {
     flex: none;
-    width: 54px;
+    padding: 2px 9px;
+    border-radius: 999px;
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    color: var(--tx-t);
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--tx-s);
+    background: color-mix(in srgb, var(--tx-t) 9%, transparent);
     white-space: nowrap;
+}
+
+.ev-item.ev-message .ev-type-tag {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.ev-item.ev-notice .ev-type-tag {
+    color: var(--wr-c);
+    background: color-mix(in srgb, var(--wr-c) 12%, transparent);
 }
 
 .ev-body {
@@ -241,7 +251,7 @@
 }
 
 .ev-item.ev-dense .ev-type-tag {
-    width: 44px;
+    padding: 1px 7px;
     font-size: 9px;
 }
 
@@ -339,7 +349,7 @@ body.privacy-on .ev-item {
     height: fit-content;
     max-height: calc(100vh - 180px);
     overflow-y: auto;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
 }
 
 .event-type-selector {
@@ -393,7 +403,7 @@ body.privacy-on .ev-item {
     gap: 12px;
     padding: 14px;
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     margin-bottom: 12px;
     align-items: flex-start;
     background: var(--bg-s);
@@ -410,7 +420,7 @@ body.privacy-on .ev-item {
     min-width: 140px;
     padding: 8px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
@@ -440,7 +450,7 @@ body.privacy-on .ev-item {
 .segment-fields select {
     padding: 8px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
@@ -461,7 +471,7 @@ body.privacy-on .ev-item {
     background: var(--er-bg);
     color: var(--er-c);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -484,7 +494,7 @@ body.privacy-on .ev-item {
     align-items: center;
     border-bottom: 1px solid var(--bd);
     background: var(--bg-s);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 10px;
 }
 
@@ -500,7 +510,7 @@ body.privacy-on .ev-item {
     flex: 1;
     padding: 8px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
@@ -520,7 +530,7 @@ body.privacy-on .ev-item {
     background: var(--er-bg);
     color: var(--er-c);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -540,7 +550,7 @@ body.privacy-on .ev-item {
     background: var(--bg-s);
     color: var(--tx-p);
     padding: 16px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 12px;
     font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
     line-height: 1.6;
@@ -561,7 +571,7 @@ body.privacy-on .ev-item {
     color: var(--tx-t);
     text-align: center;
     border: 2px dashed var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     min-height: 100px;
 }
 
@@ -691,7 +701,7 @@ body.privacy-on .ev-item {
         min-width: 0;
         padding: 8px 12px;
         border: 1px solid var(--bd);
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         background: var(--bg-t);
         color: var(--tx-p);
         font-size: 14px;
@@ -706,7 +716,7 @@ body.privacy-on .ev-item {
         background: var(--er-bg);
         color: var(--er-c);
         border: none;
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         cursor: pointer;
         transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
         width: 44px;

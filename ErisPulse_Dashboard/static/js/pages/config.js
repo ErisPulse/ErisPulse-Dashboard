@@ -281,6 +281,9 @@ export async function saveConfig(btn) {
     try {
       v = JSON.parse(v);
     } catch (e) {
+      // 原先静默 return：用户点 ✓ 无任何响应会误以为已保存。改为显式反馈
+      inp.style.border = "2px solid var(--er-c)";
+      if (typeof toast === "function") toast(t("config_invalid_json"), "er");
       return;
     }
   }

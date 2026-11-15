@@ -51,8 +51,11 @@ export async function loadModules() {
     el.textContent = allModules.length;
   if ((el = document.getElementById("statActive")))
     el.textContent = activeCount;
-  if ((el = document.getElementById("statDisabled")))
+  if ((el = document.getElementById("statDisabled"))) {
     el.textContent = disabledCount;
+    // 语义色：存在禁用项时数字转警示色
+    el.classList.toggle("stat-warn", disabledCount > 0);
+  }
   var mmAd = document.getElementById("mmAdaptersCount");
   if (mmAd) mmAd.textContent = allAdapters.length;
   var mmMo = document.getElementById("mmModulesCount");
@@ -447,6 +450,14 @@ export function moduleIconFallback(name) {
 
 export async function toggleModuleEnabled(name, type, el) {
   if (!authed) return showLogin();
+  // 停用是即时生效的破坏性操作（运行中的功能立刻停止）：先确认；取消则回弹开关
+  if (!el.checked) {
+    const ok = await confirm2(t("unload_confirm_title"), t("module_disable_confirm"));
+    if (!ok) {
+      el.checked = true;
+      return;
+    }
+  }
   var action = el.checked ? "enable" : "disable";
   await moduleAction(name, action, type);
   loadModules();

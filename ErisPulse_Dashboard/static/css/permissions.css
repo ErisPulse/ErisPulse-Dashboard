@@ -148,7 +148,7 @@
 .input {
     padding: 8px 12px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     background: var(--bg-s);
     color: var(--tx-p);
@@ -360,7 +360,7 @@
     align-items: center;
     gap: 8px;
     padding: 4px 8px 4px 4px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--accent) 9%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
     font-size: 12px;
@@ -378,7 +378,7 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--accent);
     color: #fff;
     font-size: 12px;
@@ -400,7 +400,7 @@
     height: 20px;
     background: none;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     color: var(--tx-t);
     cursor: pointer;
     padding: 0;
@@ -917,7 +917,7 @@
     font-weight: 700;
     font-family: var(--font-mono, monospace);
     padding: 2px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     background: color-mix(in srgb, var(--tx-p) 7%, transparent);
     color: var(--tx-s);
 }
@@ -1311,15 +1311,6 @@
 .perm-stats .stat-meta {
     gap: 2px;
     width: 100%;
-}
-
-.perm-stats .stat-val {
-    font-size: 24px;
-}
-
-.perm-stats .stat-label {
-    font-size: 11px;
-    letter-spacing: 0.02em;
 }
 
 /* 分组标题：左侧强调线表达层级，平台名保持原样 */

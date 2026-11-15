@@ -113,6 +113,9 @@ export function _refreshTopoColors() {
     text: _cssVar("--tx-s"),
     grid: _cssVar("--bd"),
     surface: _cssVar("--bg-t"),
+    // 标签底垫用不透明基色：bg-image 模式下 --bg-t 是半透明 token，
+    // 直接做底垫会透出壁纸导致标签可读性差
+    labelPlate: _cssVar("--bg-p"),
   };
 }
 
@@ -840,8 +843,8 @@ export function _topoDraw(ts) {
     ctx.textAlign = "center";
     var tw = ctx.measureText(lbl).width;
     var ly = ny + r + 12 * lblScale;
-    ctx.fillStyle = _topoColors.surface;
-    ctx.globalAlpha = dim ? 0.12 : 0.75;
+    ctx.fillStyle = _topoColors.labelPlate;
+    ctx.globalAlpha = dim ? 0.12 : 0.9;
     ctx.fillRect(nx - tw / 2 - 4 * lblScale, ly - 8 * lblScale, tw + 8 * lblScale, 13 * lblScale);
     ctx.globalAlpha = dim ? 0.12 : 0.95;
     ctx.fillStyle = _topoColors.text;

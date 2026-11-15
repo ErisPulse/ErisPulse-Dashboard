@@ -201,7 +201,10 @@ export async function loadAdapterConfigDetail(platform) {
       esc(platform) +
       "')\">" +
       t("save_adapter_config") +
-      "</button></div>";
+      "</button>" +
+      '<span class="cfg-save-hint">' +
+      t("adapter_save_hint") +
+      "</span></div>";
     html += "</div></div>";
   }
 

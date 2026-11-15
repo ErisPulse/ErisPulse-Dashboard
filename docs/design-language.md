@@ -180,6 +180,24 @@ Dashboard 通过 `sdk.register_view(...)`（见 `docs/module-view-registration.m
 - `css_content`/`js_content` 约定：只写模块私有样式/逻辑；**优先复用 token 与组件类**，勿覆写 `.nav-item/.card/.btn` 等全局类
 - 想换 accent/主题的用户侧能力（设置页）对模块视图同样生效，模块不要自建色彩体系
 
+### 6.1 视觉契约红线（违反 = 用户体验倒退，见下方反例）
+
+1. **禁改壳层**：模块 JS 不得触碰 `document.documentElement` 的 class/style（`bg-image`、`--bg-p` 等）与 `document.body` 的背景。壳层有自愈看门狗（2.5s 回滚），改了也会被弹回，且期间用户会看到整页闪白。
+2. **表面只用 token**：卡面 `var(--bg-t)`、页面底 `var(--bg-p)`、边框 `var(--bd)/--bd-h`。禁硬编码 `#fff/#000/#0f1115` 等色值——主题切换（明/暗/OLED/主题包）时模块必须跟随变色。
+3. **圆角只用 token**：`--radius-xs/sm/md/lg`，不写裸 px。
+4. **组件复用清单**（有现成的不要手写）：
+   - 状态徽章 → `.chip chip-ok/wr/er`（勿自造 pill）
+   - 统计卡 → `.stat-card`（icon + `.stat-val` + `.stat-label`），数字自动等宽
+   - 空态 → `.empty-state`（+ 可选 `.empty-action` 按钮）
+   - 页内导航 tab → `.view-toggle.pkg-tabs > .view-btn.pkg-tab`（激活态全站统一 accent-soft，见 overrides.css）
+   - 互斥选项（非导航）→ `.settings-seg`
+5. **pill 密度红线**：一张实体卡上状态类 pill ≤ 2 个。连接态用头像角标点表达，运行态才用 pill（参考 bots 页）。
+6. **禁大面积 blur / 渐变 / 阴影堆叠**（§7 反例红线同样适用于模块）。
+
+**反例（已发生，勿重演）**：
+- 某服务器管理模块在浅色主题下渲染硬编码深色面板 → 与外壳撞色，像嵌了外部 iframe；
+- 某表情包模块清掉了壳层背景 → 整页变白（看门狗已兜底，但根因在模块）。
+
 ---
 
 ## 7. 血统与参考

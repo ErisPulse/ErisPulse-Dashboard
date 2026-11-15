@@ -1122,6 +1122,8 @@ select.form-select::-ms-expand {
     color: var(--tx-s);
 }
 
+/* 步骤圆点语言统一：未完成 = 中性细环 + 序号；完成 = ok 细环 + 对勾。
+   （原先未完成是 accent 实底块，与完成态的细环风格脱节） */
 .onboarding-step .onboarding-check {
     flex: none;
     width: 20px;
@@ -1132,8 +1134,9 @@ select.form-select::-ms-expand {
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    color: var(--accent);
-    background: var(--accent-soft, color-mix(in srgb, var(--accent) 14%, transparent));
+    color: var(--tx-s);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bd-h) 70%, transparent);
 }
 
 .onboarding-step.done .onboarding-check {

@@ -38,7 +38,7 @@
     position: relative;
     width: 44px;
     height: 44px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--accent) 9%, var(--bg-s));
     color: var(--tx-s);
     display: flex;
@@ -51,7 +51,7 @@
 .bot-avatar img {
     width: 100%;
     height: 100%;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     object-fit: cover;
     display: block;
 }
@@ -61,7 +61,7 @@
     object-fit: contain;
     padding: 4px;
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .bot-avatar > svg {

@@ -1298,6 +1298,11 @@
                                 ></span>
                                 <div class="header-actions">
                                     <button
+                                        class="btn btn-secondary btn-xs"
+                                        onclick="go('event-stream')"
+                                        data-i18n="events_view_all"
+                                    ></button>
+                                    <button
                                         class="btn-icon"
                                         onclick="clearEvents()"
                                         data-i18n-title="clear_events"
@@ -2358,6 +2363,12 @@
                                 </div>
                                 <div class="log-toolbar-actions">
                                     <button
+                                        class="btn btn-secondary btn-sm"
+                                        id="logErrOnlyBtn"
+                                        onclick="toggleLogErrorsOnly(this)"
+                                        data-i18n="logs_errors_only"
+                                    ></button>
+                                    <button
                                         class="btn btn-secondary btn-sm log-export-btn"
                                         onclick="exportServerLogs()"
                                         data-i18n="logs_export"
@@ -2959,7 +2970,7 @@
                                 <div class="stat-card-icon">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                                 </div>
-                                <div class="stat-label" data-i18n="active"></div>
+                                <div class="stat-label" data-i18n="active_combined"></div>
                                 <div class="stat-val" id="statActive">0</div>
                             </div>
                             <div class="stat-card">
@@ -3547,6 +3558,7 @@
                                 <span data-i18n="cmd_list"></span>
                                 <span class="chip chip-pr" id="cmdCount"></span>
                                 <div class="header-actions">
+                                    <input type="text" id="cmdSearch" class="ep-search" data-i18n-placeholder="sidebar_search" placeholder="" oninput="setCmdQuery(this.value)" style="height:28px;max-width:170px;font-size:12px"/>
                                     <button class="btn-icon" onclick="loadCommands()" data-i18n-title="refresh" title="">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
                                     </button>
@@ -4025,7 +4037,7 @@
                                 <label><input type="checkbox" id="topoShowCommands" checked onchange="topoRebuild()"/><span data-i18n="topo_show_resources"></span></label>
                                 <label><input type="checkbox" id="topoShowScope" checked onchange="topoRebuild()"/><span data-i18n="topo_show_scope"></span></label>
                                 <label><input type="checkbox" id="topoShowDepends" checked onchange="topoRebuild()"/><span data-i18n="topo_show_depends"></span></label>
-                                <label><input type="checkbox" id="topoShowAnim" onchange="topoSetAnim(this.checked)"/><span id="topoAnimLabel">Flow animation</span></label>
+                                <label><input type="checkbox" id="topoShowAnim" onchange="topoSetAnim(this.checked)"/><span id="topoAnimLabel" data-i18n="topo_show_anim">Flow animation</span></label>
                                 <button class="btn-icon" onclick="loadTopology()" title="Refresh">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
                                 </button>
@@ -4771,6 +4783,7 @@
           <span class="set-main"><span class="set-title" data-i18n="settings_bg_effect"></span><span class="set-sub" data-i18n="settings_bg_effect_desc"></span></span>
           <span class="set-end"><div class="settings-seg" id="bgEffectSeg"><button type="button" data-be="none" onclick="applySettingBgEffect('none')" data-i18n="settings_bg_effect_none"></button><button type="button" data-be="frosted" onclick="applySettingBgEffect('frosted')" data-i18n="settings_bg_effect_frosted"></button><button type="button" data-be="misty" onclick="applySettingBgEffect('misty')" data-i18n="settings_bg_effect_misty"></button></div></span>
         </div>
+        <div class="bg-fx-hint" id="bgFxHint" style="display:none" data-i18n="settings_bg_fx_need_image"></div>
         <div class="set-row" id="bgAutoThemeRow" style="display:none">
           <span class="set-main"><span class="set-title" data-i18n="settings_bg_auto_theme"></span><span class="set-sub" data-i18n="settings_accent_auto_note"></span></span>
           <span class="set-end"><label class="switch"><input type="checkbox" id="settingsBgAutoTheme" onchange="onBgAutoThemeToggle(this.checked)"/><span class="switch-slider"></span></label></span>

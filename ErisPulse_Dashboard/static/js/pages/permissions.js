@@ -162,12 +162,59 @@ export async function loadCommands() {
   const gs = d.global_settings || {};
   renderCmdGlobalSettings(gs);
   document.getElementById("cmdCount").textContent = d.total || 0;
-  const cmds = d.commands || [];
-  if (!cmds.length) {
-    document.getElementById("cmdListBody").innerHTML =
+  renderCmdList();
+}
+
+// ── 命令列表搜索 / 复制 ──
+let _cmdQuery = "";
+export function setCmdQuery(v) {
+  _cmdQuery = (v || "").trim().toLowerCase();
+  renderCmdList();
+}
+
+export function copyCmdName(name) {
+  const done = () => {
+    if (typeof toast === "function") toast(t("copied_to_clipboard"), "ok");
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(name).then(done);
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = name;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    done();
+  }
+}
+
+function renderCmdList() {
+  const box = document.getElementById("cmdListBody");
+  if (!box) return;
+  const all = (_cmdData && _cmdData.commands) || [];
+  if (!all.length) {
+    box.innerHTML =
       '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><p>' +
       t("cmd_no_commands") +
       "</p></div>";
+    return;
+  }
+  // 搜索：匹配命令名 / 说明 / 别名（大小写不敏感）
+  const cmds = _cmdQuery
+    ? all.filter((c) => {
+        const hay = [
+          c.name || "",
+          c.help || "",
+          (c.original_aliases || []).join(" "),
+          (c.custom_aliases || []).join(" "),
+        ].join(" ");
+        return hay.toLowerCase().indexOf(_cmdQuery) !== -1;
+      })
+    : all;
+  if (!cmds.length) {
+    box.innerHTML =
+      '<div class="empty-state"><p>' + t("no_matches") + "</p></div>";
     return;
   }
   let html = "";
@@ -231,6 +278,11 @@ export async function loadCommands() {
       "</div>" +
       "</div>" +
       '<div class="cmd-actions">' +
+      '<button class="btn btn-secondary btn-xs" onclick="copyCmdName(\'' +
+      esc(c.name).replace(/'/g, "\\'") +
+      "')\">" +
+      t("copy") +
+      "</button>" +
       '<button class="btn btn-secondary btn-xs" onclick="openCmdEdit(\'' +
       esc(c.name).replace(/'/g, "\\'") +
       "')\">" +
@@ -813,6 +865,15 @@ export function renderScopeAll() {
   _setText("scopeStatModule", moduleFiltered);
   _setText("scopeStatIdentity", identityDenied);
   _setText("scopeStatAction", actionDenied);
+  // 语义色：拦截数 >0 时数字转警示色
+  [
+    ["scopeStatModule", moduleFiltered],
+    ["scopeStatIdentity", identityDenied],
+    ["scopeStatAction", actionDenied],
+  ].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    if (el) el.classList.toggle("stat-warn", p[1] > 0);
+  });
   _setText("scopeStatCache", hitRate + "%");
 
   var modCount = renderScopeModuleList(topo);

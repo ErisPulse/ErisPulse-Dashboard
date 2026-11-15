@@ -37,11 +37,76 @@ class PipOpsMixin:
         return names
 
     @staticmethod
+    def _wheel_dist_identity(file_path: str) -> tuple[str, str]:
+        """
+        从 wheel 内部 dist-info/METADATA 读真实发行名与版本
+
+        上传/暂存环节都可能改文件名，文件名推断不可靠（uv/pip 对裸路径安装
+        也从文件名推包名并与 dist-info 严格比对，不一致直接拒装）——元数据
+        才是唯一事实源。
+
+        :return: (name, version)；无法解析返回空串对
+        """
+        import zipfile
+
+        try:
+            with zipfile.ZipFile(file_path) as zf:
+                metadata_name = next(
+                    (n for n in zf.namelist() if re.match(r"[^/]+\.dist-info/METADATA$", n)),
+                    None,
+                )
+                if not metadata_name:
+                    return "", ""
+                name = version = ""
+                for line in zf.read(metadata_name).decode("utf-8", "replace").splitlines():
+                    if line.startswith("Name:"):
+                        name = line[5:].strip()
+                    elif line.startswith("Version:"):
+                        version = line[8:].strip()
+                    if name and version:
+                        break
+                return name, version
+        except Exception:
+            return "", ""
+
+    def _canonicalize_wheel_name(self, file_path: str, stem: str, tmp_dir: str) -> tuple[str, str, str]:
+        """
+        wheel 暂存名与内部元数据不符时改写为规范文件名
+
+        用户把 wheel 改过名再上传（如 qvqchat.whl）会让 uv/pip 从文件名推出
+        错误包名而拒装——这里以 dist-info 元数据为准改写暂存文件名
+        （{name}-{version}-{原tags}，缺 tags 补 py3-none-any）。
+
+        :return: (新文件路径, 新 stem, 新文件名)；已是规范名/解析失败原样返回
+        """
+        try:
+            real_name, real_version = self._wheel_dist_identity(file_path)
+            if not real_name or not real_version:
+                return file_path, stem, stem + ".whl"
+            parts = stem.split("-")
+            cur_name = parts[0].strip().lower().replace("_", "-")
+            cur_version = parts[1].strip() if len(parts) > 1 else ""
+            want_name = real_name.strip().lower().replace("_", "-")
+            if cur_name == want_name and cur_version == real_version.strip():
+                return file_path, stem, stem + ".whl"
+            escaped = re.sub(r"[^\w.]+", "_", real_name.strip())
+            tags = "-".join(parts[2:]) if len(parts) > 2 else "py3-none-any"
+            new_stem = f"{escaped}-{real_version.strip()}-{tags}"
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,180}", new_stem) or ".." in new_stem:
+                return file_path, stem, stem + ".whl"
+            new_path = os.path.join(tmp_dir, new_stem + ".whl")
+            os.replace(file_path, new_path)
+            return new_path, new_stem, new_stem + ".whl"
+        except Exception:
+            return file_path, stem, stem + ".whl"
+
+    @staticmethod
     def _resolve_file_dist_name(file_path: str, filename: str) -> str:
         """
         从安装文件推断发行名
 
-        wheel 取文件名首段（构建时下划线转义，还原为连字符）；
+        wheel 优先读内部 dist-info 元数据（文件名可能被上传/暂存环节改过，
+        不可信），失败再退回文件名首段（下划线还原为连字符）；
         zip 取压缩包内 pyproject.toml 的 project.name（3.10 无 tomllib，正则解析）。
 
         :param file_path: 安装文件路径
@@ -51,6 +116,9 @@ class PipOpsMixin:
         lower = str(filename).lower()
         try:
             if lower.endswith(".whl"):
+                name, _version = PipOpsMixin._wheel_dist_identity(file_path)
+                if name:
+                    return name.strip().lower().replace("_", "-")
                 stem = os.path.splitext(filename)[0]
                 return stem.split("-")[0].strip().lower().replace("_", "-")
             if lower.endswith(".zip"):

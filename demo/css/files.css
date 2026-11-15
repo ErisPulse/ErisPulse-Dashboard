@@ -78,7 +78,7 @@
     width: 180px;
     padding: 6px 10px;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-t);
     color: var(--tx-p);
     font-size: 13px;
@@ -217,7 +217,7 @@
     white-space: nowrap;
 }
 
-/* 可预览文件：名称尾部预览按钮（桌面 hover 浮现 / 触屏常显） */
+/* 可预览文件：名称尾部预览按钮（桌面常显弱化态，hover 增强；触屏常显） */
 .fm2-previewbtn {
     flex-shrink: 0;
     width: 22px;
@@ -225,12 +225,12 @@
     border: none;
     background: transparent;
     color: var(--tx-t);
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
+    opacity: 0.45;
     transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
@@ -283,7 +283,7 @@
     border: none;
     background: transparent;
     color: var(--tx-t);
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     display: none;
     align-items: center;
@@ -305,7 +305,7 @@
 
 .fm2-tile {
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 14px 10px 10px;
     text-align: center;
     cursor: default;
@@ -355,7 +355,7 @@
     min-width: 168px;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 5px;
     box-shadow: 0 10px 32px -8px rgba(0, 0, 0, 0.28);
 }
@@ -670,7 +670,7 @@
     z-index: 1300;
     font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
     font-size: 12.5px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--bd);
     box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.25);
 }
@@ -753,7 +753,7 @@
 .fm-preview-hbtn {
     width: 30px;
     height: 30px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .fm-preview-hbtn svg {
@@ -827,7 +827,7 @@
     height: 46%;
     min-width: 180px;
     min-height: 120px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     background: var(--bd);
     animation: fmPreviewBreath 1.2s ease-in-out infinite;
 }

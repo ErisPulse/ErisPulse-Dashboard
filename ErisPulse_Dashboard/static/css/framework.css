@@ -576,7 +576,7 @@
 
 .fw-notes img {
     max-width: 100%;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
 }
 
 .fw-notes hr {
@@ -617,7 +617,7 @@
 .restart-banner {
     background: var(--wr-bg);
     border: 1px solid var(--wr-bd);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 12px 16px;
     font-size: 13px;
     font-weight: 500;
@@ -634,7 +634,7 @@
     margin-top: 8px;
     padding: 8px 12px;
     background: var(--bg-s);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--bd);
 }
 

@@ -196,6 +196,28 @@ export function toggleNavGroup(titleEl) {
   saveNavGroupStates();
 }
 
+// ── 外壳自愈看门狗 ──
+// 个别模块页面会破坏全局背景（移除 .bg-image 类 / body 背景图，整壳变白）。
+// 这里周期性比对本地背景设置与 DOM 实际状态，发现被外部改动立即按用户设置重放，
+// 模块侧无需逐个适配。函数经 window 全局可达（页面模块由 main.js 统一挂载）。
+var _shellGuardTimer = null;
+export function startShellGuard() {
+  if (_shellGuardTimer) return;
+  _shellGuardTimer = setInterval(function () {
+    try {
+      if (typeof window.getSetting !== "function" || typeof window.applyBgImage !== "function") return;
+      var img = window.getSetting("bg_image", "");
+      if (!img) return;
+      var html = document.documentElement;
+      var bodyHasImage = (document.body.style.backgroundImage || "").indexOf("url") !== -1;
+      if (!html.classList.contains("bg-image") || !bodyHasImage) {
+        window.applyBgImage(img);
+      }
+    } catch (e) { /* 静默：看门狗不干扰正常使用 */ }
+  }, 2500);
+}
+startShellGuard();
+
 export function saveNavGroupStates() {
   var enabled = localStorage.getItem("ep_remember_groups") !== "false";
   if (!enabled) return;

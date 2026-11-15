@@ -70,7 +70,8 @@
     position: relative;
     height: calc(100vh - 250px);
     min-height: 420px;
-    background: var(--bg-p);
+    /* 与全站卡片同一表面：bg-p 与页面底色同值时深色下"看不出是卡" */
+    background: var(--bg-t);
     border: 1px solid var(--bd);
     border-radius: var(--radius-lg);
     overflow: hidden;

@@ -462,7 +462,9 @@ export function applyBgImage(dataUrl) {
 export function applyBgPattern(url) {
   if (!url) return;
   setSetting("bg_image", url);
-  setSetting("bg_tile", "1");
+  // 图案默认平铺，但记住用户上次对图案来源的显式选择：
+  // 曾手动关闭平铺（bg_tile_pattern=0）时保持封面，不再静默覆盖偏好
+  setSetting("bg_tile", getSetting("bg_tile_pattern", "1"));
   applyBgImage(url);
   if (bgAutoThemeEnabled()) {
     extractImageColor(url, function (hex) {

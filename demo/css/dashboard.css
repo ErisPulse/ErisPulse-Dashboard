@@ -14,7 +14,7 @@
 .stat-card {
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     padding: 16px 18px;
     display: flex;
     align-items: center;

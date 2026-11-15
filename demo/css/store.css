@@ -578,7 +578,7 @@
     position: relative;
     background: none;
     border: 1px solid var(--bd);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 4px 8px;
     cursor: pointer;
     display: flex;
@@ -664,7 +664,7 @@
     right: 0;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 14px 20px;
     box-shadow: var(--shadow-hover);
     display: flex;
@@ -717,7 +717,7 @@
     max-height: 64vh;
     background: var(--bg-t);
     border: 1px solid var(--bd);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: none;
     z-index: 998;
     flex-direction: column;
@@ -852,7 +852,7 @@
 /* 上传安装模态窗 */
 .upload-drop-zone {
     border: 2px dashed var(--bd);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 32px 16px;
     text-align: center;
     cursor: pointer;
@@ -1038,7 +1038,7 @@
     font-size: 13px;
     background: var(--bg-p);
     padding: 12px 14px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow-x: auto;
     margin: 8px 0;
     border: 1px solid color-mix(in srgb, var(--bd) 30%, transparent);
@@ -1072,7 +1072,7 @@
 
 .pkg-detail-desc img {
     max-width: 100%;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
 }
 
 .pkg-detail-desc hr {
@@ -1435,4 +1435,37 @@ html.store-selecting .store-card:has(.store-card-check:checked) {
 
 html.store-selecting .store-grid {
     padding-bottom: 64px;
+}
+
+/* ── 详情弹层：版本历史 chips（默认仅最新 8 个，点击展开全部） ── */
+.pkg-ver-chip {
+    display: inline-block;
+    margin: 2px 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    color: var(--tx-s);
+    cursor: pointer;
+    transition: color 0.15s var(--ease-smooth, ease), border-color 0.15s var(--ease-smooth, ease);
+}
+
+.pkg-ver-chip:hover {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.pkg-ver-toggle {
+    display: inline-block;
+    margin: 2px 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 999px;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.pkg-ver-toggle:hover {
+    background: var(--accent-soft);
 }

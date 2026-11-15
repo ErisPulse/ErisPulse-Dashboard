@@ -65,6 +65,9 @@ export async function loadTranscript() {
   });
   if (stillThere) {
     selectTranscriptSession(_trCurSession, true);
+  } else if (_trSessions.length) {
+    // 无上次会话可恢复时自动选中最近一个，省一次点击；空态仅在全无会话时出现
+    selectTranscriptSession(_trSessions[0].session_key, true);
   } else {
     _trCurSession = "";
     _trRenderDetailEmpty();

@@ -72,11 +72,16 @@ class ApiStoreMixin:
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,120}", stem) or ".." in stem:
             return JSONResponse({"error": "invalid filename"}, status_code=400)
         tmp_dir = tempfile.mkdtemp(prefix="ep_upload_")
-        file_path = os.path.join(tmp_dir, "ep_upload_" + stem + ext)
+        # 暂存文件名保持上传原名（前缀加在目录上，目录名不参与安装）：
+        # uv/pip 对裸路径 wheel 安装从文件名推包名并与内部 dist-info 严格比对，
+        # 改文件名会直接导致安装失败（dist-info name mismatch）
+        file_path = os.path.join(tmp_dir, stem + ext)
         if not Path(file_path).resolve().is_relative_to(Path(tmp_dir).resolve()):
             return JSONResponse({"error": "invalid filename"}, status_code=400)
         content = await file.read()
         Path(file_path).write_bytes(content)
+        if ext == ".whl":
+            file_path, stem, filename = self._canonicalize_wheel_name(file_path, stem, tmp_dir)
         token = secrets.token_urlsafe(16)
         self._purge_stale_uploads()
         self._upload_tokens[token] = {

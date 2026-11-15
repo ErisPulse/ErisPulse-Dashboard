@@ -296,6 +296,15 @@
 /* ── 左栏：页头标题块 + 分区索引，桌面端作为一个整体 sticky 固定 ──
    右栏详情滚动时左栏纹丝不动；移动端保持常规文档流（标题在上、chips 次之） */
 
+/* 左栏索引卡：分区菜单原本裸排在壁纸上（无背景图时尤甚），给一个承托面；
+   bg-image 模式下 --bg-t 自动呈半透明，与全站卡片同一视觉语言 */
+.settings-aside {
+    padding: 14px 12px;
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    background: var(--bg-t);
+}
+
 .settings-aside-head {
     padding: 0 2px;
 }
@@ -598,13 +607,37 @@ button.set-row:hover .set-chevron {
     white-space: nowrap;
 }
 
-/* 卡内小节标题（如「界面风格」「图案库」）：11px 大写宽字距 */
+/* 卡内小节标题（如「界面风格」「图案库」）：11px 大写宽字距。
+   裸排在卡片之间的标题（API 密钥/登录防护等）直接压在壁纸上难以辨认，
+   统一给一层与卡片同语言的半透明胶囊承托 */
 .settings-subhead {
+    display: inline-flex;
+    align-items: center;
     margin: 16px 0 8px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-s) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    color: var(--tx-t);
+}
+
+/* 透感档位/效果档在无背景图时不可用：整组置灰（按钮 disabled，回显值保留） */
+.settings-seg.is-disabled {
+    opacity: 0.45;
+}
+.settings-seg.is-disabled button {
+    cursor: not-allowed;
+}
+
+/* 无背景图时的提示行（跟在效果档行下方） */
+.bg-fx-hint {
+    margin: -4px 0 6px;
+    font-size: 11.5px;
+    line-height: 1.5;
     color: var(--tx-t);
 }
 
@@ -1387,7 +1420,7 @@ button.set-row:hover .set-chevron {
 .theme-card-preview {
     width: 100%;
     height: 72px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 8px;
     border: 1px solid var(--bd);
     overflow: hidden;
@@ -1575,7 +1608,7 @@ button.set-row:hover .set-chevron {
 .style-card-preview {
     width: 100%;
     height: 48px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-bottom: 8px;
     border: 1px solid var(--bd);
     overflow: hidden;
@@ -1947,7 +1980,7 @@ button.set-row:hover .set-chevron {
     width: 20px;
     height: 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     background: transparent;
     color: var(--tx-t);
     font-size: 13px;

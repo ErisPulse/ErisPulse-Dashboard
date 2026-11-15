@@ -42,7 +42,7 @@
   width: 100%;
   padding: 9px 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--tx-p);
   font-size: 13px;

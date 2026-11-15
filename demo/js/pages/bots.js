@@ -88,11 +88,8 @@ export async function loadBots() {
             esc(x.bot_id) +
             "</code></span>" +
             "</div>" +
-            '<span class="chip ' +
-            (on ? "chip-ok" : "chip-er") +
-            ' bot-conn-chip"><i class="bot-conn-dot"></i>' +
-            (on ? t("online") : t("offline")) +
-            "</span>" +
+            // 连接状态由头像角标（bot-status-dot）表达，运行状态由底部
+            // adapter-status-chip 表达：去掉重复的"在线/离线" pill，降低卡片 pill 密度
             "</div>" +
             '<div class="bot-foot">' +
             (capsHtml ||

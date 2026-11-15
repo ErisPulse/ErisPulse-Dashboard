@@ -110,6 +110,20 @@ export function _getSelectedLevelsSet() {
   return new Set(_getSelectedLevels());
 }
 
+// 「只看错误」快捷开关：仅保留 WARNING/ERROR/CRITICAL；再点一次恢复默认
+// （TRACE/DEBUG 关、其余开），省去逐个点级别 chip 的麻烦
+export function toggleLogErrorsOnly(btn) {
+  var box = document.getElementById("logLevelFilter");
+  if (!box) return;
+  var active = btn.classList.toggle("active");
+  box.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    var lv = (cb.value || "").toUpperCase();
+    var isErr = lv === "WARNING" || lv === "ERROR" || lv === "CRITICAL";
+    cb.checked = active ? isErr : lv !== "TRACE" && lv !== "DEBUG";
+  });
+  if (typeof loadLogs === "function") loadLogs();
+}
+
 export function _logLevelToNum(level) {
   var map = { TRACE: 5, DEBUG: 10, INFO: 20, EVENT: 21, WARNING: 30, ERROR: 40, CRITICAL: 50 };
   return map[(level || "").toUpperCase()] ?? null;
