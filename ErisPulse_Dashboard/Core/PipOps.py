@@ -69,13 +69,38 @@ class PipOpsMixin:
         except Exception:
             return "", ""
 
+    @staticmethod
+    def _normalize_pep440_version(version: str) -> str:
+        """
+        PEP 440 规范化版本号（写入 wheel 文件名用）
+
+        文件名的版本段不能含连字符：2.12.1-dev.1 会被按连字符拆段，dev.1
+        落进 build tag 位——pip 判"非法 build tag"拒装，支持 PEP 825 的 uv
+        则误判为变体 wheel 而去找 dist-info/variant.json 报包格式无效。
+        统一改写为规范形式（2.12.1.dev1）；pip/uv 与 METADATA 比对版本时
+        按 PEP 440 等价处理，文件名规范化不影响安装。
+        """
+        mapping = {"alpha": "a", "beta": "b", "c": "rc", "pre": "rc", "preview": "rc"}
+
+        def repl(match):
+            seg, num = match.group(1), match.group(2) or ""
+            if seg == "dev":
+                return f".dev{num}"
+            if seg in ("post", "rev", "r"):
+                return f".post{num}"
+            return mapping.get(seg, seg) + num
+
+        return re.sub(r"[-_.]+(alpha|beta|preview|pre|post|rev|dev|a|b|c|rc)[-_.]?(\d+)?", repl, version.strip().lower())
+
     def _canonicalize_wheel_name(self, file_path: str, stem: str, tmp_dir: str) -> tuple[str, str, str]:
         """
         wheel 暂存名与内部元数据不符时改写为规范文件名
 
         用户把 wheel 改过名再上传（如 qvqchat.whl）会让 uv/pip 从文件名推出
         错误包名而拒装——这里以 dist-info 元数据为准改写暂存文件名
-        （{name}-{version}-{原tags}，缺 tags 补 py3-none-any）。
+        （{name}-{version}-{原tags}，缺 tags 补 py3-none-any）。版本号按
+        PEP 440 规范化写入（2.12.1-dev.1 → 2.12.1.dev1），连字符版本会把
+        文件名拆出非法 build tag 段。
 
         :return: (新文件路径, 新 stem, 新文件名)；已是规范名/解析失败原样返回
         """
@@ -83,15 +108,18 @@ class PipOpsMixin:
             real_name, real_version = self._wheel_dist_identity(file_path)
             if not real_name or not real_version:
                 return file_path, stem, stem + ".whl"
+            real_version = self._normalize_pep440_version(real_version)
             parts = stem.split("-")
             cur_name = parts[0].strip().lower().replace("_", "-")
             cur_version = parts[1].strip() if len(parts) > 1 else ""
             want_name = real_name.strip().lower().replace("_", "-")
-            if cur_name == want_name and cur_version == real_version.strip():
+            if cur_name == want_name and cur_version == real_version:
                 return file_path, stem, stem + ".whl"
             escaped = re.sub(r"[^\w.]+", "_", real_name.strip())
-            tags = "-".join(parts[2:]) if len(parts) > 2 else "py3-none-any"
-            new_stem = f"{escaped}-{real_version.strip()}-{tags}"
+            # 版本段含连字符时会把后续段吞进版本（如 2.12.1-dev.1 拆成 6 段），
+            # tags 取末三段而非紧随版本段，避免把残段拼回文件名
+            tags = "-".join(parts[-3:]) if len(parts) >= 5 else "py3-none-any"
+            new_stem = f"{escaped}-{real_version}-{tags}"
             if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,180}", new_stem) or ".." in new_stem:
                 return file_path, stem, stem + ".whl"
             new_path = os.path.join(tmp_dir, new_stem + ".whl")

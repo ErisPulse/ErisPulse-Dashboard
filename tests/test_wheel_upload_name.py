@@ -2,7 +2,9 @@
 
 uv/pip 对裸路径 wheel 安装从**文件名**推包名并与内部 dist-info 严格比对，
 文件名与元数据不符直接拒装（ep_upload_ 前缀事故）。这里锁死：元数据是唯一
-事实源，暂存名不一致时改写成规范名。
+事实源，暂存名不一致时改写成规范名；版本号同步 PEP 440 规范化——连字符
+版本（2.12.1-dev.1）会把文件名拆出非法 build tag 段，pip 判非法 build、
+uv 按 PEP 825 误判变体 wheel 找 variant.json，均拒装。
 """
 import os
 import re
@@ -72,6 +74,39 @@ def test_canonicalize_noop_for_matching_name(tmp_path):
         str(wheel), stem, str(tmp_path)
     )
     assert (new_path, new_stem, new_filename) == (str(wheel), stem, stem + ".whl")
+
+
+def test_canonicalize_normalizes_hyphenated_version(tmp_path):
+    """版本段含连字符（2.12.1-dev.1）时改写为规范 2.12.1.dev1 并丢弃残段。"""
+    wheel = make_wheel(
+        tmp_path / "ErisPulse-2.12.1-dev.1-py3-none-any.whl",
+        dist_stem="ErisPulse-2.12.1-dev.1", name="ErisPulse", version="2.12.1-dev.1",
+    )
+    _path, new_stem, new_filename = PipOpsMixin()._canonicalize_wheel_name(
+        str(wheel), "ErisPulse-2.12.1-dev.1-py3-none-any", str(tmp_path)
+    )
+    assert new_stem == "ErisPulse-2.12.1.dev1-py3-none-any"
+    assert new_filename == "ErisPulse-2.12.1.dev1-py3-none-any.whl"
+
+
+def test_canonicalize_noop_when_filename_version_is_normalized(tmp_path):
+    """METADATA 版本未规范化（2.12.1-dev.1）但文件名已是规范 .dev1：不再改写。"""
+    wheel = make_wheel(
+        tmp_path / "ErisPulse-2.12.1.dev1-py3-none-any.whl",
+        dist_stem="ErisPulse-2.12.1.dev1", name="ErisPulse", version="2.12.1-dev.1",
+    )
+    stem = "ErisPulse-2.12.1.dev1-py3-none-any"
+    result = PipOpsMixin()._canonicalize_wheel_name(str(wheel), stem, str(tmp_path))
+    assert result == (str(wheel), stem, stem + ".whl")
+
+
+def test_normalize_pep440_version_segments():
+    f = PipOpsMixin._normalize_pep440_version
+    assert f("2.12.1-dev.1") == "2.12.1.dev1"
+    assert f("1.0.0-RC1") == "1.0.0rc1"
+    assert f("1.0_preview2") == "1.0rc2"
+    assert f("1.0-rev2") == "1.0.post2"
+    assert f("4.6.7") == "4.6.7"
 
 
 def test_canonicalize_survives_broken_wheel(tmp_path):
