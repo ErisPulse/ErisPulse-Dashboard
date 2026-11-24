@@ -451,13 +451,16 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/store/install/status'] = function () { return _json({ status: 'success' }); };
     API_MAP['/api/store/package/detail'] = function () { return _json({ name: 'Demo Package', version: '1.0.0', description: 'Demo package detail', dependencies: [], versions: ['1.0.0', '0.9.0'] }); };
 
+    var _mockDrvPkgs = {};  // name -> version：演示存储驱动安装闭环（安装后进入已装列表）
     API_MAP['/api/packages'] = function () {
-        return _json({
-            packages: [
-                { name: 'erispulse', version: '2.8.3', summary: 'ErisPulse framework core', type: 'library', package: 'erispulse' },
-                { name: 'ErisPulse-Dashboard', version: '1.9.1', summary: 'Web admin dashboard', type: 'module', package: 'ErisPulse-Dashboard' }
-            ]
-        });
+        var list = [
+            { name: 'erispulse', version: '2.8.3', summary: 'ErisPulse framework core', type: 'library', package: 'erispulse' },
+            { name: 'ErisPulse-Dashboard', version: '1.9.1', summary: 'Web admin dashboard', type: 'module', package: 'ErisPulse-Dashboard' }
+        ];
+        for (var n in _mockDrvPkgs) {
+            list.push({ name: n, version: _mockDrvPkgs[n], summary: 'Storage driver (demo)', type: 'library', package: n });
+        }
+        return _json({ packages: list, total: list.length });
     };
 
     API_MAP['/api/packages/updates'] = function () {
@@ -473,7 +476,14 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
         setTimeout(function () { window._mockEmitInstall(taskId, packages); }, 200);
         return _json({ success: true, task_id: taskId });
     };
-    API_MAP['/api/packages/install'] = function () { return _json({ success: true, task_id: 'mock_install_' + _r(1000, 9999) }); };
+    API_MAP['/api/packages/install'] = function (opts) {
+        var packages = [];
+        try { packages = JSON.parse(opts.body).packages || []; } catch (e) { }
+        packages.forEach(function (p) { _mockDrvPkgs[p] = '1.0.0'; });
+        var taskId = 'mock_install_' + _r(1000, 9999);
+        setTimeout(function () { window._mockEmitInstall(taskId, packages); }, 300);
+        return _json({ success: true, task_id: taskId });
+    };
     API_MAP['/api/packages/uninstall'] = function () { return _json({ success: true }); };
 
     // 模拟安装任务：向当前 WS 推送 install_progress running → success

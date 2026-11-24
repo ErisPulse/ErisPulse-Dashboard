@@ -248,12 +248,13 @@ export async function loadFrameworkConfig() {
   window._fwData = merged;
   const body = document.getElementById("fwConfigBody");
   if (!body) return;
-  const sections = flattenFwSections(merged);
+  const sections = _mergeStorageSections(flattenFwSections(merged));
   body.innerHTML =
     '<div class="fw-add-field-bar"><button class="btn btn-secondary btn-sm" onclick="addFwField()">+ ' +
     t("fw_add_field") +
     "</button></div>" +
     sections.map((s) => renderFwSection(s)).join("");
+  fwRefreshStorageDriver();
   loadFrameworkVersions();
 }
 
@@ -344,127 +345,10 @@ export function flattenFwSections(obj, prefix) {
 }
 
 export function renderFwSection(s) {
+  if (s.storageGroup) return renderFwStorageSection(s);
   const displayName = fwSectionI18nKey(s.key);
-  const knownKeys = _buildFwKnownKeys();
   const rows = Object.entries(s.values)
-    .map(([field, info]) => {
-      var val =
-        info && typeof info === "object" && "value" in info ? info.value : info;
-      var keyForCheck = s.key + "." + field;
-      var isKnown =
-        info && typeof info === "object" && "known" in info
-          ? info.known
-          : !!knownKeys[keyForCheck];
-      isKnown =
-        isKnown ||
-        keyForCheck.startsWith("adapters.") ||
-        keyForCheck.startsWith("modules.");
-      const fk = "ErisPulse." + s.key + "." + field;
-      const descKey = s.key + "." + field;
-      const desc = fwFieldDesc(descKey);
-      const tp =
-        val === null ? "null" : Array.isArray(val) ? "list" : typeof val;
-      var rowClass = isKnown ? "fw-row" : "fw-row fw-row-unknown";
-      var unknownLabel = isKnown
-        ? ""
-        : '<span class="fw-unknown-badge" title="' +
-          esc(t("fw_unknown_field_desc")) +
-          '">' +
-          esc(t("fw_unknown_field")) +
-          "</span>";
-
-      var widgetDef = _fwFieldWidgets[descKey];
-      var ctrl = "";
-      if (widgetDef && widgetDef.widget === "select") {
-        var optsHtml = widgetDef.options
-          .map(function (o) {
-            var sel =
-              String(val).toLowerCase() === String(o).toLowerCase()
-                ? " selected"
-                : "";
-            return (
-              '<option value="' +
-              esc(o) +
-              '"' +
-              sel +
-              ">" +
-              esc(o) +
-              "</option>"
-            );
-          })
-          .join("");
-        ctrl =
-          '<select class="settings-select" data-fk="' +
-          esc(fk) +
-          '" data-tp="string" onchange="saveFwConfig(this)">' +
-          optsHtml +
-          "</select>";
-      } else if (tp === "boolean") {
-        ctrl =
-          '<label class="switch"><input type="checkbox" ' +
-          (val ? "checked" : "") +
-          ' data-fk="' +
-          esc(fk) +
-          '" data-tp="' +
-          tp +
-          '" onchange="saveFwConfig(this)"><span class="switch-slider"></span></label>';
-      } else if (tp === "number") {
-        ctrl =
-          '<input class="fw-input" type="number" value="' +
-          esc(String(val)) +
-          '" data-fk="' +
-          esc(fk) +
-          '" data-tp="' +
-          tp +
-          '">';
-      } else if (tp === "list") {
-        ctrl = renderFwListField(fk, val);
-      } else if (tp === "object") {
-        ctrl =
-          '<textarea class="fw-input fw-textarea" rows="2" data-fk="' +
-          esc(fk) +
-          '" data-tp="' +
-          tp +
-          '">' +
-          esc(JSON.stringify(val)) +
-          "</textarea>";
-      } else {
-        ctrl =
-          '<input class="fw-input" type="text" value="' +
-          esc(val === null ? "" : String(val)) +
-          '" data-fk="' +
-          esc(fk) +
-          '" data-tp="' +
-          tp +
-          '"' +
-          (val === null ? ' placeholder="null"' : "") +
-          ">";
-      }
-      var saveBtn =
-        tp === "boolean" || tp === "list"
-          ? ""
-          : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
-      var resetBtn =
-        '<button class="kv-btn kv-btn-del" onclick="resetFwField(\'' +
-        esc(fk) +
-        '\')" title="' +
-        esc(isKnown ? t("fw_reset_default") : t("fw_delete_field")) +
-        '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>';
-      var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "";
-      return (
-        '<div class="' +
-        rowClass +
-        '"><div class="fw-label">' +
-        esc(field) +
-        unknownLabel +
-        descHtml +
-        '</div><div class="fw-control">' +
-        ctrl +
-        saveBtn +
-        resetBtn +
-        "</div></div>"
-      );
-    })
+    .map(([field, info]) => _fwRowHtml(s, field, info))
     .join("");
   // 空表（如 scope.platforms/bots/sessions 等默认 {}）：渲染空状态 + 去添加入口，
   var body;
@@ -493,6 +377,365 @@ export function renderFwSection(s) {
     body +
     "</div></div>"
   );
+}
+
+// 单行配置渲染：通用分区与存储卡片共用（行内容仅由 section key + 字段决定）
+function _fwRowHtml(s, field, info) {
+  var knownKeys = _buildFwKnownKeys();
+  var val =
+    info && typeof info === "object" && "value" in info ? info.value : info;
+  var keyForCheck = s.key + "." + field;
+  var isKnown =
+    info && typeof info === "object" && "known" in info
+      ? info.known
+      : !!knownKeys[keyForCheck];
+  isKnown =
+    isKnown ||
+    keyForCheck.startsWith("adapters.") ||
+    keyForCheck.startsWith("modules.");
+  const fk = "ErisPulse." + s.key + "." + field;
+  const descKey = s.key + "." + field;
+  const desc = fwFieldDesc(descKey);
+  const tp =
+    val === null ? "null" : Array.isArray(val) ? "list" : typeof val;
+  var rowClass = isKnown ? "fw-row" : "fw-row fw-row-unknown";
+  var unknownLabel = isKnown
+    ? ""
+    : '<span class="fw-unknown-badge" title="' +
+      esc(t("fw_unknown_field_desc")) +
+      '">' +
+      esc(t("fw_unknown_field")) +
+      "</span>";
+
+  var widgetDef = _fwFieldWidgets[descKey];
+  var ctrl = "";
+  if (widgetDef && widgetDef.widget === "select") {
+    var optsHtml = widgetDef.options
+      .map(function (o) {
+        var sel =
+          String(val).toLowerCase() === String(o).toLowerCase()
+            ? " selected"
+            : "";
+        return (
+          '<option value="' +
+          esc(o) +
+          '"' +
+          sel +
+          ">" +
+          esc(o) +
+          "</option>"
+        );
+      })
+      .join("");
+    ctrl =
+      '<select class="settings-select" data-fk="' +
+      esc(fk) +
+      '" data-tp="string" onchange="saveFwConfig(this)">' +
+      optsHtml +
+      "</select>";
+  } else if (tp === "boolean") {
+    ctrl =
+      '<label class="switch"><input type="checkbox" ' +
+      (val ? "checked" : "") +
+      ' data-fk="' +
+      esc(fk) +
+      '" data-tp="' +
+      tp +
+      '" onchange="saveFwConfig(this)"><span class="switch-slider"></span></label>';
+  } else if (tp === "number") {
+    ctrl =
+      '<input class="fw-input" type="number" value="' +
+      esc(String(val)) +
+      '" data-fk="' +
+      esc(fk) +
+      '" data-tp="' +
+      tp +
+      '">';
+  } else if (tp === "list") {
+    ctrl = renderFwListField(fk, val);
+  } else if (tp === "object") {
+    ctrl =
+      '<textarea class="fw-input fw-textarea" rows="2" data-fk="' +
+      esc(fk) +
+      '" data-tp="' +
+      tp +
+      '">' +
+      esc(JSON.stringify(val)) +
+      "</textarea>";
+  } else {
+    ctrl =
+      '<input class="fw-input" type="text" value="' +
+      esc(val === null ? "" : String(val)) +
+      '" data-fk="' +
+      esc(fk) +
+      '" data-tp="' +
+      tp +
+      '"' +
+      (val === null ? ' placeholder="null"' : "") +
+      ">";
+  }
+  var saveBtn =
+    tp === "boolean" || tp === "list"
+      ? ""
+      : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
+  var resetBtn =
+    '<button class="kv-btn kv-btn-del" onclick="resetFwField(\'' +
+    esc(fk) +
+    '\')" title="' +
+    esc(isKnown ? t("fw_reset_default") : t("fw_delete_field")) +
+    '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>';
+  var descHtml = desc ? '<div class="fw-desc">' + esc(desc) + "</div>" : "";
+  return (
+    '<div class="' +
+    rowClass +
+    '"><div class="fw-label">' +
+    esc(field) +
+    unknownLabel +
+    descHtml +
+    '</div><div class="fw-control">' +
+    ctrl +
+    saveBtn +
+    resetBtn +
+    "</div></div>"
+  );
+}
+
+// ════════════════ 存储后端卡片 ════════════════
+
+// 内置后端卡片元数据与驱动包（前端硬编码，与 SDK pyproject extras 同一驱动集合；
+// cryptography 为 MySQL 8 caching_sha2_password 认证必需，裸装 aiomysql 连不上）
+const _FW_STORAGE_CARDS = {
+  sqlite: {
+    icon:
+      '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+    labelKey: "fw_storage_card_sqlite",
+    descKey: "fw_storage_card_sqlite_desc",
+  },
+  mysql: {
+    icon:
+      '<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
+    labelKey: "fw_storage_card_mysql",
+    descKey: "fw_storage_card_mysql_desc",
+    prefix: "mysql",
+  },
+  postgres: {
+    icon:
+      '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    labelKey: "fw_storage_card_postgres",
+    descKey: "fw_storage_card_postgres_desc",
+    prefix: "postgres",
+  },
+};
+const _FW_STORAGE_DRV_PKGS = {
+  sqlite: [],
+  mysql: ["aiomysql", "cryptography"],
+  postgres: ["asyncpg"],
+};
+
+// 驱动状态行图标（feather 风格内联 svg，与全站图标一致）
+const _FW_DRV_CHECK_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const _FW_DRV_WARN_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+// 展平会把 storage 拆成 storage / storage.mysql / storage.postgres 三段——
+// 合并回一段（保持原位置）交给卡片渲染，其余分区不受影响
+function _mergeStorageSections(sections) {
+  var out = [];
+  var group = null;
+  var pos = -1;
+  for (var i = 0; i < sections.length; i++) {
+    var s = sections[i];
+    if (s.key === "storage") {
+      pos = out.length;
+      group = { leaves: s.values };
+      out.push(null);
+    } else if (s.key === "storage.mysql") {
+      if (group) group.mysql = s.values;
+    } else if (s.key === "storage.postgres") {
+      if (group) group.postgres = s.values;
+    } else {
+      out.push(s);
+    }
+  }
+  if (!group) return sections;
+  out[pos] = { key: "storage", values: group.leaves || {}, storageGroup: group };
+  return out.filter(Boolean);
+}
+
+function _fwStorageCardHtml(backend, def, sub) {
+  var fieldsHtml = "";
+  if (sub && Object.keys(sub).length) {
+    var subKey = def.prefix ? "storage." + def.prefix : "storage";
+    fieldsHtml =
+      '<div class="fw-storage-card-fields">' +
+      Object.keys(sub)
+        .map(function (f) {
+          return _fwRowHtml({ key: subKey }, f, sub[f]);
+        })
+        .join("") +
+      "</div>";
+  }
+  return (
+    '<div class="fw-storage-card"><div class="fw-storage-card-head">' +
+    '<span class="fw-storage-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    def.icon +
+    "</svg></span>" +
+    '<span class="fw-storage-card-name">' +
+    esc(t(def.labelKey)) +
+    "</span></div>" +
+    '<div class="fw-storage-card-desc">' +
+    esc(t(def.descKey)) +
+    "</div>" +
+    fieldsHtml +
+    '<div class="fw-storage-drv" id="fwStorageDrv" data-backend="' +
+    esc(backend) +
+    '"><span class="fw-storage-drv-text">' +
+    esc(t("fw_storage_drv_checking")) +
+    "</span></div></div>"
+  );
+}
+
+export function renderFwStorageSection(s) {
+  var displayName = fwSectionI18nKey(s.key);
+  var values = s.values || {};
+  var group = s.storageGroup || {};
+  var backendInfo = values.backend || { value: "sqlite", known: true };
+  var backend = String(
+    backendInfo.value == null ? "sqlite" : backendInfo.value,
+  )
+    .trim()
+    .toLowerCase();
+  if (backend === "postgresql") backend = "postgres";
+  var def = _FW_STORAGE_CARDS[backend] || _FW_STORAGE_CARDS.sqlite;
+  var rows = [_fwRowHtml(s, "backend", backendInfo)];
+  var cardSub = null;
+  if (def.prefix) cardSub = group[def.prefix] || {};
+  else if (values.use_global_db !== undefined)
+    cardSub = { use_global_db: values.use_global_db };
+  rows.push(_fwStorageCardHtml(backend, def, cardSub));
+  var reserved = { backend: 1, use_global_db: 1 };
+  for (var field in values) {
+    if (!reserved[field]) rows.push(_fwRowHtml(s, field, values[field]));
+  }
+  return (
+    '<div class="fw-section"><div class="fw-section-title">' +
+    esc(displayName) +
+    '</div><div class="fw-section-body">' +
+    rows.join("") +
+    "</div></div>"
+  );
+}
+
+// 卡片驱动状态：查已装包列表（包名小写比对）；sqlite 零依赖直接就绪
+export async function fwRefreshStorageDriver() {
+  var el = document.getElementById("fwStorageDrv");
+  if (!el) return;
+  var backend = el.dataset.backend || "sqlite";
+  var pkgs = _FW_STORAGE_DRV_PKGS[backend] || [];
+  if (!pkgs.length) {
+    el.className = "fw-storage-drv ok";
+    el.innerHTML =
+      _FW_DRV_CHECK_SVG +
+      '<span class="fw-storage-drv-text">' +
+      esc(t("fw_storage_drv_none")) +
+      "</span>";
+    return;
+  }
+  var installed = {};
+  try {
+    var d = await api("/api/packages");
+    (d && d.packages ? d.packages : []).forEach(function (p) {
+      installed[String(p.name || "").toLowerCase()] = 1;
+    });
+  } catch (e) {}
+  var missing = pkgs.filter(function (p) {
+    return !installed[p];
+  });
+  el.dataset.missing = missing.join(",");
+  if (!missing.length) {
+    el.className = "fw-storage-drv ok";
+    el.innerHTML =
+      _FW_DRV_CHECK_SVG +
+      '<span class="fw-storage-drv-text">' +
+      esc(t("fw_storage_drv_ok")) +
+      "</span>";
+  } else {
+    el.className = "fw-storage-drv warn";
+    el.innerHTML =
+      _FW_DRV_WARN_SVG +
+      '<span class="fw-storage-drv-text">' +
+      esc(t("fw_storage_drv_missing").replace("{pkgs}", missing.join(", "))) +
+      '</span><button class="btn btn-primary btn-sm" onclick="fwInstallStorageDriver(this)">' +
+      esc(t("fw_storage_drv_install")) +
+      "</button>";
+  }
+}
+
+// 经通用 pip 安装通道装缺失驱动；任务进度照常走 install_progress 活动中心
+export async function fwInstallStorageDriver(btn) {
+  var el = document.getElementById("fwStorageDrv");
+  var backend = (el && el.dataset.backend) || "";
+  var missing = ((el && el.dataset.missing) || "").split(",").filter(Boolean);
+  if (!missing.length) return;
+  btn.disabled = true;
+  btn.textContent = t("installing");
+  var d = await api("/api/packages/install", {
+    method: "POST",
+    body: JSON.stringify({ packages: missing }),
+  });
+  if (d && d.success && d.task_id) {
+    _installTaskIds.set(d.task_id, t("fw_storage_drv_task"));
+    _pollStorageDriver(backend, 60);
+  } else {
+    btn.disabled = false;
+    btn.textContent = t("fw_storage_drv_install");
+    toast(
+      t("install_failed") + ": " + ((d && d.error) || t("unknown_error")),
+      "er",
+    );
+  }
+}
+
+// ws 的 install_progress 只喂活动面板，不回本卡片——轮询已装包等驱动就位后刷新
+async function _pollStorageDriver(backend, tries) {
+  for (var i = 0; i < tries; i++) {
+    await new Promise(function (r) {
+      setTimeout(r, 3000);
+    });
+    var d = await api("/api/packages");
+    var installed = {};
+    (d && d.packages ? d.packages : []).forEach(function (p) {
+      installed[String(p.name || "").toLowerCase()] = 1;
+    });
+    var missing = (_FW_STORAGE_DRV_PKGS[backend] || []).filter(function (p) {
+      return !installed[p];
+    });
+    if (!missing.length) {
+      toast(t("fw_storage_drv_done"), "ok");
+      loadFrameworkConfig();
+      return;
+    }
+  }
+  toast(t("install_failed"), "er");
+}
+
+// 切换存储后端：重渲染出对应卡片；缺驱动时主动询问是否立即安装
+export async function fwAfterBackendSwitch(backend) {
+  await loadFrameworkConfig();
+  var el = document.getElementById("fwStorageDrv");
+  var missing = ((el && el.dataset.missing) || "").split(",").filter(Boolean);
+  if (!missing.length) return;
+  var ok = await confirm2(
+    t("fw_storage_drv_ask_title"),
+    t("fw_storage_drv_ask_text")
+      .replace("{backend}", backend)
+      .replace("{pkgs}", missing.join(", ")),
+  );
+  if (ok) {
+    var btn = el.querySelector("button");
+    if (btn) fwInstallStorageDriver(btn);
+  }
 }
 
 // 空作用域表「去添加」：跳权限控制页 scope 分区（完整编辑器在那里）
@@ -617,8 +860,16 @@ export async function saveFwConfig(el) {
   el.style.border =
     d && d.success ? "2px solid var(--ok-c)" : "2px solid var(--er-c)";
   setTimeout(() => (el.style.border = ""), 1200);
-  if (d && d.success) toast(t("config_saved"), "ok");
-  else toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+  if (d && d.success) {
+    toast(t("config_saved"), "ok");
+    // 存储后端切换：重渲染出对应后端卡片；mysql/postgres 缺驱动时主动询问安装
+    if (fk === "ErisPulse.storage.backend") {
+      if (v === "mysql" || v === "postgres") fwAfterBackendSwitch(v);
+      else loadFrameworkConfig();
+    }
+  } else {
+    toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
+  }
 }
 
 export async function resetFwField(fk) {

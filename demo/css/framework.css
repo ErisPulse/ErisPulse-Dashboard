@@ -832,3 +832,75 @@
         font-size: 16px;
     }
 }
+
+/* ══════════ 存储后端卡片：切换 backend 仅展示对应后端的连接参数与驱动状态 ══════════ */
+.fw-storage-card {
+    border: 1px solid color-mix(in srgb, var(--bd) 40%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--bg-t);
+    padding: 10px 14px 12px;
+    margin: 2px 0 10px;
+}
+
+.fw-storage-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 2px;
+}
+
+.fw-storage-card-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.fw-storage-card-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.fw-storage-card-desc {
+    font-size: 12px;
+    opacity: 0.72;
+    line-height: 1.5;
+    margin: 2px 0 8px;
+}
+
+.fw-storage-drv {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    margin-top: 6px;
+}
+
+.fw-storage-drv .fw-storage-drv-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.fw-storage-drv.warn {
+    color: var(--wr-c);
+    background: var(--wr-bg);
+    border: 1px solid var(--wr-bd);
+}
+
+.fw-storage-drv.ok {
+    color: var(--ok-c);
+    background: var(--ok-bg);
+    border: 1px solid var(--ok-bd);
+}
+
+.fw-storage-card-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.fw-storage-drv svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+}
