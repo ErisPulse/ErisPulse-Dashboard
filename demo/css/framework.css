@@ -904,3 +904,14 @@
     height: 14px;
     flex: none;
 }
+
+.fw-storage-actions {
+    margin-top: 8px;
+}
+
+.fw-storage-actions svg {
+    width: 13px;
+    height: 13px;
+    vertical-align: -2px;
+    margin-right: 4px;
+}

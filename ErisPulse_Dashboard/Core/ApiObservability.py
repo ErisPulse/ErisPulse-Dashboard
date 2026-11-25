@@ -1,7 +1,9 @@
 """ApiObservabilityMixin：配置源码 / 日志 / 审计 / 生命周期 / 性能 / 路由 / 备份 API"""
 
+import copy
 import os
 import time
+from typing import Any
 
 from fastapi import Request, Response
 from fastapi.responses import FileResponse, JSONResponse
@@ -706,52 +708,103 @@ class ApiObservabilityMixin:
 
     # ════════════════ API · 备份 ════════════════
 
+    async def _backup_kv(self, async_name: str, sync_name: str, *args: Any) -> Any:
+        """KV 接口优先走异步：同步接口已弃用，且在异步上下文里会阻塞事件循环"""
+        method = getattr(self.storage, async_name, None)
+        if callable(method):
+            return await method(*args)
+        return getattr(self.storage, sync_name)(*args)
+
+    def _backup_kv_has(self, async_name: str, sync_name: str) -> bool:
+        """是否有可用的 KV 接口（异步或同步任一）"""
+        return any(
+            callable(getattr(self.storage, name, None)) for name in (async_name, sync_name)
+        )
+
     async def _api_backup_export(self, request: Request) -> JSONResponse:
         # 优先公开 API 全量读取，旧 SDK 回退私有 _cache
         if hasattr(self.sdk.config, "getAllConfig"):
             config_data = dict(self.sdk.config.getAllConfig())
         else:
             config_data = dict(self.sdk.config._cache)
-        storage_keys = self.storage.get_all_keys()
-        storage_data = {}
-        for k in storage_keys[:500]:
-            storage_data[k] = self.storage.get(k)
+        # 全量 KV（不设上限）+ KV 之外的全部表：切换存储后端靠它把数据搬过去
+        storage_keys = await self._backup_kv("aget_all_keys", "get_all_keys")
+        storage_data: dict = {}
+        if storage_keys:
+            keys = list(storage_keys)
+            if self._backup_kv_has("aget_multi", "get_multi"):
+                storage_data = dict(
+                    await self._backup_kv("aget_multi", "get_multi", keys) or {}
+                )
+            else:
+                for key in keys:
+                    storage_data[key] = await self._backup_kv("aget", "get", key)
         backup = {
-            "version": "1.0",
+            "version": "2.0",
             "timestamp": time.time(),
+            "backend": self._storage_dialect_name(),
             "config": config_data,
             "storage": storage_data,
+            "tables": await self._backup_export_tables(),
             "audit_log": self._audit_log[-100:],
         }
-        self._add_audit_log("backup_export", "", request)
+        self._add_audit_log("backup_export", f"{len(backup['tables'])} tables", request)
         return JSONResponse(backup)
+
+    @staticmethod
+    def _backup_config_without_storage(raw: Any) -> dict:
+        """备份里的框架配置，去掉 ErisPulse.storage 节"""
+        if not isinstance(raw, dict):
+            return {}
+        config_data = copy.deepcopy(raw)
+        framework = config_data.get("ErisPulse")
+        if isinstance(framework, dict):
+            framework.pop("storage", None)
+        return config_data
 
     async def _api_backup_import(self, request: Request) -> JSONResponse:
         body = await request.json()
         if not isinstance(body, dict):
             return JSONResponse({"error": "Invalid backup format"}, status_code=400)
-        config_keys_before = set(self.sdk.config._cache.keys())
-        config_data = body.get("config", {})
-        if isinstance(config_data, dict):
-            for key, value in config_data.items():
-                if key == "Dashboard":
-                    continue
-                self.sdk.config.setConfig(key, value)
-        storage_data = body.get("storage", {})
-        if isinstance(storage_data, dict):
-            for key, value in storage_data.items():
-                if key.startswith("__ep_"):
-                    continue
-                self.storage.set(key, value)
+        overwrite = request.query_params.get("overwrite", "").lower() in ("1", "true", "yes")
+
+        # 数据表先做：冲突或文件不合规时直接中止，配置与 KV 都还没动
+        try:
+            tables_result = await self._backup_import_tables(body.get("tables") or [], overwrite)
+        except ValueError as e:
+            return JSONResponse({"error": str(e)}, status_code=400)
+        if "error" in tables_result:
+            return JSONResponse(tables_result, status_code=409)
+
+        # ErisPulse.storage 节不恢复：导入旧后端的备份会把后端配置改回去，
+        # 而数据已经导进了当前后端
+        config_data = self._backup_config_without_storage(body.get("config"))
+        for key, value in config_data.items():
+            if key == "Dashboard":
+                continue
+            self.sdk.config.setConfig(key, value)
+        kv_payload: dict = {}
+        if isinstance(body.get("storage"), dict):
+            kv_payload = {
+                key: value
+                for key, value in body["storage"].items()
+                if not str(key).startswith("__ep_")
+            }
+        storage_ok = True
+        if kv_payload:
+            storage_ok = await self._backup_kv("aset_multi", "set_multi", kv_payload) is not False
+        failed = [table for table in tables_result["tables"] if not table["ok"]]
         self._add_audit_log(
             "backup_import",
-            f"config: {len(config_data)} keys, storage: {len(storage_data)} keys",
+            f"config: {len(config_data)} keys, storage: {len(kv_payload)} keys, "
+            f"tables: {len(tables_result['tables'])}",
             request,
         )
         return JSONResponse(
             {
-                "success": True,
+                "success": not failed and storage_ok,
                 "config_restored": len(config_data),
-                "storage_restored": len(storage_data),
+                "storage_restored": len(kv_payload),
+                "tables": tables_result["tables"],
             }
         )

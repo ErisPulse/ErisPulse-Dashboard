@@ -1524,11 +1524,16 @@ export function applySettingAutoCheckUpdates(on) {
 }
 
 export async function exportBackup() {
-  if (!authed) return showLogin();
+  if (!authed) {
+    showLogin();
+    return false;
+  }
+  // 全表导出可能要几秒，先给个反馈
+  toast(t("backup_exporting"));
   const d = await api("/api/backup/export");
   if (!d || d.error) {
     toast(t("backup_failed"), "er");
-    return;
+    return false;
   }
   const blob = new Blob([JSON.stringify(d, null, 2)], {
     type: "application/json",
@@ -1540,7 +1545,54 @@ export async function exportBackup() {
   a.download = "erispulse-backup-" + ts + ".json";
   a.click();
   URL.revokeObjectURL(url);
-  toast(t("backup_export_success"), "ok");
+  toast(
+    t("backup_export_success") +
+      " (" +
+      t("backup_result_summary")
+        .replace("{config}", d.config ? Object.keys(d.config).length : 0)
+        .replace("{storage}", d.storage ? Object.keys(d.storage).length : 0)
+        .replace("{tables}", (d.tables || []).length) +
+      ")",
+    "ok",
+  );
+  return true;
+}
+
+// 导入结果：全部成功只弹一条；有表失败时逐表列出来
+function showBackupResult(result) {
+  const tables = result.tables || [];
+  const summary =
+    t("import_success") +
+    " (" +
+    t("backup_result_summary")
+      .replace("{config}", result.config_restored || 0)
+      .replace("{storage}", result.storage_restored || 0)
+      .replace("{tables}", tables.length) +
+    ")";
+  if (result.success) {
+    toast(summary, "ok");
+    return;
+  }
+  // 表全部成功却没成功，只能是 KV 写入失败（服务端只在表全部成功时才写配置与 KV 的回执）
+  const failed = tables.some((table) => !table.ok);
+  alert2(
+    failed ? t("backup_tables_failed") : t("import_failed"),
+    esc(summary) +
+      "<br><br>" +
+      (tables.length
+        ? tables
+            .map((table) =>
+              table.ok
+                ? esc(table.name) + " — " + table.rows
+                : esc(
+                    t("backup_table_failed")
+                      .replace("{table}", table.name)
+                      .replace("{error}", table.error || ""),
+                  ),
+            )
+            .join("<br>")
+        : esc(t("backup_storage_failed"))),
+  );
 }
 
 export async function importBackup(input) {
@@ -1552,31 +1604,39 @@ export async function importBackup(input) {
     input.value = "";
     return;
   }
+  input.value = "";
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    const result = await api("/api/backup/import", {
+    let result = await api("/api/backup/import", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (result && result.success) {
-      toast(
-        t("import_success") +
-          " (" +
-          result.config_restored +
-          " config, " +
-          result.storage_restored +
-          " storage)",
-        "ok",
+    // 目标表已有数据时服务端已中止（配置与 KV 都还没动）：问清楚才清空重导
+    if (result && result.error === "tables_not_empty") {
+      const yes = await confirm2(
+        t("backup_overwrite_title"),
+        t("backup_overwrite_text").replace(
+          "{tables}",
+          esc((result.tables || []).join(", ")),
+        ),
       );
+      if (!yes) return;
+      result = await api("/api/backup/import?overwrite=true", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    }
+    if (result && result.success !== undefined) {
+      showBackupResult(result);
       loadConfig();
+      loadFrameworkConfig();
     } else {
       toast(t("import_failed") + ": " + (result?.error || ""), "er");
     }
   } catch (e) {
     toast(t("import_failed") + ": " + e.message, "er");
   }
-  input.value = "";
 }
 
 // ════════════════ 全局同步（一开全开，全量同步）════════════════

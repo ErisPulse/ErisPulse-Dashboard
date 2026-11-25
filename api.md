@@ -1238,25 +1238,42 @@
 
 ### GET `/api/backup/export`
 
-导出配置、存储和审计日志备份。
+导出配置、全部存储键、KV 之外的全部数据表和审计日志。切换存储后端前用它把数据带走，切换并重启后用导入恢复。
 
 **响应：**
 
 ```json
 {
-  "version": "1.0",
+  "version": "2.0",
   "timestamp": 1700000000,
+  "backend": "sqlite",
   "config": {},
   "storage": {},
+  "tables": [
+    {
+      "name": "users",
+      "columns": {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT NOT NULL"},
+      "primary_key": [],
+      "rows": [[1, "a"]]
+    }
+  ],
   "audit_log": []
 }
 ```
+
+- `tables`：除 KV 主表 `config` 外的每张表。`columns` 是 SQLite 风格的列定义，行的列序与之对应；`primary_key` 仅在复合主键时非空。
+- `bytes` 单元格写作 `{"__ep_b64__": "<base64>"}`，时间与定点数写作字符串。
 
 ---
 
 ### POST `/api/backup/import`
 
-导入备份数据（跳过 Dashboard 自身配置和 `__ep_` 存储键）。
+导入备份：先把数据表写入当前存储后端，再恢复存储键与配置。
+
+- 跳过 Dashboard 自身配置、`__ep_` 存储键和 `ErisPulse.storage` 配置节（否则会把后端改回去）。
+- 目标库里有非空同名表时整体中止并返回 409，此时配置和存储键都未改动；带上 `?overwrite=true` 则清空这些表后导入。
+- 每张表分批写入，每批一个短事务，导入后核对行数。
+- `version` 为 `1.0` 的旧备份没有 `tables`，按原样只恢复配置与存储键。
 
 **请求体：** 备份导出的完整 JSON 对象。
 
@@ -1266,9 +1283,12 @@
 {
   "success": true,
   "config_restored": 50,
-  "storage_restored": 10
+  "storage_restored": 10,
+  "tables": [{"name": "users", "rows": 1, "ok": true}]
 }
 ```
+
+有表导入失败时 `success` 为 `false`，对应的表带 `error` 字段；备份文件不合规返回 400。
 
 ---
 

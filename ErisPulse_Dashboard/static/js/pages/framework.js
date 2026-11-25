@@ -430,7 +430,9 @@ function _fwRowHtml(s, field, info) {
     ctrl =
       '<select class="settings-select" data-fk="' +
       esc(fk) +
-      '" data-tp="string" onchange="saveFwConfig(this)">' +
+      '" data-tp="string" data-prev="' +
+      esc(String(val)) +
+      '" onchange="saveFwConfig(this)">' +
       optsHtml +
       "</select>";
   } else if (tp === "boolean") {
@@ -537,6 +539,8 @@ const _FW_DRV_CHECK_SVG =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const _FW_DRV_WARN_SVG =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+const _FW_STORAGE_IMPORT_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
 
 // 展平会把 storage 拆成 storage / storage.mysql / storage.postgres 三段——
 // 合并回一段（保持原位置）交给卡片渲染，其余分区不受影响
@@ -592,7 +596,10 @@ function _fwStorageCardHtml(backend, def, sub) {
     esc(backend) +
     '"><span class="fw-storage-drv-text">' +
     esc(t("fw_storage_drv_checking")) +
-    "</span></div></div>"
+    '</span></div><div class="fw-storage-actions"><button class="btn btn-secondary btn-sm" onclick="fwImportStorageBackup()">' +
+    _FW_STORAGE_IMPORT_SVG +
+    esc(t("fw_storage_import")) +
+    "</button></div></div>"
   );
 }
 
@@ -738,6 +745,16 @@ export async function fwAfterBackendSwitch(backend) {
   }
 }
 
+// 存储卡片的「导入备份」：选备份文件，交给设置页的通用导入流程
+export function fwImportStorageBackup() {
+  if (!authed) return showLogin();
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,application/json";
+  input.onchange = () => importBackup(input);
+  input.click();
+}
+
 // 空作用域表「去添加」：跳权限控制页 scope 分区（完整编辑器在那里）
 export function goScopeAdd() {
   go("permissions", "perm-scope");
@@ -836,6 +853,33 @@ export async function saveFwListField(btnOrContainer) {
 
 export async function saveFwConfig(el) {
   const fk = el.dataset.fk;
+  if (fk === "ErisPulse.storage.backend") {
+    const prev = String(el.dataset.prev || "");
+    if (String(el.value) !== prev) {
+      // 切换后端不会带走原后端的数据：保存前问一句。导出读的是此刻仍在运行的
+      // 原后端（新后端要重启才生效），所以导出必须排在保存之前
+      const choice = await showModal(
+        t("fw_storage_switch_title"),
+        t("fw_storage_switch_text")
+          .replace("{from}", esc(prev))
+          .replace("{to}", esc(el.value)),
+        [
+          { label: t("fw_storage_switch_export"), value: "export", primary: true },
+          { label: t("fw_storage_switch_direct"), value: "direct" },
+          { label: t("cancel"), value: null },
+        ],
+      );
+      if (!choice) {
+        el.value = prev;
+        return;
+      }
+      if (choice === "export" && !(await exportBackup())) {
+        // 没导出成功就先不切：真要切，再选一次后端走「直接切换」
+        el.value = prev;
+        return;
+      }
+    }
+  }
   if (fk.startsWith("ErisPulse.server.")) {
     const ok = await confirm2(
       t("fw_server_warn_title"),
@@ -862,12 +906,14 @@ export async function saveFwConfig(el) {
   setTimeout(() => (el.style.border = ""), 1200);
   if (d && d.success) {
     toast(t("config_saved"), "ok");
+    if (el.dataset.prev !== undefined) el.dataset.prev = String(v);
     // 存储后端切换：重渲染出对应后端卡片；mysql/postgres 缺驱动时主动询问安装
     if (fk === "ErisPulse.storage.backend") {
       if (v === "mysql" || v === "postgres") fwAfterBackendSwitch(v);
       else loadFrameworkConfig();
     }
   } else {
+    if (fk === "ErisPulse.storage.backend") el.value = el.dataset.prev || el.value;
     toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
   }
 }

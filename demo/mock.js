@@ -822,9 +822,15 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
     API_MAP['/api/cluster/sync/events'] = function () { return _json({ success: true }); };
 
     API_MAP['/api/backup/export'] = function () {
-        return _json({ config: { Dashboard: { title: 'ErisPulse Dashboard' } }, storage: {} });
+        return _json({
+            version: '2.0',
+            config: { Dashboard: { title: 'ErisPulse Dashboard' } },
+            storage: {},
+            tables: [],
+            audit_log: []
+        });
     };
-    API_MAP['/api/backup/import'] = function () { return _json({ success: true }); };
+    API_MAP['/api/backup/import'] = function () { return _json({ success: true, config_restored: 0, storage_restored: 0, tables: [] }); };
 
     API_MAP['/api/files/browse'] = function (opts, url) {
         var params = new URLSearchParams(url.split('?')[1] || '');
