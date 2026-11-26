@@ -22,15 +22,18 @@ var MIRRORS = [
   },
 ];
 
-var LANGS = [
-  // v 必须是与 i18n.js 字典键一致的规范码：变体码（zh-cn 等）写入 ep_lang 后
-  // 会让设置页语言分段的严格相等比较失配（表现为分段无高亮，观感"未选择语言"）
-  { v: "zh", label: "简体中文" },
-  { v: "zh-TW", label: "繁體中文" },
-  { v: "en", label: "English" },
-  { v: "ja", label: "日本語" },
-  { v: "ru", label: "Русский" },
-];
+// 语言列表跟随界面的支持语言（core/i18n.js 的 SUPPORTED_LANGS），不在这里另写
+// 一份——各写一份时曾写入变体码（zh-cn 等），导致设置页语言分段不高亮。
+// 页面模块的导出要等 main.js 全部导入完才挂到 window，所以用到时再取
+var LANGS = null;
+function _frLangs() {
+  return (
+    LANGS ||
+    (LANGS = SUPPORTED_LANGS.map(function (code) {
+      return { v: code, label: LANG_NAMES[code] };
+    }))
+  );
+}
 
 // 导览站点：sel 为侧边栏入口，pageSel 为该页内的主要功能区（运行时缺失则跳过内容站）
 var TOUR_PAGES = [
@@ -184,7 +187,7 @@ function frRender(step, ctx) {
       esc(t("fr_setup_lang_q")) +
       "</div>" +
       '<select id="frLang" class="fw-input">' +
-      LANGS.map(function (l) {
+      _frLangs().map(function (l) {
         return (
           '<option value="' +
           l.v +

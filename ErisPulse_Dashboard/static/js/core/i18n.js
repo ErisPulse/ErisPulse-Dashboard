@@ -2,8 +2,17 @@
 
 const I18N = window.__EP_I18N__ || {};;
 
-// 支持的前端语言码（与 res/i18n/*.js 字典键一致）
+// 支持的前端语言码（与 res/i18n/*.js 字典键一致）。
+// 配置页的 i18n.language 下拉与首次运行向导的语言选择都从这里取，不各自另写一份
 export const SUPPORTED_LANGS = ["zh", "en", "zh-TW", "ja", "ru"];
+// 各语言的母语名（选择界面用），键与 SUPPORTED_LANGS 一致
+export const LANG_NAMES = {
+  zh: "简体中文",
+  en: "English",
+  "zh-TW": "繁體中文",
+  ja: "日本語",
+  ru: "Русский",
+};
 
 // 语言码归一化：把 zh-CN / zh_CN / zh-Hans / ja-JP 等变体收敛到字典键。
 // 非法或空值返回 ""，由调用方决定回退策略。

@@ -2304,7 +2304,22 @@ export async function openLoginLockoutModal() {
 }
 
 // ════════════════ 框架行为（ErisPulse 段常用项，持久写 /api/config） ════════════════
-// 完整配置仍在 配置管理 → 框架配置；此处只放高频项
+// 完整配置仍在 配置管理 → 框架配置；此处只放高频项。
+// 选项与默认值取自配置页的定义（framework.js 的 fwFieldOptions / fwFieldDefault）：
+// 两页是同一份配置的两个入口，定义只维护一处，显示可以不同。
+
+// 取配置值；未设置时回落到配置页的默认值表
+function _fwbVal(section, leaf, sectionKey) {
+  var value = section ? section[leaf] : undefined;
+  return value === undefined ? fwFieldDefault(sectionKey + "." + leaf) : value;
+}
+
+// 把配置页的取值列表转成下拉选项；标签键按 "<prefix><取值>" 到语言字典里取
+function _fwbOptions(key, labelPrefix) {
+  return (fwFieldOptions(key) || []).map(function (value) {
+    return [value, labelPrefix ? labelPrefix + value : value];
+  });
+}
 
 function _fwbSwitch(id, titleKey, descKey, key, on) {
   return (
@@ -2326,7 +2341,7 @@ function _fwbNum(id, titleKey, descKey, key, val, min, max, step) {
     '<span class="set-end"><input type="number" class="settings-input" id="' + id + '" data-fwb-key="' + key + '" value="' + val + '"' +
     ' min="' + (min !== undefined ? min : 0) + '"' + (max !== undefined ? ' max="' + max + '"' : "") +
     (step ? ' step="' + step + '"' : "") +
-    ' style="width:110px" onchange="saveFwBehaviorKey(this.dataset.fwbKey, this.value)"/></span></div>'
+    ' style="width:110px" onchange="saveFwBehaviorKey(this.dataset.fwbKey, Number(this.value))"/></span></div>'
   );
 }
 
@@ -2335,7 +2350,8 @@ function _fwbSelect(id, titleKey, descKey, key, val, options) {
     .map(function (o) {
       return (
         '<option value="' + o[0] + '"' + (String(val) === String(o[0]) ? " selected" : "") +
-        ' data-i18n-option="' + o[1] + '"></option>'
+        // 文字先落取值本身：语言字典里没有对应文案时（如日志等级名）不至于显示成空白
+        ' data-i18n-option="' + o[1] + '">' + esc(String(o[0])) + "</option>"
       );
     })
     .join("");
@@ -2362,32 +2378,32 @@ export async function loadFwBehaviorPane() {
   var tEl = document.getElementById("fwbTranscriptCard");
   if (tEl) {
     tEl.innerHTML =
-      _fwbSwitch("fwbTrEnabled", "fwb_tr_enabled", "fwb_tr_enabled_desc", "transcript.enabled", tr.enabled !== false) +
-      _fwbNum("fwbTrMax", "fwb_tr_max", "fwb_tr_max_desc", "transcript.max_per_session", tr.max_per_session !== undefined ? tr.max_per_session : 50, 1, 10000, 1) +
-      _fwbNum("fwbTrTtl", "fwb_tr_ttl", "fwb_tr_ttl_desc", "transcript.ttl_hours", tr.ttl_hours !== undefined ? tr.ttl_hours : 168, 1, 10000, 1) +
-      _fwbSelect("fwbTrEcho", "fwb_tr_echo", "fwb_tr_echo_desc", "transcript.self_echo", tr.self_echo || "bot", [["bot", "fwb_tr_echo_bot"], ["skip", "fwb_tr_echo_skip"], ["user", "fwb_tr_echo_user"]]);
+      _fwbSwitch("fwbTrEnabled", "fwb_tr_enabled", "fwb_tr_enabled_desc", "transcript.enabled", !!_fwbVal(tr, "enabled", "transcript")) +
+      _fwbNum("fwbTrMax", "fwb_tr_max", "fwb_tr_max_desc", "transcript.max_per_session", _fwbVal(tr, "max_per_session", "transcript"), 1, 10000, 1) +
+      _fwbNum("fwbTrTtl", "fwb_tr_ttl", "fwb_tr_ttl_desc", "transcript.ttl_hours", _fwbVal(tr, "ttl_hours", "transcript"), 1, 10000, 1) +
+      _fwbSelect("fwbTrEcho", "fwb_tr_echo", "fwb_tr_echo_desc", "transcript.self_echo", _fwbVal(tr, "self_echo", "transcript"), _fwbOptions("transcript.self_echo", "fwb_tr_echo_"));
   }
   var eEl = document.getElementById("fwbEventCard");
   if (eEl) {
     eEl.innerHTML =
-      _fwbSwitch("fwbIgnoreSelf", "fwb_ev_ignore_self", "fwb_ev_ignore_self_desc", "event.message.ignore_self", msg.ignore_self !== false) +
-      _fwbSwitch("fwbWrBlock", "fwb_ev_wr_block", "fwb_ev_wr_block_desc", "event.wait_reply.block", !!wr.block) +
-      _fwbSwitch("fwbWrCmdpass", "fwb_ev_wr_cmdpass", "fwb_ev_wr_cmdpass_desc", "event.wait_reply.cmdpass", !!wr.cmdpass) +
-      _fwbSwitch("fwbAclDefault", "fwb_ev_acl_default", "fwb_ev_acl_default_desc", "event.overrides.acl_default_allow", ov.acl_default_allow !== false) +
-      _fwbNum("fwbCkptTtl", "fwb_it_ckpt_ttl", "fwb_it_ckpt_ttl_desc", "interaction.checkpoint_ttl", itc.checkpoint_ttl !== undefined ? itc.checkpoint_ttl : 86400, 60, 6048000, 60);
+      _fwbSwitch("fwbIgnoreSelf", "fwb_ev_ignore_self", "fwb_ev_ignore_self_desc", "event.message.ignore_self", !!_fwbVal(msg, "ignore_self", "event.message")) +
+      _fwbSwitch("fwbWrBlock", "fwb_ev_wr_block", "fwb_ev_wr_block_desc", "event.wait_reply.block", !!_fwbVal(wr, "block", "event.wait_reply")) +
+      _fwbSwitch("fwbWrCmdpass", "fwb_ev_wr_cmdpass", "fwb_ev_wr_cmdpass_desc", "event.wait_reply.cmdpass", !!_fwbVal(wr, "cmdpass", "event.wait_reply")) +
+      _fwbSwitch("fwbAclDefault", "fwb_ev_acl_default", "fwb_ev_acl_default_desc", "event.overrides.acl_default_allow", !!_fwbVal(ov, "acl_default_allow", "event.overrides")) +
+      _fwbNum("fwbCkptTtl", "fwb_it_ckpt_ttl", "fwb_it_ckpt_ttl_desc", "interaction.checkpoint_ttl", _fwbVal(itc, "checkpoint_ttl", "interaction"), 60, 6048000, 60);
   }
   var lEl = document.getElementById("fwbLoggerCard");
   if (lEl) {
-    var levels = [["DEBUG", "DEBUG"], ["INFO", "INFO"], ["SUCCESS", "SUCCESS"], ["WARNING", "WARNING"], ["ERROR", "ERROR"], ["CRITICAL", "CRITICAL"]];
-    var cur = String(lg.level || "INFO").toUpperCase();
-    var known = levels.some(function (l) { return l[0] === cur; });
-    if (!known) levels.unshift([cur, cur]);
+    var levels = _fwbOptions("logger.level");
+    var cur = String(_fwbVal(lg, "level", "logger")).toUpperCase();
+    // 当前值不在列表里（手改的配置）也保留为可选项，不让它凭空消失
+    if (!levels.some(function (l) { return l[0] === cur; })) levels.unshift([cur, cur]);
     lEl.innerHTML =
       _fwbSelect("fwbLogLevel", "fwb_lg_level", "fwb_lg_level_desc", "logger.level", cur, levels) +
-      _fwbSelect("fwbLogRotation", "fwb_lg_rotation", "fwb_lg_rotation_desc", "logger.log_rotation", lg.log_rotation || "size", [["size", "fwb_lg_rotation_size"], ["date", "fwb_lg_rotation_date"], ["none", "fwb_lg_rotation_none"]]) +
-      _fwbNum("fwbLogMaxSize", "fwb_lg_max_size", "fwb_lg_max_size_desc", "logger.log_max_size_mb", lg.log_max_size_mb !== undefined ? lg.log_max_size_mb : 10, 1, 4096, 1) +
-      _fwbNum("fwbLogBackup", "fwb_lg_backup", "fwb_lg_backup_desc", "logger.log_backup_count", lg.log_backup_count !== undefined ? lg.log_backup_count : 5, 0, 1000, 1) +
-      _fwbNum("fwbLogMemory", "fwb_lg_memory", "fwb_lg_memory_desc", "logger.memory_limit", lg.memory_limit !== undefined ? lg.memory_limit : 200, 0, 100000, 100);
+      _fwbSelect("fwbLogRotation", "fwb_lg_rotation", "fwb_lg_rotation_desc", "logger.log_rotation", _fwbVal(lg, "log_rotation", "logger"), _fwbOptions("logger.log_rotation", "fwb_lg_rotation_")) +
+      _fwbNum("fwbLogMaxSize", "fwb_lg_max_size", "fwb_lg_max_size_desc", "logger.log_max_size_mb", _fwbVal(lg, "log_max_size_mb", "logger"), 1, 4096, 1) +
+      _fwbNum("fwbLogBackup", "fwb_lg_backup", "fwb_lg_backup_desc", "logger.log_backup_count", _fwbVal(lg, "log_backup_count", "logger"), 0, 1000, 1) +
+      _fwbNum("fwbLogMemory", "fwb_lg_memory", "fwb_lg_memory_desc", "logger.memory_limit", _fwbVal(lg, "memory_limit", "logger"), 0, 100000, 100);
   }
   applyI18n();
 }

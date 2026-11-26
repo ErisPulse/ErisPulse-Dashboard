@@ -76,6 +76,10 @@ const _fwDefaults = {
       allow_space_prefix: false,
       must_at_bot: false,
     },
+    wait_reply: {
+      block: true,
+      cmdpass: false,
+    },
   },
   master: { users: {} },
   framework: {
@@ -113,8 +117,26 @@ const _fwDefaults = {
     enabled: true,
     max_per_session: 50,
     ttl_hours: 168,
+    self_echo: "bot",
   },
 };;
+
+// 设置页「框架行为」与本页共用同一份选项与默认值：两处各写一份曾漂移过
+// （日志等级一边缺 TRACE / EVENT、多出不存在的 SUCCESS，默认值一边对不上）。
+// 显示可以各不相同，定义只在这里维护。
+export function fwFieldOptions(key) {
+  const widget = _fwFieldWidgets[key];
+  return widget && widget.widget === "select" ? widget.options.slice() : null;
+}
+
+export function fwFieldDefault(key) {
+  var node = _fwDefaults;
+  for (const part of String(key).split(".")) {
+    if (node === null || typeof node !== "object" || !(part in node)) return undefined;
+    node = node[part];
+  }
+  return node;
+}
 
 const _fwFieldDescs = {
   "server.host": "监听地址",
@@ -179,6 +201,12 @@ const _fwFieldDescs = {
   "transcript.enabled": "是否启用会话收件箱自动记录",
   "transcript.max_per_session": "每会话保留消息条数上限",
   "transcript.ttl_hours": "记录全局过期时间（小时），过期惰性清理",
+  "transcript.self_echo":
+    "入站 bot 自发消息的记录方式: bot（记为 bot，默认）/ skip（不记录）/ user（记为用户）",
+  "event.wait_reply.block":
+    "wait_reply 命中用户回复后是否阻断向低优先级处理器传播（默认开）",
+  "event.wait_reply.cmdpass":
+    "wait_reply 等待期间是否跳过命令匹配: true 时等待吞掉一切文本、命令不执行；默认 false，命中已注册命令会放行执行",
 };;
 
 const _fwFieldWidgets = {
@@ -195,6 +223,10 @@ const _fwFieldWidgets = {
     widget: "select",
     options: ["midnight", "S", "M", "H", "D"],
   },
+  "transcript.self_echo": {
+    widget: "select",
+    options: ["bot", "skip", "user"],
+  },
   "storage.backend": {
     widget: "select",
     options: ["sqlite", "mysql", "postgres"],
@@ -205,7 +237,11 @@ const _fwFieldWidgets = {
   },
   "i18n.language": {
     widget: "select",
-    options: ["auto", "zh", "en", "zh-TW", "ja", "ru"],
+    // 取值跟随界面的支持语言列表（core/i18n.js），另加 auto。渲染时才取：
+    // 页面模块的导出要等 main.js 全部导入完才挂到 window
+    get options() {
+      return ["auto"].concat(SUPPORTED_LANGS);
+    },
   },
 };;
 
