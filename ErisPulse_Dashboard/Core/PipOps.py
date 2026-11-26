@@ -294,8 +294,7 @@ class PipOpsMixin:
                 )
             except Exception:
                 index_url = None
-        backend = self._get_pkg_manager().get_pip_backend()
-        cmd = backend + ["install"]
+        cmd = self._get_pkg_manager().pip_command("install")
         if force:
             cmd.append("--force-reinstall")
         if index_url:
@@ -461,17 +460,14 @@ class PipOpsMixin:
         )
         try:
             pkg_mgr = self._get_pkg_manager()
-            backend = pkg_mgr.get_pip_backend()
             # 1. 解析该发行名下的模块/适配器入口
             module_targets, adapter_targets = self._resolve_dist_components(package_name)
             # 2. 先停止运行中组件再删文件（unregister 不停止运行，顺序不能反）
             self._detach_dist_components(module_targets, adapter_targets)
             # 3. pip 卸载
             # uv pip uninstall 不支持 -y 参数（本身即为非交互式）
-            if pkg_mgr.is_using_uv():
-                cmd = backend + ["uninstall", package_name]
-            else:
-                cmd = backend + ["uninstall", "-y", package_name]
+            confirm = [] if pkg_mgr.is_using_uv() else ["-y"]
+            cmd = pkg_mgr.pip_command("uninstall", *confirm, package_name)
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if proc.returncode == 0:
                 # 4. 取消双侧注册并清理启用状态配置
@@ -563,8 +559,7 @@ class PipOpsMixin:
                 )
             except Exception:
                 index_url = None
-        backend = self._get_pkg_manager().get_pip_backend()
-        cmd = backend + ["install", "--upgrade"]
+        cmd = self._get_pkg_manager().pip_command("install", "--upgrade")
         # 大包国内直连 PyPI 下载慢：超时默认 15 分钟，可配置（同 install 路径）
         timeout_s = 900
         try:
@@ -769,8 +764,7 @@ class PipOpsMixin:
         )
 
         def _do_install(packages: list[str]) -> tuple[list[str], int]:
-            backend = self._get_pkg_manager().get_pip_backend()
-            pip_cmd = backend + ["install"]
+            pip_cmd = self._get_pkg_manager().pip_command("install")
             # 覆盖安装（同发行名已存在）必须强制重装：pip 对同版本号会跳过，
             # 本地 whl/zip 的新代码落不了盘；--no-deps 避免连带重装依赖
             target_dist = self._resolve_file_dist_name(file_path, filename)

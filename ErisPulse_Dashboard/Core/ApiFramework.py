@@ -206,8 +206,6 @@ class ApiFrameworkMixin:
             "packages": [package_spec],
         }
 
-        backend = self._get_pkg_manager().get_pip_backend()
-
         update_script = f'''
 import subprocess, sys, time, os
 
@@ -222,7 +220,7 @@ else:
     m = MSG["en"]
 
 time.sleep(10)
-cmd = {backend + ["install", "--upgrade", package_spec]!r}
+cmd = {self._get_pkg_manager().pip_command("install", "--upgrade", package_spec)!r}
 try:
     result = subprocess.run(
         cmd, capture_output=True, text=True, encoding="utf-8", timeout=300

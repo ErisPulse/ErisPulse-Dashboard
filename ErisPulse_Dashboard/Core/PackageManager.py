@@ -200,6 +200,37 @@ class DashboardPackageManager:
         """
         return self._get_uv_command() is not None
 
+    def pip_command(self, subcommand: str, *args: str) -> List[str]:
+        """
+        组装一条包管理子命令：``<后端> <子命令> [--python <目标解释器>] <其余参数>``
+
+        uv 默认按 cwd / VIRTUAL_ENV 探测目标环境，与运行中的进程对不上时会把包
+        装进别的环境——装完当前进程照样导不到。cwd 里有别的 .venv、从别的工作目录
+        启动、Windows 更新在新控制台里执行，都会这样。``--python`` 显式指向目标
+        解释器，且必须跟在子命令之后。目标不在虚拟环境里时再带 ``--system``（装进
+        系统环境 uv 要求显式声明）。pip 后端的命令里本身就带解释器，两者都不需要。
+
+        :param subcommand: install / uninstall 等子命令
+        :param args: 其余参数
+        :return: 可直接交给 subprocess 的完整命令
+        """
+        command = self.get_pip_backend() + [subcommand]
+        if self.is_using_uv():
+            target = self._get_target_python()
+            command += ["--python", target]
+            if not self._in_venv(target):
+                command.append("--system")
+        return command + list(args)
+
+    @staticmethod
+    def _in_venv(python: str) -> bool:
+        """解释器是否在虚拟环境里（uv 的判定口径：可执行文件的上两级目录内有 pyvenv.cfg）"""
+        directory = os.path.dirname(os.path.abspath(python))
+        return any(
+            os.path.exists(os.path.join(parent, "pyvenv.cfg"))
+            for parent in (directory, os.path.dirname(directory))
+        )
+
     def register_git_package(
         self, package_name: str, git_url: str, installed_version: str = ""
     ):
