@@ -896,6 +896,8 @@
     fw_field_server_port: "監聽埠",
     fw_field_server_ssl_certfile: "SSL 憑證路徑，設為 null 停用 SSL",
     fw_field_server_ssl_keyfile: "SSL 私鑰路徑",
+    fw_field_server_proxy_headers: "信任反向代理轉發頭（HTTPS 反代後重定向地址藉此還原真實協議；改動需重啟）",
+    fw_field_server_forwarded_allow_ips: "信任轉發頭的對端 IP（逗號分隔）；留空沿用預設（環境變數 FORWARDED_ALLOW_IPS，否則僅本機回環），隧道/遠端代理直連需配置（如 \"*\"）",
     fw_field_logger_level: "日誌層級：DEBUG / INFO / WARNING / ERROR",
     fw_field_logger_log_files: "日誌檔案路徑，如 [\"logs/app.log\"]",
     fw_field_logger_memory_limit: "記憶體中最大日誌條數",

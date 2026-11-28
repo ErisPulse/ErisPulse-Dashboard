@@ -114,9 +114,32 @@ export function _renderModuleViews(views) {
     if (v.iframe_url) {
       pageDiv.classList.add("page-module-frame");
       var iframeSrc = v.iframe_url;
+      // 框架注册路由时剥掉结尾斜杠（/sandbox/ 落成 /sandbox）：带斜杠请求会吃
+      // 307 到不带斜杠的绝对地址，反代未透传协议头时 Location 是 http://，被
+      // HTTPS 页面当混合内容拦截（外链视窗黑块的成因）。框架自身的路径按注册
+      // 形态直接请求绕开重定向——须在拼节点地址之前做（拼完就不再以 / 开头）；
+      // 外部绝对地址的斜杠语义未知，不动。
+      if (iframeSrc.charAt(0) === "/" && iframeSrc.length > 1) {
+        iframeSrc = iframeSrc.replace(/\/+$/, "") || "/";
+      }
       if (currentNode !== "local" && iframeSrc.charAt(0) === "/") {
         var nInfo = nodeRuntimeInfo[currentNode] || {};
         if (nInfo.url) iframeSrc = nInfo.url + iframeSrc;
+      }
+      // HTTPS 页面里 http:// 的 iframe 必被浏览器拦截：改写成 https 再试
+      // （大概率同样失败，但给反代配置了 TLS 的部署一条活路），原文案进控制台
+      if (
+        window.location.protocol === "https:" &&
+        iframeSrc.toLowerCase().indexOf("http://") === 0
+      ) {
+        console.warn(
+          "[ErisPulse Dashboard] 模块视窗地址为 http://，已按页面协议改写为 https://；" +
+            "如仍无法加载，请让该模块服务支持 HTTPS，或在框架配置 server.forwarded_allow_ips " +
+            "中信任代理对端（原地址: " +
+            iframeSrc +
+            "）",
+        );
+        iframeSrc = "https://" + iframeSrc.slice(7);
       }
       const sep = iframeSrc.indexOf("?") === -1 ? "?" : "&";
       pageDiv.innerHTML =

@@ -21,6 +21,8 @@ const _fwDefaults = {
     ssl_keyfile: null,
     ssl_cert: null,
     ssl_key: null,
+    proxy_headers: true,
+    forwarded_allow_ips: "",
   },
   logger: {
     level: "INFO",
@@ -146,6 +148,10 @@ const _fwFieldDescs = {
   "server.ssl_keyfile": "SSL 密钥文件路径；建议在 设置 › 安全 页管理",
   "server.ssl_cert": "内联 PEM 证书内容（优先于 ssl_certfile，适合容器/无文件系统场景）；建议在 设置 › 安全 页管理",
   "server.ssl_key": "内联 PEM 密钥内容（优先于 ssl_keyfile）；建议在 设置 › 安全 页管理",
+  "server.proxy_headers":
+    "信任反向代理转发头（X-Forwarded-*）: HTTPS 反代后重定向地址借此还原真实协议；改动需重启",
+  "server.forwarded_allow_ips":
+    '信任转发头的对端 IP（逗号分隔）；留空沿用默认（环境变量 FORWARDED_ALLOW_IPS，否则仅本机回环），隧道/远端代理直连需配置（如 "*"）',
   "logger.level": "日志级别: TRACE / DEBUG / INFO / EVENT / WARNING / ERROR / CRITICAL",
   "logger.log_files": '日志文件列表（显式路径，不分段），如 ["logs/app.log"]；与 log_dir 互斥且优先',
   "logger.log_dir": "日志输出目录（自动创建），写入 erispulse.log 并按 log_rotation 自动分段",

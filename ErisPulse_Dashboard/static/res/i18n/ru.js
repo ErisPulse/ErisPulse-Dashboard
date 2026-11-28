@@ -896,6 +896,8 @@
     fw_field_server_port: "Порт прослушивания",
     fw_field_server_ssl_certfile: "Путь к SSL сертификату, null для отключения SSL",
     fw_field_server_ssl_keyfile: "Путь к SSL закрытому ключу",
+    fw_field_server_proxy_headers: "Доверять заголовкам обратного прокси (позволяет редиректам за HTTPS-прокси сохранять реальную схему; для применения нужен перезапуск)",
+    fw_field_server_forwarded_allow_ips: "Доверенные IP-адреса пиров для заголовков (через запятую); пусто — по умолчанию (переменная FORWARDED_ALLOW_IPS, иначе только loopback), при прямом подключении туннеля/удалённого прокси укажите (например, \"*\")",
     fw_field_logger_level: "Уровень логирования: DEBUG / INFO / WARNING / ERROR",
     fw_field_logger_log_files: "Пути к файлам логов, напр. [\"logs/app.log\"]",
     fw_field_logger_memory_limit: "Макс. записей логов в памяти",

@@ -985,6 +985,8 @@
     fw_field_server_port: "Listen port",
     fw_field_server_ssl_certfile: "SSL certificate path, set null to disable SSL",
     fw_field_server_ssl_keyfile: "SSL private key path",
+    fw_field_server_proxy_headers: "Trust reverse-proxy forwarded headers (lets redirects behind an HTTPS proxy keep the real scheme; restart to apply)",
+    fw_field_server_forwarded_allow_ips: "Peer IPs trusted for forwarded headers (comma-separated); empty uses the default (FORWARDED_ALLOW_IPS env, loopback only), set it (e.g. \"*\") when a tunnel or remote proxy connects directly",
     fw_field_logger_level: "Log level: DEBUG / INFO / WARNING / ERROR",
     fw_field_logger_log_files: "Log file paths, e.g. [\"logs/app.log\"]",
     fw_field_logger_memory_limit: "Max in-memory log entries",

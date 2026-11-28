@@ -907,6 +907,8 @@
     fw_field_server_port: "监听端口",
     fw_field_server_ssl_certfile: "SSL 证书路径，设为 null 禁用 SSL",
     fw_field_server_ssl_keyfile: "SSL 私钥路径",
+    fw_field_server_proxy_headers: "信任反向代理转发头（HTTPS 反代后重定向地址借此还原真实协议；改动需重启）",
+    fw_field_server_forwarded_allow_ips: "信任转发头的对端 IP（逗号分隔）；留空沿用默认（环境变量 FORWARDED_ALLOW_IPS，否则仅本机回环），隧道/远端代理直连需配置（如 \"*\"）",
     fw_field_logger_level: "日志级别：DEBUG / INFO / WARNING / ERROR",
     fw_field_logger_log_files: "日志文件路径，如 [\"logs/app.log\"]",
     fw_field_logger_memory_limit: "内存中最大日志条数",

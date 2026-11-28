@@ -896,6 +896,8 @@
     fw_field_server_port: "リッスンポート",
     fw_field_server_ssl_certfile: "SSL証明書パス、nullでSSL無効",
     fw_field_server_ssl_keyfile: "SSL秘密鍵パス",
+    fw_field_server_proxy_headers: "リバースプロキシの転送ヘッダーを信頼（HTTPS プロキシ背後でのリダイレクトが実際のスキームを保てるようにします。変更には再起動が必要）",
+    fw_field_server_forwarded_allow_ips: "転送ヘッダーを信頼するピア IP（カンマ区切り）。空でデフォルト（環境変数 FORWARDED_ALLOW_IPS、なければループバックのみ）。トンネルやリモートプロキシが直接接続する場合は設定してください（例: \"*\"）",
     fw_field_logger_level: "ログレベル：DEBUG / INFO / WARNING / ERROR",
     fw_field_logger_log_files: "ログファイルパス（例: [\"logs/app.log\"]）",
     fw_field_logger_memory_limit: "メモリ内最大ログエントリ数",
