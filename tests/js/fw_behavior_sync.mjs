@@ -60,6 +60,7 @@ globalThis.esc = (text) => String(text);
 globalThis.applyI18n = () => {};
 globalThis.toast = () => {};
 globalThis.go = () => {};
+globalThis.uxSkeleton = () => {}; // core/utils.js（main.js 挂载）
 // core/utils.js：实时配置覆盖到默认值上（嵌套对象递归）
 globalThis.deepMerge = (live, defaults) => {
   const out = { ...defaults };

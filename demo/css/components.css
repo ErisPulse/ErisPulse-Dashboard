@@ -1373,6 +1373,13 @@ select.form-select::-ms-expand {
         font-size: 16px;
     }
 
+    /* 页头小搜索框（命令/机器人/路由等）：此前被内联压到 28px，
+       是全站最小的触控目标 */
+    .ep-search {
+        min-height: 40px;
+        font-size: 16px;
+    }
+
     /* toast 改为底部安全区上方通栏居中条 */
     .toast {
         left: 12px;

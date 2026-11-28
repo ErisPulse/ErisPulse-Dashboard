@@ -84,3 +84,20 @@ export function deepMerge(target, source) {
 
 export function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
+
+// 骨架占位（列表首次加载期间）：统一 pkg-skeleton 视觉
+export function uxSkeleton(targetId, rows) {
+  const el = document.getElementById(targetId);
+  if (!el || el.childElementCount) return;
+  const widths = ["42%", "68%", "55%", "61%"];
+  let html = '<div class="pkg-skeleton">';
+  const n = rows || 4;
+  for (let i = 0; i < n; i++) {
+    html +=
+      '<div class="skeleton skeleton-text" style="width:' +
+      widths[i % widths.length] +
+      '"></div>';
+  }
+  html += "</div>";
+  el.innerHTML = html;
+}

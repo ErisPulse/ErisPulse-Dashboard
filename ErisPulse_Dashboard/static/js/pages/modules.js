@@ -1,8 +1,13 @@
 // ErisPulse Dashboard – pages/modules
 
+let _modulesLoaded = false;
+
 export async function loadModules() {
   const d = await api("/api/modules");
   if (!d) return;
+  // 骨架只在本次会话首次进页显示（含请求失败的情形，不留永久占位）
+  if (!_modulesLoaded) uxSkeleton("moduleList", 4);
+  _modulesLoaded = true;
   const items = d.modules || [];
   _shadowPersistSupported = !!d.shadow_persist;
   renderShadowAggregate(d.shadows || []);

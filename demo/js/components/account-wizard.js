@@ -96,6 +96,34 @@ function _awManualForm(platform, schema, ctx) {
   );
 }
 
+// 账户名辅助：datalist 列已有账户 + 失焦即校验重名（提交时才报错太晚，
+// 对照：重命名账户在 component-config.js 有即时校验）
+async function _awAttachNameAssist(platform, box, ctx) {
+  var nameInput = box.querySelector("#awAccountName");
+  if (!nameInput) return;
+  var d = await api("/api/adapter/" + encodeURIComponent(platform) + "/accounts");
+  var names = d && d.accounts ? Object.keys(d.accounts) : [];
+  var dl = document.createElement("datalist");
+  dl.id = "awAccountNames";
+  dl.innerHTML = names
+    .map(function (n) {
+      return '<option value="' + esc(n) + '"></option>';
+    })
+    .join("");
+  nameInput.setAttribute("list", "awAccountNames");
+  if (nameInput.parentNode) nameInput.parentNode.appendChild(dl);
+  nameInput.onblur = function () {
+    var v = this.value.trim();
+    var editing = (ctx && ctx.editAccount) || "";
+    if (v && v !== editing && names.indexOf(v) !== -1) {
+      this.style.borderColor = "var(--er-c)";
+      toast(t("account_wizard_name_exists") + ": " + v, "er");
+    } else {
+      this.style.borderColor = "";
+    }
+  };
+}
+
 async function _awSubmitManual(platform, box, ctx) {
   var name = (box.querySelector("#awAccountName") || {}).value || "";
   name = name.trim();
@@ -105,7 +133,7 @@ async function _awSubmitManual(platform, box, ctx) {
   }
   var d = await api("/api/adapter/" + encodeURIComponent(platform) + "/accounts");
   if (!d || !d.accounts) {
-    toast(t("save_failed"), "er");
+    toast(t("save_failed") + ": " + ((d && d.error) || t("unknown_error")), "er");
     return false;
   }
   var isEdit = name === (ctx && ctx.editAccount);
@@ -115,6 +143,7 @@ async function _awSubmitManual(platform, box, ctx) {
   }
   var account = isEdit && d.accounts[name] ? d.accounts[name] : { enabled: true, name: "" };
   var awPrefix = "aw." + platform + ".";
+  var badJson = null;
   box.querySelectorAll("[data-ackey]").forEach(function (inp) {
     var key = inp.dataset.ackey || "";
     if (key.indexOf(awPrefix) !== 0) return;
@@ -126,12 +155,20 @@ async function _awSubmitManual(platform, box, ctx) {
     else if (tp === "object") {
       try {
         val = JSON.parse(val);
+        inp.style.borderColor = "";
       } catch (e) {
+        // 此前静默丢弃字段：用户填错 JSON 会少保存且毫无提示
+        inp.style.borderColor = "var(--er-c)";
+        badJson = fname;
         return;
       }
     }
     account[fname] = val;
   });
+  if (badJson) {
+    toast(t("account_wizard_invalid_json") + ": " + badJson, "er");
+    return false;
+  }
   d.accounts[name] = account;
   var result = await api(
     "/api/adapter/" + encodeURIComponent(platform) + "/accounts",
@@ -191,11 +228,12 @@ function _awRender(ov, platform, step, sections, chosen, ctx) {
       '<button class="btn btn-secondary" data-aw-cancel>' +
       esc(t("cancel")) +
       "</button>";
-  } else if (step === 2) {
+    } else if (step === 2) {
     if (chosen === "manual") {
       Promise.all([_awAccountSchema(platform), _awLoadAccounts(platform)]).then(function (rs) {
         ctx.values = (rs[1] && rs[1][ctx.editAccount]) || {};
         body.innerHTML = _awManualForm(platform, rs[0], ctx);
+        _awAttachNameAssist(platform, body, ctx);
         var first = body.querySelector("input");
         if (first) first.focus();
       });

@@ -151,6 +151,38 @@ function _paletteComponentEntries() {
       },
     });
   });
+  // 命令与商店包：懒加载索引（同模块缓存模式）
+  ((window._paletteCommands || [])).forEach(function (name) {
+    if (!name || seen["cmd:" + name]) return;
+    seen["cmd:" + name] = true;
+    entries.push({
+      id: "cmd:" + name,
+      group: "components",
+      label: "/" + name,
+      icon: "",
+      badge: t("cmd_list"),
+      hay: [name, t("cmd_list"), _paletteEnT("cmd_list")].join(" ").toLowerCase(),
+      run: function () {
+        go("commands");
+        if (typeof openCmdEdit === "function") openCmdEdit(name);
+      },
+    });
+  });
+  ((window._paletteStorePkgs || [])).forEach(function (name) {
+    if (!name || seen["store:" + name]) return;
+    seen["store:" + name] = true;
+    entries.push({
+      id: "store:" + name,
+      group: "components",
+      label: name,
+      icon: "",
+      badge: t("store"),
+      hay: [name, t("store"), _paletteEnT("store")].join(" ").toLowerCase(),
+      run: function () {
+        go("store");
+      },
+    });
+  });
   return entries;
 }
 
@@ -242,6 +274,32 @@ function _paletteEnsureModules() {
     window._paletteModules = d.modules.filter(function (m) {
       return m.type === "module" && m.has_config;
     });
+    if (_paletteOpen) renderPalette(document.getElementById("paletteInput").value);
+  });
+}
+
+// 命令名懒加载（直达命令编辑）
+function _paletteEnsureCommands() {
+  if (window._paletteCommands) return;
+  api("/api/commands").then(function (d) {
+    if (!d || !d.commands) return;
+    window._paletteCommands = d.commands.map(function (c) {
+      return c.name;
+    });
+    if (_paletteOpen) renderPalette(document.getElementById("paletteInput").value);
+  });
+}
+
+// 商店包名懒加载（进商店页）
+function _paletteEnsureStorePkgs() {
+  if (window._paletteStorePkgs) return;
+  api("/api/store/remote").then(function (d) {
+    var pkgs = d && d.packages;
+    if (!pkgs) return;
+    var names = []
+      .concat(Object.keys(pkgs.modules || {}), Object.keys(pkgs.adapters || {}))
+      .sort();
+    window._paletteStorePkgs = names;
     if (_paletteOpen) renderPalette(document.getElementById("paletteInput").value);
   });
 }
@@ -354,6 +412,8 @@ export function openPalette() {
   input.value = "";
   renderPalette("");
   _paletteEnsureModules();
+  _paletteEnsureCommands();
+  _paletteEnsureStorePkgs();
   // 触屏设备不自动聚焦，避免弹出输入法；指针设备聚焦以便直接输入
   if (!window.EP || EP._finePointer !== false) input.focus();
 }

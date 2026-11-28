@@ -282,7 +282,11 @@ export function fwSectionI18nKey(key) {
   return label !== i18nKey ? label : key.replace(/\./g, " › ");
 }
 
+let _fwCfgLoaded = false;
+
 export async function loadFrameworkConfig() {
+  if (!_fwCfgLoaded) uxSkeleton("fwConfigBody", 5);
+  _fwCfgLoaded = true;
   const c = await api("/api/config");
   if (!c || !c.config) return;
   const live = c.config["ErisPulse"] || {};
@@ -301,13 +305,47 @@ export async function loadFrameworkConfig() {
 }
 
 export async function addFwField() {
-  var sectionKey = await prompt2(
-    t("fw_add_field"),
-    t("fw_add_field_section_hint"),
-    "",
-  );
+  // 已知 section 下拉直选（手滑写错键名会静默写出错误嵌套），自定义仍可手输
+  var sections = Object.keys(_buildFwKnownKeys())
+    .map(function (k) {
+      return k.split(".")[0];
+    })
+    .filter(function (v, i, arr) {
+      return arr.indexOf(v) === i;
+    })
+    .sort();
+  var html =
+    '<select class="fw-input" id="fwAddSection" style="width:100%">' +
+    sections
+      .map(function (s) {
+        return '<option value="' + esc(s) + '">' + esc(s) + "</option>";
+      })
+      .join("") +
+    '<option value="__custom__">' + esc(t("fw_add_field_custom_section")) + "</option>" +
+    "</select>" +
+    '<input class="fw-input" id="fwAddSectionCustom" style="width:100%;margin-top:8px;display:none" placeholder="' +
+    esc(t("fw_add_field_section_hint")) +
+    '"/>';
+  var pending = showModal(t("fw_add_field"), html, [
+    { label: t("cancel"), value: null },
+    { label: t("ok"), value: true, primary: true },
+  ]);
+  var selEl = document.getElementById("fwAddSection");
+  if (selEl) {
+    selEl.onchange = function () {
+      var custom = document.getElementById("fwAddSectionCustom");
+      if (custom) custom.style.display = this.value === "__custom__" ? "" : "none";
+    };
+  }
+  var choice = await pending;
+  if (!choice) return;
+  var sectionKey =
+    selEl && selEl.value === "__custom__"
+      ? ((document.getElementById("fwAddSectionCustom") || {}).value || "").trim()
+      : selEl
+        ? selEl.value
+        : "";
   if (!sectionKey) return;
-  sectionKey = sectionKey.trim();
   var fieldName = await prompt2(
     t("fw_add_field"),
     t("fw_add_field_name_hint"),
@@ -521,7 +559,7 @@ function _fwRowHtml(s, field, info) {
   var saveBtn =
     tp === "boolean" || tp === "list"
       ? ""
-      : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
+      : '<button class="kv-btn kv-btn-save" onclick="saveFwConfig(this.previousElementSibling)" title="' + t("save") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>';
   var resetBtn =
     '<button class="kv-btn kv-btn-del" onclick="resetFwField(\'' +
     esc(fk) +
@@ -815,7 +853,7 @@ export function renderFwListField(fk, val) {
         '" data-idx="' +
         i +
         '">' +
-        '<button class="kv-btn kv-btn-del" onclick="removeFwListItem(this)" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '<button class="kv-btn kv-btn-del" onclick="removeFwListItem(this)" title="' + t("delete") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
         "</div>"
       );
     })
@@ -848,7 +886,7 @@ export function addFwListItem(btn) {
     '" data-idx="' +
     container.querySelectorAll(".fw-list-input").length +
     '">' +
-    '<button class="kv-btn kv-btn-del" onclick="removeFwListItem(this)" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    '<button class="kv-btn kv-btn-del" onclick="removeFwListItem(this)" title="' + t("delete") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   container.insertBefore(newItem, addBtn);
   newItem.querySelector("input").focus();
 }

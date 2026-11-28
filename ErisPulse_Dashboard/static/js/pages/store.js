@@ -180,7 +180,12 @@ export function _renderStoreTags(data) {
   }
 }
 
+let _storeLoaded = false;
+
 export async function loadStore(forceRefresh) {
+  // 骨架只在本次会话首次进页显示（含请求失败的情形，不留永久占位）
+  if (!_storeLoaded) uxSkeleton("storeGrid", 4);
+  _storeLoaded = true;
   const q = document.getElementById("storeSearch")?.value?.toLowerCase() || "";
   const typeFilter = document.getElementById("storeTypeFilter")?.value || "all";
   let remotePackages = null;
@@ -417,7 +422,7 @@ export function showInstallConfirm(pkg, isBatch) {
     document.getElementById("modalTitle").textContent = t("install");
     const label = isBatch
       ? esc(pkg)
-      : "Install <strong>" + esc(pkg) + "</strong>?";
+      : t("install_confirm").replace("{name}", esc(pkg));
     document.getElementById("modalText").innerHTML =
       label +
       '<div class="install-confirm-options">' +

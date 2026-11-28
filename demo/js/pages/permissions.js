@@ -650,9 +650,19 @@ export function addMasterFromForm() {
 }
 
 export function removeMasterEntry(idx) {
-  _masterEntries.splice(idx, 1);
+  var removed = _masterEntries.splice(idx, 1)[0];
+  if (!removed) return;
   renderMasterConfig();
   saveMasterConfig();
+  // 误触即丢配置（单击 X 直接持久化）——给一条可撤销的提示
+  toastUndo(
+    t("master_removed") + ": " + removed.userId,
+    function () {
+      _masterEntries.splice(Math.min(idx, _masterEntries.length), 0, removed);
+      renderMasterConfig();
+      saveMasterConfig();
+    },
+  );
 }
 
 export function toggleMasterEditor() {
@@ -751,7 +761,63 @@ export async function loadScope() {
   if (main) main.style.display = "";
   await _loadScopeContexts();
   renderScopeAll();
+  _fillScopeDatalists();
   onScopeTestKindChange();
+}
+
+// ── 输入候选（datalist）：自由输入保留，候选只是提示 ──
+// 出站动作的 allow/deny 条目匹配的是调用名（send 方法名 / api 动作名，见
+// SDK scope.is_action_allowed），候选 = 标准发送方法 + 配置里已有的条目
+
+var _SCOPE_SEND_METHODS = ["Text", "Image", "Voice", "Video", "File", "Location", "Raw_ob12"];
+
+function _fillDatalist(id, values) {
+  var dl = document.getElementById(id);
+  if (!dl) return;
+  dl.innerHTML = values
+    .slice(0, 200)
+    .map(function (v) {
+      return '<option value="' + esc(v) + '"></option>';
+    })
+    .join("");
+}
+
+function _identityKeys(topo, bucket) {
+  var out = [];
+  var sub = ((topo.identity || {})[bucket]) || {};
+  Object.keys(sub).forEach(function (p) {
+    Object.keys(sub[p] || {}).forEach(function (k) {
+      out.push(k);
+    });
+  });
+  return out;
+}
+
+function _fillScopeDatalists() {
+  var topo = (_scopeData && _scopeData.topology) || {};
+  _fillDatalist("scopeSessionOptions", _identityKeys(topo, "sessions"));
+  var targetKeys = [].concat(
+    _identityKeys(topo, "bots"),
+    _identityKeys(topo, "sessions"),
+    _identityKeys(topo, "users"),
+  );
+  _fillDatalist(
+    "scopeIdnTargetOptions",
+    targetKeys.filter(function (v, i) { return targetKeys.indexOf(v) === i; }).sort(),
+  );
+  var actionVals = _SCOPE_SEND_METHODS.slice();
+  Object.keys(topo.actions || {}).forEach(function (owner) {
+    Object.keys(topo.actions[owner] || {}).forEach(function (action) {
+      var rule = topo.actions[owner][action] || {};
+      (rule.allow || []).forEach(function (v) {
+        if (v && typeof v === "string" && actionVals.indexOf(v) === -1) actionVals.push(v);
+      });
+      (rule.deny || []).forEach(function (v) {
+        if (v && typeof v === "string" && actionVals.indexOf(v) === -1) actionVals.push(v);
+      });
+    });
+  });
+  _fillDatalist("scopeActionOptions", actionVals.sort());
 }
 
 export async function _loadScopeContexts() {
@@ -1325,6 +1391,9 @@ export async function saveScopeModule() {
 }
 
 export async function deleteScopeModule(platform, bot, session) {
+  var name = [platform, bot, session].filter(Boolean).join(" / ");
+  var ok = await confirm2(t("scope_delete"), t("scope_delete_confirm").replace("{name}", name));
+  if (!ok) return;
   var d = await api("/api/scope/module", {
     method: "DELETE",
     body: JSON.stringify({
@@ -1393,6 +1462,11 @@ export async function saveScopeIdentity() {
 }
 
 export async function deleteScopeIdentity(bucket, platform, key) {
+  var ok = await confirm2(
+    t("scope_delete"),
+    t("scope_delete_confirm").replace("{name}", platform + " · " + key),
+  );
+  if (!ok) return;
   var body = { platform: platform };
   if (bucket === "bots") body.bot_id = key;
   else if (bucket === "sessions") body.session_id = key;
@@ -1450,6 +1524,11 @@ export async function saveScopeAction() {
 }
 
 export async function deleteScopeAction(moduleName, action) {
+  var ok = await confirm2(
+    t("scope_delete"),
+    t("scope_delete_confirm").replace("{name}", moduleName + " · " + action),
+  );
+  if (!ok) return;
   var d = await api("/api/scope/action", {
     method: "DELETE",
     body: JSON.stringify({ module: moduleName, action: action }),
@@ -2035,62 +2114,116 @@ export async function saveCmdEdit() {
   }
 }
 
-// ── 主人快速选择：最近消息发送者候选浮层 ──
+// ── 用户候选浮层：从最近消息发送者中选择（主人卡片 / 命令 ACL 共用） ──
 
-var _masterCandOv = null;
+var _userCandOv = null; // 当前打开的候选浮层（同刻仅一个；"pending" 为打开中占位）
 
-export async function openMasterCandidates() {
-  if (_masterCandOv) {
-    _masterCandOv.remove();
-    _masterCandOv = null;
-    return;
-  }
+// 通用候选弹窗：数据来自 /api/master/candidates（最近消息 + 收件箱，含
+// platform / user_id / nickname）——与 ACL 的 platform:uid、master.users 完全
+// 同构。opts: { titleKey, emptyKey, onPick }；onPick(cand) 在选中行时回调，
+// 回调发生前弹窗已关闭。搜索为本地过滤（昵称 / 用户 ID / 平台）。
+export async function openUserCandidates(opts) {
+  opts = opts || {};
+  if (_userCandOv) return;
+  _userCandOv = "pending";
   var d = await api("/api/master/candidates");
   var cands = (d && d.candidates) || [];
+  if (_userCandOv !== "pending") return;
+  var query = "";
   var ov = document.createElement("div");
   ov.className = "modal-overlay show";
   ov.style.alignItems = "center";
   ov.style.justifyContent = "center";
-  var rows = cands
-    .map(function (c, i) {
-      var name = c.nickname || c.user_id;
-      var sub = [c.platform, c.user_id].filter(Boolean).join(" · ");
+  function rowHtml(c, i) {
+    var name = c.nickname || c.user_id;
+    var sub = [c.platform, c.user_id].filter(Boolean).join(" · ");
+    return (
+      '<button class="aw-card" type="button" style="width:100%" data-i="' +
+      i +
+      '">' +
+      '<span class="aw-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>' +
+      '<span class="aw-card-texts"><span class="aw-card-title">' +
+      esc(name) +
+      '</span><span class="aw-card-desc">' +
+      esc(sub) +
+      "</span></span></button>"
+    );
+  }
+  function filtered() {
+    var kw = query.trim().toLowerCase();
+    if (!kw) return cands;
+    return cands.filter(function (c) {
       return (
-        '<button class="aw-card" type="button" style="width:100%" data-i="' +
-        i +
-        '">' +
-        '<span class="aw-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>' +
-        '<span class="aw-card-texts"><span class="aw-card-title">' +
-        esc(name) +
-        '</span><span class="aw-card-desc">' +
-        esc(sub) +
-        "</span></span></button>"
+        ((c.nickname || "") + " " + (c.user_id || "") + " " + (c.platform || ""))
+          .toLowerCase()
+          .indexOf(kw) !== -1
       );
-    })
-    .join("");
-  if (!rows) rows = '<div class="perm-empty-desc" style="padding:20px">' + esc(t("master_pick_empty")) + "</div>";
+    });
+  }
+  function renderRows() {
+    var box = ov.querySelector("[data-cand-rows]");
+    if (!box) return;
+    var list = filtered();
+    box.innerHTML =
+      list
+        .map(function (c, i) {
+          return rowHtml(c, i);
+        })
+        .join("") ||
+      '<div class="perm-empty-desc" style="padding:20px">' +
+        esc(t(opts.emptyKey || "master_pick_empty")) +
+        "</div>";
+    box.querySelectorAll("[data-i]").forEach(function (b) {
+      b.onclick = function () {
+        var c = list[Number(b.dataset.i)];
+        closeOv();
+        if (c && typeof opts.onPick === "function") opts.onPick(c);
+      };
+    });
+  }
+  function closeOv() {
+    if (_userCandOv === ov) _userCandOv = null;
+    ov.remove();
+  }
   ov.innerHTML =
     '<div class="modal-box" style="max-width:460px;width:90vw;display:flex;flex-direction:column;gap:10px">' +
     '<div class="modal-title">' +
-    esc(t("master_pick_recent")) +
+    esc(t(opts.titleKey || "master_pick_recent")) +
     "</div>" +
-    '<div style="max-height:56vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px">' +
-    rows +
-    "</div>" +
-    '<div style="display:flex;justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="openMasterCandidates()">' +
+    '<input type="text" class="fw-input" data-cand-search data-i18n-placeholder="user_pick_search" style="width:100%"/>' +
+    '<div data-cand-rows style="max-height:56vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>' +
+    '<div style="display:flex;justify-content:flex-end"><button class="btn btn-secondary btn-sm" data-cand-close>' +
     esc(t("close")) +
     "</button></div>" +
     "</div>";
+  var search = ov.querySelector("[data-cand-search]");
+  if (search) {
+    search.oninput = function () {
+      query = this.value;
+      renderRows();
+    };
+  }
+  ov.querySelector("[data-cand-close]").onclick = closeOv;
   ov.onclick = function (e) {
-    if (e.target === ov) {
-      ov.remove();
-      _masterCandOv = null;
-    }
+    if (e.target === ov) closeOv();
   };
-  ov.querySelectorAll("[data-i]").forEach(function (b) {
-    b.onclick = function () {
-      var c = cands[Number(b.dataset.i)];
-      if (!c) return;
+  renderRows();
+  if (typeof applyI18n === "function") applyI18n();
+  document.body.appendChild(ov);
+  _userCandOv = ov;
+}
+
+// 主人卡片入口：选中后回填表单（保持原交互：再点一次按钮 = 关闭浮层）
+export async function openMasterCandidates() {
+  if (_userCandOv) {
+    if (_userCandOv.remove) _userCandOv.remove();
+    _userCandOv = null;
+    return;
+  }
+  await openUserCandidates({
+    titleKey: "master_pick_recent",
+    emptyKey: "master_pick_empty",
+    onPick: function (c) {
       var sel = document.getElementById("masterAddPlatform");
       var idInput = document.getElementById("masterAddId");
       // 平台存在则选中，否则走自定义值
@@ -2115,12 +2248,29 @@ export async function openMasterCandidates() {
         idInput.value = c.user_id;
         idInput.focus();
       }
-      ov.remove();
-      _masterCandOv = null;
       toast(t("master_pick_filled") + ": " + (c.nickname || c.user_id), "ok");
-    };
+    },
   });
-  document.body.appendChild(ov);
-  _masterCandOv = ov;
+}
+
+// 命令 ACL 入口：从最近消息选择发送者，按 platform:uid 直接追加进 allow/deny
+// （格式同 addCmdAclTag；SDK 判定链即按该格式比对）。重复追加只提示不写入。
+export async function addCmdAclFromRecent(kind) {
+  await openUserCandidates({
+    titleKey: "cmd_acl_pick_title",
+    emptyKey: "master_pick_empty",
+    onPick: function (c) {
+      if (!c || !c.user_id) return;
+      var tag = c.platform ? c.platform + ":" + c.user_id : c.user_id;
+      var list = kind === "deny" ? _editAclDeny : _editAclAllow;
+      if (list.indexOf(tag) !== -1) {
+        toast(t("cmd_acl_pick_dup") + ": " + tag, "");
+        return;
+      }
+      list.push(tag);
+      renderCmdAclTags();
+      toast(t("cmd_acl_pick_added") + ": " + (c.nickname || c.user_id), "ok");
+    },
+  });
 }
 

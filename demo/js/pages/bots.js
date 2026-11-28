@@ -35,12 +35,45 @@ export function _adapterStatusBadge(status) {
   );
 }
 
+var _botsData = [];
+var _botsLoaded = false;
+var _botQuery = "";
+var _botStatus = "all";
+
+// 列表过滤：搜索（昵称 / 平台 / bot_id）+ 在线状态（多适配器下唯一没有过滤的主列表）
+export function setBotFilter(kind, value) {
+  if (kind === "q") _botQuery = String(value || "").toLowerCase();
+  else _botStatus = value || "all";
+  renderBots();
+}
+
+function _botMatches(x) {
+  if (_botStatus !== "all" && (x.status === "online") !== (_botStatus === "online"))
+    return false;
+  if (!_botQuery) return true;
+  const i = x.info || {};
+  return (
+    ((i.user_name || "") + " " + (i.nickname || "") + " " + x.platform + " " + x.bot_id)
+      .toLowerCase()
+      .indexOf(_botQuery) !== -1
+  );
+}
+
 export async function loadBots() {
   const d = await api("/api/bots");
   if (!d) return;
-  const b = d.bots || [];
-  document.getElementById("botGrid").innerHTML = b.length
-    ? b
+  if (!_botsLoaded) uxSkeleton("botGrid", 3);
+  _botsLoaded = true;
+  _botsData = d.bots || [];
+  renderBots();
+}
+
+function renderBots() {
+  const grid = document.getElementById("botGrid");
+  if (!grid) return;
+  const list = _botsData.filter(_botMatches);
+  grid.innerHTML = list.length
+    ? list
         .map((x) => {
           const i = x.info || {},
             nm = i.user_name || i.nickname || x.bot_id,
@@ -105,10 +138,12 @@ export async function loadBots() {
           );
         })
         .join("")
-    : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/></svg><h3>' +
-      t("no_bots") +
-      '</h3><button class="empty-action" onclick="go(\'adapter\')">' +
-      t("adapter_config") +
-      "</button></div>";
+    : _botsData.length
+      ? '<div class="empty-state"><p>' + esc(t("no_matches")) + "</p></div>"
+      : '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="10" rx="2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><line x1="12" y1="4" x2="12" y2="8"/><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="15" cy="4" r="1.5" fill="currentColor"/></svg><h3>' +
+        t("no_bots") +
+        '</h3><button class="empty-action" onclick="go(\'adapter\')">' +
+        t("adapter_config") +
+        "</button></div>";
 }
 

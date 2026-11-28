@@ -10,10 +10,14 @@ export function toast(msg, type) {
   requestAnimationFrame(() => {
     el.classList.add("show");
   });
-  setTimeout(() => {
-    el.classList.remove("show");
-    setTimeout(() => el.remove(), 250);
-  }, 2500);
+  // 错误文案常带原因（save_failed: ...），读得慢：错误停留 5s，其余 2.5s
+  setTimeout(
+    () => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 250);
+    },
+    type === "er" ? 5000 : 2500,
+  );
 }
 
 export function toastUndo(msg, undoFn) {

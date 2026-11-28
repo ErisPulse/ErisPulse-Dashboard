@@ -22,12 +22,19 @@ export async function loadConfig() {
       (s.total || 0) + " " + t("storage_items");
     const k = s.keys || [];
     requestAnimationFrame(function () {
-      document.getElementById("storageBody").innerHTML = k.length
+      var html = k.length
         ? k
             .slice(0, 200)
             .map((x) => kvRow(esc(x), s.data[x], "storage", x))
             .join("")
         : '<div class="empty-state"><p>' + t("empty_storage") + "</p></div>";
+      // 列表只渲染前 200 条：不提示会被当成完整列表
+      if (k.length > 200)
+        html +=
+          '<div class="fw-desc" style="margin-top:10px">' +
+          esc(t("kv_list_truncated").replace("{total}", k.length)) +
+          "</div>";
+      document.getElementById("storageBody").innerHTML = html;
     });
   }
 
@@ -300,9 +307,13 @@ export async function saveStorage(btn) {
   const inp = btn.previousElementSibling;
   const k = inp.dataset.key;
   let v = inp.value;
+  // 纯文本是合法输入：JSON 解析失败按字符串保存，但提示一声（此前静默）
+  let savedAsString = false;
   try {
     v = JSON.parse(v);
-  } catch (e) {}
+  } catch (e) {
+    savedAsString = true;
+  }
   const d = await api("/api/storage", {
     method: "POST",
     body: JSON.stringify({ key: k, value: v }),
@@ -310,6 +321,7 @@ export async function saveStorage(btn) {
   inp.style.border =
     d && d.success ? "2px solid var(--ok-c)" : "2px solid var(--er-c)";
   setTimeout(() => (inp.style.border = ""), 1200);
+  if (d && d.success && savedAsString) toast(t("storage_saved_as_string"), "");
 }
 
 export async function delStorage(k, btn) {

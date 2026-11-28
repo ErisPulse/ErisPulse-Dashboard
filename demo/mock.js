@@ -615,6 +615,20 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
 
     API_MAP['/api/commands/settings'] = function () { return _json({ success: true, command: { prefix: '/', case_sensitive: true, allow_space_prefix: false, must_at_bot: false } }); };
 
+    // 须排在 /api/master 之前：mock 路由按前缀匹配，否则会被 /api/master 吞掉
+    API_MAP['/api/master/candidates'] = function () {
+        var now = NOW;
+        return _json({
+            candidates: [
+                { platform: 'OneBot11', user_id: '10001', nickname: 'Airi', ts: now - 120 },
+                { platform: 'OneBot11', user_id: '23333', nickname: '雪风', ts: now - 600 },
+                { platform: 'Telegram', user_id: 'u_spam', nickname: '', ts: now - 1800 },
+                { platform: 'Yunhu', user_id: 'user_001', nickname: '管理员', ts: now - 3600 },
+                { platform: 'Kook', user_id: 'kx_8899', nickname: 'KxTalker', ts: now - 7200 }
+            ]
+        });
+    };
+
     API_MAP['/api/master'] = function (opts) {
         if (opts && opts.method === 'PUT') return _json({ success: true, master: { users: { Yunhu: ['user_001'], Telegram: ['user_002'] } } });
         return _json({
@@ -1190,6 +1204,10 @@ var _FRAMEWORK_VERSIONS = ["2.9.0", "2.7.0.dev5", "2.7.0.dev3", "2.7.0.dev0", "2
                 return _json(mCfg);
             }
             var handler = null;
+            // PUT /api/commands/{name}（保存命令编辑）：按前缀会误命中列表键，先拦
+            if (init && init.method === 'PUT' && matchPath.indexOf('/api/commands/') === 0) {
+                return _json({ success: true });
+            }
             for (var key in API_MAP) {
                 if (matchPath === key || matchPath.indexOf(key + '/') === 0) {
                     handler = API_MAP[key];

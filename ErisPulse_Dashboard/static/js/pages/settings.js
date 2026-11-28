@@ -1112,7 +1112,9 @@ export function syncSettingsUI() {
   if (autoCard) {
     var eff = getEffectiveTheme();
     var label = autoCard.querySelector(".theme-card-label-sm");
-    if (label) label.textContent = eff === "dark" ? "跟随系统 · 深色" : "跟随系统 · 浅色";
+    if (label)
+      label.textContent =
+        eff === "dark" ? t("theme_auto_dark") : t("theme_auto_light");
   }
   var sbEl = document.getElementById("settingsSidebar");
   if (sbEl) {
@@ -2023,7 +2025,26 @@ export async function createApiKey() {
 
 // viewer 密钥的页面白名单编辑（空 = 全部只读页）
 // 页面清单与"页面 → API 前缀"映射由后端 /api/security/pages 提供（单一数据源），
-// 标签用前端 i18n 页面名；后端可在 Dashboard.rbac.page_api_map 覆盖映射。
+// 标签走前端 i18n 页面名（与侧栏同源）；键缺失时回退到下方中文表。
+var _PAGE_I18N = {
+  dashboard: "dashboard",
+  "event-stream": "events_stream",
+  transcript: "transcript",
+  bots: "bots",
+  "module-mgmt": "module_mgmt",
+  store: "store",
+  packages: "pkg_manager",
+  config: "config",
+  framework: "fw_update_title",
+  logs: "sys_logs",
+  "api-routes": "api_routes",
+  permissions: "perm_control",
+  files: "files",
+  cluster: "cluster",
+  topology: "topology",
+  settings: "settings_title",
+  about: "about",
+};
 var _PAGE_LABELS = {
   dashboard: "仪表盘",
   "event-stream": "事件流",
@@ -2043,6 +2064,15 @@ var _PAGE_LABELS = {
   settings: "仪表盘设置",
   about: "关于",
 };
+
+function _pageLabel(pid) {
+  var key = _PAGE_I18N[pid];
+  if (key) {
+    var label = t(key);
+    if (label !== key) return label;
+  }
+  return _PAGE_LABELS[pid] || pid;
+}
 
 async function _loadPagePermissionMap() {
   var d;
@@ -2089,7 +2119,7 @@ export async function editKeyPages(id) {
       esc(apis || t("sec_key_pages_no_api")) +
       '"><input type="checkbox" class="key-page-cb" value="' +
       esc(pid) + '"' + (cur.indexOf(pid) !== -1 ? " checked" : "") +
-      '/><span><span>' + esc(_PAGE_LABELS[pid] || pid) + "</span>" +
+      '/><span><span>' + esc(_pageLabel(pid)) + "</span>" +
       (apis
         ? '<span style="display:block;font-size:11px;color:var(--tx-t);word-break:break-all">' +
           esc((pmap.pages[pid] || []).slice(0, 2).join(", ")) +
@@ -2119,7 +2149,8 @@ export async function editKeyPages(id) {
       method: "PUT",
       body: JSON.stringify({ pages: picked }),
     });
-    if (!r || r.error) return toast(t("save_failed"), "er");
+    if (!r || r.error)
+      return toast(t("save_failed") + ": " + (r?.error || t("unknown_error")), "er");
     toast(t("saved"), "ok");
     loadApiKeyCard();
   });
@@ -2131,7 +2162,7 @@ export async function toggleApiKey(id, enabled) {
     body: JSON.stringify({ enabled: enabled }),
   });
   if (!d || d.error) {
-    toast(t("unknown_error"), "er");
+    toast(t("save_failed") + ": " + (d?.error || t("unknown_error")), "er");
     return loadApiKeyCard();
   }
   toast(t("saved"), "ok");

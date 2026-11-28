@@ -5,7 +5,24 @@ import {
   loadPerformance,
 } from "./dashboard.js";
 
+var _routesGroups = null;
+var _routesLoaded = false;
+var _routeQuery = "";
+
+// 路由搜索：按路径 / 方法过滤（自由输入，大小写不敏感）
+export function setRouteQuery(value) {
+  _routeQuery = String(value || "").toLowerCase();
+  _renderRouteGroups();
+}
+
+function _routeMatch(text) {
+  if (!_routeQuery) return true;
+  return String(text || "").toLowerCase().indexOf(_routeQuery) !== -1;
+}
+
 export async function loadApiRoutes() {
+  if (!_routesLoaded) uxSkeleton("routeModulesContainer", 5);
+  _routesLoaded = true;
   const d = await api("/api/routes");
   if (!d) return;
 
@@ -71,16 +88,13 @@ export async function loadApiRoutes() {
   var sseEl = document.getElementById("sseRouteCount");
   if (sseEl) sseEl.textContent = sseCount;
 
-  var moduleNames = Object.keys(groups).filter(function (ns) {
-    var g = groups[ns];
-    return g.http.length + g.websocket.length + g.sse.length > 0;
-  });
-  moduleNames.sort(function (a, b) {
-    if (a === "System") return 1;
-    if (b === "System") return -1;
-    return a.toLowerCase().localeCompare(b.toLowerCase());
-  });
+  // 计数为全量；下方分组渲染按搜索词过滤
+  _routesGroups = groups;
+  _renderRouteGroups();
+}
 
+function _renderRouteGroups() {
+  var groups = _routesGroups || {};
   var methodColor = {
     GET: "method-get",
     POST: "method-post",
@@ -90,6 +104,32 @@ export async function loadApiRoutes() {
     OPTIONS: "method-options",
     HEAD: "method-head",
   };
+
+  var moduleNames = Object.keys(groups).filter(function (ns) {
+    var g = groups[ns];
+    if (!(g.http.length + g.websocket.length + g.sse.length)) return false;
+    if (!_routeQuery) return true;
+    // 搜索时只保留有命中的分组
+    return (
+      g.http.some(function (r) {
+        return (
+          _routeMatch(r.paths && r.paths[0]) ||
+          (r.methods || []).some(_routeMatch)
+        );
+      }) ||
+      g.websocket.some(function (r) {
+        return _routeMatch(r.path);
+      }) ||
+      g.sse.some(function (r) {
+        return _routeMatch(r.path);
+      })
+    );
+  });
+  moduleNames.sort(function (a, b) {
+    if (a === "System") return 1;
+    if (b === "System") return -1;
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
 
   var html = "";
 
@@ -104,8 +144,8 @@ export async function loadApiRoutes() {
     html += '<span class="route-group-name">' + esc(mod) + "</span>";
     html +=
       '<span class="chip chip-sc" style="margin:0">' +
-      totalRoutes +
-      " routes</span>";
+      t("routes_n").replace("{n}", totalRoutes) +
+      "</span>";
     if (g.http.length > 0)
       html +=
         '<span class="chip chip-pr" style="margin:0">' +
@@ -127,13 +167,19 @@ export async function loadApiRoutes() {
     html += '<div class="route-group-body" style="display:none">';
     html +=
       '<table class="route-table"><thead><tr>' +
-      '<th class="th-method">Method</th><th>Path</th><th class="th-action"></th>' +
+      '<th class="th-method">' +
+      t("routes_method") +
+      '</th><th>' +
+      t("routes_path") +
+      '</th><th class="th-action"></th>' +
       "</tr></thead><tbody>";
 
     g.http.forEach(function (r) {
+      var path = r.paths[0] || "";
       r.methods.forEach(function (method, mi) {
+        // 搜索过滤：命中路径或方法
+        if (!_routeMatch(path) && !_routeMatch(method)) return;
         var mc = methodColor[method] || "method-get";
-        var path = r.paths[0] || "";
         html += '<tr class="route-row">';
         html +=
           '<td class="td-method"><span class="method-badge ' +
@@ -162,6 +208,7 @@ export async function loadApiRoutes() {
     });
 
     g.websocket.forEach(function (r) {
+      if (!_routeMatch(r.path)) return;
       var authBadge = r.auth
         ? '<span class="chip chip-wr">' + t("requires_auth") + "</span>"
         : "";
@@ -179,6 +226,7 @@ export async function loadApiRoutes() {
     });
 
     g.sse.forEach(function (r) {
+      if (!_routeMatch(r.path)) return;
       html += '<tr class="route-row">';
       html +=
         '<td class="td-method"><span class="method-badge method-sse">SSE</span></td>';

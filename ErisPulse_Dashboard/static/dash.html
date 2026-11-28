@@ -23,7 +23,7 @@
         </script>
         <link
             rel="stylesheet"
-            href="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.css?v=175"
+            href="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.css?v=176"
         />
         <link
             rel="stylesheet"
@@ -33,31 +33,31 @@
             rel="stylesheet"
             href="/Dashboard/static/res/vendor/codemirror/addon/hint/show-hint.min.css"
         />
-        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/transcript.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/ep-subnav.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=175" />
-        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=175" />
-                <script src="/Dashboard/static/res/vendor/marked/marked.min.js?v=175"></script>
+        <link rel="stylesheet" href="/Dashboard/static/css/base.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/layout.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/components.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/palette.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-components.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/dashboard.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/events.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/transcript.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/bots.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/store.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/config.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/modules.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/logs.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/api-routes.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/permissions.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/files.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/framework.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/cluster.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/topology.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/ep-subnav.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/settings.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/login.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/overrides.css?v=176" />
+        <link rel="stylesheet" href="/Dashboard/static/css/style-cel.css?v=176" />
+                <script src="/Dashboard/static/res/vendor/marked/marked.min.js?v=176"></script>
     </head>
 
     <body>
@@ -117,6 +117,7 @@
                             id="connBadge"
                             onclick="toggleWsInspector(event)"
                             title="Connection Details"
+                            data-i18n-title="conn_details"
                         >
                             <div id="status-badge-icon"></div>
                             <span
@@ -742,6 +743,7 @@
                             class="sidebar-collapse-btn"
                             onclick="toggleSidebarCollapse()"
                             title="Toggle sidebar"
+                            data-i18n-title="sidebar_toggle"
                         >
                             <svg
                                 viewBox="0 0 24 24"
@@ -794,6 +796,7 @@
                                 id="homePinsEditBtn"
                                 onclick="toggleHomePinsEdit()"
                                 title="Edit"
+                                data-i18n-title="edit"
                             >
                                 <svg
                                     viewBox="0 0 24 24"
@@ -1354,6 +1357,24 @@
                     <div class="page" id="p-bots">
                         <h1 class="page-title" data-i18n="bots"></h1>
                         <p class="page-desc" data-i18n="bots_desc"></p>
+                        <div class="filter-bar" style="margin-bottom: 14px">
+                            <input
+                                type="text"
+                                id="botSearch"
+                                class="ep-search"
+                                data-i18n-placeholder="sidebar_search"
+                                oninput="setBotFilter('q', this.value)"
+                            />
+                            <select
+                                id="botStatusFilter"
+                                class="ep-select"
+                                onchange="setBotFilter('status', this.value)"
+                            >
+                                <option value="all" data-i18n-option="all_status"></option>
+                                <option value="online" data-i18n-option="active"></option>
+                                <option value="offline" data-i18n-option="inactive"></option>
+                            </select>
+                        </div>
                         <div id="botGrid" class="bot-grid"></div>
                     </div>
                     <div class="page" id="p-event-stream">
@@ -2892,6 +2913,13 @@
                         <h1 class="page-title" data-i18n="api_routes"></h1>
                         <p class="page-desc" data-i18n="api_routes_desc"></p>
                         <div class="filter-bar">
+                            <input
+                                type="text"
+                                id="routeSearch"
+                                class="ep-search"
+                                data-i18n-placeholder="sidebar_search"
+                                oninput="setRouteQuery(this.value)"
+                            />
                             <span class="route-count-group">
                                 <span class="chip chip-pr"
                                     ><span id="httpRouteCount">0</span>
@@ -3558,7 +3586,7 @@
                                 <span data-i18n="cmd_list"></span>
                                 <span class="chip chip-pr" id="cmdCount"></span>
                                 <div class="header-actions">
-                                    <input type="text" id="cmdSearch" class="ep-search" data-i18n-placeholder="sidebar_search" placeholder="" oninput="setCmdQuery(this.value)" style="height:28px;max-width:170px;font-size:12px"/>
+                                    <input type="text" id="cmdSearch" class="ep-search" data-i18n-placeholder="sidebar_search" placeholder="" oninput="setCmdQuery(this.value)" style="max-width:170px;font-size:12px"/>
                                     <button class="btn-icon" onclick="loadCommands()" data-i18n-title="refresh" title="">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
                                     </button>
@@ -3653,7 +3681,7 @@
                                                     <input id="masterAddId" class="fw-input" data-i18n-placeholder="master_user_id_placeholder" onkeydown="if(event.key==='Enter'){addMasterFromForm();event.preventDefault()}">
                                                 </div>
                                                 <div class="scope-editor-field" style="justify-content: flex-end">
-                                                    <button class="btn btn-secondary btn-sm" onclick="openMasterCandidates()" title="recent senders">
+                                                    <button class="btn btn-secondary btn-sm" onclick="openMasterCandidates()" title="recent senders" data-i18n-title="master_pick_recent">
                                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                                                         <span data-i18n="master_pick_recent"></span>
                                                     </button>
@@ -3783,7 +3811,8 @@
                                                         </div>
                                                         <div class="scope-editor-field">
                                                             <label data-i18n="scope_level_session"></label>
-                                                            <input id="scopeModuleSession" class="fw-input" data-i18n-placeholder="scope_session_ph" oninput="renderScopeModuleCrumbsFromEditor()"/>
+                                                            <input id="scopeModuleSession" class="fw-input" data-i18n-placeholder="scope_session_ph" list="scopeSessionOptions" oninput="renderScopeModuleCrumbsFromEditor()"/>
+                                                            <datalist id="scopeSessionOptions"></datalist>
                                                         </div>
                                                     </div>
                                                     <div class="scope-editor-grid">
@@ -3852,7 +3881,8 @@
                                                         </div>
                                                         <div class="scope-editor-field" id="scopeIdnTargetField" style="display:none">
                                                             <label id="scopeIdnTargetLabel" data-i18n="scope_level_session"></label>
-                                                            <input id="scopeIdnTarget" class="fw-input" data-i18n-placeholder="scope_id_target_ph"/>
+                                                            <input id="scopeIdnTarget" class="fw-input" data-i18n-placeholder="scope_id_target_ph" list="scopeIdnTargetOptions"/>
+                                                            <datalist id="scopeIdnTargetOptions"></datalist>
                                                         </div>
                                                         <div class="scope-editor-field">
                                                             <label data-i18n="scope_identity_policy"></label>
@@ -3920,13 +3950,14 @@
                                                     <div class="scope-editor-grid">
                                                         <div class="scope-editor-field">
                                                             <label class="lab-ok" data-i18n="scope_allow_entries"></label>
-                                                            <input id="scopeActionAllow" class="fw-input" data-i18n-placeholder="scope_allow_ph"/>
+                                                            <input id="scopeActionAllow" class="fw-input" data-i18n-placeholder="scope_allow_ph" list="scopeActionOptions"/>
                                                         </div>
                                                         <div class="scope-editor-field">
                                                             <label class="lab-er" data-i18n="scope_deny_entries"></label>
                                                             <div class="scope-deny-field">
-                                                                <input id="scopeActionDeny" class="fw-input" data-i18n-placeholder="scope_deny_ph"/>
+                                                                <input id="scopeActionDeny" class="fw-input" data-i18n-placeholder="scope_deny_ph" list="scopeActionOptions"/>
                                                                 <label class="scope-deny-all"><input type="checkbox" id="scopeActionDenyAll"/><span data-i18n="scope_deny_all"></span></label>
+                                                                <datalist id="scopeActionOptions"></datalist>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -4028,9 +4059,9 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--accent)"><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6.8 6.8L10.5 17"/><path d="M17.2 6.8L13.5 17"/><path d="M7.5 5h9"/></svg>
                                 <b data-i18n="topo_graph_title"></b>
                                 <span class="topo-stats" id="topoStats">
-                                    <span class="chip chip-pr" title="Modules"><span id="topoStatModules">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
-                                    <span class="chip chip-ok" title="Adapters"><span id="topoStatAdapters">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
-                                    <span class="chip chip-wr" title="Bots"><span id="topoStatBots">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V4M8 4h8"/></svg></span>
+                                    <span class="chip chip-pr" title="Modules" data-i18n-title="modules"><span id="topoStatModules">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+                                    <span class="chip chip-ok" title="Adapters" data-i18n-title="adapters"><span id="topoStatAdapters">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+                                    <span class="chip chip-wr" title="Bots" data-i18n-title="bots"><span id="topoStatBots">0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V4M8 4h8"/></svg></span>
                                 </span>
                             </div>
                             <div class="topo-float topo-float-tr">
@@ -4038,7 +4069,7 @@
                                 <label><input type="checkbox" id="topoShowScope" checked onchange="topoRebuild()"/><span data-i18n="topo_show_scope"></span></label>
                                 <label><input type="checkbox" id="topoShowDepends" checked onchange="topoRebuild()"/><span data-i18n="topo_show_depends"></span></label>
                                 <label><input type="checkbox" id="topoShowAnim" onchange="topoSetAnim(this.checked)"/><span id="topoAnimLabel" data-i18n="topo_show_anim">Flow animation</span></label>
-                                <button class="btn-icon" onclick="loadTopology()" title="Refresh">
+                                <button class="btn-icon" onclick="loadTopology()" title="Refresh" data-i18n-title="refresh">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
                                 </button>
                             </div>
@@ -4948,7 +4979,7 @@
           class="settings-select"
           onchange="loadFwReleaseNotes()"
         ></select>
-        <label class="fw-pre-toggle" title="Pre-release">
+        <label class="fw-pre-toggle" title="Pre-release" data-i18n-title="pre_release">
           <span class="switch">
             <input type="checkbox" id="fwPreRelease" onchange="loadFrameworkVersions()" />
             <span class="switch-slider"></span>
@@ -5893,6 +5924,12 @@
                             >
                                 +
                             </button>
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                data-i18n="cmd_acl_pick_open"
+                                data-i18n-title="cmd_acl_pick_open"
+                                onclick="addCmdAclFromRecent('allow')"
+                            ></button>
                         </div>
                     </div>
                     <div style="margin-bottom: 12px">
@@ -5940,6 +5977,12 @@
                             >
                                 +
                             </button>
+                            <button
+                                class="btn btn-secondary btn-sm"
+                                data-i18n="cmd_acl_pick_open"
+                                data-i18n-title="cmd_acl_pick_open"
+                                onclick="addCmdAclFromRecent('deny')"
+                            ></button>
                         </div>
                     </div>
                     <div style="margin-bottom: 12px">
@@ -6347,26 +6390,26 @@
                 </div>
             </div>
         </div>
-        <script src="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/javascript/javascript.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/python/python.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/xml/xml.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/htmlmixed/htmlmixed.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/css/css.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/markdown/markdown.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/toml/toml.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/yaml/yaml.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js?v=175"></script>
-        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js?v=175"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/lib/codemirror.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/javascript/javascript.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/python/python.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/xml/xml.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/htmlmixed/htmlmixed.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/css/css.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/markdown/markdown.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/toml/toml.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/yaml/yaml.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/mode/shell/shell.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/closebrackets.min.js?v=176"></script>
+        <script src="/Dashboard/static/res/vendor/codemirror/addon/edit/matchbrackets.min.js?v=176"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/hint/show-hint.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/hint/anyword-hint.min.js"></script>
         <script src="/Dashboard/static/res/vendor/codemirror/addon/selection/active-line.min.js"></script>
-        <script src="/Dashboard/static/res/i18n/zh.js?v=175"></script>
-        <script src="/Dashboard/static/res/i18n/en.js?v=175"></script>
-        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=175"></script>
-        <script src="/Dashboard/static/res/i18n/ja.js?v=175"></script>
-        <script src="/Dashboard/static/res/i18n/ru.js?v=175"></script>
-        <script type="module" src="/Dashboard/static/js/main.js?v=175"></script>
+        <script src="/Dashboard/static/res/i18n/zh.js?v=176"></script>
+        <script src="/Dashboard/static/res/i18n/en.js?v=176"></script>
+        <script src="/Dashboard/static/res/i18n/zh-TW.js?v=176"></script>
+        <script src="/Dashboard/static/res/i18n/ja.js?v=176"></script>
+        <script src="/Dashboard/static/res/i18n/ru.js?v=176"></script>
+        <script type="module" src="/Dashboard/static/js/main.js?v=176"></script>
     </body>
 </html>
